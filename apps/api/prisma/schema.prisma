@@ -1,0 +1,151 @@
+// Prisma schema for Judien MVP
+// Run: pnpm db:migrate  (from monorepo root)
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/__generated__/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RSVPStatus {
+  GOING
+  MAYBE
+  NO
+}
+
+enum MessageChannel {
+  SMS
+  EMAIL
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id                 String        @id @default(cuid())
+  email              String        @unique
+  passwordHash       String
+  phoneE164          String        @unique
+  preferredLanguage  String        @default("en")  // 'en' | 'zh'
+  role               Role          @default(USER)
+  notificationsMuted Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+
+  events        Event[]
+  rsvps         RSVP[]
+  comments      Comment[]
+  messageLogs   MessageLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Event {
+  id            String   @id @default(cuid())
+  createdById   String
+  createdBy     User     @relation(fields: [createdById], references: [id])
+
+  coverImageUrl String?
+
+  title_en      String
+  title_zh      String
+  description_en String  @default("")
+  description_zh String  @default("")
+  location_en   String   @default("")
+  location_zh   String   @default("")
+
+  startAt       DateTime
+  endAt         DateTime?
+  timezone      String    @default("Asia/Taipei")
+
+  feeAmount     Decimal?  @db.Decimal(10, 2)
+  feeCurrency   String    @default("TWD")
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  rsvps         RSVP[]
+  comments      Comment[]
+  reminderRules ReminderRule[]
+  messageLogs   MessageLog[]
+
+  @@index([startAt])
+  @@index([createdById])
+}
+
+model RSVP {
+  id        String     @id @default(cuid())
+  eventId   String
+  userId    String
+  status    RSVPStatus
+  updatedAt DateTime   @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  eventId   String
+  userId    String
+  body      String
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+}
+
+model ReminderRule {
+  id            String   @id @default(cuid())
+  eventId       String
+  offsetMinutes Int      // e.g. 1440 = 24h before
+  channels      Json     // string[] e.g. ["SMS","EMAIL"]
+  enabled       Boolean  @default(true)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, offsetMinutes])
+  @@index([eventId])
+}
+
+model MessageLog {
+  id                String        @id @default(cuid())
+  eventId           String?
+  userId            String
+  channel           MessageChannel
+  toAddress         String
+  payload           Json
+  status            MessageStatus @default(PENDING)
+  providerMessageId String?
+  createdAt         DateTime      @default(now())
+
+  event Event? @relation(fields: [eventId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([status])
+}

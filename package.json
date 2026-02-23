@@ -1,0 +1,23 @@
+{
+  "name": "judien",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev:api": "pnpm --filter @judien/api dev",
+    "dev:web": "pnpm --filter @judien/web dev",
+    "dev:mobile": "pnpm --filter @judien/mobile start",
+    "build:all": "pnpm --filter @judien/shared build && pnpm --filter @judien/api build && pnpm --filter @judien/web build",
+    "db:generate": "pnpm --filter @judien/api prisma:generate",
+    "db:migrate": "pnpm --filter @judien/api prisma:migrate",
+    "db:studio": "pnpm --filter @judien/api prisma:studio",
+    "queue:worker": "pnpm --filter @judien/api worker",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "push": "git add . && git commit -m \"update\" && git push",
+    "save": "git add . && git commit -m"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
