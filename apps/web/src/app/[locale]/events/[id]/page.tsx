@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { apiFetch } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
 
 export default function EventDetailPage() {
   const params = useParams<{ locale: string; id: string }>();
+  const router = useRouter();
   const locale = params.locale;
   const zh = locale === 'zh';
   const { user } = useAuth();
@@ -32,11 +33,17 @@ export default function EventDetailPage() {
 
   const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
     if (!user) return;
-    await apiFetch(`/events/${params.id}/rsvp`, {
-      method: 'POST',
-      body: JSON.stringify({ status }),
-    });
-    setRsvpStatus(status);
+    if (rsvpStatus === status) {
+      // Already selected — toggle off (remove RSVP)
+      await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
+      setRsvpStatus(null);
+    } else {
+      await apiFetch(`/events/${params.id}/rsvp`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      });
+      setRsvpStatus(status);
+    }
     // Refresh counts
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
     setEvent(ev);
@@ -56,6 +63,12 @@ export default function EventDetailPage() {
   const handleDeleteComment = async (id: string) => {
     await apiFetch(`/comments/${id}`, { method: 'DELETE' });
     setComments((prev) => prev.filter((c) => c.id !== id));
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!confirm('Delete this event permanently?')) return;
+    await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
+    router.push(`/${locale}/events`);
   };
 
   if (loading) return <p className="text-gray-500 mt-8">{zh ? '載入中…' : 'Loading…'}</p>;
@@ -90,6 +103,37 @@ export default function EventDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Admin toolbar */}
+      {user?.role === 'ADMIN' ? (
+        <div className="flex gap-3 py-2 border-b border-dashed border-gray-200">
+          <a
+            href={`/${locale}/events`}
+            className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
+          >
+            ← Back
+          </a>
+          <a
+            href={`/${locale}/admin/events/${params.id}/edit`}
+            className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
+          >
+            ✏️ Edit Event
+          </a>
+          <button
+            onClick={handleDeleteEvent}
+            className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
+          >
+            🗑 Delete Event
+          </button>
+        </div>
+      ) : (
+        <a
+          href={`/${locale}/events`}
+          className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 self-start"
+        >
+          ← Back
+        </a>
+      )}
+
       {event.coverImageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -102,6 +146,9 @@ export default function EventDetailPage() {
       <h1 className="text-3xl font-bold">{title}</h1>
 
       <div className="text-sm text-gray-600 space-y-1">
+        {(event as any).createdByEmail && (
+          <p>🎙 {(event as any).createdByEmail}</p>
+        )}
         <p>📅 {startDate} ({event.timezone})</p>
         {location && <p>📍 {location}</p>}
         <p>💰 {fee}</p>

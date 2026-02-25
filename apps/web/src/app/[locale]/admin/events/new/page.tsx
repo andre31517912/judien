@@ -6,14 +6,13 @@ import { apiFetch } from '@/lib/api';
 import type { Event } from '@judien/shared';
 
 export default function NewEventPage({ params }: { params: { locale: string } }) {
-  const zh = params.locale === 'zh';
   const router = useRouter();
   const [error, setError] = useState('');
 
   const [form, setForm] = useState({
-    title_en: '', title_zh: '',
-    description_en: '', description_zh: '',
-    location_en: '', location_zh: '',
+    title: '',
+    description: '',
+    location: '',
     startAt: '',
     endAt: '',
     timezone: 'Asia/Taipei',
@@ -22,105 +21,93 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     coverImageUrl: '',
   });
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-    setForm({ ...form, [k]: e.target.value });
+  const set = (k: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm({ ...form, [k]: e.target.value });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
       const body: Record<string, unknown> = {
-        ...form,
+        title_en: form.title,
+        title_zh: form.title,
+        description_en: form.description,
+        description_zh: form.description,
+        location_en: form.location,
+        location_zh: form.location,
+        startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
+        endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
+        timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
-        endAt: form.endAt || null,
+        feeCurrency: form.feeCurrency || 'TWD',
         coverImageUrl: form.coverImageUrl || null,
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
       router.push(`/${params.locale}/events/${ev.id}`);
-    } catch (err: any) {
-      setError(err.message ?? 'Error creating event.');
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Error creating event.');
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8">
-      <h1 className="text-2xl font-bold mb-6">{zh ? '建立活動' : 'Create Event'}</h1>
+    <div className="max-w-xl mx-auto mt-8 px-4">
+      <h1 className="text-2xl font-bold mb-6">Create Event</h1>
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <TwoCol
-          label1={zh ? '標題（英文）' : 'Title (EN)'}
-          label2={zh ? '標題（中文）' : 'Title (ZH)'}
-          val1={form.title_en} set1={set('title_en')}
-          val2={form.title_zh} set2={set('title_zh')}
-        />
-        <TwoCol
-          label1={zh ? '地點（英文）' : 'Location (EN)'}
-          label2={zh ? '地點（中文）' : 'Location (ZH)'}
-          val1={form.location_en} set1={set('location_en')}
-          val2={form.location_zh} set2={set('location_zh')}
-        />
-        <LabeledTextarea label={zh ? '說明（英文）' : 'Description (EN)'} value={form.description_en} onChange={set('description_en')} />
-        <LabeledTextarea label={zh ? '說明（中文）' : 'Description (ZH)'} value={form.description_zh} onChange={set('description_zh')} />
-
+        <Field label="Title">
+          <input value={form.title} onChange={set('title')}
+            placeholder="Event name" className={inp} />
+        </Field>
+        <Field label="Location">
+          <input value={form.location} onChange={set('location')}
+            placeholder="e.g. Taipei, Da'an Park" className={inp} />
+        </Field>
+        <Field label="Description">
+          <textarea value={form.description} onChange={set('description')}
+            placeholder="What's this event about?" rows={4}
+            className={inp + ' resize-none'} />
+        </Field>
         <div className="grid grid-cols-2 gap-4">
-          <LabeledInput label={zh ? '開始時間' : 'Start'} type="datetime-local" value={form.startAt} onChange={set('startAt')} required />
-          <LabeledInput label={zh ? '結束時間（選填）' : 'End (optional)'} type="datetime-local" value={form.endAt} onChange={set('endAt')} />
+          <Field label="Start">
+            <input type="datetime-local" value={form.startAt} onChange={set('startAt')} className={inp} />
+          </Field>
+          <Field label="End (optional)">
+            <input type="datetime-local" value={form.endAt} onChange={set('endAt')} className={inp} />
+          </Field>
         </div>
-
         <div className="grid grid-cols-3 gap-4">
-          <LabeledInput label={zh ? '時區' : 'Timezone'} value={form.timezone} onChange={set('timezone')} />
-          <LabeledInput label={zh ? '費用' : 'Fee'} type="number" value={form.feeAmount} onChange={set('feeAmount')} />
-          <LabeledInput label={zh ? '幣種' : 'Currency'} value={form.feeCurrency} onChange={set('feeCurrency')} />
+          <Field label="Timezone">
+            <input value={form.timezone} onChange={set('timezone')} className={inp} />
+          </Field>
+          <Field label="Fee">
+            <input type="number" value={form.feeAmount} onChange={set('feeAmount')}
+              placeholder="0" className={inp} />
+          </Field>
+          <Field label="Currency">
+            <input value={form.feeCurrency} onChange={set('feeCurrency')} className={inp} />
+          </Field>
         </div>
-
-        <LabeledInput label={zh ? '封面圖片 URL（選填）' : 'Cover Image URL (optional)'} value={form.coverImageUrl} onChange={set('coverImageUrl')} />
-
-        <button type="submit" className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium">
-          {zh ? '建立活動' : 'Create Event'}
+        <Field label="Cover Image URL (optional)">
+          <input value={form.coverImageUrl} onChange={set('coverImageUrl')}
+            placeholder="https://..." className={inp} />
+        </Field>
+        <button type="submit"
+          className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium mt-2">
+          Create Event
         </button>
       </form>
     </div>
   );
 }
 
-// ── Small helper components ─────────────────────────────────────────────────
+const inp = 'w-full border rounded-md px-3 py-2 text-sm';
 
-function LabeledInput({ label, value, onChange, type = 'text', required }: {
-  label: string; value: string;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-  type?: string; required?: boolean;
-}) {
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <input type={type} value={value} onChange={onChange} required={required}
-        className="w-full border rounded-md px-3 py-2 text-sm" />
-    </div>
-  );
-}
-
-function LabeledTextarea({ label, value, onChange }: {
-  label: string; value: string;
-  onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <textarea value={value} onChange={onChange} rows={3}
-        className="w-full border rounded-md px-3 py-2 text-sm resize-none" />
-    </div>
-  );
-}
-
-function TwoCol({ label1, label2, val1, set1, val2, set2 }: {
-  label1: string; label2: string;
-  val1: string; set1: React.ChangeEventHandler<HTMLInputElement>;
-  val2: string; set2: React.ChangeEventHandler<HTMLInputElement>;
-}) {
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      <LabeledInput label={label1} value={val1} onChange={set1} required />
-      <LabeledInput label={label2} value={val2} onChange={set2} required />
+      <label className="block text-sm font-medium mb-1 text-gray-700">{label}</label>
+      {children}
     </div>
   );
 }

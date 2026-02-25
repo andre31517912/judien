@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiFetch } from '../../../lib/api';
+import { useAuth } from '../../../context/auth.context';
 import type { EventWithCounts, PaginatedResponse } from '@judien/shared';
 
 export default function EventsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [scope, setScope] = useState<'future' | 'past'>('future');
   const [events, setEvents] = useState<EventWithCounts[]>([]);
   const [total, setTotal] = useState(0);
@@ -33,13 +36,23 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
 
   return (
     <div>
-      <div className="flex gap-0 mb-6 border-b">
-        <button className={tabCls(scope === 'future')} onClick={() => { setScope('future'); setPage(1); }}>
-          {zh ? '即將到來' : 'Upcoming'}
-        </button>
-        <button className={tabCls(scope === 'past')} onClick={() => { setScope('past'); setPage(1); }}>
-          {zh ? '過往活動' : 'Past'}
-        </button>
+      <div className="flex items-center justify-between mb-6 border-b">
+        <div className="flex gap-0">
+          <button className={tabCls(scope === 'future')} onClick={() => { setScope('future'); setPage(1); }}>
+            {zh ? '即將到來' : 'Upcoming'}
+          </button>
+          <button className={tabCls(scope === 'past')} onClick={() => { setScope('past'); setPage(1); }}>
+            {zh ? '過往活動' : 'Past'}
+          </button>
+        </div>
+        {isAdmin && (
+          <Link
+            href={`/${params.locale}/admin/events/new`}
+            className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
+          >
+            + Create Event
+          </Link>
+        )}
       </div>
 
       {loading ? (
@@ -93,27 +106,30 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
     : zh ? '免費' : 'Free';
 
   return (
-    <Link
-      href={`/${locale}/events/${event.id}`}
-      className="block bg-white rounded-xl shadow-sm hover:shadow-md transition p-4 flex gap-4"
-    >
-      {event.coverImageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={event.coverImageUrl}
-          alt={title}
-          className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-        />
-      )}
-      <div className="flex-1 min-w-0">
-        <h2 className="font-semibold text-lg truncate">{title}</h2>
-        <p className="text-sm text-gray-500">{startDate}</p>
-        {location && <p className="text-sm text-gray-500 truncate">{location}</p>}
-        <p className="text-sm text-indigo-600 mt-1">{fee}</p>
-        <p className="text-xs text-gray-400 mt-1">
-          ✓ {event.rsvpCounts.GOING} &nbsp; ? {event.rsvpCounts.MAYBE} &nbsp; ✗ {event.rsvpCounts.NO}
-        </p>
-      </div>
-    </Link>
+    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition">
+      <Link
+        href={`/${locale}/events/${event.id}`}
+        className="flex gap-4 p-4"
+      >
+        {event.coverImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={event.coverImageUrl}
+            alt={title}
+            className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <h2 className="font-semibold text-lg truncate">{title}</h2>
+          <p className="text-sm text-gray-500">{startDate}</p>
+          {location && <p className="text-sm text-gray-500 truncate">{location}</p>}
+          <p className="text-sm text-indigo-600 mt-1">{fee}</p>
+          <p className="text-xs text-gray-400 mt-1">
+            ✓ {event.rsvpCounts.GOING} &nbsp; ? {event.rsvpCounts.MAYBE} &nbsp; ✗ {event.rsvpCounts.NO}
+          </p>
+        </div>
+      </Link>
+
+    </div>
   );
 }

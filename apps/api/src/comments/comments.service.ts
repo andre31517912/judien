@@ -38,7 +38,16 @@ export class CommentsService {
   async create(eventId: string, user: User, dto: CreateCommentDto) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
-    return this.prisma.comment.create({ data: { eventId, userId: user.id, body: dto.body } });
+    const c = await this.prisma.comment.create({ data: { eventId, userId: user.id, body: dto.body } });
+    return {
+      id: c.id,
+      eventId: c.eventId,
+      userId: c.userId,
+      userHandle: user.email.slice(0, 3) + '***',
+      body: c.body,
+      createdAt: c.createdAt,
+      deletedAt: c.deletedAt,
+    };
   }
 
   /** Soft-delete; admin only */

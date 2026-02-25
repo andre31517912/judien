@@ -45,13 +45,13 @@ export type LoginDto = z.infer<typeof LoginSchema>;
 // ─── Event ────────────────────────────────────────────────────────────────────
 
 export const CreateEventSchema = z.object({
-  title_en: z.string().min(1).max(200),
-  title_zh: z.string().min(1).max(200),
+  title_en: z.string().max(200).default(''),
+  title_zh: z.string().max(200).default(''),
   description_en: z.string().max(10000).default(''),
   description_zh: z.string().max(10000).default(''),
   location_en: z.string().max(500).default(''),
   location_zh: z.string().max(500).default(''),
-  startAt: z.string().datetime(),
+  startAt: z.string().datetime().optional().default(new Date().toISOString()),
   endAt: z.string().datetime().nullable().optional(),
   timezone: z.string().default('Asia/Taipei'),
   feeAmount: z.number().nonnegative().nullable().optional(),

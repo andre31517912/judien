@@ -61,7 +61,10 @@ export class EventsService {
   async findOne(id: string, userId?: string) {
     const event = await this.prisma.event.findUnique({
       where: { id },
-      include: { rsvps: { select: { status: true } } },
+      include: {
+        rsvps: { select: { status: true } },
+        createdBy: { select: { email: true } },
+      },
     });
     if (!event) throw new NotFoundException('Event not found.');
 
@@ -76,7 +79,14 @@ export class EventsService {
       myRsvp = rsvp?.status ?? null;
     }
 
-    return { ...event, rsvps: undefined, rsvpCounts: counts, myRsvp };
+    return {
+      ...event,
+      rsvps: undefined,
+      rsvpCounts: counts,
+      myRsvp,
+      createdByEmail: event.createdBy?.email ?? null,
+      createdBy: undefined,
+    };
   }
 
   async create(dto: CreateEventDto, creator: User) {

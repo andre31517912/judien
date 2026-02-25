@@ -33,11 +33,6 @@ export default function NavBar({ locale }: NavBarProps) {
             <Link href={`/${locale}/profile`} className="text-gray-600 hover:text-gray-900">
               Profile
             </Link>
-            {user.role === 'ADMIN' && (
-              <Link href={`/${locale}/admin/events/new`} className="text-indigo-600">
-                + Event
-              </Link>
-            )}
             <button onClick={handleLogout} className="text-red-500 hover:text-red-700">
               Logout
             </button>

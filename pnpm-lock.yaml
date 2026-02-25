@@ -56,6 +56,9 @@ importers:
       cookie-parser:
         specifier: ^1.4.6
         version: 1.4.7
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.7
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
@@ -111,9 +114,6 @@ importers:
       '@types/passport-local':
         specifier: ^1.0.38
         version: 1.0.38
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.7
       prisma:
         specifier: ^5.14.0
         version: 5.22.0

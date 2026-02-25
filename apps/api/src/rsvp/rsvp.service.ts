@@ -16,4 +16,9 @@ export class RsvpService {
       update: { status: dto.status },
     });
   }
+
+  async remove(eventId: string, userId: string) {
+    await this.prisma.rSVP.deleteMany({ where: { eventId, userId } });
+    return { removed: true };
+  }
 }

@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Delete, Param, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RsvpService } from './rsvp.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -19,5 +19,15 @@ export class RsvpController {
     @CurrentUser() user: User,
   ) {
     return this.rsvpService.upsert(eventId, user.id, dto);
+  }
+
+  // DELETE /api/events/:eventId/rsvp  — remove RSVP (back to undecided)
+  @Delete()
+  @HttpCode(HttpStatus.OK)
+  remove(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.remove(eventId, user.id);
   }
 }
