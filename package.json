@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "dev:api": "pnpm --filter @judien/api dev",
+    "dev:api": "npx kill-port 4000 && pnpm --filter @judien/api dev",
     "dev:web": "pnpm --filter @judien/web dev",
     "dev:mobile": "pnpm --filter @judien/mobile start",
     "build:all": "pnpm --filter @judien/shared build && pnpm --filter @judien/api build && pnpm --filter @judien/web build",
@@ -18,6 +18,7 @@
     "save": "git add . && git commit -m"
   },
   "devDependencies": {
+    "kill-port": "^2.0.1",
     "typescript": "^5.4.5"
   }
 }
