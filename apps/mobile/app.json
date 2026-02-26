@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Judien",
+    "slug": "judien",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "judien",
+    "web": { "bundler": "metro" },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "android": {
+      "package": "com.judien.app"
+    },
+    "ios": {
+      "bundleIdentifier": "com.judien.app"
+    },
+    "extra": {
+      "apiUrl": "http://localhost:4000/api"
+    }
+  }
+}
