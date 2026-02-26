@@ -10,6 +10,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { BlastModule } from './blast/blast.module';
 import { MessagingModule } from './messaging/messaging.module';
 import { QueueModule } from './queue/queue.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { QueueModule } from './queue/queue.module';
     CommentsModule,
     RemindersModule,
     BlastModule,
+    UploadModule,
   ],
 })
 export class AppModule {}

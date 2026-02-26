@@ -107,6 +107,8 @@ export type BlastDto = z.infer<typeof BlastSchema>;
 export const UpdateProfileSchema = z.object({
   phone: phoneSchema.optional(),
   email: z.string().email().optional(),
+  displayName: z.string().max(100).optional(),
+  password: z.string().min(8).max(128).optional(),
   preferredLanguage: z.enum(['en', 'zh']).optional(),
   notificationsMuted: z.boolean().optional(),
 });

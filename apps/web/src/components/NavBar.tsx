@@ -31,7 +31,7 @@ export default function NavBar({ locale }: NavBarProps) {
         {user ? (
           <>
             <Link href={`/${locale}/profile`} className="text-gray-600 hover:text-gray-900">
-              Profile
+              {(user as any).displayName || user.email.split('@')[0]}
             </Link>
             <button onClick={handleLogout} className="text-red-500 hover:text-red-700">
               Logout

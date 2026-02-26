@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiUpload } from '@/lib/api';
 import type { Event } from '@judien/shared';
 
 export default function NewEventPage({ params }: { params: { locale: string } }) {
   const router = useRouter();
   const [error, setError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -18,17 +21,28 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     timezone: 'Asia/Taipei',
     feeAmount: '',
     feeCurrency: 'TWD',
-    coverImageUrl: '',
   });
 
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm({ ...form, [k]: e.target.value });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     try {
+      let coverImageUrl: string | null = null;
+      if (coverFile) {
+        const uploaded = await apiUpload(coverFile);
+        coverImageUrl = uploaded.url;
+      }
       const body: Record<string, unknown> = {
         title_en: form.title,
         title_zh: form.title,
@@ -41,7 +55,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency || 'TWD',
-        coverImageUrl: form.coverImageUrl || null,
+        coverImageUrl,
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
       router.push(`/${params.locale}/events/${ev.id}`);
@@ -88,10 +102,38 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             <input value={form.feeCurrency} onChange={set('feeCurrency')} className={inp} />
           </Field>
         </div>
-        <Field label="Cover Image URL (optional)">
-          <input value={form.coverImageUrl} onChange={set('coverImageUrl')}
-            placeholder="https://..." className={inp} />
+
+        {/* Cover image upload */}
+        <Field label="Cover Photo (optional)">
+          <div
+            onClick={() => fileRef.current?.click()}
+            className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer overflow-hidden flex items-center justify-center transition"
+          >
+            {coverPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={coverPreview} alt="preview" className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
+                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-sm">Click to upload a photo</span>
+              </div>
+            )}
+            {coverPreview && (
+              <button
+                type="button"
+                onClick={(ev) => { ev.stopPropagation(); setCoverFile(null); setCoverPreview(null); }}
+                className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
         </Field>
+
         <button type="submit"
           className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium mt-2">
           Create Event

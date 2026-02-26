@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiUpload } from '@/lib/api';
 import type { Event, ReminderRule } from '@judien/shared';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -48,16 +48,25 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
+  // cover image
+  const coverFileRef = useRef<HTMLInputElement>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
   useEffect(() => {
     apiFetch<Event>(`/events/${params.id}`).then((ev) => {
       setEvent(ev);
       setForm({
-        title_en: ev.title_en,
-        title_zh: ev.title_zh,
-        description_en: ev.description_en,
-        description_zh: ev.description_zh,
-        location_en: ev.location_en,
-        location_zh: ev.location_zh,
+        title: ev.title_en,
+        description: ev.description_en,
+        location: ev.location_en,
         startAt: (ev.startAt ?? '').replace('Z', '').slice(0, 16),
         endAt: (ev.endAt ?? '').replace('Z', '').slice(0, 16),
         timezone: ev.timezone,
@@ -80,11 +89,27 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     setError('');
     setSaved(false);
     try {
-      const body: Record<string, unknown> = { ...form };
-      body.feeAmount = form.feeAmount ? parseFloat(form.feeAmount) : null;
-      body.endAt = form.endAt || null;
-      body.startAt = form.startAt ? new Date(form.startAt).toISOString() : undefined;
-      body.coverImageUrl = form.coverImageUrl || null;
+      // Upload new cover photo first if one was selected
+      if (coverFile) {
+        const uploaded = await apiUpload(coverFile);
+        setForm((f) => ({ ...f, coverImageUrl: uploaded.url }));
+        form.coverImageUrl = uploaded.url;
+        setCoverFile(null);
+      }
+      const body: Record<string, unknown> = {
+        title_en: form.title,
+        title_zh: form.title,
+        description_en: form.description,
+        description_zh: form.description,
+        location_en: form.location,
+        location_zh: form.location,
+        startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
+        endAt: form.endAt || null,
+        timezone: form.timezone,
+        feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
+        feeCurrency: form.feeCurrency,
+        coverImageUrl: form.coverImageUrl || null,
+      };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
       setSaved(true);
     } catch (err: unknown) {
@@ -164,22 +189,13 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
         <form onSubmit={handleUpdate} className="flex flex-col gap-4">
           <Field label="Title">
-            <input value={form.title_en ?? ''} onChange={set('title_en')} placeholder="English title" className={inp} />
-          </Field>
-          <Field label="Title (Chinese)">
-            <input value={form.title_zh ?? ''} onChange={set('title_zh')} placeholder="中文標題" className={inp} />
+            <input value={form.title ?? ''} onChange={set('title')} placeholder="Event name" className={inp} />
           </Field>
           <Field label="Location">
-            <input value={form.location_en ?? ''} onChange={set('location_en')} className={inp} />
-          </Field>
-          <Field label="Location (Chinese)">
-            <input value={form.location_zh ?? ''} onChange={set('location_zh')} className={inp} />
+            <input value={form.location ?? ''} onChange={set('location')} className={inp} />
           </Field>
           <Field label="Description">
-            <textarea value={form.description_en ?? ''} onChange={set('description_en')} rows={3} className={inp} />
-          </Field>
-          <Field label="Description (Chinese)">
-            <textarea value={form.description_zh ?? ''} onChange={set('description_zh')} rows={3} className={inp} />
+            <textarea value={form.description ?? ''} onChange={set('description')} rows={3} className={inp} />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Start">
@@ -200,8 +216,41 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <input value={form.feeCurrency ?? ''} onChange={set('feeCurrency')} className={inp} />
             </Field>
           </div>
-          <Field label="Cover Image URL (optional)">
-            <input value={form.coverImageUrl ?? ''} onChange={set('coverImageUrl')} placeholder="https://…" className={inp} />
+          <Field label="Cover Photo">
+            {/* Show current cover with remove button */}
+            {(form.coverImageUrl || coverPreview) && (
+              <div className="relative mb-2 group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={coverPreview ?? form.coverImageUrl ?? ''}
+                  alt="cover"
+                  className="w-full h-40 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCoverFile(null);
+                    setCoverPreview(null);
+                    setForm((f) => ({ ...f, coverImageUrl: '' }));
+                  }}
+                  className="absolute top-2 right-2 bg-black/55 hover:bg-black/75 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm transition"
+                  title="Remove photo"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <div
+              onClick={() => coverFileRef.current?.click()}
+              className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center gap-2 text-gray-400 text-sm transition"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {coverPreview ? 'Replace photo' : (form.coverImageUrl ? 'Replace photo' : 'Upload cover photo')}
+            </div>
+            <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileChange} className="hidden" />
           </Field>
           <div className="flex gap-3 pt-2">
             <button type="submit" className="bg-indigo-600 text-white py-2 px-5 rounded-md hover:bg-indigo-700 font-medium">

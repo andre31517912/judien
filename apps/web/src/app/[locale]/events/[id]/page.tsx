@@ -134,13 +134,23 @@ export default function EventDetailPage() {
         </a>
       )}
 
-      {event.coverImageUrl && (
+      {event.coverImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={event.coverImageUrl}
           alt={title}
           className="w-full h-60 object-cover rounded-xl"
         />
+      ) : (
+        <div className="w-full h-60 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 border border-gray-100 flex flex-col items-center justify-center gap-3 select-none">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-400 max-w-xs text-center truncate px-4">{title}</p>
+        </div>
       )}
 
       <h1 className="text-3xl font-bold">{title}</h1>

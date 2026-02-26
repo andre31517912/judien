@@ -22,3 +22,20 @@ export async function apiFetch<T>(
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
+
+/** Upload a file (multipart/form-data). Returns { url } of the saved file. */
+export async function apiUpload(file: File): Promise<{ url: string }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${API_BASE}/upload`, {
+    method: 'POST',
+    credentials: 'include',
+    body: form,
+    // Do NOT set Content-Type — browser sets it with the multipart boundary
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(err?.message ?? 'Upload error');
+  }
+  return res.json();
+}
