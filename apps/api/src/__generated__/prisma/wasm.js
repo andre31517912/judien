@@ -130,7 +130,8 @@ exports.Prisma.UserScalarFieldEnum = {
   displayName: 'displayName',
   preferredLanguage: 'preferredLanguage',
   role: 'role',
-  notificationsMuted: 'notificationsMuted',
+  muteSms: 'muteSms',
+  muteEmail: 'muteEmail',
   createdAt: 'createdAt'
 };
 

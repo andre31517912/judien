@@ -15,7 +15,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { Worker, type Job } from 'bullmq';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../__generated__/prisma';
 import { MockMessagingAdapter } from '../messaging/mock.adapter';
 import { ProductionMessagingAdapter } from '../messaging/production.adapter';
 import { REMINDER_QUEUE_NAME } from '../queue/queue.module';
@@ -45,15 +45,13 @@ async function processReminder(job: Job<ReminderJobData>) {
     return;
   }
 
-  // Fetch RSVP'd users (exclude muted)
+  // Fetch RSVP'd users
   const rsvps = await prisma.rSVP.findMany({
     where: { eventId },
     include: { user: true },
   });
 
-  const users = rsvps
-    .map((r) => r.user)
-    .filter((u) => !u.notificationsMuted);
+  const users = rsvps.map((r) => r.user);
 
   for (const user of users) {
     const lang = (user.preferredLanguage === 'zh' ? 'zh' : 'en') as 'en' | 'zh';
@@ -72,8 +70,10 @@ async function processReminder(job: Job<ReminderJobData>) {
     });
     const subject = t(dict.messages.reminderSubject, { title });
 
-    // Log to DB then send
+    // Log to DB then send — skip per-channel if user has muted that channel
     for (const channel of channels) {
+      if (channel === 'SMS' && user.muteSms) continue;
+      if (channel === 'EMAIL' && user.muteEmail) continue;
       const toAddress = channel === 'SMS' ? user.phoneE164 : user.email;
       const log = await prisma.messageLog.create({
         data: {

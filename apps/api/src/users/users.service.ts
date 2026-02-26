@@ -2,7 +2,7 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import type { UpdateProfileDto } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 
 @Injectable()
 export class UsersService {
@@ -25,7 +25,8 @@ export class UsersService {
     if (dto.phone) data.phoneE164 = dto.phone;
     if (dto.displayName !== undefined) data.displayName = dto.displayName || null;
     if (dto.preferredLanguage) data.preferredLanguage = dto.preferredLanguage;
-    if (dto.notificationsMuted !== undefined) data.notificationsMuted = dto.notificationsMuted;
+    if (dto.muteSms !== undefined) data.muteSms = dto.muteSms;
+    if (dto.muteEmail !== undefined) data.muteEmail = dto.muteEmail;
     if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 12);
 
     const updated = await this.prisma.user.update({ where: { id: userId }, data });

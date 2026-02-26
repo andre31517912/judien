@@ -45,7 +45,8 @@ model User {
   displayName        String?
   preferredLanguage  String        @default("en")  // 'en' | 'zh'
   role               Role          @default(USER)
-  notificationsMuted Boolean       @default(false)
+  muteSms            Boolean       @default(false)
+  muteEmail          Boolean       @default(false)
   createdAt          DateTime      @default(now())
 
   events        Event[]

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch, apiUpload } from '@/lib/api';
+import ConfirmModal from '@/components/ConfirmModal';
 import type { Event, ReminderRule } from '@judien/shared';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -19,12 +20,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function minutesToLabel(m: number) {
+  if (m >= 10080 && m % 10080 === 0) return `${m / 10080} week${m / 10080 > 1 ? 's' : ''} before`;
   if (m >= 1440) return `${m / 1440} day${m / 1440 > 1 ? 's' : ''} before`;
   if (m >= 60) return `${m / 60} hour${m / 60 > 1 ? 's' : ''} before`;
   return `${m} min before`;
 }
 
 const REMINDER_PRESETS = [
+  { label: '1 week before', minutes: 10080 },
   { label: '3 days before', minutes: 4320 },
   { label: '1 day before', minutes: 1440 },
   { label: '1 hour before', minutes: 60 },
@@ -35,18 +38,14 @@ const REMINDER_PRESETS = [
 
 export default function EditEventPage({ params }: { params: { locale: string; id: string } }) {
   const router = useRouter();
+  const zh = params.locale === 'zh';
   const [event, setEvent] = useState<Event | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
 
-  // blast state
-  const [blastMsg, setBlastMsg] = useState('');
-  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
-  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
-  const [blastResult, setBlastResult] = useState('');
-
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // cover image
   const coverFileRef = useRef<HTMLInputElement>(null);
@@ -84,8 +83,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   // ── event update ────────────────────────────────────────────────────────────
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const doUpdate = async () => {
     setError('');
     setSaved(false);
     try {
@@ -111,14 +109,16 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         coverImageUrl: form.coverImageUrl || null,
       };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
-      setSaved(true);
+      // Redirect back to event detail after saving
+      router.push(`/${params.locale}/events/${params.id}`);
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Error updating event.');
     }
   };
 
+  const handleUpdate = (e: React.FormEvent) => { e.preventDefault(); doUpdate(); };
+
   const handleDeleteEvent = async () => {
-    if (!confirm('Delete this event permanently?')) return;
     await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
     router.push(`/${params.locale}/events`);
   };
@@ -150,40 +150,53 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     alert('Reminders saved.');
   };
 
-  // ── blast ───────────────────────────────────────────────────────────────────
-  const toggleBlastChannel = (ch: string) =>
-    setBlastChannels((prev) =>
-      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
-    );
-
-  const handleBlast = async () => {
-    if (!blastMsg.trim()) { setBlastResult('Please enter a message.'); return; }
-    if (blastChannels.length === 0) { setBlastResult('Select at least one channel.'); return; }
-    setBlastResult('Sending…');
-    try {
-      const res = await apiFetch<{ sent: number }>(`/events/${params.id}/blast`, {
-        method: 'POST',
-        body: JSON.stringify({
-          channels: blastChannels,
-          audience: blastAudience,
-          messageEn: blastMsg,
-          messageZh: blastMsg,
-        }),
-      });
-      setBlastResult(`✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`);
-    } catch (err: unknown) {
-      setBlastResult((err as Error).message ?? 'Failed to send.');
-    }
-  };
-
   if (!event) return <p className="text-gray-400 mt-8">Loading…</p>;
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 pb-20 space-y-12">
+    <div className="max-w-2xl mx-auto mt-6 pb-20 space-y-6">
+      {showDeleteModal && (
+        <ConfirmModal
+          title={zh ? '刪除活動' : 'Delete Event'}
+          message={
+            zh
+              ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
+              : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`
+          }
+          confirmLabel={zh ? '確定刪除' : 'Delete'}
+          cancelLabel={zh ? '取消' : 'Cancel'}
+          onConfirm={handleDeleteEvent}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
+
+      {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
+      <div className="flex items-center gap-3 py-2 border-b border-dashed border-gray-200">
+        <a
+          href={`/${params.locale}/events/${params.id}`}
+          className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
+        >
+          ← {zh ? '返回' : 'Back'}
+        </a>
+        <button
+          type="button"
+          onClick={doUpdate}
+          className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
+        >
+          {zh ? '儲存變更' : 'Save Changes'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowDeleteModal(true)}
+          className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
+        >
+          {zh ? '刪除活動' : 'Delete Event'}
+        </button>
+        {error && <p className="text-red-500 text-sm ml-2">{error}</p>}
+      </div>
 
       {/* ── Edit form ───────────────────────────────────────────────────────── */}
       <section>
-        <h1 className="text-2xl font-bold mb-6">Edit Event</h1>
+        <h1 className="text-2xl font-bold mb-3">{zh ? '編輯活動' : 'Edit Event'}</h1>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         {saved && <p className="text-green-600 text-sm mb-4">✓ Changes saved.</p>}
 
@@ -252,19 +265,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             </div>
             <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileChange} className="hidden" />
           </Field>
-          <div className="flex gap-3 pt-2">
-            <button type="submit" className="bg-indigo-600 text-white py-2 px-5 rounded-md hover:bg-indigo-700 font-medium">
-              Save Changes
-            </button>
-            <button type="button" onClick={handleDeleteEvent}
-              className="bg-red-500 text-white py-2 px-5 rounded-md hover:bg-red-600 font-medium">
-              Delete Event
-            </button>
-            <a href={`/${params.locale}/events/${params.id}`}
-              className="text-sm text-gray-500 self-center hover:underline ml-auto">
-              ← Back to event
-            </a>
-          </div>
         </form>
       </section>
 
@@ -321,68 +321,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         )}
       </section>
 
-      {/* ── Manual blast ────────────────────────────────────────────────────── */}
-      <section>
-        <h2 className="text-xl font-semibold mb-1">Send Message Blast</h2>
-        <p className="text-sm text-gray-500 mb-4">Send a message to attendees right now.</p>
 
-        <div className="flex flex-col gap-4 bg-gray-50 rounded-xl p-5">
-          {/* message */}
-          <Field label="Message">
-            <textarea
-              value={blastMsg}
-              onChange={(e) => setBlastMsg(e.target.value)}
-              rows={3}
-              placeholder="Your message (used for both English and Chinese)…"
-              className={inp}
-            />
-          </Field>
-
-          {/* channels */}
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Send via</p>
-            <div className="flex gap-4">
-              {(['EMAIL', 'SMS'] as const).map((ch) => (
-                <label key={ch} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'}`}>
-                  <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
-                  <span className="text-sm font-medium">{ch === 'EMAIL' ? '✉️ Email' : '💬 SMS'}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* audience */}
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Send to</p>
-            <div className="flex gap-4">
-              {([['rsvped', "RSVPed users only"], ['all', 'All registered users']] as const).map(([val, label]) => (
-                <label key={val} className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${blastAudience === val ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'}`}>
-                  <input type="radio" name="audience" className="sr-only" checked={blastAudience === val} onChange={() => setBlastAudience(val)} />
-                  <span className="text-sm font-medium">{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBlast}
-              className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-700 font-medium text-sm"
-            >
-              Send Now
-            </button>
-            {blastResult && (
-              <p className={`text-sm ${blastResult.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
-                {blastResult}
-              </p>
-            )}
-          </div>
-
-          <p className="text-xs text-gray-400">
-            Tip: use the <strong>Automatic Reminders</strong> section above to schedule blasts 3 days or 1 hour before the event.
-          </p>
-        </div>
-      </section>
 
     </div>
   );

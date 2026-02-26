@@ -1461,7 +1461,8 @@ export namespace Prisma {
     displayName: string | null
     preferredLanguage: string | null
     role: $Enums.Role | null
-    notificationsMuted: boolean | null
+    muteSms: boolean | null
+    muteEmail: boolean | null
     createdAt: Date | null
   }
 
@@ -1473,7 +1474,8 @@ export namespace Prisma {
     displayName: string | null
     preferredLanguage: string | null
     role: $Enums.Role | null
-    notificationsMuted: boolean | null
+    muteSms: boolean | null
+    muteEmail: boolean | null
     createdAt: Date | null
   }
 
@@ -1485,7 +1487,8 @@ export namespace Prisma {
     displayName: number
     preferredLanguage: number
     role: number
-    notificationsMuted: number
+    muteSms: number
+    muteEmail: number
     createdAt: number
     _all: number
   }
@@ -1499,7 +1502,8 @@ export namespace Prisma {
     displayName?: true
     preferredLanguage?: true
     role?: true
-    notificationsMuted?: true
+    muteSms?: true
+    muteEmail?: true
     createdAt?: true
   }
 
@@ -1511,7 +1515,8 @@ export namespace Prisma {
     displayName?: true
     preferredLanguage?: true
     role?: true
-    notificationsMuted?: true
+    muteSms?: true
+    muteEmail?: true
     createdAt?: true
   }
 
@@ -1523,7 +1528,8 @@ export namespace Prisma {
     displayName?: true
     preferredLanguage?: true
     role?: true
-    notificationsMuted?: true
+    muteSms?: true
+    muteEmail?: true
     createdAt?: true
     _all?: true
   }
@@ -1608,7 +1614,8 @@ export namespace Prisma {
     displayName: string | null
     preferredLanguage: string
     role: $Enums.Role
-    notificationsMuted: boolean
+    muteSms: boolean
+    muteEmail: boolean
     createdAt: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -1637,7 +1644,8 @@ export namespace Prisma {
     displayName?: boolean
     preferredLanguage?: boolean
     role?: boolean
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: boolean
     events?: boolean | User$eventsArgs<ExtArgs>
     rsvps?: boolean | User$rsvpsArgs<ExtArgs>
@@ -1654,7 +1662,8 @@ export namespace Prisma {
     displayName?: boolean
     preferredLanguage?: boolean
     role?: boolean
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -1666,7 +1675,8 @@ export namespace Prisma {
     displayName?: boolean
     preferredLanguage?: boolean
     role?: boolean
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: boolean
   }
 
@@ -1695,7 +1705,8 @@ export namespace Prisma {
       displayName: string | null
       preferredLanguage: string
       role: $Enums.Role
-      notificationsMuted: boolean
+      muteSms: boolean
+      muteEmail: boolean
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -2101,7 +2112,8 @@ export namespace Prisma {
     readonly displayName: FieldRef<"User", 'String'>
     readonly preferredLanguage: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
-    readonly notificationsMuted: FieldRef<"User", 'Boolean'>
+    readonly muteSms: FieldRef<"User", 'Boolean'>
+    readonly muteEmail: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -7581,7 +7593,8 @@ export namespace Prisma {
     displayName: 'displayName',
     preferredLanguage: 'preferredLanguage',
     role: 'role',
-    notificationsMuted: 'notificationsMuted',
+    muteSms: 'muteSms',
+    muteEmail: 'muteEmail',
     createdAt: 'createdAt'
   };
 
@@ -7858,7 +7871,8 @@ export namespace Prisma {
     displayName?: StringNullableFilter<"User"> | string | null
     preferredLanguage?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    notificationsMuted?: BoolFilter<"User"> | boolean
+    muteSms?: BoolFilter<"User"> | boolean
+    muteEmail?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -7874,7 +7888,8 @@ export namespace Prisma {
     displayName?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     role?: SortOrder
-    notificationsMuted?: SortOrder
+    muteSms?: SortOrder
+    muteEmail?: SortOrder
     createdAt?: SortOrder
     events?: EventOrderByRelationAggregateInput
     rsvps?: RSVPOrderByRelationAggregateInput
@@ -7893,7 +7908,8 @@ export namespace Prisma {
     displayName?: StringNullableFilter<"User"> | string | null
     preferredLanguage?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    notificationsMuted?: BoolFilter<"User"> | boolean
+    muteSms?: BoolFilter<"User"> | boolean
+    muteEmail?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -7909,7 +7925,8 @@ export namespace Prisma {
     displayName?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     role?: SortOrder
-    notificationsMuted?: SortOrder
+    muteSms?: SortOrder
+    muteEmail?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -7927,7 +7944,8 @@ export namespace Prisma {
     displayName?: StringNullableWithAggregatesFilter<"User"> | string | null
     preferredLanguage?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
-    notificationsMuted?: BoolWithAggregatesFilter<"User"> | boolean
+    muteSms?: BoolWithAggregatesFilter<"User"> | boolean
+    muteEmail?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -8321,7 +8339,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -8337,7 +8356,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -8353,7 +8373,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -8369,7 +8390,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -8385,7 +8407,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
   }
 
@@ -8397,7 +8420,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8409,7 +8433,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -8919,7 +8944,8 @@ export namespace Prisma {
     displayName?: SortOrder
     preferredLanguage?: SortOrder
     role?: SortOrder
-    notificationsMuted?: SortOrder
+    muteSms?: SortOrder
+    muteEmail?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -8931,7 +8957,8 @@ export namespace Prisma {
     displayName?: SortOrder
     preferredLanguage?: SortOrder
     role?: SortOrder
-    notificationsMuted?: SortOrder
+    muteSms?: SortOrder
+    muteEmail?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -8943,7 +8970,8 @@ export namespace Prisma {
     displayName?: SortOrder
     preferredLanguage?: SortOrder
     role?: SortOrder
-    notificationsMuted?: SortOrder
+    muteSms?: SortOrder
+    muteEmail?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -10468,7 +10496,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     rsvps?: RSVPCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -10483,7 +10512,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -10620,7 +10650,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -10635,7 +10666,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -10774,7 +10806,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -10789,7 +10822,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -10875,7 +10909,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -10890,7 +10925,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -10954,7 +10990,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -10969,7 +11006,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -11055,7 +11093,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -11070,7 +11109,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -11238,7 +11278,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -11253,7 +11294,8 @@ export namespace Prisma {
     displayName?: string | null
     preferredLanguage?: string
     role?: $Enums.Role
-    notificationsMuted?: boolean
+    muteSms?: boolean
+    muteEmail?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -11339,7 +11381,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -11354,7 +11397,8 @@ export namespace Prisma {
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    notificationsMuted?: BoolFieldUpdateOperationsInput | boolean
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput

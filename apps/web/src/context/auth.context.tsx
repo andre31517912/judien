@@ -8,7 +8,7 @@ interface AuthContextValue {
   user: Omit<User, 'passwordHash'> | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (data: { email: string; password: string; phone: string; preferredLanguage: 'en' | 'zh' }) => Promise<void>;
+  signup: (data: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh' }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data.user);
   };
 
-  const signup = async (body: { email: string; password: string; phone: string; preferredLanguage: 'en' | 'zh' }) => {
+  const signup = async (body: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh' }) => {
     const data = await apiFetch<{ user: AuthContextValue['user'] }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(body),

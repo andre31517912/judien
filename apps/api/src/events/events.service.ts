@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateEventDto, UpdateEventDto, EventListQuery } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 import { DateTime } from 'luxon';
 
 @Injectable()

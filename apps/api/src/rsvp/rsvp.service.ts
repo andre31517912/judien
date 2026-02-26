@@ -21,4 +21,30 @@ export class RsvpService {
     await this.prisma.rSVP.deleteMany({ where: { eventId, userId } });
     return { removed: true };
   }
+
+  async guests(eventId: string) {
+    const rsvps = await this.prisma.rSVP.findMany({
+      where: { eventId },
+      include: { user: { select: { email: true, displayName: true } } },
+      orderBy: { updatedAt: 'asc' },
+    });
+
+    const groups: Record<'GOING' | 'MAYBE' | 'NO', { handle: string; displayName: string | null }[]> = {
+      GOING: [],
+      MAYBE: [],
+      NO: [],
+    };
+
+    for (const r of rsvps) {
+      const status = r.status as 'GOING' | 'MAYBE' | 'NO';
+      if (groups[status]) {
+        groups[status].push({
+          handle: r.user.email.slice(0, 3) + '***',
+          displayName: (r.user as any).displayName ?? null,
+        });
+      }
+    }
+
+    return groups;
+  }
 }

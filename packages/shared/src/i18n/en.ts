@@ -17,6 +17,7 @@ const en = {
     email: 'Email',
     password: 'Password',
     phone: 'Phone Number',
+    displayName: 'Display Name (nickname)',
     forgotPassword: 'Forgot password?',
     noAccount: "Don't have an account?",
     hasAccount: 'Already have an account?',
@@ -64,7 +65,8 @@ const en = {
   profile: {
     title: 'Profile',
     language: 'Display Language',
-    notificationsMuted: 'Mute all notifications',
+    muteSms: 'Mute SMS notifications',
+    muteEmail: 'Mute email notifications',
     updateProfile: 'Update Profile',
     updateSuccess: 'Profile updated.',
   },

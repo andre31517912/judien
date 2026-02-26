@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import NavBar from '../../components/NavBar';
+import HtmlLang from '../../components/HtmlLang';
 
 const locales = ['en', 'zh'];
 
@@ -15,6 +15,7 @@ export default async function LocaleLayout({
   if (!locales.includes(params.locale)) notFound();
   return (
     <div className="min-h-screen bg-gray-50">
+      <HtmlLang locale={params.locale} />
       <NavBar locale={params.locale} />
       <main className="max-w-3xl mx-auto px-4 py-6">{children}</main>
     </div>

@@ -13,6 +13,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
     email: '',
     password: '',
     phone: '',
+    displayName: '',
     preferredLanguage: params.locale as 'en' | 'zh',
   });
   const [error, setError] = useState('');
@@ -46,6 +47,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
       <h1 className="text-2xl font-bold mb-6">{zh ? '註冊' : 'Sign Up'}</h1>
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {field(zh ? '顯示名稱（暱稱）' : 'Display Name (nickname)', 'displayName')}
         {field(zh ? '電子郵件' : 'Email', 'email', 'email')}
         {field(zh ? '密碼（至少 8 字元）' : 'Password (min 8 chars)', 'password', 'password')}
         {field(zh ? '電話號碼（含國碼，如 +886912345678）' : 'Phone (e.g. +886912345678)', 'phone', 'tel')}

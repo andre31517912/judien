@@ -11,10 +11,11 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [displayName, setDisplayName] = useState('');
 
   const handleSignup = async () => {
     try {
-      await signup({ email, password, phone, preferredLanguage: 'en' });
+      await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: 'en' });
       router.replace('/(tabs)/events');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Sign-up failed.');
@@ -24,6 +25,8 @@ export default function SignupScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{t('auth.signup')}</Text>
+      <TextInput style={styles.input} placeholder={t('auth.displayName') || 'Display Name (nickname)'} value={displayName}
+        onChangeText={setDisplayName} />
       <TextInput style={styles.input} placeholder={t('auth.email')} value={email}
         onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <TextInput style={styles.input} placeholder={t('auth.password')} value={password}

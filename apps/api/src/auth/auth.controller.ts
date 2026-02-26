@@ -9,7 +9,6 @@ import {
   HttpCode,
   HttpStatus,
   UnauthorizedException,
-  UsePipes,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
@@ -18,7 +17,7 @@ import { AuthService } from './auth.service';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { SignupSchema, type SignupDto } from '@judien/shared';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 
 const COOKIE_OPTS = {
   httpOnly: true,
@@ -40,8 +39,10 @@ export class AuthController {
   // POST /api/auth/signup
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('signup')
-  @UsePipes(new ZodValidationPipe(SignupSchema))
-  async signup(@Body() dto: SignupDto, @Res({ passthrough: true }) res: Response) {
+  async signup(
+    @Body(new ZodValidationPipe(SignupSchema)) dto: SignupDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const user = await this.authService.signup(dto);
     const tokens = this.authService.issueTokens(user);
     res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);

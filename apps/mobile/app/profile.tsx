@@ -10,18 +10,20 @@ export default function ProfileScreen() {
   const { t } = useTranslation();
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [muted, setMuted] = useState(false);
+  const [muteSms, setMuteSms] = useState(false);
+  const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
 
   useEffect(() => {
     if (user) {
-      setMuted(user.notificationsMuted);
+      setMuteSms((user as any).muteSms ?? false);
+      setMuteEmail((user as any).muteEmail ?? false);
       setLang(user.preferredLanguage as 'en' | 'zh');
     }
   }, [user]);
 
   const handleSave = async () => {
-    const body: Record<string, unknown> = { preferredLanguage: lang, notificationsMuted: muted };
+    const body: Record<string, unknown> = { preferredLanguage: lang, muteSms, muteEmail };
     if (phone.trim()) body.phone = phone;
     if (email.trim()) body.email = email;
     try {
@@ -56,8 +58,13 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.muteRow}>
-        <Text style={styles.label}>{t('profile.notificationsMuted')}</Text>
-        <Switch value={muted} onValueChange={setMuted} trackColor={{ true: '#4F46E5' }} />
+        <Text style={styles.label}>{t('profile.muteSms') || 'Mute SMS'}</Text>
+        <Switch value={muteSms} onValueChange={setMuteSms} trackColor={{ true: '#4F46E5' }} />
+      </View>
+
+      <View style={styles.muteRow}>
+        <Text style={styles.label}>{t('profile.muteEmail') || 'Mute Email'}</Text>
+        <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
       </View>
 
       <Text style={styles.label}>{t('auth.phone')} (leave blank to keep)</Text>

@@ -11,7 +11,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [muted, setMuted] = useState(false);
+  const [muteSms, setMuteSms] = useState(false);
+  const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
@@ -21,7 +22,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       setPhone('');
       setEmail('');
       setPassword('');
-      setMuted(user.notificationsMuted);
+      setMuteSms((user as any).muteSms ?? false);
+      setMuteEmail((user as any).muteEmail ?? false);
       setLang(user.preferredLanguage);
     }
   }, [user]);
@@ -31,7 +33,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     setMsg(null);
     const body: Record<string, unknown> = {
       preferredLanguage: lang,
-      notificationsMuted: muted,
+      muteSms,
+      muteEmail,
       displayName: displayName.trim(),
     };
     // Only send phone/email if they have actually changed
@@ -61,7 +64,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
               : 'bg-green-100 text-green-700'
           }`}
         >
-          {user.role}
+          {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
       </div>
 
@@ -80,7 +83,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           <input
             type="text"
             value={displayName}
-            placeholder={zh ? '輸入顯示名稱' : 'Enter a display name'}
+            placeholder={(user as any)?.displayName || (zh ? '輸入顯示名稱' : 'Enter a display name')}
             onChange={(e) => setDisplayName(e.target.value)}
             className="w-full border rounded-md px-3 py-2"
           />
@@ -101,15 +104,18 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         </div>
 
         <div className="flex items-center gap-3">
-          <input
-            type="checkbox"
-            id="muted"
-            checked={muted}
-            onChange={(e) => setMuted(e.target.checked)}
-            className="w-4 h-4"
-          />
-          <label htmlFor="muted" className="text-sm">
-            {zh ? '靜音所有通知' : 'Mute all notifications'}
+          <input type="checkbox" id="muteSms" checked={muteSms}
+            onChange={(e) => setMuteSms(e.target.checked)} className="w-4 h-4" />
+          <label htmlFor="muteSms" className="text-sm">
+            {zh ? '靜音簡訊通知' : 'Mute SMS notifications'}
+          </label>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <input type="checkbox" id="muteEmail" checked={muteEmail}
+            onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
+          <label htmlFor="muteEmail" className="text-sm">
+            {zh ? '靜音電子郵件通知' : 'Mute email notifications'}
           </label>
         </div>
 

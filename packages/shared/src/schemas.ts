@@ -32,6 +32,7 @@ export const SignupSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(128),
   phone: phoneSchema,
+  displayName: z.string().max(100).optional(),
   preferredLanguage: z.enum(['en', 'zh']).default('en'),
 });
 export type SignupDto = z.infer<typeof SignupSchema>;
@@ -77,6 +78,11 @@ export const CreateCommentSchema = z.object({
 });
 export type CreateCommentDto = z.infer<typeof CreateCommentSchema>;
 
+export const UpdateCommentSchema = z.object({
+  body: z.string().min(1).max(2000),
+});
+export type UpdateCommentDto = z.infer<typeof UpdateCommentSchema>;
+
 // ─── Reminder ─────────────────────────────────────────────────────────────────
 
 export const ReminderRuleSchema = z.object({
@@ -110,7 +116,8 @@ export const UpdateProfileSchema = z.object({
   displayName: z.string().max(100).optional(),
   password: z.string().min(8).max(128).optional(),
   preferredLanguage: z.enum(['en', 'zh']).optional(),
-  notificationsMuted: z.boolean().optional(),
+  muteSms: z.boolean().optional(),
+  muteEmail: z.boolean().optional(),
 });
 export type UpdateProfileDto = z.infer<typeof UpdateProfileSchema>;
 

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -13,16 +14,16 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CommentsService } from './comments.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CreateCommentSchema,
+  UpdateCommentSchema,
   CommentListQuerySchema,
   type CreateCommentDto,
+  type UpdateCommentDto,
   type CommentListQuery,
 } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 
 class OptionalJwtGuard extends AuthGuard('jwt') {
   handleRequest<T>(_err: unknown, user: T): T { return user; }
@@ -53,9 +54,19 @@ export class CommentsController {
     return this.commentsService.create(eventId, user, dto);
   }
 
-  // DELETE /api/comments/:id — admin only
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  // PATCH /api/comments/:id — own comment only
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('comments/:id')
+  update(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(UpdateCommentSchema)) dto: UpdateCommentDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.commentsService.update(id, user, dto);
+  }
+
+  // DELETE /api/comments/:id — own comment or admin
+  @UseGuards(AuthGuard('jwt'))
   @Delete('comments/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: User) {

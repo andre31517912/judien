@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiFetch } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
+import ConfirmModal from '../../../../components/ConfirmModal';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
 
 export default function EventDetailPage() {
@@ -16,8 +17,36 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<EventWithCounts | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentBody, setCommentBody] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentBody, setEditCommentBody] = useState('');
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // guest list
+  type GuestEntry = { handle: string; displayName: string | null };
+  type Guests = { GOING: GuestEntry[]; MAYBE: GuestEntry[]; NO: GuestEntry[] };
+  const [guests, setGuests] = useState<Guests | null>(null);
+  const [guestsLoading, setGuestsLoading] = useState(false);
+  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'MAYBE' | 'NO'>('GOING');
+  const [showGuests, setShowGuests] = useState(false);
+
+  const loadGuests = async () => {
+    if (guests) return; // already loaded
+    setGuestsLoading(true);
+    try {
+      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
+      setGuests(data);
+    } finally {
+      setGuestsLoading(false);
+    }
+  };
+
+  // blast state (admin only)
+  const [blastMsg, setBlastMsg] = useState('');
+  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
+  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
+  const [blastResult, setBlastResult] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -34,7 +63,6 @@ export default function EventDetailPage() {
   const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
     if (!user) return;
     if (rsvpStatus === status) {
-      // Already selected — toggle off (remove RSVP)
       await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
       setRsvpStatus(null);
     } else {
@@ -44,9 +72,16 @@ export default function EventDetailPage() {
       });
       setRsvpStatus(status);
     }
-    // Refresh counts
+    // Refresh counts + guest list
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
     setEvent(ev);
+    // Refresh guest list if currently shown
+    if (showGuests) {
+      const data = await apiFetch<{ GOING: { handle: string; displayName: string | null }[]; MAYBE: { handle: string; displayName: string | null }[]; NO: { handle: string; displayName: string | null }[] }>(`/events/${params.id}/rsvp/guests`);
+      setGuests(data);
+    } else {
+      setGuests(null); // invalidate so next open refetches
+    }
   };
 
   const handleComment = async (e: React.FormEvent) => {
@@ -65,10 +100,47 @@ export default function EventDetailPage() {
     setComments((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const handleEditComment = async (id: string) => {
+    if (!editCommentBody.trim()) return;
+    const updated = await apiFetch<Comment>(`/comments/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ body: editCommentBody }),
+    });
+    setComments((prev) => prev.map((c) => c.id === id ? updated : c));
+    setEditingCommentId(null);
+    setEditCommentBody('');
+  };
+
   const handleDeleteEvent = async () => {
-    if (!confirm('Delete this event permanently?')) return;
     await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
     router.push(`/${locale}/events`);
+  };
+
+  // ── blast (admin only) ────────────────────────────────────────────────────────
+  const toggleBlastChannel = (ch: string) =>
+    setBlastChannels((prev) =>
+      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
+    );
+
+  const handleBlast = async () => {
+    if (!blastMsg.trim()) { setBlastResult(zh ? '請輸入訊息。' : 'Please enter a message.'); return; }
+    if (blastChannels.length === 0) { setBlastResult(zh ? '請選擇至少一種發送方式。' : 'Select at least one channel.'); return; }
+    setBlastResult(zh ? '發送中…' : 'Sending…');
+    try {
+      const res = await apiFetch<{ sent: number }>(`/events/${params.id}/blast`, {
+        method: 'POST',
+        body: JSON.stringify({
+          channels: blastChannels,
+          audience: blastAudience,
+          messageEn: blastMsg,
+          messageZh: blastMsg,
+        }),
+      });
+      setBlastResult(zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`);
+      setBlastMsg('');
+    } catch (err: unknown) {
+      setBlastResult((err as Error).message ?? (zh ? '發送失敗。' : 'Failed to send.'));
+    }
   };
 
   if (loading) return <p className="text-gray-500 mt-8">{zh ? '載入中…' : 'Loading…'}</p>;
@@ -103,6 +175,20 @@ export default function EventDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {showDeleteModal && (
+        <ConfirmModal
+          title={zh ? '刪除活動' : 'Delete Event'}
+          message={
+            zh
+              ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
+              : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`
+          }
+          confirmLabel={zh ? '確定刪除' : 'Delete'}
+          cancelLabel={zh ? '取消' : 'Cancel'}
+          onConfirm={handleDeleteEvent}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
       {/* Admin toolbar */}
       {user?.role === 'ADMIN' ? (
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200">
@@ -110,19 +196,19 @@ export default function EventDetailPage() {
             href={`/${locale}/events`}
             className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
           >
-            ← Back
+            ← {zh ? '返回' : 'Back'}
           </a>
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
             className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
           >
-            ✏️ Edit Event
+            ✏️ {zh ? '編輯活動' : 'Edit Event'}
           </a>
           <button
-            onClick={handleDeleteEvent}
+            onClick={() => setShowDeleteModal(true)}
             className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
           >
-            🗑 Delete Event
+            🗑 {zh ? '刪除活動' : 'Delete Event'}
           </button>
         </div>
       ) : (
@@ -155,69 +241,200 @@ export default function EventDetailPage() {
 
       <h1 className="text-3xl font-bold">{title}</h1>
 
-      <div className="text-sm text-gray-600 space-y-1">
+      <div className="text-sm text-gray-700 space-y-2">
         {(event as any).createdByEmail && (
-          <p>🎙 {(event as any).createdByEmail}</p>
+          <div className="flex gap-2">
+            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '主辦人' : 'Host'}</span>
+            <span>{(event as any).createdByEmail}</span>
+          </div>
         )}
-        <p>📅 {startDate} ({event.timezone})</p>
-        {location && <p>📍 {location}</p>}
-        <p>💰 {fee}</p>
+        <div className="flex gap-2">
+          <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '時間' : 'Time'}</span>
+          <span>{startDate} ({event.timezone})</span>
+        </div>
+        {location && (
+          <div className="flex gap-2">
+            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '地點' : 'Location'}</span>
+            <span>{location}</span>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '費用' : 'Price'}</span>
+          <span>{fee}</span>
+        </div>
       </div>
 
       {description && (
-        <p className="text-gray-800 whitespace-pre-wrap">{description}</p>
+        <div>
+          <p className="text-sm font-medium text-gray-400 mb-1">{zh ? '活動說明' : 'Description'}</p>
+          <p className="text-gray-800 whitespace-pre-wrap text-sm">{description}</p>
+        </div>
       )}
 
       {/* RSVP counts */}
-      <div className="flex gap-4 text-sm text-gray-500">
+      <div className="flex items-center gap-4 text-sm text-gray-500">
         <span>✓ {event.rsvpCounts.GOING} {zh ? '參加' : 'Going'}</span>
         <span>? {event.rsvpCounts.MAYBE} {zh ? '也許' : 'Maybe'}</span>
-        <span>✗ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
+        <span>✕ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
       </div>
 
       {/* RSVP buttons (requires login) */}
       {user ? (
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
           {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
+          <button
+            onClick={() => {
+              if (showGuests) {
+                setShowGuests(false);
+              } else {
+                setShowGuests(true);
+                loadGuests();
+              }
+            }}
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-indigo-400 transition"
+          >
+            {zh ? '賓客名單' : 'Guest List'}
+          </button>
         </div>
       ) : (
-        <p className="text-sm text-gray-400">
-          {zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-400">
+            {zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}
+          </p>
+          <button
+            onClick={() => {
+              if (showGuests) {
+                setShowGuests(false);
+              } else {
+                setShowGuests(true);
+                loadGuests();
+              }
+            }}
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-indigo-400 transition"
+          >
+            {zh ? '賓客名單' : 'Guest List'}
+          </button>
+        </div>
+      )}
+
+      {/* Guest list panel */}
+      {showGuests && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* tab header */}
+            <div className="flex border-b border-gray-100">
+              {(['GOING', 'MAYBE', 'NO'] as const).map((s) => {
+                const labels = {
+                  GOING: zh ? '參加' : 'Going',
+                  MAYBE: zh ? '也許' : 'Maybe',
+                  NO: zh ? '不參加' : 'Not Going',
+                };
+                return (
+                  <button
+                    key={s}
+                    onClick={() => setActiveGuestTab(s)}
+                    className={`flex-1 py-2.5 text-xs font-medium transition ${
+                      activeGuestTab === s
+                        ? 'text-indigo-600 border-b-2 border-indigo-600 -mb-px'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  >
+                    {labels[s]} ({event.rsvpCounts[s]})
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* guest rows */}
+            <div className="divide-y divide-gray-50 max-h-52 overflow-y-auto">
+              {guestsLoading ? (
+                <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
+              ) : (guests?.[activeGuestTab] ?? []).length === 0 ? (
+                <p className="text-xs text-gray-400 px-4 py-4 text-center">
+                  {zh ? '目前沒有人。' : 'Nobody yet.'}
+                </p>
+              ) : (
+                (guests?.[activeGuestTab] ?? []).map((g, i) => (
+                  <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                    <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
+                      {(g.displayName ?? g.handle).charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-gray-800">
+                      {g.displayName ?? g.handle}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+      {/* Send Message Blast (admin only) */}
+      {user?.role === 'ADMIN' && (
+        <section className="border border-dashed border-indigo-200 rounded-xl p-5 bg-indigo-50/40">
+          <h2 className="text-lg font-semibold mb-1">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
+          <p className="text-sm text-gray-500 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-gray-700">{zh ? '訊息' : 'Message'}</label>
+              <textarea
+                value={blastMsg}
+                onChange={(e) => setBlastMsg(e.target.value)}
+                rows={3}
+                placeholder={zh ? '您的訊息（中英文相同）…' : 'Your message (used for both English and Chinese)…'}
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">{zh ? '發送方式' : 'Send via'}</p>
+              <div className="flex gap-3">
+                {(['EMAIL', 'SMS'] as const).map((ch) => (
+                  <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
+                    blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
+                    {ch === 'EMAIL' ? '✉️ Email' : '💬 SMS'}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">{zh ? '發送對象' : 'Send to'}</p>
+              <div className="flex gap-3">
+                {([['rsvped', zh ? '已回覆的用戶' : 'RSVPed only'], ['all', zh ? '全部用戶' : 'All users']] as const).map(([val, label]) => (
+                  <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
+                    blastAudience === val ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <input type="radio" name="blastAudience" className="sr-only" checked={blastAudience === val} onChange={() => setBlastAudience(val)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBlast}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+              >
+                {zh ? '立即發送' : 'Send Now'}
+              </button>
+              {blastResult && (
+                <p className={`text-sm ${blastResult.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
+                  {blastResult}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Comments */}
       <section>
         <h2 className="text-lg font-semibold mb-3">{zh ? '留言' : 'Comments'}</h2>
 
-        {comments.length === 0 && (
-          <p className="text-sm text-gray-400">{zh ? '目前沒有留言。' : 'No comments yet.'}</p>
-        )}
-
-        <div className="flex flex-col gap-3 mb-4">
-          {comments.map((c) => (
-            <div key={c.id} className="bg-white rounded-lg p-3 shadow-sm relative">
-              <p className="text-xs text-gray-400 mb-1">{c.userHandle}</p>
-              <p className="text-sm text-gray-800">{c.body}</p>
-              <p className="text-xs text-gray-400 mt-1">
-                {new Date(c.createdAt).toLocaleString()}
-              </p>
-              {user?.role === 'ADMIN' && (
-                <button
-                  onClick={() => handleDeleteComment(c.id)}
-                  className="absolute top-2 right-2 text-xs text-red-400 hover:text-red-600"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-
         {user && (
-          <form onSubmit={handleComment} className="flex gap-2">
+          <form onSubmit={handleComment} className="flex gap-2 mb-4">
             <input
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
@@ -232,6 +449,79 @@ export default function EventDetailPage() {
             </button>
           </form>
         )}
+
+        {comments.length === 0 && (
+          <p className="text-sm text-gray-400">{zh ? '目前沒有留言。' : 'No comments yet.'}</p>
+        )}
+
+        <div className="flex flex-col gap-3">
+          {comments.map((c) => {
+            const isOwn = user?.id === c.userId;
+            const canDelete = isOwn || user?.role === 'ADMIN';
+            const canEdit = isOwn;
+            const isEditing = editingCommentId === c.id;
+            return (
+              <div key={c.id} className="bg-white rounded-lg p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs text-gray-400 mt-0.5">{c.userHandle}</p>
+                  {(canEdit || canDelete) && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {canEdit && !isEditing && (
+                        <button
+                          onClick={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }}
+                          title={zh ? '編輯' : 'Edit'}
+                          className="text-gray-400 hover:text-indigo-500 transition"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6.071-6.071a2.25 2.25 0 013.182 3.182L12 14H9v-3z" />
+                          </svg>
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDeleteComment(c.id)}
+                          title={zh ? '刪除' : 'Delete'}
+                          className="text-gray-400 hover:text-red-500 transition text-xs leading-none"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {isEditing ? (
+                  <div className="mt-2 flex flex-col gap-2">
+                    <textarea
+                      value={editCommentBody}
+                      onChange={(e) => setEditCommentBody(e.target.value)}
+                      rows={2}
+                      className="w-full border rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditComment(c.id)}
+                        className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-md hover:bg-indigo-700"
+                      >
+                        {zh ? '儲存' : 'Save'}
+                      </button>
+                      <button
+                        onClick={() => { setEditingCommentId(null); setEditCommentBody(''); }}
+                        className="text-xs text-gray-500 hover:text-gray-800"
+                      >
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-800 mt-1">{c.body}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-1">
+                  {new Date(c.createdAt).toLocaleString()}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </section>
     </div>
   );

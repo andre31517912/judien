@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import type { SignupDto } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 import type { JwtPayload } from './jwt.strategy';
 
 const SALT_ROUNDS = 12;
@@ -34,7 +34,8 @@ export class AuthService {
       data: {
         email: dto.email,
         passwordHash,
-        phoneE164: dto.phone, // already normalized by Zod schema
+        phoneE164: dto.phone,
+        displayName: dto.displayName?.trim() || null,
         preferredLanguage: dto.preferredLanguage,
         role: 'USER',
       },

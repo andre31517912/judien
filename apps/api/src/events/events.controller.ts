@@ -26,7 +26,7 @@ import {
   type UpdateEventDto,
   type EventListQuery,
 } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { User } from '../__generated__/prisma';
 
 // Optional JWT guard – attaches user if token present, doesn't throw if missing
 class OptionalJwtGuard extends AuthGuard('jwt') {

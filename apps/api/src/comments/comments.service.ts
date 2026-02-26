@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { CreateCommentDto, CommentListQuery } from '@judien/shared';
-import type { User } from '@prisma/client';
+import type { CreateCommentDto, UpdateCommentDto, CommentListQuery } from '@judien/shared';
+import type { User } from '../__generated__/prisma';
 
 @Injectable()
 export class CommentsService {
@@ -50,7 +50,24 @@ export class CommentsService {
     };
   }
 
-  /** Soft-delete; admin only */
+  /** Edit own comment only */
+  async update(id: string, requestor: User, dto: UpdateCommentDto) {
+    const comment = await this.prisma.comment.findUnique({ where: { id } });
+    if (!comment || comment.deletedAt) throw new NotFoundException('Comment not found.');
+    if (comment.userId !== requestor.id) throw new ForbiddenException();
+    const c = await this.prisma.comment.update({ where: { id }, data: { body: dto.body } });
+    return {
+      id: c.id,
+      eventId: c.eventId,
+      userId: c.userId,
+      userHandle: requestor.email.slice(0, 3) + '***',
+      body: c.body,
+      createdAt: c.createdAt,
+      deletedAt: c.deletedAt,
+    };
+  }
+
+  /** Soft-delete own comment or admin deletes any */
   async remove(id: string, requestor: User) {
     const comment = await this.prisma.comment.findUnique({ where: { id } });
     if (!comment) throw new NotFoundException('Comment not found.');
@@ -63,3 +80,5 @@ export class CommentsService {
     });
   }
 }
+
+

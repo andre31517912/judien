@@ -19,6 +19,7 @@ const zh: I18nDict = {
     email: '電子郵件',
     password: '密碼',
     phone: '電話號碼',
+    displayName: '顯示名稱（暱稱）',
     forgotPassword: '忘記密碼？',
     noAccount: '還沒有帳號？',
     hasAccount: '已有帳號？',
@@ -66,7 +67,8 @@ const zh: I18nDict = {
   profile: {
     title: '個人資料',
     language: '顯示語言',
-    notificationsMuted: '靜音所有通知',
+    muteSms: '靜音簡訊通知',
+    muteEmail: '靜音電子郵件通知',
     updateProfile: '更新資料',
     updateSuccess: '資料已更新。',
   },
