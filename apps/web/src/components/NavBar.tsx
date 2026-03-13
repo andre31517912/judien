@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/auth.context';
 
 interface NavBarProps { locale: string }
@@ -9,10 +9,6 @@ interface NavBarProps { locale: string }
 export default function NavBar({ locale }: NavBarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
-  const otherLocale = locale === 'en' ? 'zh' : 'en';
-  // Swap just the locale prefix so the user stays on the same page
-  const localeSwitchHref = pathname.replace(`/${locale}`, `/${otherLocale}`);
 
   const handleLogout = async () => {
     await logout();
@@ -27,12 +23,6 @@ export default function NavBar({ locale }: NavBarProps) {
         {zh ? '聚點' : 'Judien'}
       </Link>
       <div className="flex items-center gap-4 text-sm">
-        <Link
-          href={localeSwitchHref}
-          className="text-gray-500 hover:text-gray-800"
-        >
-          {otherLocale === 'zh' ? '中文' : 'EN'}
-        </Link>
         {user ? (
           <>
             <Link href={`/${locale}/profile`} className="text-gray-600 hover:text-gray-900">

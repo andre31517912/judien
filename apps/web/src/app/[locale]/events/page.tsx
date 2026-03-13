@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { apiFetch } from '../../../lib/api';
+import { apiFetch, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import type { EventWithCounts, PaginatedResponse } from '@judien/shared';
 
@@ -111,10 +111,10 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
         href={`/${locale}/events/${event.id}`}
         className="flex gap-4 p-4"
       >
-        {event.coverImageUrl && (
+        {resolveImageUrl(event.coverImageUrl) && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={event.coverImageUrl}
+            src={resolveImageUrl(event.coverImageUrl)!}
             alt={title}
             className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
           />

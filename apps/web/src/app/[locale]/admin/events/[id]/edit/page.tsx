@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch, apiUpload } from '@/lib/api';
+import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { Event, ReminderRule } from '@judien/shared';
 
@@ -235,7 +235,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <div className="relative mb-2 group">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={coverPreview ?? form.coverImageUrl ?? ''}
+                  src={coverPreview ?? resolveImageUrl(form.coverImageUrl) ?? ''}
                   alt="cover"
                   className="w-full h-40 object-cover rounded-lg"
                 />

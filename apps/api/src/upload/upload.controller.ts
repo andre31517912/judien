@@ -4,7 +4,6 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
-  Req,
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -39,9 +38,8 @@ export class UploadController {
       },
     }),
   )
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Req() req: any) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('No file provided');
-    const host = `${req.protocol}://${req.get('host')}`;
-    return { url: `${host}/uploads/${file.filename}` };
+    return { url: `/uploads/${file.filename}` };
   }
 }

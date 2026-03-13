@@ -1,5 +1,16 @@
 /** Centralised API fetch with cookie support */
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+const API_ORIGIN = API_BASE.replace(/\/api$/, '');
+
+/**
+ * Resolves a coverImageUrl (relative path or legacy absolute URL) to a full URL
+ * using the same host as the configured API, so it works on any device/network.
+ */
+export function resolveImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const path = url.startsWith('http') ? new URL(url).pathname : url;
+  return `${API_ORIGIN}${path}`;
+}
 
 export async function apiFetch<T>(
   path: string,

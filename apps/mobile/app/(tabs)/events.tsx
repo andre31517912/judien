@@ -3,14 +3,17 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { apiFetch } from '../../lib/api';
+import { apiFetch, resolveImageUrl } from '../../lib/api';
+import { useAuth } from '../../context/auth.context';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, PaginatedResponse } from '@judien/shared';
 
 export default function EventsTab() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const { user } = useAuth();
   const zh = i18n.language === 'zh';
+  const isAdmin = user?.role === 'ADMIN';
   const [scope, setScope] = useState<'future' | 'past'>('future');
   const [events, setEvents] = useState<EventWithCounts[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,6 +46,11 @@ export default function EventsTab() {
             {t('events.past')}
           </Text>
         </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/admin/events/new')}>
+            <Text style={styles.createBtnText}>＋ {t('events.createEvent')}</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {loading ? (
@@ -62,8 +70,8 @@ export default function EventsTab() {
                 style={styles.card}
                 onPress={() => router.push(`/events/${item.id}`)}
               >
-                {item.coverImageUrl && (
-                  <Image source={{ uri: item.coverImageUrl }} style={styles.thumbnail} />
+                {resolveImageUrl(item.coverImageUrl) && (
+                  <Image source={{ uri: resolveImageUrl(item.coverImageUrl)! }} style={styles.thumbnail} />
                 )}
                 <View style={styles.cardBody}>
                   <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
@@ -97,4 +105,6 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 },
   cardMeta: { fontSize: 13, color: '#6B7280' },
   rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
+  createBtn: { marginLeft: 'auto', paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#4F46E5', borderRadius: 8, justifyContent: 'center', marginRight: 8 },
+  createBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 });

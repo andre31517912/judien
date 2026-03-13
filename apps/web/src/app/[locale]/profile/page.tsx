@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, refresh } = useAuth();
+  const router = useRouter();
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -45,7 +47,11 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
       await refresh();
       setPassword('');
-      setMsg({ text: zh ? '資料已更新。' : 'Profile updated.', ok: true });
+      setMsg({ text: lang === 'zh' ? '資料已更新。' : 'Profile updated.', ok: true });
+      // Redirect to new locale path if language changed
+      if (lang !== params.locale) {
+        router.push(`/${lang}/profile`);
+      }
     } catch (err: any) {
       setMsg({ text: err.message ?? 'Error updating profile.', ok: false });
     }

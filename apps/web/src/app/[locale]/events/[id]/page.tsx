@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { apiFetch } from '../../../../lib/api';
+import { apiFetch, resolveImageUrl } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import ConfirmModal from '../../../../components/ConfirmModal';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
@@ -220,10 +220,10 @@ export default function EventDetailPage() {
         </a>
       )}
 
-      {event.coverImageUrl ? (
+      {resolveImageUrl(event.coverImageUrl) ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={event.coverImageUrl}
+          src={resolveImageUrl(event.coverImageUrl)!}
           alt={title}
           className="w-full h-60 object-cover rounded-xl"
         />
