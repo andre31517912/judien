@@ -63,3 +63,22 @@ async function tryRefresh(): Promise<boolean> {
     return false;
   }
 }
+
+export async function apiUpload(imageUri: string): Promise<{ url: string }> {
+  const token = await SecureStore.getItemAsync('access_token');
+  const filename = imageUri.split('/').pop() ?? 'photo.jpg';
+  const match = /\.(\w+)$/.exec(filename);
+  const type = match ? `image/${match[1]}` : 'image/jpeg';
+  const formData = new FormData();
+  formData.append('file', { uri: imageUri, name: filename, type } as any);
+  const res = await fetch(`${API_BASE}/upload`, {
+    method: 'POST',
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(err?.message ?? 'Upload failed');
+  }
+  return res.json();
+}

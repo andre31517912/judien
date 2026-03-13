@@ -50,6 +50,19 @@ export interface EventWithCounts extends Event {
   myRsvp: RSVPStatus | null; // populated when authenticated
 }
 
+// ─── News ────────────────────────────────────────────────────────────────────
+
+export interface News {
+  id: string;
+  title_en: string;
+  title_zh: string;
+  body_en: string;
+  body_zh: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 
 export interface RSVP {

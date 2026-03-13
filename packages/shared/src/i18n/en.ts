@@ -86,6 +86,18 @@ const en = {
     audienceAll: 'All registered users',
     reminderSaved: 'Reminders saved.',
   },
+  home: {
+    title: 'Home',
+    noNews: "No news yet — you're all caught up!",
+    createPost: 'Post',
+    deletePost: 'Delete Post',
+    deleteConfirm: 'Delete this post? This cannot be undone.',
+    postCreated: 'Posted.',
+    titleEn: 'Title (English)',
+    titleZh: 'Title (Chinese)',
+    bodyEn: 'Body (English)',
+    bodyZh: 'Body (Chinese)',
+  },
   messages: {
     reminderSubject: '{{title}} — reminder',
     reminderBody: 'Reminder: {{title}} starts on {{date}} at {{time}} ({{timezone}}).',

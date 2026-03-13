@@ -6,10 +6,12 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../lib/i18n';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, refresh } = useAuth();
   const { t } = useTranslation();
+  const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [muteSms, setMuteSms] = useState(false);
   const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
@@ -25,11 +27,19 @@ export default function ProfileScreen() {
   }, [user]);
 
   const handleSave = async () => {
-    const body: Record<string, unknown> = { preferredLanguage: lang, muteSms, muteEmail };
-    if (phone.trim()) body.phone = phone;
-    if (email.trim()) body.email = email;
+    const body: Record<string, unknown> = {
+      preferredLanguage: lang,
+      muteSms,
+      muteEmail,
+    };
+    if (displayName.trim()) body.displayName = displayName.trim();
+    if (phone.trim()) body.phone = phone.trim();
+    if (email.trim()) body.email = email.trim();
+    if (password.trim()) body.password = password.trim();
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
+      await refresh();
+      setPassword('');
       Alert.alert(t('common.appName'), t('profile.updateSuccess'));
     } catch (err: any) {
       Alert.alert('Error', err.message);
@@ -44,7 +54,24 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{t('profile.title')}</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>{t('profile.title')}</Text>
+        <View style={[styles.roleBadge, user.role === 'ADMIN' ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
+          <Text style={[styles.roleBadgeText, user.role === 'ADMIN' ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser]}>
+            {user.role === 'ADMIN' ? (lang === 'zh' ? '管理員' : 'Admin') : (lang === 'zh' ? '用戶' : 'User')}
+          </Text>
+        </View>
+      </View>
+
+      {/* Current info card removed — values shown as placeholders below */}
+
+      <Text style={styles.label}>{t('auth.displayName')}</Text>
+      <TextInput
+        style={styles.input}
+        value={displayName}
+        onChangeText={setDisplayName}
+        placeholder={(user as any).displayName || (lang === 'zh' ? '輸入顯示名稱' : 'Enter display name')}
+      />
 
       <Text style={styles.label}>{t('profile.language')}</Text>
       <View style={styles.langRow}>
@@ -59,20 +86,23 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.muteRow}>
-        <Text style={styles.label}>{t('profile.muteSms') || 'Mute SMS'}</Text>
+        <Text style={styles.label}>{t('profile.muteSms')}</Text>
         <Switch value={muteSms} onValueChange={setMuteSms} trackColor={{ true: '#4F46E5' }} />
       </View>
 
       <View style={styles.muteRow}>
-        <Text style={styles.label}>{t('profile.muteEmail') || 'Mute Email'}</Text>
+        <Text style={styles.label}>{t('profile.muteEmail')}</Text>
         <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
       </View>
 
-      <Text style={styles.label}>{t('auth.phone')} (leave blank to keep)</Text>
-      <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder="+886912345678" keyboardType="phone-pad" />
+      <Text style={styles.label}>{t('auth.phone')}</Text>
+      <TextInput style={styles.input} value={phone} onChangeText={setPhone} placeholder={(user as any).phone || '+886912345678'} keyboardType="phone-pad" />
 
-      <Text style={styles.label}>{t('auth.email')} (leave blank to keep)</Text>
-      <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder="new@email.com" keyboardType="email-address" autoCapitalize="none" />
+      <Text style={styles.label}>{t('auth.email')}</Text>
+      <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder={(user as any).email || 'email@example.com'} keyboardType="email-address" autoCapitalize="none" />
+
+      <Text style={styles.label}>{t('auth.password')}</Text>
+      <TextInput style={styles.input} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
 
       <TouchableOpacity style={styles.btn} onPress={handleSave}>
         <Text style={styles.btnText}>{t('profile.updateProfile')}</Text>
@@ -88,7 +118,14 @@ export default function ProfileScreen() {
 const INDIGO = '#4F46E5';
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: '#fff', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, color: '#111' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#111' },
+  roleBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  roleBadgeAdmin: { backgroundColor: '#EEF2FF' },
+  roleBadgeUser: { backgroundColor: '#DCFCE7' },
+  roleBadgeText: { fontSize: 12, fontWeight: '600' },
+  roleBadgeTextAdmin: { color: '#4338CA' },
+  roleBadgeTextUser: { color: '#16A34A' },
   label: { fontSize: 14, fontWeight: '500', color: '#374151', marginBottom: 6, marginTop: 14 },
   langRow: { flexDirection: 'row', gap: 10 },
   langBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10 },

@@ -88,6 +88,18 @@ const zh: I18nDict = {
     audienceAll: '所有已註冊用戶',
     reminderSaved: '提醒設定已儲存。',
   },
+  home: {
+    title: '主頁',
+    noNews: '目前沒有公告，一切都是最新的！',
+    createPost: '發布',
+    deletePost: '刪除公告',
+    deleteConfirm: '確定要刪除此公告嗎？此操作無法復原。',
+    postCreated: '公告已發布。',
+    titleEn: '標題（英文）',
+    titleZh: '標題（中文）',
+    bodyEn: '內容（英文）',
+    bodyZh: '內容（中文）',
+  },
   messages: {
     reminderSubject: '{{title}} — 活動提醒',
     reminderBody: '提醒：{{title}} 將於 {{date}} {{time}} 開始（{{timezone}}）。',

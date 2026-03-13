@@ -191,6 +191,17 @@ exports.Prisma.MessageLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.NewsScalarFieldEnum = {
+  id: 'id',
+  title_en: 'title_en',
+  title_zh: 'title_zh',
+  body_en: 'body_en',
+  body_zh: 'body_zh',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -243,7 +254,8 @@ exports.Prisma.ModelName = {
   RSVP: 'RSVP',
   Comment: 'Comment',
   ReminderRule: 'ReminderRule',
-  MessageLog: 'MessageLog'
+  MessageLog: 'MessageLog',
+  News: 'News'
 };
 
 /**

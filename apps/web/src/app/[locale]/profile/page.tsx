@@ -99,14 +99,22 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           <label className="block text-sm font-medium mb-1">
             {zh ? '顯示語言' : 'Display Language'}
           </label>
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as 'en' | 'zh')}
-            className="border rounded-md px-3 py-2 w-full"
-          >
-            <option value="en">English</option>
-            <option value="zh">中文</option>
-          </select>
+          <div className="flex gap-2">
+            {(['en', 'zh'] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={`px-5 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  lang === l
+                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                    : 'border-gray-300 text-gray-600 hover:border-indigo-400'
+                }`}
+              >
+                {l === 'en' ? 'English' : '中文'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

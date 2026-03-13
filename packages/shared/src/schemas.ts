@@ -108,6 +108,19 @@ export const BlastSchema = z.object({
 });
 export type BlastDto = z.infer<typeof BlastSchema>;
 
+// ─── News ────────────────────────────────────────────────────────────────────
+
+export const CreateNewsSchema = z.object({
+  title_en: z.string().max(300).default(''),
+  title_zh: z.string().max(300).default(''),
+  body_en: z.string().max(10000).default(''),
+  body_zh: z.string().max(10000).default(''),
+});
+export type CreateNewsDto = z.infer<typeof CreateNewsSchema>;
+
+export const UpdateNewsSchema = CreateNewsSchema.partial();
+export type UpdateNewsDto = z.infer<typeof UpdateNewsSchema>;
+
 // ─── Profile update ───────────────────────────────────────────────────────────
 
 export const UpdateProfileSchema = z.object({

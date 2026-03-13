@@ -11,6 +11,7 @@ import { BlastModule } from './blast/blast.module';
 import { MessagingModule } from './messaging/messaging.module';
 import { QueueModule } from './queue/queue.module';
 import { UploadModule } from './upload/upload.module';
+import { NewsModule } from './news/news.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UploadModule } from './upload/upload.module';
     RemindersModule,
     BlastModule,
     UploadModule,
+    NewsModule,
   ],
 })
 export class AppModule {}
