@@ -6,14 +6,29 @@
     "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "scheme": "judien",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "web": { "bundler": "metro" },
     "plugins": ["expo-router", "expo-secure-store"],
     "newArchEnabled": false,
     "android": {
-      "package": "com.judien.app"
+      "package": "com.judien.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "notification": {
+        "icon": "./assets/notification-icon.png",
+        "color": "#4F46E5"
+      }
     },
     "ios": {
-      "bundleIdentifier": "com.judien.app"
+      "bundleIdentifier": "com.judien.app",
+      "icon": "./assets/icon.png"
     },
     "extra": {
       "apiUrl": "http://localhost:4000/api"

@@ -61,7 +61,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
   return (
     <div className="max-w-md mx-auto mt-8">
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold">{zh ? '個人資料' : 'Profile'}</h1>
         <span
           className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -72,6 +73,14 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         >
           {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
+      </div>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700 font-medium"
+        >
+          ‹ {zh ? '返回' : 'Back'}
+        </button>
       </div>
 
       {msg && (
