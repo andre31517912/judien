@@ -53,6 +53,7 @@ model User {
   rsvps       RSVP[]
   comments    Comment[]
   messageLogs MessageLog[]
+  news        News[]
 
   @@index([email])
   @@index([role])
@@ -150,4 +151,18 @@ model MessageLog {
   @@index([eventId])
   @@index([userId])
   @@index([status])
+}
+
+model News {
+  id          String   @id @default(cuid())
+  title_en    String   @default("")
+  title_zh    String   @default("")
+  body_en     String   @default("")
+  body_zh     String   @default("")
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
 }

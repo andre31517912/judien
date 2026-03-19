@@ -1,7 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "@judien/shared": ["../../packages/shared/dist/index"],
+      "@prisma/client": ["./src/__generated__/prisma"]
+    }
   },
   "exclude": ["node_modules", "dist", "**/*.spec.ts"]
 }
