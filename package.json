@@ -24,6 +24,7 @@
     }
   },
   "devDependencies": {
+    "@types/react": "^18.3.3",
     "kill-port": "^2.0.1",
     "next": "^14.2.4",
     "typescript": "^5.4.5"
