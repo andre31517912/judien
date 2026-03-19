@@ -17,6 +17,12 @@
     "push": "git add . && git commit -m \"update\" && git push",
     "save": "git add . && git commit -m"
   },
+  "pnpm": {
+    "overrides": {
+      "@judien/web>@types/react": "^18.3.3",
+      "@judien/web>react": "^18.3.1"
+    }
+  },
   "devDependencies": {
     "kill-port": "^2.0.1",
     "next": "^14.2.4",
