@@ -11,6 +11,9 @@ importers:
       kill-port:
         specifier: ^2.0.1
         version: 2.0.1
+      next:
+        specifier: ^14.2.4
+        version: 14.2.35(react-dom@18.3.1(react@19.1.0))(react@19.1.0)
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
@@ -10706,6 +10709,31 @@ snapshots:
       - '@babel/core'
       - babel-plugin-macros
 
+  next@14.2.35(react-dom@18.3.1(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@next/env': 14.2.35
+      '@swc/helpers': 0.5.5
+      busboy: 1.6.0
+      caniuse-lite: 1.0.30001772
+      graceful-fs: 4.2.11
+      postcss: 8.4.31
+      react: 19.1.0
+      react-dom: 18.3.1(react@19.1.0)
+      styled-jsx: 5.1.1(react@19.1.0)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 14.2.33
+      '@next/swc-darwin-x64': 14.2.33
+      '@next/swc-linux-arm64-gnu': 14.2.33
+      '@next/swc-linux-arm64-musl': 14.2.33
+      '@next/swc-linux-x64-gnu': 14.2.33
+      '@next/swc-linux-x64-musl': 14.2.33
+      '@next/swc-win32-arm64-msvc': 14.2.33
+      '@next/swc-win32-ia32-msvc': 14.2.33
+      '@next/swc-win32-x64-msvc': 14.2.33
+    transitivePeerDependencies:
+      - '@babel/core'
+      - babel-plugin-macros
+
   node-abort-controller@3.1.1: {}
 
   node-emoji@1.11.0:
@@ -11734,6 +11762,11 @@ snapshots:
     dependencies:
       client-only: 0.0.1
       react: 18.3.1
+
+  styled-jsx@5.1.1(react@19.1.0):
+    dependencies:
+      client-only: 0.0.1
+      react: 19.1.0
 
   sucrase@3.35.1:
     dependencies:
