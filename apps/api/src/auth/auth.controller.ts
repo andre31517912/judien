@@ -19,10 +19,14 @@ import { SignupSchema, type SignupDto } from '@judien/shared';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { User } from '../__generated__/prisma';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  secure: isProd,
+  // SameSite=None is required for cross-site cookies (web on Vercel, API on Render)
+  // SameSite=Lax is fine for local dev (same-site)
+  sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 30 * 24 * 60 * 60 * 1000, // 30d
   path: '/',
 };
