@@ -1,6 +1,51 @@
-/** Centralised API fetch with cookie support */
+/** Centralised API fetch with cookie + Bearer token support */
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 const API_ORIGIN = API_BASE.replace(/\/api$/, '');
+
+// ---------------------------------------------------------------------------
+// In-memory token cache (synced with localStorage for cross-navigation persist)
+// This is the fallback for mobile/Safari/Firefox that block cross-origin cookies.
+// All localStorage calls are wrapped in try/catch — Safari private mode throws
+// QuotaExceededError on setItem, and some browsers restrict storage entirely.
+// ---------------------------------------------------------------------------
+let _accessToken: string | null = null;
+let _refreshToken: string | null = null;
+
+function lsGet(key: string): string | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+  } catch {
+    return null;
+  }
+}
+
+function lsSet(key: string, value: string): void {
+  try {
+    if (typeof window !== 'undefined') window.localStorage.setItem(key, value);
+  } catch { /* storage restricted (Safari private, IE, quota exceeded) — silently ignore */ }
+}
+
+function lsRemove(key: string): void {
+  try {
+    if (typeof window !== 'undefined') window.localStorage.removeItem(key);
+  } catch { /* ignore */ }
+}
+
+_accessToken = lsGet('access_token');
+_refreshToken = lsGet('refresh_token');
+
+export function setTokens(access: string | null, refresh?: string | null) {
+  _accessToken = access;
+  access ? lsSet('access_token', access) : lsRemove('access_token');
+  if (refresh !== undefined) {
+    _refreshToken = refresh;
+    refresh ? lsSet('refresh_token', refresh) : lsRemove('refresh_token');
+  }
+}
+
+export function clearTokens() {
+  setTokens(null, null);
+}
 
 /**
  * Resolves a coverImageUrl (relative path or legacy absolute URL) to a full URL
@@ -12,18 +57,64 @@ export function resolveImageUrl(url: string | null | undefined): string | null {
   return `${API_ORIGIN}${path}`;
 }
 
+function buildHeaders(extra?: HeadersInit, token?: string | null): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(extra as Record<string, string> ?? {}),
+  };
+  const t = token !== undefined ? token : _accessToken;
+  if (t) headers['Authorization'] = `Bearer ${t}`;
+  return headers;
+}
+
+// Deduplicate concurrent refresh calls
+let _refreshPromise: Promise<string | null> | null = null;
+
+async function tryRefresh(): Promise<string | null> {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (_refreshToken) headers['X-Refresh-Token'] = _refreshToken;
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+      });
+      if (!res.ok) { setTokens(null); return null; }
+      const data: { accessToken: string } = await res.json();
+      if (data.accessToken) { setTokens(data.accessToken); return data.accessToken; }
+      return null;
+    } catch {
+      return null;
+    } finally {
+      _refreshPromise = null;
+    }
+  })();
+  return _refreshPromise;
+}
+
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  let res = await fetch(`${API_BASE}${path}`, {
     ...options,
     credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
-    },
+    headers: buildHeaders(options.headers),
   });
+
+  // Auto-refresh on 401 (skip auth endpoints to avoid loops)
+  if (res.status === 401 && !path.startsWith('/auth/')) {
+    const newToken = await tryRefresh();
+    if (newToken) {
+      res = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers: buildHeaders(options.headers, newToken),
+      });
+    }
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
@@ -38,10 +129,13 @@ export async function apiFetch<T>(
 export async function apiUpload(file: File): Promise<{ url: string }> {
   const form = new FormData();
   form.append('file', file);
+  const headers: Record<string, string> = {};
+  if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
   const res = await fetch(`${API_BASE}/upload`, {
     method: 'POST',
     credentials: 'include',
     body: form,
+    headers,
     // Do NOT set Content-Type — browser sets it with the multipart boundary
   });
   if (!res.ok) {

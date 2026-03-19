@@ -51,7 +51,7 @@ export class AuthController {
     const tokens = this.authService.issueTokens(user);
     res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
     res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
-    return { user: safeUser(user), accessToken: tokens.accessToken };
+    return { user: safeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
   }
 
   // POST /api/auth/login
@@ -64,7 +64,7 @@ export class AuthController {
     const tokens = this.authService.issueTokens(user);
     res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
     res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
-    return { user: safeUser(user), accessToken: tokens.accessToken };
+    return { user: safeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
   }
 
   // POST /api/auth/refresh

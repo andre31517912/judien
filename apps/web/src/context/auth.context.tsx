@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { apiFetch } from '../lib/api';
+import { apiFetch, setTokens, clearTokens } from '../lib/api';
 import type { User } from '@judien/shared';
 
 interface AuthContextValue {
@@ -33,23 +33,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { refresh(); }, [refresh]);
 
   const login = async (email: string, password: string) => {
-    const data = await apiFetch<{ user: AuthContextValue['user'] }>('/auth/login', {
+    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
+    setTokens(data.accessToken, data.refreshToken ?? null);
     setUser(data.user);
   };
 
   const signup = async (body: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh' }) => {
-    const data = await apiFetch<{ user: AuthContextValue['user'] }>('/auth/signup', {
+    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(body),
     });
+    setTokens(data.accessToken, data.refreshToken ?? null);
     setUser(data.user);
   };
 
   const logout = async () => {
     await apiFetch('/auth/logout', { method: 'POST' });
+    clearTokens();
     setUser(null);
   };
 
