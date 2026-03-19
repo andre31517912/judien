@@ -16,7 +16,8 @@ services:
       pnpm --filter @judien/shared build &&
       cd apps/api &&
       npx prisma generate &&
-      pnpm build
+      pnpm build &&
+      cp -r src/__generated__ dist/
     startCommand: cd apps/api && npx prisma migrate deploy && node dist/main.js
     healthCheckPath: /api/health
     envVars:
@@ -48,7 +49,8 @@ services:
       pnpm --filter @judien/shared build &&
       cd apps/api &&
       npx prisma generate &&
-      pnpm build
+      pnpm build &&
+      cp -r src/__generated__ dist/
     startCommand: cd apps/api && node dist/workers/reminder.worker.js
     envVars:
       - key: NODE_ENV
