@@ -80,6 +80,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.7
+      express:
+        specifier: ^4.19.2
+        version: 4.22.1
       helmet:
         specifier: ^7.1.0
         version: 7.2.0
