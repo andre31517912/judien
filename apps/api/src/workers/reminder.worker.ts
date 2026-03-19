@@ -110,18 +110,19 @@ async function processReminder(job: Job<ReminderJobData>) {
   console.log(`[worker] Reminder job=${job.id} complete. Notified ${users.length} users.`);
 }
 
-const worker = new Worker<ReminderJobData>(
-  REMINDER_QUEUE_NAME,
-  processReminder,
-  {
-    connection: {
+const redisConnection: any = process.env.REDIS_URL
+  ? process.env.REDIS_URL
+  : {
       host: process.env.REDIS_HOST ?? 'localhost',
       port: Number(process.env.REDIS_PORT ?? 6379),
       password: process.env.REDIS_PASSWORD ?? undefined,
       maxRetriesPerRequest: null,
-    },
-    concurrency: 5,
-  },
+    };
+
+const worker = new Worker<ReminderJobData>(
+  REMINDER_QUEUE_NAME,
+  processReminder,
+  { connection: redisConnection, concurrency: 5 },
 );
 
 worker.on('completed', (job) =>

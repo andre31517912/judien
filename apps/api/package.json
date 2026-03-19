@@ -6,6 +6,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
+    "start:prod": "npx prisma migrate deploy && node dist/main.js",
     "worker": "ts-node-dev --respawn --transpile-only src/workers/reminder.worker.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

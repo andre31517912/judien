@@ -12,6 +12,7 @@ import { MessagingModule } from './messaging/messaging.module';
 import { QueueModule } from './queue/queue.module';
 import { UploadModule } from './upload/upload.module';
 import { NewsModule } from './news/news.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -35,5 +36,6 @@ import { NewsModule } from './news/news.module';
     UploadModule,
     NewsModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}

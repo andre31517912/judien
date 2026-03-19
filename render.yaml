@@ -1,0 +1,63 @@
+databases:
+  - name: judien-db
+    databaseName: judien
+    user: judien
+    plan: free
+
+services:
+  - type: web
+    name: judien-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: >
+      npm install -g pnpm &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @judien/shared build &&
+      cd apps/api &&
+      npx prisma generate &&
+      pnpm build
+    startCommand: cd apps/api && npx prisma migrate deploy && node dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: judien-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: WEB_ORIGIN
+        sync: false   # Set manually in Render dashboard after Vercel deploy
+      - key: MOCK_MODE
+        value: "true"   # Change to false when you add real SMS/email keys
+      - key: REDIS_URL
+        sync: false   # Set manually in Render dashboard to your Upstash Redis URL
+
+  - type: worker
+    name: judien-worker
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: >
+      npm install -g pnpm &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @judien/shared build &&
+      cd apps/api &&
+      npx prisma generate &&
+      pnpm build
+    startCommand: cd apps/api && node dist/workers/reminder.worker.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: judien-db
+          property: connectionString
+      - key: REDIS_URL
+        sync: false   # Set manually in Render dashboard to your Upstash Redis URL
+      - key: MOCK_MODE
+        value: "true"   # Change to false when you add real SMS/email keys

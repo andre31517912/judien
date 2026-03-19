@@ -6,19 +6,23 @@ export const REDIS_CONNECTION = 'REDIS_CONNECTION';
 export const REMINDER_QUEUE = 'REMINDER_QUEUE';
 export const REMINDER_QUEUE_NAME = 'reminders';
 
-const redisOptions = {
-  host: process.env.REDIS_HOST ?? 'localhost',
-  port: Number(process.env.REDIS_PORT ?? 6379),
-  password: process.env.REDIS_PASSWORD ?? undefined,
-  maxRetriesPerRequest: null, // required for BullMQ
-};
+// Support REDIS_URL (Upstash rediss://, Render, Railway) or individual host/port vars.
+// Pass the URL string directly so ioredis handles rediss:// TLS natively.
+const rawRedisOptions: any = process.env.REDIS_URL
+  ? process.env.REDIS_URL
+  : {
+      host: process.env.REDIS_HOST ?? 'localhost',
+      port: Number(process.env.REDIS_PORT ?? 6379),
+      password: process.env.REDIS_PASSWORD ?? undefined,
+      maxRetriesPerRequest: null as null,
+    };
 
 const redisProvider = {
   provide: REDIS_CONNECTION,
-  useValue: new IORedis(redisOptions),
+  useValue: new IORedis(rawRedisOptions as any),
 };
 
-const queueOptions: QueueOptions = { connection: redisOptions };
+const queueOptions: QueueOptions = { connection: rawRedisOptions as any };
 
 const reminderQueueProvider = {
   provide: REMINDER_QUEUE,

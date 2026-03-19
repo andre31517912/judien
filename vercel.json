@@ -1,0 +1,6 @@
+{
+  "installCommand": "npm install -g pnpm && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @judien/shared build && pnpm --filter @judien/web build",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs"
+}
