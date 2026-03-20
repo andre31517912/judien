@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, refresh } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const backHref = searchParams.get('from') ?? `/${params.locale}/events`;
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -76,7 +78,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       </div>
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={() => router.push(backHref)}
           className="bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700 font-medium"
         >
           ‹ {zh ? '返回' : 'Back'}

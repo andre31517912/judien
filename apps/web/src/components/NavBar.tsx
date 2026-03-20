@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../context/auth.context';
 
 interface NavBarProps { locale: string }
@@ -9,6 +9,7 @@ interface NavBarProps { locale: string }
 export default function NavBar({ locale }: NavBarProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await logout();
@@ -25,7 +26,7 @@ export default function NavBar({ locale }: NavBarProps) {
       <div className="flex items-center gap-4 text-sm">
         {user ? (
           <>
-            <Link href={`/${locale}/profile`} className="text-gray-600 hover:text-gray-900">
+            <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 hover:text-gray-900">
               {(user as any).displayName || user.email.split('@')[0]}
             </Link>
             <button onClick={handleLogout} className="text-red-500 hover:text-red-700">
