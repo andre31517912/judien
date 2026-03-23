@@ -57,7 +57,7 @@ export default function EventDetailPage() {
       setRsvpStatus(ev.myRsvp);
       setComments(comms.data);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, [params.id]);
 
   const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
@@ -136,8 +136,10 @@ export default function EventDetailPage() {
           messageZh: blastMsg,
         }),
       });
-      setBlastResult(zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`);
+      const msg = zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`;
+      setBlastResult(msg);
       setBlastMsg('');
+      setTimeout(() => setBlastResult(''), 4000);
     } catch (err: unknown) {
       setBlastResult((err as Error).message ?? (zh ? '發送失敗。' : 'Failed to send.'));
     }
@@ -280,7 +282,7 @@ export default function EventDetailPage() {
 
       {/* RSVP buttons (requires login) */}
       {user ? (
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
           {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}

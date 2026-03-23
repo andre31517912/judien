@@ -17,15 +17,19 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
     preferredLanguage: params.locale as 'en' | 'zh',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       await signup(form);
       router.push(`/${params.locale}/events`);
     } catch (err: any) {
       setError(err.message ?? 'Sign-up failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,9 +57,10 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
         {field(zh ? '電話號碼（含國碼，如 +886912345678）' : 'Phone (e.g. +886912345678)', 'phone', 'tel')}
         <button
           type="submit"
-          className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium"
+          disabled={loading}
+          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
-          {zh ? '建立帳號' : 'Create Account'}
+          {loading ? '…' : (zh ? '建立帳號' : 'Create Account')}
         </button>
       </form>
       <p className="mt-4 text-sm text-gray-600">

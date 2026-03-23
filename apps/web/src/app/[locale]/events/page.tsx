@@ -236,7 +236,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '描述' : 'Description'}</label>
             <textarea rows={3} className="w-full border rounded-md px-3 py-2 text-sm resize-none" value={eventForm.description} onChange={setEF('description')} placeholder="What's this event about?" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '開始' : 'Start'}</label>
               <input type="datetime-local" className="w-full border rounded-md px-3 py-2 text-sm" value={eventForm.startAt} onChange={setEF('startAt')} />
@@ -246,7 +246,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               <input type="datetime-local" className="w-full border rounded-md px-3 py-2 text-sm" value={eventForm.endAt} onChange={setEF('endAt')} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '時區' : 'Timezone'}</label>
               <input className="w-full border rounded-md px-3 py-2 text-sm" value={eventForm.timezone} onChange={setEF('timezone')} />
