@@ -39,15 +39,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       { method: 'POST', body: JSON.stringify({ email, password }) },
     );
     if (data.accessToken) await SecureStore.setItemAsync('access_token', data.accessToken);
+    if (data.refreshToken) await SecureStore.setItemAsync('refresh_token', data.refreshToken);
     setUser(data.user);
   };
 
   const signup = async (body: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh' }) => {
-    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string }>(
+    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>(
       '/auth/signup',
       { method: 'POST', body: JSON.stringify(body) },
     );
     if (data.accessToken) await SecureStore.setItemAsync('access_token', data.accessToken);
+    if (data.refreshToken) await SecureStore.setItemAsync('refresh_token', data.refreshToken);
     setUser(data.user);
   };
 
