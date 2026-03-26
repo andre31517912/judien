@@ -340,7 +340,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\andre\\Desktop\\judien\\judien\\apps\\api\\src\\__generated__\\prisma",
+      "value": "C:\\Users\\denni\\Documents\\SWE\\judien\\apps\\api\\src\\__generated__\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -354,7 +354,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\andre\\Desktop\\judien\\judien\\apps\\api\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\denni\\Documents\\SWE\\judien\\apps\\api\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
