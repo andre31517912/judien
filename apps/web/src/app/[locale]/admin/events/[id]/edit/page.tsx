@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { Event, ReminderRule } from '@judien/shared';
+
+const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -205,7 +208,10 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             <input value={form.title ?? ''} onChange={set('title')} placeholder="Event name" className={inp} />
           </Field>
           <Field label="Location">
-            <input value={form.location ?? ''} onChange={set('location')} className={inp} />
+            <LocationPicker
+              value={form.location ?? ''}
+              onChange={(v) => setForm((f) => ({ ...f, location: v }))}
+            />
           </Field>
           <Field label="Description">
             <textarea value={form.description ?? ''} onChange={set('description')} rows={3} className={inp} />

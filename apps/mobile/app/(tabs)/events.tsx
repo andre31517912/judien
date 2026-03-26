@@ -9,6 +9,7 @@ import { useAuth } from '../../context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, PaginatedResponse, Event } from '@judien/shared';
+import DateTimeField from '../../components/DateTimeField';
 
 export default function EventsTab() {
   const router = useRouter();
@@ -149,10 +150,23 @@ export default function EventsTab() {
             placeholder="What's this event about?" multiline />
           <View style={styles.row}>
             <View style={styles.half}>
-              <Field label={zh ? '開始' : 'Start'} value={form.startAt} onChange={setF('startAt')} placeholder="YYYY-MM-DD HH:MM" />
+              <DateTimeField
+                label={zh ? '開始' : 'Start'}
+                value={form.startAt}
+                onChange={setF('startAt')}
+                placeholder={zh ? '選擇日期與時間' : 'Select date and time'}
+                locale={zh ? 'zh-TW' : 'en-US'}
+              />
             </View>
             <View style={styles.half}>
-              <Field label={zh ? '結束（選填）' : 'End (optional)'} value={form.endAt} onChange={setF('endAt')} placeholder="YYYY-MM-DD HH:MM" />
+              <DateTimeField
+                label={zh ? '結束（選填）' : 'End (optional)'}
+                value={form.endAt}
+                onChange={setF('endAt')}
+                placeholder={zh ? '選擇日期與時間' : 'Select date and time'}
+                locale={zh ? 'zh-TW' : 'en-US'}
+                clearable
+              />
             </View>
           </View>
           <View style={styles.row}>
@@ -214,6 +228,7 @@ export default function EventsTab() {
                   )}
                   <View style={styles.cardBody}>
                     <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
+                    {item.groupName && <Text style={styles.cardGroup}>👥 {item.groupName}</Text>}
                     <Text style={styles.cardMeta}>{date}</Text>
                     {location ? <Text style={styles.cardMeta} numberOfLines={1}>{location}</Text> : null}
                     <Text style={styles.rsvpRow}>✓ {item.rsvpCounts.GOING}  ?{item.rsvpCounts.MAYBE}  ✗{item.rsvpCounts.NO}</Text>
@@ -241,6 +256,7 @@ const styles = StyleSheet.create({
   thumbnail: { width: 80, height: 80, borderRadius: 8 },
   cardBody: { flex: 1 },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 },
+  cardGroup: { fontSize: 12, color: '#4F46E5', fontWeight: '500', marginBottom: 4 },
   cardMeta: { fontSize: 13, color: '#6B7280' },
   rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
   backBtn: { color: '#4F46E5', fontSize: 17 },

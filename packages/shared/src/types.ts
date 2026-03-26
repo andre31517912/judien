@@ -4,6 +4,10 @@ export type RSVPStatus = 'GOING' | 'MAYBE' | 'NO';
 export type MessageChannel = 'SMS' | 'EMAIL';
 export type MessageStatus = 'PENDING' | 'SENT' | 'FAILED';
 export type PreferredLanguage = 'en' | 'zh';
+export type GroupMembershipRole = 'GROUP_ADMIN' | 'MEMBER';
+export type GroupMembershipStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'REMOVED';
+export type GroupInviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED';
+export type GroupJoinRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -29,6 +33,8 @@ export interface PublicUser {
 export interface Event {
   id: string;
   createdById: string;
+  groupId: string | null;
+  groupName: string | null; // name of the group if this event was created from a group
   coverImageUrl: string | null;
   title_en: string;
   title_zh: string;
@@ -54,6 +60,7 @@ export interface EventWithCounts extends Event {
 
 export interface News {
   id: string;
+  groupId: string | null;
   title_en: string;
   title_zh: string;
   body_en: string;
@@ -79,11 +86,13 @@ export interface Comment {
   id: string;
   eventId: string;
   userId: string;
-  /** Redacted email prefix for display, e.g. "den***" */
+  /** Comment author display name, falling back to email */
   userHandle: string;
   body: string;
   createdAt: string;
   deletedAt: string | null;
+  replyToId?: string | null;
+  replies?: Comment[];
 }
 
 // ─── ReminderRule ─────────────────────────────────────────────────────────────
@@ -123,4 +132,73 @@ export interface ApiError {
   statusCode: number;
   message: string;
   errors?: Record<string, string[]>;
+}
+
+// ─── Groups ──────────────────────────────────────────────────────────────────
+
+export interface Group {
+  id: string;
+  pid: string;
+  name: string;
+  description: string;
+  discoverableBySearch: boolean;
+  memberDataPrivate: boolean;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupMembership {
+  id: string;
+  groupId: string;
+  userId: string;
+  role: GroupMembershipRole;
+  status: GroupMembershipStatus;
+  joinedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupInvite {
+  id: string;
+  groupId: string;
+  invitedUserId: string | null;
+  email: string | null;
+  phoneE164: string | null;
+  token: string;
+  expiresAt: string;
+  status: GroupInviteStatus;
+  respondedAt: string | null;
+  createdAt: string;
+}
+
+export interface GroupJoinRequest {
+  id: string;
+  groupId: string;
+  requesterUserId: string;
+  note: string;
+  status: GroupJoinRequestStatus;
+  reviewedByUserId: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GroupMessage {
+  id: string;
+  groupId: string;
+  userId: string;
+  userHandle: string;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventInvite {
+  id: string;
+  eventId: string;
+  token: string;
+  expiresAt: string;
+  createdById: string;
+  createdAt: string;
 }

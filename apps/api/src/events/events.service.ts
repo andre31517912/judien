@@ -2,18 +2,46 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateEventDto, UpdateEventDto, EventListQuery } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
-import { DateTime } from 'luxon';
+import { GroupsService } from '../groups/groups.service';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly groupsService: GroupsService,
+  ) {}
 
   async list(query: EventListQuery, userId?: string) {
     const now = new Date();
-    const where =
+    const scopeWhere =
       query.scope === 'future'
         ? { startAt: { gte: now } }
         : { startAt: { lt: now } };
+
+    let visibilityWhere: Record<string, unknown>;
+    if (query.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(query.groupId, userId);
+      if (!canAccess) throw new ForbiddenException('You do not have access to this group.');
+      visibilityWhere = { groupId: query.groupId };
+    } else if (userId) {
+      const acceptedMemberships = await this.prisma.groupMembership.findMany({
+        where: { userId, status: 'ACCEPTED' },
+        select: { groupId: true },
+      });
+      const groupIds = acceptedMemberships.map((m) => m.groupId);
+      visibilityWhere = {
+        OR: [
+          { groupId: null },
+          ...(groupIds.length > 0 ? [{ groupId: { in: groupIds } }] : []),
+        ],
+      };
+    } else {
+      visibilityWhere = { groupId: null };
+    }
+
+    const where = {
+      AND: [scopeWhere, visibilityWhere],
+    };
 
     const orderBy =
       query.scope === 'future'
@@ -30,6 +58,7 @@ export class EventsService {
         take: query.pageSize,
         include: {
           rsvps: { select: { status: true } },
+          group: { select: { name: true } },
         },
       }),
       this.prisma.event.count({ where }),
@@ -49,6 +78,8 @@ export class EventsService {
       for (const r of event.rsvps) counts[r.status]++;
       return {
         ...event,
+        groupName: event.group?.name ?? null,
+        group: undefined,
         rsvps: undefined,
         rsvpCounts: counts,
         myRsvp: myRsvpMap.get(event.id) ?? null,
@@ -64,9 +95,15 @@ export class EventsService {
       include: {
         rsvps: { select: { status: true } },
         createdBy: { select: { email: true } },
+        group: { select: { name: true } },
       },
     });
     if (!event) throw new NotFoundException('Event not found.');
+
+    if (event.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
+      if (!canAccess) throw new ForbiddenException('You do not have access to this event.');
+    }
 
     const counts = { GOING: 0, MAYBE: 0, NO: 0 };
     for (const r of event.rsvps) counts[r.status]++;
@@ -81,6 +118,8 @@ export class EventsService {
 
     return {
       ...event,
+      groupName: event.group?.name ?? null,
+      group: undefined,
       rsvps: undefined,
       rsvpCounts: counts,
       myRsvp,
@@ -90,6 +129,15 @@ export class EventsService {
   }
 
   async create(dto: CreateEventDto, creator: User) {
+    if (dto.groupId) {
+      const canManage = await this.groupsService.canManageGroupContent(dto.groupId, creator);
+      if (!canManage) {
+        throw new ForbiddenException('You do not have permission to create events for this group.');
+      }
+    } else if (creator.role !== 'ADMIN') {
+      throw new ForbiddenException('Only platform admins can create global events.');
+    }
+
     return this.prisma.event.create({
       data: {
         ...dto,
@@ -101,13 +149,37 @@ export class EventsService {
     });
   }
 
-  async update(id: string, dto: UpdateEventDto) {
-    await this.ensureExists(id);
+  async update(id: string, dto: UpdateEventDto, actor?: User) {
+    const event = await this.ensureExists(id);
+
+    if (actor) {
+      if (event.groupId) {
+        const canManage = await this.groupsService.canManageGroupContent(event.groupId, actor);
+        if (!canManage) {
+          throw new ForbiddenException('You do not have permission to update this event.');
+        }
+      } else if (actor.role !== 'ADMIN') {
+        throw new ForbiddenException('Only platform admins can update global events.');
+      }
+    }
+
     return this.prisma.event.update({ where: { id }, data: dto });
   }
 
-  async remove(id: string) {
-    await this.ensureExists(id);
+  async remove(id: string, actor?: User) {
+    const event = await this.ensureExists(id);
+
+    if (actor) {
+      if (event.groupId) {
+        const canManage = await this.groupsService.canManageGroupContent(event.groupId, actor);
+        if (!canManage) {
+          throw new ForbiddenException('You do not have permission to delete this event.');
+        }
+      } else if (actor.role !== 'ADMIN') {
+        throw new ForbiddenException('Only platform admins can delete global events.');
+      }
+    }
+
     await this.prisma.event.delete({ where: { id } });
   }
 

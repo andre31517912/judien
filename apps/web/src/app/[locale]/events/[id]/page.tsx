@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { apiFetch, resolveImageUrl } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import ConfirmModal from '../../../../components/ConfirmModal';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
+
+const EventMap = dynamic(() => import('../../../../components/EventMapInner'), { ssr: false });
 
 export default function EventDetailPage() {
   const params = useParams<{ locale: string; id: string }>();
@@ -19,6 +22,8 @@ export default function EventDetailPage() {
   const [commentBody, setCommentBody] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editCommentBody, setEditCommentBody] = useState('');
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState('');
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -47,6 +52,34 @@ export default function EventDetailPage() {
   const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
   const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
   const [blastResult, setBlastResult] = useState('');
+
+  // invite state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+
+  const handleCreateInvite = async () => {
+    if (!user) return;
+    setInviteLoading(true);
+    try {
+      const res = await apiFetch<{ token: string }>(`/event-invites`, {
+        method: 'POST',
+        body: JSON.stringify({ eventId: params.id }),
+      });
+      const link = `https://app.judien.tw/${locale}/invite/${res.token}`;
+      setInviteLink(link);
+      setShowInviteModal(true);
+    } catch (err) {
+      alert(zh ? '無法生成邀請連結' : 'Failed to generate invite link');
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleCopyInviteLink = () => {
+    navigator.clipboard.writeText(inviteLink);
+    alert(zh ? '已複製到剪貼簿' : 'Copied to clipboard');
+  };
 
   useEffect(() => {
     Promise.all([
@@ -91,13 +124,38 @@ export default function EventDetailPage() {
       method: 'POST',
       body: JSON.stringify({ body: commentBody }),
     });
-    setComments((prev) => [...prev, c]);
+    setComments((prev) => [...prev, { ...c, replies: [] }]);
     setCommentBody('');
+  };
+
+  const handleReply = async (e: React.FormEvent, parentCommentId: string) => {
+    e.preventDefault();
+    if (!replyBody.trim()) return;
+    const reply = await apiFetch<Comment>(`/events/${params.id}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ body: replyBody, replyToId: parentCommentId }),
+    });
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === parentCommentId
+          ? { ...c, replies: [...(c.replies ?? []), reply] }
+          : c
+      )
+    );
+    setReplyBody('');
+    setReplyingToId(null);
   };
 
   const handleDeleteComment = async (id: string) => {
     await apiFetch(`/comments/${id}`, { method: 'DELETE' });
-    setComments((prev) => prev.filter((c) => c.id !== id));
+    setComments((prev) =>
+      prev
+        .filter((c) => c.id !== id)
+        .map((c) => ({
+          ...c,
+          replies: (c.replies ?? []).filter((r) => r.id !== id),
+        }))
+    );
   };
 
   const handleEditComment = async (id: string) => {
@@ -106,7 +164,9 @@ export default function EventDetailPage() {
       method: 'PATCH',
       body: JSON.stringify({ body: editCommentBody }),
     });
-    setComments((prev) => prev.map((c) => c.id === id ? updated : c));
+    setComments((prev) =>
+      prev.map((c) => (c.id === id ? { ...updated, replies: c.replies ?? [] } : c))
+    );
     setEditingCommentId(null);
     setEditCommentBody('');
   };
@@ -242,6 +302,12 @@ export default function EventDetailPage() {
       <h1 className="text-3xl font-bold">{title}</h1>
 
       <div className="text-sm text-gray-700 space-y-2">
+        {event.groupName && (
+          <div className="flex gap-2">
+            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '主辦團體' : 'Hosted by'}</span>
+            <span className="text-indigo-600 font-medium">👥 {event.groupName}</span>
+          </div>
+        )}
         {(event as any).createdByEmail && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '主辦人' : 'Host'}</span>
@@ -258,6 +324,7 @@ export default function EventDetailPage() {
             <span>{location}</span>
           </div>
         )}
+        {location && <EventMap location={location} title={title} />}
         <div className="flex gap-2">
           <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '費用' : 'Price'}</span>
           <span>{fee}</span>
@@ -280,7 +347,7 @@ export default function EventDetailPage() {
 
       {/* RSVP buttons (requires login) */}
       {user ? (
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-3 items-center flex-wrap">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
           {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
@@ -296,6 +363,13 @@ export default function EventDetailPage() {
             className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-indigo-400 transition"
           >
             {zh ? '賓客名單' : 'Guest List'}
+          </button>
+          <button
+            onClick={handleCreateInvite}
+            disabled={inviteLoading}
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 transition disabled:opacity-50"
+          >
+            {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '📬 邀請朋友' : '📬 Invite Friends')}
           </button>
         </div>
       ) : (
@@ -460,69 +534,160 @@ export default function EventDetailPage() {
             const canDelete = isOwn || user?.role === 'ADMIN';
             const canEdit = isOwn;
             const isEditing = editingCommentId === c.id;
+            const isReplying = replyingToId === c.id;
             return (
-              <div key={c.id} className="bg-white rounded-lg p-3 shadow-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs text-gray-400 mt-0.5">{c.userHandle}</p>
-                  {(canEdit || canDelete) && (
-                    <div className="flex items-center gap-1 shrink-0">
-                      {canEdit && !isEditing && (
-                        <button
-                          onClick={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }}
-                          title={zh ? '編輯' : 'Edit'}
-                          className="text-gray-400 hover:text-indigo-500 transition"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6.071-6.071a2.25 2.25 0 013.182 3.182L12 14H9v-3z" />
-                          </svg>
-                        </button>
-                      )}
-                      {canDelete && (
-                        <button
-                          onClick={() => handleDeleteComment(c.id)}
-                          title={zh ? '刪除' : 'Delete'}
-                          className="text-gray-400 hover:text-red-500 transition text-xs leading-none"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {isEditing ? (
-                  <div className="mt-2 flex flex-col gap-2">
-                    <textarea
-                      value={editCommentBody}
-                      onChange={(e) => setEditCommentBody(e.target.value)}
-                      rows={2}
-                      className="w-full border rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEditComment(c.id)}
-                        className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-md hover:bg-indigo-700"
-                      >
-                        {zh ? '儲存' : 'Save'}
-                      </button>
-                      <button
-                        onClick={() => { setEditingCommentId(null); setEditCommentBody(''); }}
-                        className="text-xs text-gray-500 hover:text-gray-800"
-                      >
-                        {zh ? '取消' : 'Cancel'}
-                      </button>
-                    </div>
+              <div key={c.id}>
+                {/* Main comment */}
+                <div className="bg-white rounded-lg p-3 shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs text-gray-400 mt-0.5">{c.userHandle}</p>
+                    {(canEdit || canDelete) && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {canEdit && !isEditing && (
+                          <button
+                            onClick={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }}
+                            title={zh ? '編輯' : 'Edit'}
+                            className="text-gray-400 hover:text-indigo-500 transition"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 11l6.071-6.071a2.25 2.25 0 013.182 3.182L12 14H9v-3z" />
+                            </svg>
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDeleteComment(c.id)}
+                            title={zh ? '刪除' : 'Delete'}
+                            className="text-gray-400 hover:text-red-500 transition text-xs leading-none"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-800 mt-1">{c.body}</p>
+                  {isEditing ? (
+                    <div className="mt-2 flex flex-col gap-2">
+                      <textarea
+                        value={editCommentBody}
+                        onChange={(e) => setEditCommentBody(e.target.value)}
+                        rows={2}
+                        className="w-full border rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEditComment(c.id)}
+                          className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-md hover:bg-indigo-700"
+                        >
+                          {zh ? '儲存' : 'Save'}
+                        </button>
+                        <button
+                          onClick={() => { setEditingCommentId(null); setEditCommentBody(''); }}
+                          className="text-xs text-gray-500 hover:text-gray-800"
+                        >
+                          {zh ? '取消' : 'Cancel'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-800 mt-1">{c.body}</p>
+                  )}
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-gray-400">
+                      {new Date(c.createdAt).toLocaleString()}
+                    </p>
+                    {user && (
+                      <button
+                        onClick={() => setReplyingToId(isReplying ? null : c.id)}
+                        className="text-xs text-indigo-600 hover:text-indigo-700"
+                      >
+                        {isReplying ? (zh ? '取消' : 'Cancel') : (zh ? '回覆' : 'Reply')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Reply form */}
+                {isReplying && (
+                  <div className="ml-4 mt-2 bg-indigo-50 rounded-lg p-3">
+                    <form onSubmit={(e) => handleReply(e, c.id)} className="flex gap-2">
+                      <input
+                        value={replyBody}
+                        onChange={(e) => setReplyBody(e.target.value)}
+                        placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
+                        className="flex-1 border border-indigo-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-xs hover:bg-indigo-700"
+                      >
+                        {zh ? '送出' : 'Reply'}
+                      </button>
+                    </form>
+                  </div>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
-                  {new Date(c.createdAt).toLocaleString()}
-                </p>
+
+                {/* Replies */}
+                {c.replies && c.replies.length > 0 && (
+                  <div className="ml-4 mt-2 flex flex-col gap-2">
+                    {c.replies.map((reply) => {
+                      const isOwnReply = user?.id === reply.userId;
+                      const canDeleteReply = isOwnReply || user?.role === 'ADMIN';
+                      return (
+                        <div key={reply.id} className="bg-gray-50 rounded-lg p-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs text-gray-500 font-medium">{reply.userHandle}</p>
+                            {canDeleteReply && (
+                              <button
+                                onClick={() => handleDeleteComment(reply.id)}
+                                title={zh ? '刪除' : 'Delete'}
+                                className="text-gray-400 hover:text-red-500 transition text-xs"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-700 mt-1">{reply.body}</p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(reply.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       </section>
+
+      {/* Invite Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center">{zh ? '邀請連結' : 'Invite Link'}</h3>
+            <div className="bg-gray-100 rounded-lg p-4 mb-4 break-all">
+              <p className="text-sm font-mono text-indigo-600">{inviteLink}</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCopyInviteLink}
+                className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm"
+              >
+                {zh ? '複製' : 'Copy'}
+              </button>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition font-medium text-sm"
+              >
+                {zh ? '關閉' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

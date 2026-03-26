@@ -1,14 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { RsvpDto } from '@judien/shared';
+import { GroupsService } from '../groups/groups.service';
 
 @Injectable()
 export class RsvpService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly groupsService: GroupsService,
+  ) {}
 
   async upsert(eventId: string, userId: string, dto: RsvpDto) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
+
+    if (event.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
+      if (!canAccess) {
+        throw new ForbiddenException('You do not have access to RSVP for this event.');
+      }
+    }
 
     return this.prisma.rSVP.upsert({
       where: { eventId_userId: { eventId, userId } },
@@ -18,11 +29,31 @@ export class RsvpService {
   }
 
   async remove(eventId: string, userId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+
+    if (event.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
+      if (!canAccess) {
+        throw new ForbiddenException('You do not have access to this event.');
+      }
+    }
+
     await this.prisma.rSVP.deleteMany({ where: { eventId, userId } });
     return { removed: true };
   }
 
-  async guests(eventId: string) {
+  async guests(eventId: string, userId?: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+
+    if (event.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
+      if (!canAccess) {
+        throw new ForbiddenException('You do not have access to this guest list.');
+      }
+    }
+
     const rsvps = await this.prisma.rSVP.findMany({
       where: { eventId },
       include: { user: { select: { email: true, displayName: true } } },

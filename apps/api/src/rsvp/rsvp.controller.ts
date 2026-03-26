@@ -17,8 +17,11 @@ export class RsvpController {
   // GET /api/events/:eventId/rsvp/guests — visible to any logged-in user
   @UseGuards(new OptionalJwtGuard())
   @Get('guests')
-  guests(@Param('eventId') eventId: string) {
-    return this.rsvpService.guests(eventId);
+  guests(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user?: User,
+  ) {
+    return this.rsvpService.guests(eventId, user?.id);
   }
 
   // POST /api/events/:eventId/rsvp
