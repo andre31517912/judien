@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../../../../lib/api';
 import type { EventWithCounts } from '@judien/shared';
 
 export default function EventInviteAcceptPage() {
   const params = useParams<{ locale: string; token: string }>();
   const router = useRouter();
-  const { t } = useTranslation();
   
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
