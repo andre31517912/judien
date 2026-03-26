@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import type { EventWithCounts, PaginatedResponse, News } from '@judien/shared';
+
+const LocationPicker = dynamic(() => import('../../../components/LocationPickerInner'), { ssr: false });
 
 type PageScope = 'home' | 'future' | 'past';
 
@@ -230,7 +233,11 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '地點' : 'Location'}</label>
-            <input className="w-full border rounded-md px-3 py-2 text-sm" value={eventForm.location} onChange={setEF('location')} placeholder="e.g. Taipei, Da'an Park" />
+              <LocationPicker
+                value={eventForm.location}
+                onChange={(v) => setEventForm((prev) => ({ ...prev, location: v }))}
+                showMapPreview={false}
+              />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '描述' : 'Description'}</label>
@@ -364,6 +371,7 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
         )}
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-lg truncate">{title}</h2>
+          {event.groupName && <p className="text-sm text-indigo-600 font-medium">👥 {event.groupName}</p>}
           <p className="text-sm text-gray-500">{startDate}</p>
           {location && <p className="text-sm text-gray-500 truncate">{location}</p>}
           <p className="text-sm text-indigo-600 mt-1">{fee}</p>

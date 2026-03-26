@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
 import './globals.css';
 import { AuthProvider } from '../context/auth.context';
 
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Events for Taiwan',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>

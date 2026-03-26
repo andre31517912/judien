@@ -2,9 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useAuth } from '@/context/auth.context';
 import type { Event } from '@judien/shared';
+
+const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
 export default function NewEventPage({ params }: { params: { locale: string } }) {
   const router = useRouter();
@@ -87,8 +90,11 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             placeholder="Event name" className={inp} />
         </Field>
         <Field label="Location">
-          <input value={form.location} onChange={set('location')}
-            placeholder="e.g. Taipei, Da'an Park" className={inp} />
+          <LocationPicker
+            value={form.location}
+            onChange={(v) => setForm((f) => ({ ...f, location: v }))}
+            showMapPreview={false}
+          />
         </Field>
         <Field label="Description">
           <textarea value={form.description} onChange={set('description')}

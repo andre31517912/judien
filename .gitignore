@@ -4,3 +4,9 @@ dist
 .expo
 *.env
 !*.env.example
+
+# Uploaded files (local dev only)
+apps/api/uploads/
+
+# Prisma query engine temp files
+*.dll.node.tmp*

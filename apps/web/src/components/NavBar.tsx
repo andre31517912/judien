@@ -26,6 +26,15 @@ export default function NavBar({ locale }: NavBarProps) {
       <div className="flex items-center gap-4 text-sm">
         {user ? (
           <>
+            {user.role === 'ADMIN' ? (
+              <Link href={`/${locale}/admin/groups`} className="text-gray-600 hover:text-gray-900">
+                {zh ? '群組管理' : 'Groups'}
+              </Link>
+            ) : (
+              <Link href={`/${locale}/groups`} className="text-gray-600 hover:text-gray-900">
+                {zh ? '我的群組' : 'My Groups'}
+              </Link>
+            )}
             <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 hover:text-gray-900 max-w-[120px] truncate">
               {(user as any).displayName || user.email.split('@')[0]}
             </Link>

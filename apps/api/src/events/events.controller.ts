@@ -10,13 +10,10 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Optional,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { EventsService } from './events.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Roles } from '../common/decorators/roles.decorator';
-import { RolesGuard } from '../common/guards/roles.guard';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CreateEventSchema,
@@ -56,9 +53,8 @@ export class EventsController {
     return this.eventsService.findOne(id, user?.id);
   }
 
-  // POST /api/events — admin only
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  // POST /api/events — platform admin for global, group admin for group events
+  @UseGuards(AuthGuard('jwt'))
   @Post()
   create(
     @Body(new ZodValidationPipe(CreateEventSchema)) dto: CreateEventDto,
@@ -67,23 +63,25 @@ export class EventsController {
     return this.eventsService.create(dto, user);
   }
 
-  // PATCH /api/events/:id — admin only
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  // PATCH /api/events/:id — platform admin for global, group admin for group events
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(UpdateEventSchema)) dto: UpdateEventDto,
+    @CurrentUser() user: User,
   ) {
-    return this.eventsService.update(id, dto);
+    return this.eventsService.update(id, dto, user);
   }
 
-  // DELETE /api/events/:id — admin only
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  // DELETE /api/events/:id — platform admin for global, group admin for group events
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.remove(id, user);
   }
 }

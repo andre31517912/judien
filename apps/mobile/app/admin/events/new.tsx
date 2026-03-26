@@ -7,6 +7,7 @@ import { useRouter, Stack } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { apiFetch, apiUpload } from '../../../lib/api';
 import type { Event } from '@judien/shared';
+import DateTimeField from '../../../components/DateTimeField';
 
 export default function NewEventScreen() {
   const router = useRouter();
@@ -131,12 +132,21 @@ export default function NewEventScreen() {
 
       <View style={styles.row}>
         <View style={styles.half}>
-          <Field label="Start" value={form.startAt} onChangeText={set('startAt')}
-            placeholder="YYYY-MM-DD HH:MM" />
+          <DateTimeField
+            label="Start"
+            value={form.startAt}
+            onChange={set('startAt')}
+            placeholder="Select date and time"
+          />
         </View>
         <View style={styles.half}>
-          <Field label="End (optional)" value={form.endAt} onChangeText={set('endAt')}
-            placeholder="YYYY-MM-DD HH:MM" />
+          <DateTimeField
+            label="End (optional)"
+            value={form.endAt}
+            onChange={set('endAt')}
+            placeholder="Select date and time"
+            clearable
+          />
         </View>
       </View>
 

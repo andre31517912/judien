@@ -138,6 +138,7 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.EventScalarFieldEnum = {
   id: 'id',
   createdById: 'createdById',
+  groupId: 'groupId',
   coverImageUrl: 'coverImageUrl',
   title_en: 'title_en',
   title_zh: 'title_zh',
@@ -154,6 +155,15 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.EventInviteScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.RSVPScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -168,7 +178,17 @@ exports.Prisma.CommentScalarFieldEnum = {
   userId: 'userId',
   body: 'body',
   createdAt: 'createdAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  replyToId: 'replyToId'
+};
+
+exports.Prisma.GroupMessageScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  userId: 'userId',
+  body: 'body',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ReminderRuleScalarFieldEnum = {
@@ -193,11 +213,62 @@ exports.Prisma.MessageLogScalarFieldEnum = {
 
 exports.Prisma.NewsScalarFieldEnum = {
   id: 'id',
+  groupId: 'groupId',
   title_en: 'title_en',
   title_zh: 'title_zh',
   body_en: 'body_en',
   body_zh: 'body_zh',
   createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupScalarFieldEnum = {
+  id: 'id',
+  pid: 'pid',
+  name: 'name',
+  description: 'description',
+  discoverableBySearch: 'discoverableBySearch',
+  memberDataPrivate: 'memberDataPrivate',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupMembershipScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  userId: 'userId',
+  role: 'role',
+  status: 'status',
+  invitedByPlatformAdminId: 'invitedByPlatformAdminId',
+  joinedAt: 'joinedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupInviteScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  invitedByPlatformAdminId: 'invitedByPlatformAdminId',
+  invitedUserId: 'invitedUserId',
+  email: 'email',
+  phoneE164: 'phoneE164',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  status: 'status',
+  respondedAt: 'respondedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.GroupJoinRequestScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  requesterUserId: 'requesterUserId',
+  note: 'note',
+  status: 'status',
+  reviewedByUserId: 'reviewedByUserId',
+  reviewedAt: 'reviewedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -248,14 +319,46 @@ exports.MessageStatus = exports.$Enums.MessageStatus = {
   FAILED: 'FAILED'
 };
 
+exports.GroupMembershipRole = exports.$Enums.GroupMembershipRole = {
+  GROUP_ADMIN: 'GROUP_ADMIN',
+  MEMBER: 'MEMBER'
+};
+
+exports.GroupMembershipStatus = exports.$Enums.GroupMembershipStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  DECLINED: 'DECLINED',
+  REMOVED: 'REMOVED'
+};
+
+exports.GroupInviteStatus = exports.$Enums.GroupInviteStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  DECLINED: 'DECLINED',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.GroupJoinRequestStatus = exports.$Enums.GroupJoinRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
+  EventInvite: 'EventInvite',
   RSVP: 'RSVP',
   Comment: 'Comment',
+  GroupMessage: 'GroupMessage',
   ReminderRule: 'ReminderRule',
   MessageLog: 'MessageLog',
-  News: 'News'
+  News: 'News',
+  Group: 'Group',
+  GroupMembership: 'GroupMembership',
+  GroupInvite: 'GroupInvite',
+  GroupJoinRequest: 'GroupJoinRequest'
 };
 
 /**

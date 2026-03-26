@@ -35,6 +35,32 @@ enum MessageStatus {
   FAILED
 }
 
+enum GroupMembershipRole {
+  GROUP_ADMIN
+  MEMBER
+}
+
+enum GroupMembershipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REMOVED
+}
+
+enum GroupInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum GroupJoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -53,7 +79,16 @@ model User {
   rsvps         RSVP[]
   comments      Comment[]
   messageLogs   MessageLog[]
+  groupMessages GroupMessage[]
   news          News[]
+  createdGroups Group[]            @relation("GroupCreatedBy")
+  groupMemberships GroupMembership[] @relation("GroupMember")
+  groupMembershipInvites GroupMembership[] @relation("GroupMembershipInvitedBy")
+  groupInvitesSent GroupInvite[]   @relation("GroupInviteSentBy")
+  groupInvitesReceived GroupInvite[] @relation("GroupInviteUser")
+  groupJoinRequests GroupJoinRequest[] @relation("GroupJoinRequestRequester")
+  reviewedJoinRequests GroupJoinRequest[] @relation("GroupJoinRequestReviewer")
+  eventInvitesCreated EventInvite[] @relation("EventInviteCreatedBy")
 
   @@index([email])
   @@index([role])
@@ -63,6 +98,8 @@ model Event {
   id            String   @id @default(cuid())
   createdById   String
   createdBy     User     @relation(fields: [createdById], references: [id])
+  groupId       String?
+  group         Group?   @relation(fields: [groupId], references: [id])
 
   coverImageUrl String?
 
@@ -87,9 +124,26 @@ model Event {
   comments      Comment[]
   reminderRules ReminderRule[]
   messageLogs   MessageLog[]
+  invites       EventInvite[]
 
   @@index([startAt])
   @@index([createdById])
+  @@index([groupId])
+}
+
+model EventInvite {
+  id        String   @id @default(cuid())
+  eventId   String
+  token     String   @unique
+  expiresAt DateTime
+  createdById String
+  createdAt DateTime @default(now())
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("EventInviteCreatedBy", fields: [createdById], references: [id])
+
+  @@index([eventId])
+  @@index([token])
 }
 
 model RSVP {
@@ -114,11 +168,30 @@ model Comment {
   body      String
   createdAt DateTime  @default(now())
   deletedAt DateTime?
+  replyToId String?
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replyTo   Comment?  @relation("CommentReplies", fields: [replyToId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
 
   @@index([eventId, createdAt])
+  @@index([replyToId])
+}
+
+model GroupMessage {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, createdAt])
+  @@index([userId])
 }
 
 model ReminderRule {
@@ -155,6 +228,8 @@ model MessageLog {
 
 model News {
   id          String   @id @default(cuid())
+  groupId     String?
+  group       Group?   @relation(fields: [groupId], references: [id])
   title_en    String   @default("")
   title_zh    String   @default("")
   body_en     String   @default("")
@@ -165,4 +240,90 @@ model News {
   updatedAt   DateTime @updatedAt
 
   @@index([createdAt])
+  @@index([groupId])
+}
+
+model Group {
+  id                 String            @id @default(cuid())
+  pid                String            @unique
+  name               String
+  description        String            @default("")
+  discoverableBySearch Boolean         @default(false)
+  memberDataPrivate  Boolean           @default(false)
+  createdById        String
+  createdBy          User              @relation("GroupCreatedBy", fields: [createdById], references: [id])
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  memberships        GroupMembership[]
+  invites            GroupInvite[]
+  joinRequests       GroupJoinRequest[]
+  messages           GroupMessage[]
+  events             Event[]
+  news               News[]
+
+  @@index([name])
+  @@index([discoverableBySearch])
+}
+
+model GroupMembership {
+  id                     String                @id @default(cuid())
+  groupId                String
+  userId                 String
+  role                   GroupMembershipRole   @default(MEMBER)
+  status                 GroupMembershipStatus @default(PENDING)
+  invitedByPlatformAdminId String?
+  invitedByPlatformAdmin User?                 @relation("GroupMembershipInvitedBy", fields: [invitedByPlatformAdminId], references: [id])
+  joinedAt               DateTime?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation("GroupMember", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId, status])
+  @@index([userId, status])
+}
+
+model GroupInvite {
+  id                      String          @id @default(cuid())
+  groupId                 String
+  invitedByPlatformAdminId String
+  invitedByPlatformAdmin  User            @relation("GroupInviteSentBy", fields: [invitedByPlatformAdminId], references: [id])
+  invitedUserId           String?
+  invitedUser             User?           @relation("GroupInviteUser", fields: [invitedUserId], references: [id])
+  email                   String?
+  phoneE164               String?
+  token                   String          @unique
+  expiresAt               DateTime
+  status                  GroupInviteStatus @default(PENDING)
+  respondedAt             DateTime?
+  createdAt               DateTime        @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, status])
+  @@index([invitedUserId, status])
+  @@index([email, status])
+}
+
+model GroupJoinRequest {
+  id               String                 @id @default(cuid())
+  groupId          String
+  requesterUserId  String
+  note             String                 @default("")
+  status           GroupJoinRequestStatus @default(PENDING)
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  group        Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  requester    User  @relation("GroupJoinRequestRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  reviewedBy   User? @relation("GroupJoinRequestReviewer", fields: [reviewedByUserId], references: [id])
+
+  @@unique([groupId, requesterUserId])
+  @@index([groupId, status])
+  @@index([requesterUserId, status])
 }

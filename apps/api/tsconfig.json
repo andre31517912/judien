@@ -7,7 +7,6 @@
     "experimentalDecorators": true,
     "outDir": "./dist",
     "paths": {
-      "@judien/shared": ["../../packages/shared/src/index.ts"],
       "@prisma/client": ["./src/__generated__/prisma"]
     }
   },

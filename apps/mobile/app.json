@@ -12,8 +12,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "web": { "bundler": "metro" },
-    "plugins": ["expo-router", "expo-secure-store"],
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker"
+    ],
     "newArchEnabled": false,
     "android": {
       "package": "com.judien.app",
@@ -31,7 +37,7 @@
       "icon": "./assets/icon.png"
     },
     "extra": {
-      "apiUrl": "http://localhost:4000/api"
+      "apiUrl": "http://192.168.0.202:4000/api"
     }
   }
 }

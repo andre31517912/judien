@@ -12,6 +12,9 @@ import { MessagingModule } from './messaging/messaging.module';
 import { QueueModule } from './queue/queue.module';
 import { UploadModule } from './upload/upload.module';
 import { NewsModule } from './news/news.module';
+import { GroupsModule } from './groups/groups.module';
+import { GroupMessagesModule } from './group-messages/group-messages.module';
+import { EventInvitesModule } from './event-invites/event-invites.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -35,6 +38,9 @@ import { HealthController } from './health/health.controller';
     BlastModule,
     UploadModule,
     NewsModule,
+    GroupsModule,
+    GroupMessagesModule,
+    EventInvitesModule,
   ],
   controllers: [HealthController],
 })

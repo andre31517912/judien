@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert, Image,
+  View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert, Image, Share,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch, resolveImageUrl } from '../../lib/api';
@@ -20,6 +20,8 @@ export default function EventDetailScreen() {
   const [fetchFailed, setFetchFailed] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentBody, setCommentBody] = useState('');
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState('');
   const [myRsvp, setMyRsvp] = useState<string | null>(null);
 
   // blast state
@@ -27,6 +29,11 @@ export default function EventDetailScreen() {
   const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
   const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
   const [blastResult, setBlastResult] = useState('');
+
+  // invite state
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLink, setInviteLink] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
@@ -94,6 +101,38 @@ export default function EventDetailScreen() {
     } catch (err: any) {
       setBlastResult(err.message ?? (zh ? '發送失敗。' : 'Failed to send.'));
     }
+
+    const handleCreateInvite = async () => {
+      if (!user) { Alert.alert(zh ? '請登入' : 'Login required'); return; }
+      setInviteLoading(true);
+      try {
+        const res = await apiFetch<{ token: string }>(`/event-invites`, {
+          method: 'POST',
+          body: JSON.stringify({ eventId: id }),
+        });
+        const link = `https://app.judien.tw/${i18n.language}/invite/${res.token}`;
+        setInviteLink(link);
+        setShowInviteModal(true);
+      } catch (err: any) {
+        Alert.alert(zh ? '無法生成邀請連結' : 'Failed to generate invite link', err.message);
+      } finally {
+        setInviteLoading(false);
+      }
+    };
+
+    const handleShareInvite = async () => {
+      try {
+        await Share.share({
+          message: zh
+            ? `加入我的活動！${inviteLink}`
+            : `Join my event! ${inviteLink}`,
+          url: inviteLink,
+          title: title,
+        });
+      } catch (err) {
+        Alert.alert('Share failed');
+      }
+    };
   };
 
   const handleComment = async () => {
@@ -103,6 +142,22 @@ export default function EventDetailScreen() {
     });
     setComments((prev) => [...prev, c]);
     setCommentBody('');
+  };
+
+  const handleReply = async (parentCommentId: string) => {
+    if (!replyBody.trim()) return;
+    const reply = await apiFetch<Comment>(`/events/${id}/comments`, {
+      method: 'POST', body: JSON.stringify({ body: replyBody, replyToId: parentCommentId }),
+    });
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === parentCommentId
+          ? { ...c, replies: [...(c.replies ?? []), reply] }
+          : c
+      )
+    );
+    setReplyBody('');
+    setReplyingToId(null);
   };
 
   if (!event) {
@@ -156,6 +211,7 @@ export default function EventDetailScreen() {
         )}
 
         <Text style={styles.title}>{title}</Text>
+        {event.groupName && <Text style={styles.groupBadge}>👥 {event.groupName}</Text>}
         <Text style={styles.meta}>📅 {dateStr} ({event.timezone})</Text>
         {location ? <Text style={styles.meta}>📍 {location}</Text> : null}
         <Text style={styles.meta}>💰 {fee}</Text>
@@ -173,15 +229,30 @@ export default function EventDetailScreen() {
           {rsvpBtn('NO', t('rsvp.notGoing'))}
         </View>
 
-        <Text style={styles.sectionTitle}>{t('comments.title')}</Text>
-        {comments.length === 0 && <Text style={styles.empty}>{t('comments.noComments')}</Text>}
-        {comments.map((c) => (
-          <View key={c.id} style={styles.comment}>
-            <Text style={styles.commentHandle}>{c.userHandle}</Text>
-            <Text style={styles.commentBody}>{c.body}</Text>
-          </View>
-        ))}
+        {user && (
+          <TouchableOpacity style={styles.inviteBtn} onPress={handleCreateInvite} disabled={inviteLoading}>
+            <Text style={styles.inviteBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '📬 邀請朋友' : '📬 Invite Friends')}</Text>
+          </TouchableOpacity>
+        )}
 
+        {showInviteModal && (
+          <View style={styles.modal}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{zh ? '邀請連結' : 'Invite Link'}</Text>
+              <Text style={styles.inviteLinkText}>{inviteLink}</Text>
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.shareBtn} onPress={handleShareInvite}>
+                  <Text style={styles.shareBtnText}>{zh ? '分享' : 'Share'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.closeBtn} onPress={() => setShowInviteModal(false)}>
+                  <Text style={styles.closeBtnText}>{zh ? '關閉' : 'Close'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+
+        <Text style={styles.sectionTitle}>{t('comments.title')}</Text>
         {user && (
           <View style={styles.commentInputRow}>
             <TextInput
@@ -196,6 +267,58 @@ export default function EventDetailScreen() {
             </TouchableOpacity>
           </View>
         )}
+
+        {comments.length === 0 && <Text style={styles.empty}>{t('comments.noComments')}</Text>}
+        {comments.map((c) => (
+          <View key={c.id}>
+            {/* Main comment */}
+            <View style={styles.comment}>
+              <Text style={styles.commentHandle}>{c.userHandle}</Text>
+              <Text style={styles.commentBody}>{c.body}</Text>
+              <View style={styles.commentFooter}>
+                <Text style={styles.commentDate}>{new Date(c.createdAt).toLocaleString()}</Text>
+                {user && (
+                  <TouchableOpacity
+                    onPress={() => setReplyingToId(replyingToId === c.id ? null : c.id)}
+                  >
+                    <Text style={styles.replyBtn}>
+                      {replyingToId === c.id ? (zh ? '取消' : 'Cancel') : (zh ? '回覆' : 'Reply')}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Reply form */}
+            {replyingToId === c.id && user && (
+              <View style={styles.replyInputRow}>
+                <TextInput
+                  style={styles.replyInput}
+                  placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
+                  value={replyBody}
+                  onChangeText={setReplyBody}
+                  multiline
+                />
+                <TouchableOpacity style={styles.postReplyBtn} onPress={() => handleReply(c.id)}>
+                  <Text style={styles.postBtnText}>{t('comments.post')}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Replies */}
+            {c.replies && c.replies.length > 0 && (
+              <View style={styles.repliesSection}>
+                {c.replies.map((reply) => (
+                  <View key={reply.id} style={styles.nestedReply}>
+                    <Text style={styles.replyHandle}>{reply.userHandle}</Text>
+                    <Text style={styles.replyBody}>{reply.body}</Text>
+                    <Text style={styles.replyDate}>{new Date(reply.createdAt).toLocaleString()}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        ))}
 
         {/* Admin blast section */}
         {isAdmin && (
@@ -261,6 +384,7 @@ const styles = StyleSheet.create({
   deleteBtn: { backgroundColor: '#EF4444', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   deleteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   title: { fontSize: 24, fontWeight: 'bold', color: '#111', marginBottom: 8 },
+  groupBadge: { fontSize: 12, color: '#4F46E5', fontWeight: '500', marginBottom: 8 },
   meta: { fontSize: 14, color: '#6B7280', marginBottom: 4 },
   desc: { fontSize: 15, color: '#374151', marginTop: 8, lineHeight: 22 },
   countsRow: { flexDirection: 'row', gap: 12, marginTop: 12 },
@@ -275,7 +399,18 @@ const styles = StyleSheet.create({
   comment: { backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 10,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1 },
   commentHandle: { fontSize: 12, color: '#9CA3AF', marginBottom: 4 },
-  commentBody: { fontSize: 14, color: '#374151' },
+  commentBody: { fontSize: 14, color: '#374151', marginBottom: 8 },
+  commentFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  commentDate: { fontSize: 11, color: '#BFDBFE' },
+  replyBtn: { fontSize: 12, color: '#4F46E5', fontWeight: '600' },
+  replyInputRow: { flexDirection: 'row', gap: 8, marginLeft: 16, marginBottom: 10 },
+  replyInput: { flex: 1, borderWidth: 1, borderColor: '#E0E7FF', borderRadius: 8, padding: 10, fontSize: 13, backgroundColor: '#F5F3FF' },
+  postReplyBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 12, justifyContent: 'center' },
+  repliesSection: { marginLeft: 16, marginBottom: 10, borderLeftWidth: 2, borderLeftColor: '#E0E7FF', paddingLeft: 12 },
+  nestedReply: { backgroundColor: '#F9FAFB', borderRadius: 6, padding: 10, marginBottom: 8 },
+  replyHandle: { fontSize: 11, color: '#6B7280', fontWeight: '600', marginBottom: 4 },
+  replyBody: { fontSize: 13, color: '#374151', marginBottom: 4 },
+  replyDate: { fontSize: 10, color: '#D1D5DB' },
   commentInputRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
   commentInput: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 14 },
   postBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, justifyContent: 'center' },
@@ -290,4 +425,15 @@ const styles = StyleSheet.create({
   blastBtn: { backgroundColor: INDIGO, borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 10 },
   blastBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   blastResult: { marginTop: 8, fontSize: 13, color: '#6B7280', textAlign: 'center' },
+  inviteBtn: { backgroundColor: '#06B6D4', borderRadius: 8, padding: 12, alignItems: 'center', marginTop: 12 },
+  inviteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  modal: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 999 },
+  modalContent: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '85%', maxWidth: 350, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 8, elevation: 10 },
+  modalTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 12, textAlign: 'center' },
+  inviteLinkText: { fontSize: 12, color: '#4F46E5', backgroundColor: '#F3F4F6', borderRadius: 6, padding: 10, marginBottom: 14, textAlign: 'center', fontWeight: '500', fontFamily: 'Courier' },
+  modalActions: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
+  shareBtn: { backgroundColor: '#4F46E5', borderRadius: 6, paddingHorizontal: 16, paddingVertical: 10, flex: 1 },
+  shareBtnText: { color: '#fff', fontWeight: '600', fontSize: 13, textAlign: 'center' },
+  closeBtn: { backgroundColor: '#E5E7EB', borderRadius: 6, paddingHorizontal: 16, paddingVertical: 10, flex: 1 },
+  closeBtnText: { color: '#374151', fontWeight: '600', fontSize: 13, textAlign: 'center' },
 });
