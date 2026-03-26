@@ -35,7 +35,7 @@ export default function NavBar({ locale }: NavBarProps) {
                 {zh ? '我的群組' : 'My Groups'}
               </Link>
             )}
-            <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 hover:text-gray-900">
+            <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 hover:text-gray-900 max-w-[120px] truncate">
               {(user as any).displayName || user.email.split('@')[0]}
             </Link>
             <button onClick={handleLogout} className="text-red-500 hover:text-red-700">

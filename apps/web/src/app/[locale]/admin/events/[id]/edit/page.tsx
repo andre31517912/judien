@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
+import { useAuth } from '@/context/auth.context';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { Event, ReminderRule } from '@judien/shared';
 
@@ -41,6 +42,7 @@ const REMINDER_PRESETS = [
 
 export default function EditEventPage({ params }: { params: { locale: string; id: string } }) {
   const router = useRouter();
+  const { user } = useAuth();
   const zh = params.locale === 'zh';
   const [event, setEvent] = useState<Event | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
@@ -48,6 +50,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [savingReminders, setSavingReminders] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // cover image
@@ -89,6 +93,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const doUpdate = async () => {
     setError('');
     setSaved(false);
+    setSubmitting(true);
     try {
       // Upload new cover photo first if one was selected
       if (coverFile) {
@@ -116,6 +121,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
       router.push(`/${params.locale}/events/${params.id}`);
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Error updating event.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -140,20 +147,31 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     }));
 
   const handleSaveReminders = async () => {
-    await apiFetch(`/events/${params.id}/reminders`, {
-      method: 'POST',
-      body: JSON.stringify({
-        rules: reminders.map((r) => ({
-          offsetMinutes: r.offsetMinutes,
-          channels: r.channels as ('SMS' | 'EMAIL')[],
-          enabled: r.enabled,
-        })),
-      }),
-    });
-    alert('Reminders saved.');
+    setSavingReminders(true);
+    try {
+      await apiFetch(`/events/${params.id}/reminders`, {
+        method: 'POST',
+        body: JSON.stringify({
+          rules: reminders.map((r) => ({
+            offsetMinutes: r.offsetMinutes,
+            channels: r.channels as ('SMS' | 'EMAIL')[],
+            enabled: r.enabled,
+          })),
+        }),
+      });
+    } finally {
+      setSavingReminders(false);
+    }
   };
 
   if (!event) return <p className="text-gray-400 mt-8">Loading…</p>;
+
+  if (user?.role !== 'ADMIN') return (
+    <div className="text-center py-16">
+      <p className="text-red-500 font-medium">Admin access required.</p>
+      <a href={`/${params.locale}/events`} className="text-indigo-600 underline mt-3 block text-sm">← Back to events</a>
+    </div>
+  );
 
   return (
     <div className="max-w-2xl mx-auto mt-6 pb-20 space-y-6">
@@ -173,7 +191,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
       )}
 
       {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
-      <div className="flex items-center gap-3 py-2 border-b border-dashed border-gray-200">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200">
         <a
           href={`/${params.locale}/events/${params.id}`}
           className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
@@ -183,9 +201,10 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         <button
           type="button"
           onClick={doUpdate}
-          className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
+          disabled={submitting}
+          className="text-sm bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60 transition"
         >
-          {zh ? '儲存變更' : 'Save Changes'}
+          {submitting ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存變更' : 'Save Changes')}
         </button>
         <button
           type="button"
@@ -216,7 +235,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
           <Field label="Description">
             <textarea value={form.description ?? ''} onChange={set('description')} rows={3} className={inp} />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Start">
               <input type="datetime-local" value={form.startAt ?? ''} onChange={set('startAt')} className={inp} />
             </Field>
@@ -224,7 +243,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <input type="datetime-local" value={form.endAt ?? ''} onChange={set('endAt')} className={inp} />
             </Field>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Field label="Timezone">
               <input value={form.timezone ?? ''} onChange={set('timezone')} className={inp} />
             </Field>
@@ -321,8 +340,9 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
         {reminders.length > 0 && (
           <button onClick={handleSaveReminders}
-            className="mt-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-md hover:bg-indigo-700">
-            Save Reminders
+            disabled={savingReminders}
+            className="mt-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60 transition">
+            {savingReminders ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存提醒' : 'Save Reminders')}
           </button>
         )}
       </section>

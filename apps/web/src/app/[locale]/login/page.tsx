@@ -11,15 +11,19 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       await login(email, password);
       router.push(`/${params.locale}/events`);
     } catch (err: any) {
       setError(err.message ?? 'Login failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,9 +60,10 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
         </div>
         <button
           type="submit"
-          className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium"
+          disabled={loading}
+          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
-          {params.locale === 'zh' ? '登入' : 'Log In'}
+          {loading ? '…' : (params.locale === 'zh' ? '登入' : 'Log In')}
         </button>
       </form>
       <p className="mt-4 text-sm text-gray-600">

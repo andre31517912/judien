@@ -19,6 +19,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -35,6 +36,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(null);
+    setSaving(true);
     const body: Record<string, unknown> = {
       preferredLanguage: lang,
       muteSms,
@@ -56,6 +58,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       }
     } catch (err: any) {
       setMsg({ text: err.message ?? 'Error updating profile.', ok: false });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -116,7 +120,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
                 key={l}
                 type="button"
                 onClick={() => setLang(l)}
-                className={`px-5 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors ${
                   lang === l
                     ? 'bg-indigo-600 border-indigo-600 text-white'
                     : 'border-gray-300 text-gray-600 hover:border-indigo-400'
@@ -185,9 +189,10 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
         <button
           type="submit"
-          className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700"
+          disabled={saving}
+          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
-          {zh ? '儲存' : 'Save'}
+          {saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
         </button>
       </form>
     </div>

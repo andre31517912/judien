@@ -4,13 +4,16 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload } from '@/lib/api';
+import { useAuth } from '@/context/auth.context';
 import type { Event } from '@judien/shared';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
 export default function NewEventPage({ params }: { params: { locale: string } }) {
   const router = useRouter();
+  const { user } = useAuth();
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -40,6 +43,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSubmitting(true);
     try {
       let coverImageUrl: string | null = null;
       if (coverFile) {
@@ -64,8 +68,17 @@ export default function NewEventPage({ params }: { params: { locale: string } })
       router.push(`/${params.locale}/events/${ev.id}`);
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Error creating event.');
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (user?.role !== 'ADMIN') return (
+    <div className="text-center py-16">
+      <p className="text-red-500 font-medium">Admin access required.</p>
+      <a href={`/${params.locale}/events`} className="text-indigo-600 underline mt-3 block text-sm">← Back to events</a>
+    </div>
+  );
 
   return (
     <div className="max-w-xl mx-auto mt-8 px-4">
@@ -88,7 +101,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             placeholder="What's this event about?" rows={4}
             className={inp + ' resize-none'} />
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Start">
             <input type="datetime-local" value={form.startAt} onChange={set('startAt')} className={inp} />
           </Field>
@@ -96,7 +109,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             <input type="datetime-local" value={form.endAt} onChange={set('endAt')} className={inp} />
           </Field>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Field label="Timezone">
             <input value={form.timezone} onChange={set('timezone')} className={inp} />
           </Field>
@@ -141,8 +154,9 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         </Field>
 
         <button type="submit"
-          className="bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 font-medium mt-2">
-          Create Event
+          disabled={submitting}
+          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium mt-2 disabled:opacity-60 transition">
+          {submitting ? 'Creating…' : 'Create Event'}
         </button>
       </form>
     </div>

@@ -17,6 +17,7 @@ export default function EventDetailScreen() {
   const isAdmin = user?.role === 'ADMIN';
 
   const [event, setEvent] = useState<EventWithCounts | null>(null);
+  const [fetchFailed, setFetchFailed] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentBody, setCommentBody] = useState('');
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -35,23 +36,31 @@ export default function EventDetailScreen() {
   const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => {
-    apiFetch<EventWithCounts>(`/events/${id}`).then((ev) => {
-      setEvent(ev);
-      setMyRsvp(ev.myRsvp);
-    });
-    apiFetch<PaginatedResponse<Comment>>(`/events/${id}/comments`).then((res) => {
-      setComments(res.data);
-    });
+    apiFetch<EventWithCounts>(`/events/${id}`)
+      .then((ev) => { setEvent(ev); setMyRsvp(ev.myRsvp); })
+      .catch(() => setFetchFailed(true));
+    apiFetch<PaginatedResponse<Comment>>(`/events/${id}/comments`)
+      .then((res) => setComments(res.data))
+      .catch(() => {});
   }, [id]);
 
   const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
     if (!user) { Alert.alert('Login required'); return; }
-    await apiFetch(`/events/${id}/rsvp`, {
-      method: 'POST', body: JSON.stringify({ status }),
-    });
-    setMyRsvp(status);
-    const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
-    setEvent(ev);
+    try {
+      if (myRsvp === status) {
+        await apiFetch(`/events/${id}/rsvp`, { method: 'DELETE' });
+        setMyRsvp(null);
+      } else {
+        await apiFetch(`/events/${id}/rsvp`, {
+          method: 'POST', body: JSON.stringify({ status }),
+        });
+        setMyRsvp(status);
+      }
+      const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
+      setEvent(ev);
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to update RSVP.');
+    }
   };
 
   const handleDelete = () => {
@@ -85,8 +94,10 @@ export default function EventDetailScreen() {
         method: 'POST',
         body: JSON.stringify({ channels: blastChannels, audience: blastAudience, messageEn: blastMsg, messageZh: blastMsg }),
       });
-      setBlastResult(zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`);
+      const msg = zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`;
+      setBlastResult(msg);
       setBlastMsg('');
+      setTimeout(() => setBlastResult(''), 4000);
     } catch (err: any) {
       setBlastResult(err.message ?? (zh ? '發送失敗。' : 'Failed to send.'));
     }
@@ -149,7 +160,16 @@ export default function EventDetailScreen() {
     setReplyingToId(null);
   };
 
-  if (!event) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>{t('common.loading')}</Text></View>;
+  if (!event) {
+    if (fetchFailed) return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+        <Text style={{ fontSize: 15, color: '#EF4444', textAlign: 'center' }}>
+          {zh ? '載入失敗，請返回重試。' : 'Failed to load event. Please go back and try again.'}
+        </Text>
+      </View>
+    );
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>{t('common.loading')}</Text></View>;
+  }
 
   const title = zh ? event.title_zh : event.title_en;
   const desc = zh ? event.description_zh : event.description_en;

@@ -46,6 +46,7 @@ export default function EditEventScreen() {
 
   const handleSave = async () => {
     try {
+      const toISO = (s: string) => new Date(s.trim().replace(' ', 'T')).toISOString();
       const body: Record<string, unknown> = {
         title_en: form.title_en,
         title_zh: form.title_zh,
@@ -53,8 +54,8 @@ export default function EditEventScreen() {
         description_zh: form.description_zh,
         location_en: form.location_en,
         location_zh: form.location_zh,
-        startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
-        endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
+        startAt: form.startAt ? toISO(form.startAt) : undefined,
+        endAt: form.endAt ? toISO(form.endAt) : null,
         timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency,

@@ -69,8 +69,17 @@ export default function EventsTab() {
     if (!result.canceled && result.assets[0]) setCoverUri(result.assets[0].uri);
   };
 
+  /** Normalise "YYYY-MM-DD HH:MM" (space) to ISO "YYYY-MM-DDTHH:MM" before parsing. */
+  const toISO = (s: string): string => new Date(s.trim().replace(' ', 'T')).toISOString();
+
   const handleCreate = async () => {
     if (!form.title.trim()) { Alert.alert('Required', 'Please enter a title.'); return; }
+    if (form.startAt && isNaN(new Date(form.startAt.trim().replace(' ', 'T')).getTime())) {
+      Alert.alert('Invalid date', 'Start date must be in YYYY-MM-DD HH:MM format.'); return;
+    }
+    if (form.endAt && isNaN(new Date(form.endAt.trim().replace(' ', 'T')).getTime())) {
+      Alert.alert('Invalid date', 'End date must be in YYYY-MM-DD HH:MM format.'); return;
+    }
     setSubmitting(true);
     try {
       let coverImageUrl: string | null = null;
@@ -79,8 +88,8 @@ export default function EventsTab() {
         title_en: form.title, title_zh: form.title,
         description_en: form.description, description_zh: form.description,
         location_en: form.location, location_zh: form.location,
-        startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
-        endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
+        startAt: form.startAt ? toISO(form.startAt) : undefined,
+        endAt: form.endAt ? toISO(form.endAt) : null,
         timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency || 'TWD',
