@@ -138,7 +138,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
       <div className="flex items-center justify-between mb-6 border-b">
         <div className="flex gap-0">
           <button className={tabCls(scope === 'home')} onClick={() => setScope('home')}>
-            {zh ? '主頁' : 'Home'}
+            {zh ? '動態' : 'Feed'}
           </button>
           <button className={tabCls(scope === 'future')} onClick={() => { setScope('future'); setPage(1); }}>
             {zh ? '即將到來' : 'Upcoming'}
@@ -155,12 +155,12 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             {creatingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
           </button>
         )}
-        {isAdmin && scope === 'home' && (
+        {user && scope === 'home' && (
           <button
             onClick={() => setComposing((v) => !v)}
             className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
           >
-            {composing ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Post News'}`}
+            {composing ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Post Announcement'}`}
           </button>
         )}
       </div>
@@ -168,10 +168,10 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
       {/* ── Home / News tab ── */}
       {scope === 'home' && (
         <div className="flex flex-col gap-4">
-          {/* Admin compose form */}
-          {isAdmin && composing && (
+          {/* Compose form for any authenticated user */}
+          {user && composing && (
             <form onSubmit={handleCreateNews} className="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-3 border border-indigo-100">
-              <h3 className="font-semibold text-gray-800">{zh ? '發布公告' : 'Post News'}</h3>
+              <h3 className="font-semibold text-gray-800">{zh ? '發布公告' : 'Post Announcement'}</h3>
               {newsMsg && <p className="text-red-500 text-sm">{newsMsg}</p>}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '標題' : 'Title'}</label>
@@ -201,15 +201,23 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               <div key={item.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-5">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
-                    <h2 className="font-semibold text-lg text-gray-900 mb-1">
-                      {zh ? item.title_zh : item.title_en}
-                    </h2>
-                    <p className="text-gray-600 whitespace-pre-wrap">{zh ? item.body_zh : item.body_en}</p>
+                    {item.group && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 mb-2">
+                          👥 {item.group.name}
+                        </span>
+                      )}
+                      <h2 className="font-semibold text-lg text-gray-900 mb-1">
+                        {zh ? item.title_zh : item.title_en}
+                      </h2>
+                      <p className="text-gray-600 whitespace-pre-wrap">{zh ? item.body_zh : item.body_en}</p>
                     <p className="text-xs text-gray-400 mt-3">
+                      {item.createdBy?.displayName && (
+                        <span className="mr-2">{zh ? '發布者：' : 'By '}{item.createdBy.displayName} ·</span>
+                      )}
                       {new Date(item.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                   </div>
-                  {isAdmin && (
+                  {(isAdmin || item.createdById === user?.id) && (
                     <button onClick={() => handleDeleteNews(item.id)}
                       className="text-red-400 hover:text-red-600 text-sm flex-shrink-0">
                       {zh ? '刪除' : 'Delete'}

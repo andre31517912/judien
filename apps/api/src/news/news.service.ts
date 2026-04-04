@@ -11,6 +11,11 @@ export class NewsService {
     private readonly groupsService: GroupsService,
   ) {}
 
+  private readonly newsInclude = {
+    createdBy: { select: { id: true, displayName: true } },
+    group: { select: { name: true } },
+  };
+
   async list(query: NewsListQuery, user?: User) {
     if (query.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(query.groupId, user?.id);
@@ -18,6 +23,7 @@ export class NewsService {
       return this.prisma.news.findMany({
         where: { groupId: query.groupId },
         orderBy: { createdAt: 'desc' },
+        include: this.newsInclude,
       });
     }
 
@@ -25,6 +31,7 @@ export class NewsService {
       return this.prisma.news.findMany({
         where: { groupId: null },
         orderBy: { createdAt: 'desc' },
+        include: this.newsInclude,
       });
     }
 
@@ -42,43 +49,53 @@ export class NewsService {
         ],
       },
       orderBy: { createdAt: 'desc' },
+      include: this.newsInclude,
     });
   }
 
   async create(dto: CreateNewsDto, user: User) {
-    const canManage = await this.groupsService.canManageGroupContent(dto.groupId, user);
-    if (!canManage) {
-      throw new ForbiddenException('You do not have permission to post news for this group.');
+    if (dto.groupId) {
+      // Group announcement: requires GROUP_ADMIN or platform ADMIN
+      const canManage = await this.groupsService.canManageGroupContent(dto.groupId, user);
+      if (!canManage) {
+        throw new ForbiddenException('You do not have permission to post news for this group.');
+      }
     }
-
+    // Personal/global announcement (no groupId): any authenticated user can post
     return this.prisma.news.create({ data: { ...dto, createdById: user.id } });
   }
 
   async update(id: string, dto: UpdateNewsDto, user: User) {
     const item = await this.findOrThrow(id);
-    if (!item.groupId) {
-      throw new ForbiddenException('Global news editing is disabled for this endpoint.');
+    if (item.groupId) {
+      // Group announcement: requires GROUP_ADMIN or platform ADMIN
+      const canManage = await this.groupsService.canManageGroupContent(item.groupId, user);
+      if (!canManage) {
+        throw new ForbiddenException('You do not have permission to update this news post.');
+      }
+    } else {
+      // Personal/global announcement: only creator or platform ADMIN
+      if (item.createdById !== user.id && user.role !== 'ADMIN') {
+        throw new ForbiddenException('You can only edit your own announcements.');
+      }
     }
-
-    const canManage = await this.groupsService.canManageGroupContent(item.groupId, user);
-    if (!canManage) {
-      throw new ForbiddenException('You do not have permission to update this news post.');
-    }
-
     return this.prisma.news.update({ where: { id }, data: dto });
   }
 
   async remove(id: string, user: User) {
     const item = await this.findOrThrow(id);
-    if (!item.groupId) {
-      throw new ForbiddenException('Global news deletion is disabled for this endpoint.');
+    if (item.groupId) {
+      // Group announcement: requires GROUP_ADMIN or platform ADMIN
+      const canManage = await this.groupsService.canManageGroupContent(item.groupId, user);
+      if (!canManage) {
+        throw new ForbiddenException('You do not have permission to delete this news post.');
+      }
+    } else {
+      // Personal/global announcement: only creator or platform ADMIN
+      if (item.createdById !== user.id && user.role !== 'ADMIN') {
+        throw new ForbiddenException('You can only delete your own announcements.');
+      }
     }
-
-    const canManage = await this.groupsService.canManageGroupContent(item.groupId, user);
-    if (!canManage) {
-      throw new ForbiddenException('You do not have permission to delete this news post.');
-    }
-
     await this.prisma.news.delete({ where: { id } });
   }
 
@@ -88,3 +105,4 @@ export class NewsService {
     return item;
   }
 }
+

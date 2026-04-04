@@ -61,11 +61,13 @@ export interface EventWithCounts extends Event {
 export interface News {
   id: string;
   groupId: string | null;
+  group?: { name: string } | null;
   title_en: string;
   title_zh: string;
   body_en: string;
   body_zh: string;
   createdById: string;
+  createdBy?: { id: string; displayName: string | null };
   createdAt: string;
   updatedAt: string;
 }

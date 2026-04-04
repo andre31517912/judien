@@ -504,8 +504,9 @@ export class GroupsService {
     return membership?.status === 'ACCEPTED';
   }
 
-  async canManageGroupContent(groupId: string, user: User) {
+  async canManageGroupContent(groupId: string | undefined | null, user: User) {
     if (user.role === 'ADMIN') return true;
+    if (!groupId) return false;
     const membership = await this.prisma.groupMembership.findUnique({
       where: { groupId_userId: { groupId, userId: user.id } },
     });

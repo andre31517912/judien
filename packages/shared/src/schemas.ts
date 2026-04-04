@@ -113,7 +113,7 @@ export type BlastDto = z.infer<typeof BlastSchema>;
 // ─── News ────────────────────────────────────────────────────────────────────
 
 export const CreateNewsSchema = z.object({
-  groupId: z.string().min(1),
+  groupId: z.string().min(1).optional(),
   title_en: z.string().max(300).default(''),
   title_zh: z.string().max(300).default(''),
   body_en: z.string().max(10000).default(''),

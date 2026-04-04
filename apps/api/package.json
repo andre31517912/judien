@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "dev": "prisma generate && ts-node-dev --respawn --transpile-only src/main.ts",
+    "start:dev": "pnpm dev",
+    "build": "tsc -p tsconfig.build.json && node -e \"require('fs').cpSync('src/__generated__/prisma', 'dist/__generated__/prisma', {recursive:true})\"",
     "start": "node dist/main.js",
     "start:prod": "npx prisma migrate deploy && node dist/main.js",
     "worker": "ts-node-dev --respawn --transpile-only src/workers/reminder.worker.ts",

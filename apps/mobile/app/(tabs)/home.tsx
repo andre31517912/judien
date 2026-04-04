@@ -61,8 +61,8 @@ export default function HomeTab() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{
-        title: composing ? 'Create Post' : 'Home',
-        headerRight: isAdmin && !composing ? () => (
+        title: composing ? (zh ? '發布公告' : 'New Announcement') : (zh ? '動態' : 'Feed'),
+        headerRight: user && !composing ? () => (
           <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
             <Text style={styles.headerBtn}>＋</Text>
           </TouchableOpacity>
@@ -76,8 +76,8 @@ export default function HomeTab() {
 
       {/* Remove the old inline header row */}
 
-      {/* Admin compose form */}
-      {isAdmin && composing && (
+      {/* Compose form for any authenticated user */}
+      {user && composing && (
         <View style={styles.form}>
           <Text style={styles.formLabel}>{zh ? '標題' : 'Title'}</Text>
           <TextInput style={styles.input} value={form.title}
@@ -106,14 +106,20 @@ export default function HomeTab() {
                 <Text style={styles.cardTitle} numberOfLines={2}>
                   {zh ? item.title_zh : item.title_en}
                 </Text>
-                {isAdmin && (
+                {(isAdmin || item.createdById === user?.id) && (
                   <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
                     <Text style={styles.deleteBtnText}>🗑</Text>
                   </TouchableOpacity>
                 )}
               </View>
+              {item.group && (
+                <View style={styles.groupBadge}>
+                  <Text style={styles.groupBadgeText}>👥 {item.group.name}</Text>
+                </View>
+              )}
               <Text style={styles.cardBody}>{zh ? item.body_zh : item.body_en}</Text>
               <Text style={styles.cardDate}>
+                {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
                 {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
               </Text>
             </View>
@@ -143,6 +149,8 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
   cardTitle: { flex: 1, fontSize: 16, fontWeight: '600', color: '#111827', marginRight: 8 },
+  groupBadge: { alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 6 },
+  groupBadgeText: { fontSize: 11, fontWeight: '500', color: '#4F46E5' },
   cardBody: { fontSize: 14, color: '#4B5563', lineHeight: 20 },
   cardDate: { fontSize: 12, color: '#9CA3AF', marginTop: 8 },
   deleteBtn: { padding: 4 },

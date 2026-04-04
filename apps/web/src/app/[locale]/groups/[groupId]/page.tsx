@@ -378,7 +378,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             {(
               [
                 { key: 'invite', label: zh ? '邀請成員' : 'Invite' },
-                { key: 'news', label: zh ? '發布公告' : 'Post News' },
+                { key: 'news', label: zh ? '發布公告' : 'Post Announcement' },
                 { key: 'event', label: zh ? '建立活動' : 'Create Event' },
                 {
                   key: 'requests',
@@ -480,9 +480,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </div>
             )}
 
-            {/* Post news tab */}
+            {/* Post announcement tab */}
             {adminTab === 'news' && (
               <form onSubmit={handleCreateNews} className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  {zh
+                    ? `此公告將發布至「${group.name}」的所有成員。`
+                    : `This announcement will be visible to all members of "${group.name}".`}
+                </p>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">
                     {zh ? '標題' : 'Title'}
@@ -509,7 +514,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()}
                   className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post News')}
+                  {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post Announcement')}
                 </button>
               </form>
             )}
@@ -701,7 +706,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       {/* News feed */}
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          {zh ? '群組公告' : 'Group News'}
+          {zh ? '群組公告' : 'Group Announcements'}
         </h2>
         {news.length === 0 ? (
           <p className="text-sm text-gray-400">{zh ? '尚無群組公告。' : 'No group news yet.'}</p>
@@ -722,7 +727,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       {/* Upcoming events */}
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">
-          {zh ? '即將到來的活動' : 'Upcoming Events'}
+          {zh ? '群組活動' : 'Group Events'}
         </h2>
         {events.length === 0 ? (
           <p className="text-sm text-gray-400">{zh ? '目前沒有即將到來的活動。' : 'No upcoming events.'}</p>
