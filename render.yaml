@@ -8,7 +8,7 @@ services:
   - type: web
     name: judien-api
     runtime: node
-    plan: free
+    plan: starter
     rootDir: .
     buildCommand: >
       npm install -g pnpm &&
@@ -41,7 +41,7 @@ services:
   - type: worker
     name: judien-worker
     runtime: node
-    plan: free
+    plan: starter
     rootDir: .
     buildCommand: >
       npm install -g pnpm &&
