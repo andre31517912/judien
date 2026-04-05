@@ -15,7 +15,7 @@ import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { SignupSchema, type SignupDto } from '@judien/shared';
+import { SignupSchema, GuestGroupJoinSchema, type SignupDto, type GuestGroupJoinDto } from '@judien/shared';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { User } from '../__generated__/prisma';
 
@@ -99,5 +99,18 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: User) {
     return safeUser(user);
+  }
+
+  // POST /api/auth/guest-join — join a group via invite token without creating a full account
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('guest-join')
+  async guestJoin(
+    @Body(new ZodValidationPipe(GuestGroupJoinSchema)) dto: GuestGroupJoinDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, accessToken, refreshToken } = await this.authService.guestGroupJoin(dto);
+    res.cookie('access_token', accessToken, COOKIE_OPTS);
+    res.cookie('refresh_token', refreshToken, COOKIE_OPTS);
+    return { user: safeUser(user), accessToken, refreshToken };
   }
 }

@@ -6,12 +6,15 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
+import * as XLSX from 'xlsx';
 import type {
+  AddMemberDirectlyDto,
   CreateGroupDto,
   CreateGroupJoinRequestDto,
   InviteGroupMembersDto,
   RespondGroupInviteDto,
   ReviewGroupJoinRequestDto,
+  SetParentGroupDto,
   UpdateGroupSettingsDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
@@ -90,10 +93,7 @@ export class GroupsService {
       where: {
         AND: [
           {
-            OR: [
-              { name: { contains: q, mode: 'insensitive' } },
-              { pid: { contains: q, mode: 'insensitive' } },
-            ],
+            name: { contains: q, mode: 'insensitive' },
           },
           {
             OR: [
@@ -155,8 +155,18 @@ export class GroupsService {
     }));
   }
 
+  async getGroupInviteInfo(token: string) {
+    const invite = await this.prisma.groupInvite.findUnique({
+      where: { token },
+      include: { group: { select: { id: true, name: true } } },
+    });
+    if (!invite) throw new NotFoundException('Invite not found.');
+    if (invite.status !== 'PENDING') throw new BadRequestException('Invite is no longer valid.');
+    if (new Date() > invite.expiresAt) throw new BadRequestException('Invite has expired.');
+    return { groupId: invite.group.id, groupName: invite.group.name };
+  }
+
   async listInvites(groupId: string, user: User) {
-    await this.assertCanManageGroupSettings(groupId, user);
     return this.prisma.groupInvite.findMany({
       where: { groupId, status: 'PENDING' },
       select: {
@@ -496,6 +506,44 @@ export class GroupsService {
     return { removed: true };
   }
 
+  async addMemberDirectly(groupId: string, dto: AddMemberDirectlyDto, user: User) {
+    this.assertPlatformAdmin(user);
+    await this.ensureGroupExists(groupId);
+
+    const id = dto.identifier.trim();
+    const targetUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { id },
+          { email: id },
+          { phoneE164: id },
+        ],
+      },
+    });
+
+    if (!targetUser) throw new NotFoundException('User not found.');
+
+    await this.prisma.groupMembership.upsert({
+      where: { groupId_userId: { groupId, userId: targetUser.id } },
+      create: {
+        groupId,
+        userId: targetUser.id,
+        status: 'ACCEPTED',
+        role: dto.role,
+        joinedAt: new Date(),
+        invitedByPlatformAdminId: user.id,
+      },
+      update: {
+        status: 'ACCEPTED',
+        role: dto.role,
+        joinedAt: new Date(),
+        invitedByPlatformAdminId: user.id,
+      },
+    });
+
+    return { added: true, userId: targetUser.id, displayName: targetUser.displayName };
+  }
+
   async canAccessGroup(groupId: string, userId?: string) {
     if (!userId) return false;
     const membership = await this.prisma.groupMembership.findUnique({
@@ -541,5 +589,140 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group not found.');
     return group;
+  }
+
+  // ─── Subgroups ───────────────────────────────────────────────────────────────
+
+  async subgroups(groupId: string) {
+    await this.ensureGroupExists(groupId);
+    return this.prisma.group.findMany({
+      where: { parentGroupId: groupId },
+      include: {
+        subgroups: { select: { id: true, name: true } },
+        _count: { select: { memberships: { where: { status: 'ACCEPTED' } } } },
+      },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async groupRelationships(groupId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: {
+        parentGroup: { select: { id: true, name: true } },
+        subgroups: {
+          select: { id: true, name: true, description: true },
+          orderBy: { name: 'asc' },
+        },
+      },
+    });
+    if (!group) throw new NotFoundException('Group not found.');
+    return {
+      parent: group.parentGroup ?? null,
+      subgroups: group.subgroups,
+    };
+  }
+
+  async setParentGroup(groupId: string, dto: SetParentGroupDto, user: User) {
+    this.assertPlatformAdmin(user);
+    await this.ensureGroupExists(groupId);
+    if (dto.parentGroupId) {
+      if (dto.parentGroupId === groupId) {
+        throw new BadRequestException('A group cannot be its own parent.');
+      }
+      await this.ensureGroupExists(dto.parentGroupId);
+    }
+    return this.prisma.group.update({
+      where: { id: groupId },
+      data: { parentGroupId: dto.parentGroupId },
+    });
+  }
+
+  // ─── Import / Export ─────────────────────────────────────────────────────────
+
+  async importMembers(groupId: string, filePath: string, user: User) {
+    this.assertPlatformAdmin(user);
+    await this.ensureGroupExists(groupId);
+
+    const ext = filePath.split('.').pop()?.toLowerCase();
+    let identifiers: string[] = [];
+
+    if (ext === 'xlsx' || ext === 'xls') {
+      const workbook = XLSX.readFile(filePath);
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
+      for (const row of rows) {
+        const cell = row[0];
+        if (cell && String(cell).trim()) identifiers.push(String(cell).trim());
+      }
+    } else {
+      const fs = await import('fs/promises');
+      const text = await fs.readFile(filePath, 'utf-8');
+      identifiers = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    }
+
+    const results: Array<{ identifier: string; status: 'added' | 'not_found' | 'already_member' }> = [];
+
+    for (const id of identifiers) {
+      const targetUser = await this.prisma.user.findFirst({
+        where: { OR: [{ id }, { email: id }, { phoneE164: id }] },
+      });
+      if (!targetUser) {
+        results.push({ identifier: id, status: 'not_found' });
+        continue;
+      }
+      const existing = await this.prisma.groupMembership.findUnique({
+        where: { groupId_userId: { groupId, userId: targetUser.id } },
+      });
+      if (existing?.status === 'ACCEPTED') {
+        results.push({ identifier: id, status: 'already_member' });
+        continue;
+      }
+      await this.prisma.groupMembership.upsert({
+        where: { groupId_userId: { groupId, userId: targetUser.id } },
+        create: { groupId, userId: targetUser.id, status: 'ACCEPTED', role: 'MEMBER', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
+        update: { status: 'ACCEPTED', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
+      });
+      results.push({ identifier: id, status: 'added' });
+    }
+
+    return { total: identifiers.length, results };
+  }
+
+  async exportMembers(groupId: string, format: 'xlsx' | 'csv' | 'txt', user: User): Promise<{ buffer: Buffer; filename: string }> {
+    this.assertPlatformAdmin(user);
+    const group = await this.ensureGroupExists(groupId);
+
+    const rows = await this.prisma.groupMembership.findMany({
+      where: { groupId, status: 'ACCEPTED' },
+      include: { user: { select: { id: true, email: true, phoneE164: true, displayName: true } } },
+      orderBy: { joinedAt: 'asc' },
+    });
+
+    const data = rows.map((m) => ({
+      ID: m.user.id,
+      Name: m.user.displayName ?? '',
+      Email: m.user.email,
+      Phone: m.user.phoneE164,
+      Role: m.role,
+      JoinedAt: m.joinedAt ? m.joinedAt.toISOString() : '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Members');
+
+    if (format === 'xlsx') {
+      const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+      return { buffer: buf, filename: `members_${group.pid}.xlsx` };
+    } else if (format === 'txt') {
+      const lines = rows.map((m) =>
+        [m.user.displayName ?? '', m.user.email ?? '', m.user.phoneE164 ?? ''].filter(Boolean).join('\t')
+      );
+      return { buffer: Buffer.from(lines.join('\n'), 'utf-8'), filename: `members_${group.pid}.txt` };
+    } else {
+      const csv = XLSX.utils.sheet_to_csv(ws);
+      return { buffer: Buffer.from(csv, 'utf-8'), filename: `members_${group.pid}.csv` };
+    }
   }
 }

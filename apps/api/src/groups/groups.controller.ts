@@ -7,8 +7,16 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, resolve } from 'path';
+import { existsSync, mkdirSync } from 'fs';
+import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
@@ -20,6 +28,8 @@ import {
   RespondGroupInviteSchema,
   ReviewGroupJoinRequestSchema,
   UpdateGroupSettingsSchema,
+  AddMemberDirectlySchema,
+  SetParentGroupSchema,
   type ChangeGroupMemberRoleDto,
   type CreateGroupDto,
   type CreateGroupJoinRequestDto,
@@ -27,9 +37,14 @@ import {
   type RespondGroupInviteDto,
   type ReviewGroupJoinRequestDto,
   type UpdateGroupSettingsDto,
+  type AddMemberDirectlyDto,
+  type SetParentGroupDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from './groups.service';
+
+const tmpDir = resolve(process.cwd(), 'uploads', 'tmp');
+if (!existsSync(tmpDir)) mkdirSync(tmpDir, { recursive: true });
 
 class OptionalJwtGuard extends AuthGuard('jwt') {
   handleRequest<T>(_err: unknown, user: T): T {
@@ -82,6 +97,11 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.updateSettings(groupId, dto, user);
+  }
+
+  @Get('invites/:token/info')
+  getGroupInviteInfo(@Param('token') token: string) {
+    return this.groupsService.getGroupInviteInfo(token);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -149,6 +169,16 @@ export class GroupsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/members')
+  addMemberDirectly(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(AddMemberDirectlySchema)) dto: AddMemberDirectlyDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.addMemberDirectly(groupId, dto, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':groupId/members/:memberUserId/role')
   changeMemberRole(
     @Param('groupId') groupId: string,
@@ -167,5 +197,71 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.removeMember(groupId, memberUserId, user);
+  }
+
+  // ─── Subgroups ────────────────────────────────────────────────────────────
+
+  @Get(':groupId/subgroups')
+  subgroups(@Param('groupId') groupId: string) {
+    return this.groupsService.subgroups(groupId);
+  }
+
+  @Get(':groupId/relationships')
+  groupRelationships(@Param('groupId') groupId: string) {
+    return this.groupsService.groupRelationships(groupId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':groupId/parent')
+  setParentGroup(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(SetParentGroupSchema)) dto: SetParentGroupDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.setParentGroup(groupId, dto, user);
+  }
+
+  // ─── Import / Export ─────────────────────────────────────────────────────
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/members/import')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: tmpDir,
+        filename: (_req, file, cb) => cb(null, `${Date.now()}${extname(file.originalname)}`),
+      }),
+      limits: { fileSize: 2 * 1024 * 1024 },
+    }),
+  )
+  async importMembers(
+    @Param('groupId') groupId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.importMembers(groupId, file.path, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/members/export')
+  async exportMembers(
+    @Param('groupId') groupId: string,
+    @Query('format') format: 'xlsx' | 'csv' | 'txt' = 'xlsx',
+    @CurrentUser() user: User,
+    @Res() res: Response,
+  ) {
+    const { buffer, filename } = await this.groupsService.exportMembers(groupId, format, user);
+    const mime =
+      format === 'xlsx'
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : format === 'txt'
+        ? 'text/plain'
+        : 'text/csv';
+    res.set({
+      'Content-Type': mime,
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+    res.end(buffer);
   }
 }

@@ -54,6 +54,10 @@ export class CommentsService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
 
+    if (!event.commentsEnabled) {
+      throw new ForbiddenException('Comments are disabled for this event.');
+    }
+
     // If replying to another comment, validate the parent comment exists and belongs to same event
     if (dto.replyToId) {
       const parentComment = await this.prisma.comment.findUnique({ where: { id: dto.replyToId } });

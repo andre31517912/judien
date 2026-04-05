@@ -203,9 +203,6 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                        {group.pid}
-                      </span>
                     </div>
                     {group.description && (
                       <p className="text-sm text-gray-600">{group.description}</p>
@@ -239,7 +236,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={zh ? '群組名稱或 PID…' : 'Group name or PID…'}
+            placeholder={zh ? '輸入群組名稱…' : 'Search by group name…'}
             className="flex-1 rounded-md border px-3 py-2 text-sm"
           />
           <button
@@ -265,7 +262,6 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                 <div key={result.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
                   <div>
                     <p className="font-medium text-gray-900">{result.name}</p>
-                    <p className="text-xs text-gray-500">{result.pid}</p>
                     {result.description && <p className="mt-0.5 text-sm text-gray-500">{result.description}</p>}
                   </div>
                   {alreadyMember ? (

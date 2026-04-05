@@ -34,7 +34,9 @@ export interface Event {
   id: string;
   createdById: string;
   groupId: string | null;
-  groupName: string | null; // name of the group if this event was created from a group
+  groupName: string | null;
+  seriesId: string | null;
+  partNumber: number | null;
   coverImageUrl: string | null;
   title_en: string;
   title_zh: string;
@@ -42,11 +44,13 @@ export interface Event {
   description_zh: string;
   location_en: string;
   location_zh: string;
-  startAt: string; // ISO8601
+  startAt: string;
   endAt: string | null;
-  timezone: string; // IANA tz, default 'Asia/Taipei'
+  timezone: string;
   feeAmount: number | null;
-  feeCurrency: string; // default 'TWD'
+  feeCurrency: string;
+  commentsEnabled: boolean;
+  messagingEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -145,6 +149,7 @@ export interface Group {
   description: string;
   discoverableBySearch: boolean;
   memberDataPrivate: boolean;
+  parentGroupId: string | null;
   createdById: string;
   createdAt: string;
   updatedAt: string;
@@ -202,5 +207,29 @@ export interface EventInvite {
   token: string;
   expiresAt: string;
   createdById: string;
+  acceptedByUserId: string | null;
+  acceptedAt: string | null;
+  guestName: string | null;
+  guestEmail: string | null;
+  guestPhone: string | null;
   createdAt: string;
+}
+
+export interface EventSeries {
+  id: string;
+  title_en: string;
+  title_zh: string;
+  groupId: string | null;
+  createdById: string;
+  createdAt: string;
+  events?: EventWithCounts[];
+}
+
+export interface EventInvitee {
+  inviteId: string;
+  userId: string | null;
+  displayName: string | null;
+  email: string | null;
+  guestName: string | null;
+  acceptedAt: string | null;
 }

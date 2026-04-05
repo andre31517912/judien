@@ -41,6 +41,12 @@ export class EventInvitesController {
     return this.eventInvitesService.createInvite(dto.eventId, user.id);
   }
 
+  // GET /api/event-invites/:token/info – get invite info without accepting (public)
+  @Get(':token/info')
+  async getInviteInfo(@Param('token') token: string) {
+    return this.eventInvitesService.getInviteInfo(token);
+  }
+
   // POST /api/event-invites/:token/accept – accept invite (public, no auth needed)
   @UseGuards(new OptionalJwtGuard())
   @Post(':token/accept')
@@ -58,8 +64,17 @@ export class EventInvitesController {
     @Param('eventId') eventId: string,
     @CurrentUser() user: User,
   ) {
-    // TODO: verify event ownership
     return this.eventInvitesService.getEventInvites(eventId);
+  }
+
+  // GET /api/event-invites/event/:eventId/invitees – list who accepted invites
+  @UseGuards(AuthGuard('jwt'))
+  @Get('event/:eventId/invitees')
+  async getEventInvitees(
+    @Param('eventId') eventId: string,
+    @CurrentUser() _user: User,
+  ) {
+    return this.eventInvitesService.getEventInvitees(eventId);
   }
 
   // DELETE /api/event-invites/:inviteId – revoke invite (creator/admin only)
@@ -69,7 +84,6 @@ export class EventInvitesController {
     @Param('inviteId') inviteId: string,
     @CurrentUser() user: User,
   ) {
-    // TODO: verify invite ownership
     return this.eventInvitesService.revokeInvite(inviteId);
   }
 }

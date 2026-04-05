@@ -88,7 +88,6 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-semibold text-gray-900">{group.name}</h2>
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">PID: {group.pid}</span>
                   </div>
                   {group.description && <p className="text-sm text-gray-600">{group.description}</p>}
                   <div className="flex flex-wrap gap-2 text-xs text-gray-500">

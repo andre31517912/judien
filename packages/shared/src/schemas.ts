@@ -47,6 +47,8 @@ export type LoginDto = z.infer<typeof LoginSchema>;
 
 export const CreateEventSchema = z.object({
   groupId: z.string().min(1).optional(),
+  seriesId: z.string().min(1).optional(),
+  partNumber: z.number().int().positive().optional(),
   title_en: z.string().max(200).default(''),
   title_zh: z.string().max(200).default(''),
   description_en: z.string().max(10000).default(''),
@@ -59,6 +61,8 @@ export const CreateEventSchema = z.object({
   feeAmount: z.number().nonnegative().nullable().optional(),
   feeCurrency: z.string().length(3).default('TWD'),
   coverImageUrl: z.string().url().nullable().optional(),
+  commentsEnabled: z.boolean().default(true),
+  messagingEnabled: z.boolean().default(true),
 });
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
 
@@ -204,6 +208,12 @@ export const ChangeGroupMemberRoleSchema = z.object({
 });
 export type ChangeGroupMemberRoleDto = z.infer<typeof ChangeGroupMemberRoleSchema>;
 
+export const AddMemberDirectlySchema = z.object({
+  identifier: z.string().min(1),
+  role: z.enum(['GROUP_ADMIN', 'MEMBER']).default('MEMBER'),
+});
+export type AddMemberDirectlyDto = z.infer<typeof AddMemberDirectlySchema>;
+
 export const CommentListQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(30),
@@ -236,3 +246,35 @@ export const AcceptEventInviteSchema = z.object({
   email: z.string().email().optional(),
 });
 export type AcceptEventInviteDto = z.infer<typeof AcceptEventInviteSchema>;
+
+// ─── EventSeries ─────────────────────────────────────────────────────────────
+
+export const CreateEventSeriesSchema = z.object({
+  title_en: z.string().min(1).max(200),
+  title_zh: z.string().min(1).max(200),
+  groupId: z.string().min(1).optional(),
+});
+export type CreateEventSeriesDto = z.infer<typeof CreateEventSeriesSchema>;
+
+export const LinkEventToSeriesSchema = z.object({
+  seriesId: z.string().min(1),
+  partNumber: z.number().int().positive(),
+});
+export type LinkEventToSeriesDto = z.infer<typeof LinkEventToSeriesSchema>;
+
+// ─── Subgroup ─────────────────────────────────────────────────────────────────
+
+export const SetParentGroupSchema = z.object({
+  parentGroupId: z.string().min(1).nullable(),
+});
+export type SetParentGroupDto = z.infer<typeof SetParentGroupSchema>;
+
+// ─── Guest Login ──────────────────────────────────────────────────────────────
+
+export const GuestGroupJoinSchema = z.object({
+  groupInviteToken: z.string().min(1),
+  displayName: z.string().min(1).max(100),
+  phoneE164: phoneSchema,
+  email: z.string().email().optional(),
+});
+export type GuestGroupJoinDto = z.infer<typeof GuestGroupJoinSchema>;

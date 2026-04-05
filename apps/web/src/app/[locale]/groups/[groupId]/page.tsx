@@ -100,6 +100,25 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   // Active tab for the management area (GROUP_ADMIN only)
   const [adminTab, setAdminTab] = useState<'invite' | 'news' | 'event' | 'requests'>('invite');
 
+  type SubgroupInfo = { id: string; name: string; description: string };
+  type RelationshipsData = {
+    parentGroup: SubgroupInfo | null;
+    subgroups: SubgroupInfo[];
+  };
+  const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
+  const [relationshipsLoading, setRelationshipsLoading] = useState(false);
+  const [showRelationships, setShowRelationships] = useState(false);
+
+  const loadRelationships = async () => {
+    setRelationshipsLoading(true);
+    try {
+      const data = await apiFetch<RelationshipsData>(`/groups/${params.groupId}/relationships`);
+      setRelationships(data);
+    } finally {
+      setRelationshipsLoading(false);
+    }
+  };
+
   const loadPage = async () => {
     setPageLoading(true);
     setError('');
@@ -355,7 +374,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{group.pid}</span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
               isGroupAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
@@ -879,6 +897,67 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 )}
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* Group relationships (parent / subgroups) */}
+      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">{zh ? '群組關聯' : 'Group Relationships'}</h2>
+          <button
+            onClick={() => {
+              if (showRelationships) {
+                setShowRelationships(false);
+              } else {
+                setShowRelationships(true);
+                if (!relationships) loadRelationships();
+              }
+            }}
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            {showRelationships ? (zh ? '收起' : 'Hide') : (zh ? '顯示' : 'Show')}
+          </button>
+        </div>
+        {showRelationships && (
+          <div className="space-y-4">
+            {relationshipsLoading ? (
+              <p className="text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : !relationships ? null : (
+              <>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '上層群組' : 'Parent Group'}</p>
+                  {relationships.parentGroup ? (
+                    <Link
+                      href={`/${params.locale}/groups/${relationships.parentGroup.id}`}
+                      className="inline-flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+                    >
+                      👥 {relationships.parentGroup.name}
+                    </Link>
+                  ) : (
+                    <p className="text-sm text-gray-400">{zh ? '無上層群組。' : 'No parent group.'}</p>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '子群組' : 'Subgroups'}</p>
+                  {relationships.subgroups.length === 0 ? (
+                    <p className="text-sm text-gray-400">{zh ? '無子群組。' : 'No subgroups.'}</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {relationships.subgroups.map((sg) => (
+                        <Link
+                          key={sg.id}
+                          href={`/${params.locale}/groups/${sg.id}`}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 transition"
+                        >
+                          👥 {sg.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </section>

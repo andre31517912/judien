@@ -53,6 +53,18 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
   const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
   const [inviteLoading, setInviteLoading] = useState(false);
 
+  const [addIdentifier, setAddIdentifier] = useState('');
+  const [addRole, setAddRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
+  const [addLoading, setAddLoading] = useState(false);
+
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ added: number; already_member: number; not_found: number } | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [pendingImportType, setPendingImportType] = useState<'xlsx' | 'txt' | null>(null);
+
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
 
@@ -70,6 +82,69 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
+
+  const handleImportMembers = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setShowImportModal(false);
+    setPendingImportType(null);
+    setImportLoading(true);
+    setImportResult(null);
+    setError('');
+    setSuccess('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/groups/${params.groupId}/members/import`,
+        { method: 'POST', body: formData, credentials: 'include' }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Import failed' }));
+        throw new Error(err.message ?? 'Import failed');
+      }
+      const data = await res.json();
+      setImportResult(data);
+      setSuccess(zh ? '匯入完成。' : 'Import complete.');
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Import failed.');
+    } finally {
+      setImportLoading(false);
+      if (importFileRef.current) importFileRef.current.value = '';
+    }
+  };
+
+  const triggerImport = (type: 'xlsx' | 'txt') => {
+    setPendingImportType(type);
+    setShowImportModal(false);
+    setTimeout(() => importFileRef.current?.click(), 50);
+  };
+
+  const handleExportMembers = async (format: 'xlsx' | 'txt') => {
+    setShowExportModal(false);
+    setExportLoading(true);
+    setError('');
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
+      const res = await fetch(
+        `${apiBase}/groups/${params.groupId}/members/export?format=${format}`,
+        { credentials: 'include' }
+      );
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `members-${params.groupId}.${format === 'xlsx' ? 'xlsx' : 'txt'}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Export failed.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   const loadPage = async () => {
     setPageLoading(true);
@@ -121,6 +196,27 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
       setError((err as Error).message ?? 'Failed to invite member.');
     } finally {
       setInviteLoading(false);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSuccess('');
+    setError('');
+    setAddLoading(true);
+    try {
+      const result = await apiFetch<{ added: boolean; displayName: string | null }>(`/groups/${params.groupId}/members`, {
+        method: 'POST',
+        body: JSON.stringify({ identifier: addIdentifier.trim(), role: addRole }),
+      });
+      setAddIdentifier('');
+      setAddRole('MEMBER');
+      setSuccess(zh ? `成員已新增：${result.displayName ?? addIdentifier.trim()}` : `Member added: ${result.displayName ?? addIdentifier.trim()}`);
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to add member.');
+    } finally {
+      setAddLoading(false);
     }
   };
 
@@ -216,7 +312,6 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
         <Link href={`/${params.locale}/admin/groups`} className="text-sm text-gray-500 hover:text-gray-800">← {zh ? '返回群組列表' : 'Back to groups'}</Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold text-gray-900">{groupItem.group.name}</h1>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">PID: {groupItem.group.pid}</span>
           <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700">{groupItem.membership.role}</span>
         </div>
         {groupItem.group.description && <p className="text-sm text-gray-500">{groupItem.group.description}</p>}
@@ -226,7 +321,7 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
       {success && <p className="text-sm text-green-600">{success}</p>}
 
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">{zh ? '加入成員' : 'Add Members'}</h2>
+        <h2 className="text-lg font-semibold text-gray-900">{zh ? '邀請成員' : 'Invite Member'}</h2>
         <p className="mt-1 text-sm text-gray-500">{zh ? '輸入電子郵件或手機號碼發送群組邀請。' : 'Send a group invitation by email or phone.'}</p>
         <form onSubmit={handleInvite} className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
@@ -253,13 +348,116 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
       </section>
 
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
+        <p className="mt-1 text-sm text-gray-500">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
+        <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '電子郵件 / 手機 / 用戶 ID' : 'Email / Phone / User ID'}</label>
+            <input value={addIdentifier} onChange={(e) => setAddIdentifier(e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" placeholder={zh ? 'member@example.com 或 +886…' : 'member@example.com or +886…'} />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '角色' : 'Role'}</label>
+            <select value={addRole} onChange={(e) => setAddRole(e.target.value as 'MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border px-3 py-2 text-sm">
+              <option value="MEMBER">{zh ? '成員' : 'Member'}</option>
+              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group admin'}</option>
+            </select>
+          </div>
+          <div className="flex items-end md:col-span-3">
+            <button type="submit" disabled={addLoading || !addIdentifier.trim()} className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+              {addLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '直接新增' : 'Add Directly')}
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">{zh ? '群組成員' : 'Members'}</h2>
             <p className="mt-1 text-sm text-gray-500">{zh ? '目前此群組內可見的成員名單。' : 'Current visible members in this group.'}</p>
           </div>
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{members.length} {zh ? '位成員' : 'members'}</span>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{members.length} {zh ? '位成員' : 'members'}</span>
+            <div className="relative">
+              <button
+                onClick={() => setShowImportModal(true)}
+                disabled={importLoading}
+                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入' : '📥 Import')}
+              </button>
+              {showImportModal && (
+                <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <p className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100">{zh ? '選擇格式' : 'Choose format'}</p>
+                  <button
+                    onClick={() => triggerImport('xlsx')}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    📊 Excel (.xlsx)
+                  </button>
+                  <button
+                    onClick={() => triggerImport('txt')}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    📄 Text (.txt)
+                  </button>
+                  <button
+                    onClick={() => setShowImportModal(false)}
+                    className="w-full px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 border-t border-gray-100"
+                  >
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                </div>
+              )}
+              <input
+                ref={importFileRef}
+                type="file"
+                accept={pendingImportType === 'txt' ? '.txt' : '.xlsx,.xls'}
+                onChange={handleImportMembers}
+                className="hidden"
+              />
+            </div>
+            <div className="relative">
+              <button
+                onClick={() => setShowExportModal(true)}
+                disabled={exportLoading}
+                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出' : '📤 Export')}
+              </button>
+              {showExportModal && (
+                <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 bg-white shadow-lg">
+                  <p className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100">{zh ? '選擇格式' : 'Choose format'}</p>
+                  <button
+                    onClick={() => handleExportMembers('xlsx')}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    📊 Excel (.xlsx)
+                  </button>
+                  <button
+                    onClick={() => handleExportMembers('txt')}
+                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    📄 Text (.txt)
+                  </button>
+                  <button
+                    onClick={() => setShowExportModal(false)}
+                    className="w-full px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 border-t border-gray-100"
+                  >
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
+        {importResult && (
+          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
+            {zh
+              ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
+              : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
+          </div>
+        )}
         <div className="grid gap-3">
           {members.map((member) => (
             <div key={member.userId} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">

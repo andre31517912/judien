@@ -8,10 +8,16 @@ import type { User } from '../__generated__/prisma';
 export class EventInvitesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Create an invite link for an event.
-   * Anyone can accept the link without being a registered user.
-   */
+  async getInviteInfo(token: string) {
+    const invite = await this.prisma.eventInvite.findUnique({
+      where: { token },
+      include: { event: { select: { id: true, title_en: true, title_zh: true } } },
+    });
+    if (!invite) throw new NotFoundException('Invite not found or expired.');
+    if (new Date() > invite.expiresAt) throw new BadRequestException('Invite has expired.');
+    return { eventId: invite.event.id, title_en: invite.event.title_en, title_zh: invite.event.title_zh };
+  }
+
   async createInvite(eventId: string, createdById: string) {
     // Verify event exists
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
@@ -101,7 +107,42 @@ export class EventInvitesService {
       });
     }
 
+    // Track acceptance on the invite record
+    await this.prisma.eventInvite.update({
+      where: { id: invite.id },
+      data: {
+        acceptedByUserId: user.id,
+        acceptedAt: new Date(),
+        guestName: dto.displayName,
+        guestEmail: dto.email ?? null,
+        guestPhone: dto.phoneE164,
+      },
+    });
+
     return { user, eventId: invite.eventId };
+  }
+
+  /**
+   * List invitees (accepted + pending) for an event
+   */
+  async getEventInvitees(eventId: string) {
+    const invites = await this.prisma.eventInvite.findMany({
+      where: { eventId },
+      include: {
+        acceptedBy: { select: { id: true, displayName: true, email: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return invites.map((inv) => ({
+      inviteId: inv.id,
+      userId: inv.acceptedByUserId,
+      displayName: inv.acceptedBy?.displayName ?? null,
+      email: inv.acceptedBy?.email ?? null,
+      guestName: inv.guestName,
+      acceptedAt: inv.acceptedAt?.toISOString() ?? null,
+      token: inv.token,
+      expiresAt: inv.expiresAt.toISOString(),
+    }));
   }
 
   /**
@@ -118,7 +159,6 @@ export class EventInvitesService {
    * Invalidate/revoke an invite
    */
   async revokeInvite(inviteId: string) {
-    // Set expiry to now
     return this.prisma.eventInvite.update({
       where: { id: inviteId },
       data: { expiresAt: new Date() },

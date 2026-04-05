@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
 /**
+ * Model EventSeries
+ * 
+ */
+export type EventSeries = $Result.DefaultSelection<Prisma.$EventSeriesPayload>
+/**
  * Model EventInvite
  * 
  */
@@ -330,6 +335,16 @@ export class PrismaClient<
     * ```
     */
   get event(): Prisma.EventDelegate<ExtArgs>;
+
+  /**
+   * `prisma.eventSeries`: Exposes CRUD operations for the **EventSeries** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EventSeries
+    * const eventSeries = await prisma.eventSeries.findMany()
+    * ```
+    */
+  get eventSeries(): Prisma.EventSeriesDelegate<ExtArgs>;
 
   /**
    * `prisma.eventInvite`: Exposes CRUD operations for the **EventInvite** model.
@@ -883,6 +898,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Event: 'Event',
+    EventSeries: 'EventSeries',
     EventInvite: 'EventInvite',
     RSVP: 'RSVP',
     Comment: 'Comment',
@@ -909,7 +925,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "event" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest"
+      modelProps: "user" | "event" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1050,6 +1066,76 @@ export namespace Prisma {
           count: {
             args: Prisma.EventCountArgs<ExtArgs>
             result: $Utils.Optional<EventCountAggregateOutputType> | number
+          }
+        }
+      }
+      EventSeries: {
+        payload: Prisma.$EventSeriesPayload<ExtArgs>
+        fields: Prisma.EventSeriesFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EventSeriesFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EventSeriesFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          findFirst: {
+            args: Prisma.EventSeriesFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EventSeriesFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          findMany: {
+            args: Prisma.EventSeriesFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>[]
+          }
+          create: {
+            args: Prisma.EventSeriesCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          createMany: {
+            args: Prisma.EventSeriesCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EventSeriesCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>[]
+          }
+          delete: {
+            args: Prisma.EventSeriesDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          update: {
+            args: Prisma.EventSeriesUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          deleteMany: {
+            args: Prisma.EventSeriesDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EventSeriesUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EventSeriesUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventSeriesPayload>
+          }
+          aggregate: {
+            args: Prisma.EventSeriesAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEventSeries>
+          }
+          groupBy: {
+            args: Prisma.EventSeriesGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EventSeriesGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EventSeriesCountArgs<ExtArgs>
+            result: $Utils.Optional<EventSeriesCountAggregateOutputType> | number
           }
         }
       }
@@ -1998,6 +2084,8 @@ export namespace Prisma {
     groupJoinRequests: number
     reviewedJoinRequests: number
     eventInvitesCreated: number
+    eventInvitesAccepted: number
+    eventSeriesCreated: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2015,6 +2103,8 @@ export namespace Prisma {
     groupJoinRequests?: boolean | UserCountOutputTypeCountGroupJoinRequestsArgs
     reviewedJoinRequests?: boolean | UserCountOutputTypeCountReviewedJoinRequestsArgs
     eventInvitesCreated?: boolean | UserCountOutputTypeCountEventInvitesCreatedArgs
+    eventInvitesAccepted?: boolean | UserCountOutputTypeCountEventInvitesAcceptedArgs
+    eventSeriesCreated?: boolean | UserCountOutputTypeCountEventSeriesCreatedArgs
   }
 
   // Custom InputTypes
@@ -2126,6 +2216,20 @@ export namespace Prisma {
     where?: EventInviteWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEventInvitesAcceptedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventInviteWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEventSeriesCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventSeriesWhereInput
+  }
+
 
   /**
    * Count Type EventCountOutputType
@@ -2195,6 +2299,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type EventSeriesCountOutputType
+   */
+
+  export type EventSeriesCountOutputType = {
+    events: number
+  }
+
+  export type EventSeriesCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    events?: boolean | EventSeriesCountOutputTypeCountEventsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * EventSeriesCountOutputType without action
+   */
+  export type EventSeriesCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeriesCountOutputType
+     */
+    select?: EventSeriesCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * EventSeriesCountOutputType without action
+   */
+  export type EventSeriesCountOutputTypeCountEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventWhereInput
+  }
+
+
+  /**
    * Count Type CommentCountOutputType
    */
 
@@ -2230,21 +2365,25 @@ export namespace Prisma {
    */
 
   export type GroupCountOutputType = {
+    subgroups: number
     memberships: number
     invites: number
     joinRequests: number
     messages: number
     events: number
     news: number
+    eventSeries: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subgroups?: boolean | GroupCountOutputTypeCountSubgroupsArgs
     memberships?: boolean | GroupCountOutputTypeCountMembershipsArgs
     invites?: boolean | GroupCountOutputTypeCountInvitesArgs
     joinRequests?: boolean | GroupCountOutputTypeCountJoinRequestsArgs
     messages?: boolean | GroupCountOutputTypeCountMessagesArgs
     events?: boolean | GroupCountOutputTypeCountEventsArgs
     news?: boolean | GroupCountOutputTypeCountNewsArgs
+    eventSeries?: boolean | GroupCountOutputTypeCountEventSeriesArgs
   }
 
   // Custom InputTypes
@@ -2256,6 +2395,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the GroupCountOutputType
      */
     select?: GroupCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountSubgroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroupWhereInput
   }
 
   /**
@@ -2300,6 +2446,13 @@ export namespace Prisma {
     where?: NewsWhereInput
   }
 
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountEventSeriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventSeriesWhereInput
+  }
+
 
   /**
    * Models
@@ -2325,6 +2478,7 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteSms: boolean | null
     muteEmail: boolean | null
+    isGuest: boolean | null
     createdAt: Date | null
   }
 
@@ -2338,6 +2492,7 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteSms: boolean | null
     muteEmail: boolean | null
+    isGuest: boolean | null
     createdAt: Date | null
   }
 
@@ -2351,6 +2506,7 @@ export namespace Prisma {
     role: number
     muteSms: number
     muteEmail: number
+    isGuest: number
     createdAt: number
     _all: number
   }
@@ -2366,6 +2522,7 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    isGuest?: true
     createdAt?: true
   }
 
@@ -2379,6 +2536,7 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    isGuest?: true
     createdAt?: true
   }
 
@@ -2392,6 +2550,7 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    isGuest?: true
     createdAt?: true
     _all?: true
   }
@@ -2478,6 +2637,7 @@ export namespace Prisma {
     role: $Enums.Role
     muteSms: boolean
     muteEmail: boolean
+    isGuest: boolean
     createdAt: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -2508,6 +2668,7 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: boolean
     events?: boolean | User$eventsArgs<ExtArgs>
     rsvps?: boolean | User$rsvpsArgs<ExtArgs>
@@ -2523,6 +2684,8 @@ export namespace Prisma {
     groupJoinRequests?: boolean | User$groupJoinRequestsArgs<ExtArgs>
     reviewedJoinRequests?: boolean | User$reviewedJoinRequestsArgs<ExtArgs>
     eventInvitesCreated?: boolean | User$eventInvitesCreatedArgs<ExtArgs>
+    eventInvitesAccepted?: boolean | User$eventInvitesAcceptedArgs<ExtArgs>
+    eventSeriesCreated?: boolean | User$eventSeriesCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2536,6 +2699,7 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -2549,6 +2713,7 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: boolean
   }
 
@@ -2567,6 +2732,8 @@ export namespace Prisma {
     groupJoinRequests?: boolean | User$groupJoinRequestsArgs<ExtArgs>
     reviewedJoinRequests?: boolean | User$reviewedJoinRequestsArgs<ExtArgs>
     eventInvitesCreated?: boolean | User$eventInvitesCreatedArgs<ExtArgs>
+    eventInvitesAccepted?: boolean | User$eventInvitesAcceptedArgs<ExtArgs>
+    eventSeriesCreated?: boolean | User$eventSeriesCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2588,6 +2755,8 @@ export namespace Prisma {
       groupJoinRequests: Prisma.$GroupJoinRequestPayload<ExtArgs>[]
       reviewedJoinRequests: Prisma.$GroupJoinRequestPayload<ExtArgs>[]
       eventInvitesCreated: Prisma.$EventInvitePayload<ExtArgs>[]
+      eventInvitesAccepted: Prisma.$EventInvitePayload<ExtArgs>[]
+      eventSeriesCreated: Prisma.$EventSeriesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2599,6 +2768,7 @@ export namespace Prisma {
       role: $Enums.Role
       muteSms: boolean
       muteEmail: boolean
+      isGuest: boolean
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -2978,6 +3148,8 @@ export namespace Prisma {
     groupJoinRequests<T extends User$groupJoinRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$groupJoinRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupJoinRequestPayload<ExtArgs>, T, "findMany"> | Null>
     reviewedJoinRequests<T extends User$reviewedJoinRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$reviewedJoinRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupJoinRequestPayload<ExtArgs>, T, "findMany"> | Null>
     eventInvitesCreated<T extends User$eventInvitesCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$eventInvitesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventInvitePayload<ExtArgs>, T, "findMany"> | Null>
+    eventInvitesAccepted<T extends User$eventInvitesAcceptedArgs<ExtArgs> = {}>(args?: Subset<T, User$eventInvitesAcceptedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventInvitePayload<ExtArgs>, T, "findMany"> | Null>
+    eventSeriesCreated<T extends User$eventSeriesCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$eventSeriesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3016,6 +3188,7 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'Role'>
     readonly muteSms: FieldRef<"User", 'Boolean'>
     readonly muteEmail: FieldRef<"User", 'Boolean'>
+    readonly isGuest: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -3611,6 +3784,46 @@ export namespace Prisma {
   }
 
   /**
+   * User.eventInvitesAccepted
+   */
+  export type User$eventInvitesAcceptedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventInvite
+     */
+    select?: EventInviteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventInviteInclude<ExtArgs> | null
+    where?: EventInviteWhereInput
+    orderBy?: EventInviteOrderByWithRelationInput | EventInviteOrderByWithRelationInput[]
+    cursor?: EventInviteWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EventInviteScalarFieldEnum | EventInviteScalarFieldEnum[]
+  }
+
+  /**
+   * User.eventSeriesCreated
+   */
+  export type User$eventSeriesCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    where?: EventSeriesWhereInput
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    cursor?: EventSeriesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3638,10 +3851,12 @@ export namespace Prisma {
   }
 
   export type EventAvgAggregateOutputType = {
+    partNumber: number | null
     feeAmount: Decimal | null
   }
 
   export type EventSumAggregateOutputType = {
+    partNumber: number | null
     feeAmount: Decimal | null
   }
 
@@ -3649,6 +3864,8 @@ export namespace Prisma {
     id: string | null
     createdById: string | null
     groupId: string | null
+    seriesId: string | null
+    partNumber: number | null
     coverImageUrl: string | null
     title_en: string | null
     title_zh: string | null
@@ -3661,6 +3878,8 @@ export namespace Prisma {
     timezone: string | null
     feeAmount: Decimal | null
     feeCurrency: string | null
+    commentsEnabled: boolean | null
+    messagingEnabled: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3669,6 +3888,8 @@ export namespace Prisma {
     id: string | null
     createdById: string | null
     groupId: string | null
+    seriesId: string | null
+    partNumber: number | null
     coverImageUrl: string | null
     title_en: string | null
     title_zh: string | null
@@ -3681,6 +3902,8 @@ export namespace Prisma {
     timezone: string | null
     feeAmount: Decimal | null
     feeCurrency: string | null
+    commentsEnabled: boolean | null
+    messagingEnabled: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3689,6 +3912,8 @@ export namespace Prisma {
     id: number
     createdById: number
     groupId: number
+    seriesId: number
+    partNumber: number
     coverImageUrl: number
     title_en: number
     title_zh: number
@@ -3701,6 +3926,8 @@ export namespace Prisma {
     timezone: number
     feeAmount: number
     feeCurrency: number
+    commentsEnabled: number
+    messagingEnabled: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -3708,10 +3935,12 @@ export namespace Prisma {
 
 
   export type EventAvgAggregateInputType = {
+    partNumber?: true
     feeAmount?: true
   }
 
   export type EventSumAggregateInputType = {
+    partNumber?: true
     feeAmount?: true
   }
 
@@ -3719,6 +3948,8 @@ export namespace Prisma {
     id?: true
     createdById?: true
     groupId?: true
+    seriesId?: true
+    partNumber?: true
     coverImageUrl?: true
     title_en?: true
     title_zh?: true
@@ -3731,6 +3962,8 @@ export namespace Prisma {
     timezone?: true
     feeAmount?: true
     feeCurrency?: true
+    commentsEnabled?: true
+    messagingEnabled?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3739,6 +3972,8 @@ export namespace Prisma {
     id?: true
     createdById?: true
     groupId?: true
+    seriesId?: true
+    partNumber?: true
     coverImageUrl?: true
     title_en?: true
     title_zh?: true
@@ -3751,6 +3986,8 @@ export namespace Prisma {
     timezone?: true
     feeAmount?: true
     feeCurrency?: true
+    commentsEnabled?: true
+    messagingEnabled?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3759,6 +3996,8 @@ export namespace Prisma {
     id?: true
     createdById?: true
     groupId?: true
+    seriesId?: true
+    partNumber?: true
     coverImageUrl?: true
     title_en?: true
     title_zh?: true
@@ -3771,6 +4010,8 @@ export namespace Prisma {
     timezone?: true
     feeAmount?: true
     feeCurrency?: true
+    commentsEnabled?: true
+    messagingEnabled?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -3866,6 +4107,8 @@ export namespace Prisma {
     id: string
     createdById: string
     groupId: string | null
+    seriesId: string | null
+    partNumber: number | null
     coverImageUrl: string | null
     title_en: string
     title_zh: string
@@ -3878,6 +4121,8 @@ export namespace Prisma {
     timezone: string
     feeAmount: Decimal | null
     feeCurrency: string
+    commentsEnabled: boolean
+    messagingEnabled: boolean
     createdAt: Date
     updatedAt: Date
     _count: EventCountAggregateOutputType | null
@@ -3905,6 +4150,8 @@ export namespace Prisma {
     id?: boolean
     createdById?: boolean
     groupId?: boolean
+    seriesId?: boolean
+    partNumber?: boolean
     coverImageUrl?: boolean
     title_en?: boolean
     title_zh?: boolean
@@ -3917,10 +4164,13 @@ export namespace Prisma {
     timezone?: boolean
     feeAmount?: boolean
     feeCurrency?: boolean
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     group?: boolean | Event$groupArgs<ExtArgs>
+    series?: boolean | Event$seriesArgs<ExtArgs>
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
     reminderRules?: boolean | Event$reminderRulesArgs<ExtArgs>
@@ -3933,6 +4183,8 @@ export namespace Prisma {
     id?: boolean
     createdById?: boolean
     groupId?: boolean
+    seriesId?: boolean
+    partNumber?: boolean
     coverImageUrl?: boolean
     title_en?: boolean
     title_zh?: boolean
@@ -3945,16 +4197,21 @@ export namespace Prisma {
     timezone?: boolean
     feeAmount?: boolean
     feeCurrency?: boolean
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     group?: boolean | Event$groupArgs<ExtArgs>
+    series?: boolean | Event$seriesArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
   export type EventSelectScalar = {
     id?: boolean
     createdById?: boolean
     groupId?: boolean
+    seriesId?: boolean
+    partNumber?: boolean
     coverImageUrl?: boolean
     title_en?: boolean
     title_zh?: boolean
@@ -3967,6 +4224,8 @@ export namespace Prisma {
     timezone?: boolean
     feeAmount?: boolean
     feeCurrency?: boolean
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -3974,6 +4233,7 @@ export namespace Prisma {
   export type EventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     group?: boolean | Event$groupArgs<ExtArgs>
+    series?: boolean | Event$seriesArgs<ExtArgs>
     rsvps?: boolean | Event$rsvpsArgs<ExtArgs>
     comments?: boolean | Event$commentsArgs<ExtArgs>
     reminderRules?: boolean | Event$reminderRulesArgs<ExtArgs>
@@ -3984,6 +4244,7 @@ export namespace Prisma {
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
     group?: boolean | Event$groupArgs<ExtArgs>
+    series?: boolean | Event$seriesArgs<ExtArgs>
   }
 
   export type $EventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3991,6 +4252,7 @@ export namespace Prisma {
     objects: {
       createdBy: Prisma.$UserPayload<ExtArgs>
       group: Prisma.$GroupPayload<ExtArgs> | null
+      series: Prisma.$EventSeriesPayload<ExtArgs> | null
       rsvps: Prisma.$RSVPPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       reminderRules: Prisma.$ReminderRulePayload<ExtArgs>[]
@@ -4001,6 +4263,8 @@ export namespace Prisma {
       id: string
       createdById: string
       groupId: string | null
+      seriesId: string | null
+      partNumber: number | null
       coverImageUrl: string | null
       title_en: string
       title_zh: string
@@ -4013,6 +4277,8 @@ export namespace Prisma {
       timezone: string
       feeAmount: Prisma.Decimal | null
       feeCurrency: string
+      commentsEnabled: boolean
+      messagingEnabled: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["event"]>
@@ -4381,6 +4647,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     group<T extends Event$groupArgs<ExtArgs> = {}>(args?: Subset<T, Event$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    series<T extends Event$seriesArgs<ExtArgs> = {}>(args?: Subset<T, Event$seriesArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     rsvps<T extends Event$rsvpsArgs<ExtArgs> = {}>(args?: Subset<T, Event$rsvpsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RSVPPayload<ExtArgs>, T, "findMany"> | Null>
     comments<T extends Event$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Event$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany"> | Null>
     reminderRules<T extends Event$reminderRulesArgs<ExtArgs> = {}>(args?: Subset<T, Event$reminderRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReminderRulePayload<ExtArgs>, T, "findMany"> | Null>
@@ -4418,6 +4685,8 @@ export namespace Prisma {
     readonly id: FieldRef<"Event", 'String'>
     readonly createdById: FieldRef<"Event", 'String'>
     readonly groupId: FieldRef<"Event", 'String'>
+    readonly seriesId: FieldRef<"Event", 'String'>
+    readonly partNumber: FieldRef<"Event", 'Int'>
     readonly coverImageUrl: FieldRef<"Event", 'String'>
     readonly title_en: FieldRef<"Event", 'String'>
     readonly title_zh: FieldRef<"Event", 'String'>
@@ -4430,6 +4699,8 @@ export namespace Prisma {
     readonly timezone: FieldRef<"Event", 'String'>
     readonly feeAmount: FieldRef<"Event", 'Decimal'>
     readonly feeCurrency: FieldRef<"Event", 'String'>
+    readonly commentsEnabled: FieldRef<"Event", 'Boolean'>
+    readonly messagingEnabled: FieldRef<"Event", 'Boolean'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
   }
@@ -4765,6 +5036,21 @@ export namespace Prisma {
   }
 
   /**
+   * Event.series
+   */
+  export type Event$seriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    where?: EventSeriesWhereInput
+  }
+
+  /**
    * Event.rsvps
    */
   export type Event$rsvpsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4880,6 +5166,998 @@ export namespace Prisma {
 
 
   /**
+   * Model EventSeries
+   */
+
+  export type AggregateEventSeries = {
+    _count: EventSeriesCountAggregateOutputType | null
+    _min: EventSeriesMinAggregateOutputType | null
+    _max: EventSeriesMaxAggregateOutputType | null
+  }
+
+  export type EventSeriesMinAggregateOutputType = {
+    id: string | null
+    title_en: string | null
+    title_zh: string | null
+    groupId: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type EventSeriesMaxAggregateOutputType = {
+    id: string | null
+    title_en: string | null
+    title_zh: string | null
+    groupId: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type EventSeriesCountAggregateOutputType = {
+    id: number
+    title_en: number
+    title_zh: number
+    groupId: number
+    createdById: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type EventSeriesMinAggregateInputType = {
+    id?: true
+    title_en?: true
+    title_zh?: true
+    groupId?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type EventSeriesMaxAggregateInputType = {
+    id?: true
+    title_en?: true
+    title_zh?: true
+    groupId?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type EventSeriesCountAggregateInputType = {
+    id?: true
+    title_en?: true
+    title_zh?: true
+    groupId?: true
+    createdById?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type EventSeriesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventSeries to aggregate.
+     */
+    where?: EventSeriesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventSeries to fetch.
+     */
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EventSeriesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventSeries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventSeries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EventSeries
+    **/
+    _count?: true | EventSeriesCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EventSeriesMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EventSeriesMaxAggregateInputType
+  }
+
+  export type GetEventSeriesAggregateType<T extends EventSeriesAggregateArgs> = {
+        [P in keyof T & keyof AggregateEventSeries]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEventSeries[P]>
+      : GetScalarType<T[P], AggregateEventSeries[P]>
+  }
+
+
+
+
+  export type EventSeriesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventSeriesWhereInput
+    orderBy?: EventSeriesOrderByWithAggregationInput | EventSeriesOrderByWithAggregationInput[]
+    by: EventSeriesScalarFieldEnum[] | EventSeriesScalarFieldEnum
+    having?: EventSeriesScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EventSeriesCountAggregateInputType | true
+    _min?: EventSeriesMinAggregateInputType
+    _max?: EventSeriesMaxAggregateInputType
+  }
+
+  export type EventSeriesGroupByOutputType = {
+    id: string
+    title_en: string
+    title_zh: string
+    groupId: string | null
+    createdById: string
+    createdAt: Date
+    _count: EventSeriesCountAggregateOutputType | null
+    _min: EventSeriesMinAggregateOutputType | null
+    _max: EventSeriesMaxAggregateOutputType | null
+  }
+
+  type GetEventSeriesGroupByPayload<T extends EventSeriesGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EventSeriesGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EventSeriesGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EventSeriesGroupByOutputType[P]>
+            : GetScalarType<T[P], EventSeriesGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EventSeriesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    groupId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | EventSeries$groupArgs<ExtArgs>
+    events?: boolean | EventSeries$eventsArgs<ExtArgs>
+    _count?: boolean | EventSeriesCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventSeries"]>
+
+  export type EventSeriesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    groupId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | EventSeries$groupArgs<ExtArgs>
+  }, ExtArgs["result"]["eventSeries"]>
+
+  export type EventSeriesSelectScalar = {
+    id?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    groupId?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }
+
+  export type EventSeriesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | EventSeries$groupArgs<ExtArgs>
+    events?: boolean | EventSeries$eventsArgs<ExtArgs>
+    _count?: boolean | EventSeriesCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type EventSeriesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | EventSeries$groupArgs<ExtArgs>
+  }
+
+  export type $EventSeriesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EventSeries"
+    objects: {
+      createdBy: Prisma.$UserPayload<ExtArgs>
+      group: Prisma.$GroupPayload<ExtArgs> | null
+      events: Prisma.$EventPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title_en: string
+      title_zh: string
+      groupId: string | null
+      createdById: string
+      createdAt: Date
+    }, ExtArgs["result"]["eventSeries"]>
+    composites: {}
+  }
+
+  type EventSeriesGetPayload<S extends boolean | null | undefined | EventSeriesDefaultArgs> = $Result.GetResult<Prisma.$EventSeriesPayload, S>
+
+  type EventSeriesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<EventSeriesFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: EventSeriesCountAggregateInputType | true
+    }
+
+  export interface EventSeriesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EventSeries'], meta: { name: 'EventSeries' } }
+    /**
+     * Find zero or one EventSeries that matches the filter.
+     * @param {EventSeriesFindUniqueArgs} args - Arguments to find a EventSeries
+     * @example
+     * // Get one EventSeries
+     * const eventSeries = await prisma.eventSeries.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EventSeriesFindUniqueArgs>(args: SelectSubset<T, EventSeriesFindUniqueArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one EventSeries that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {EventSeriesFindUniqueOrThrowArgs} args - Arguments to find a EventSeries
+     * @example
+     * // Get one EventSeries
+     * const eventSeries = await prisma.eventSeries.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EventSeriesFindUniqueOrThrowArgs>(args: SelectSubset<T, EventSeriesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first EventSeries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesFindFirstArgs} args - Arguments to find a EventSeries
+     * @example
+     * // Get one EventSeries
+     * const eventSeries = await prisma.eventSeries.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EventSeriesFindFirstArgs>(args?: SelectSubset<T, EventSeriesFindFirstArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first EventSeries that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesFindFirstOrThrowArgs} args - Arguments to find a EventSeries
+     * @example
+     * // Get one EventSeries
+     * const eventSeries = await prisma.eventSeries.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EventSeriesFindFirstOrThrowArgs>(args?: SelectSubset<T, EventSeriesFindFirstOrThrowArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more EventSeries that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EventSeries
+     * const eventSeries = await prisma.eventSeries.findMany()
+     * 
+     * // Get first 10 EventSeries
+     * const eventSeries = await prisma.eventSeries.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const eventSeriesWithIdOnly = await prisma.eventSeries.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EventSeriesFindManyArgs>(args?: SelectSubset<T, EventSeriesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a EventSeries.
+     * @param {EventSeriesCreateArgs} args - Arguments to create a EventSeries.
+     * @example
+     * // Create one EventSeries
+     * const EventSeries = await prisma.eventSeries.create({
+     *   data: {
+     *     // ... data to create a EventSeries
+     *   }
+     * })
+     * 
+     */
+    create<T extends EventSeriesCreateArgs>(args: SelectSubset<T, EventSeriesCreateArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many EventSeries.
+     * @param {EventSeriesCreateManyArgs} args - Arguments to create many EventSeries.
+     * @example
+     * // Create many EventSeries
+     * const eventSeries = await prisma.eventSeries.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EventSeriesCreateManyArgs>(args?: SelectSubset<T, EventSeriesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many EventSeries and returns the data saved in the database.
+     * @param {EventSeriesCreateManyAndReturnArgs} args - Arguments to create many EventSeries.
+     * @example
+     * // Create many EventSeries
+     * const eventSeries = await prisma.eventSeries.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many EventSeries and only return the `id`
+     * const eventSeriesWithIdOnly = await prisma.eventSeries.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EventSeriesCreateManyAndReturnArgs>(args?: SelectSubset<T, EventSeriesCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a EventSeries.
+     * @param {EventSeriesDeleteArgs} args - Arguments to delete one EventSeries.
+     * @example
+     * // Delete one EventSeries
+     * const EventSeries = await prisma.eventSeries.delete({
+     *   where: {
+     *     // ... filter to delete one EventSeries
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EventSeriesDeleteArgs>(args: SelectSubset<T, EventSeriesDeleteArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one EventSeries.
+     * @param {EventSeriesUpdateArgs} args - Arguments to update one EventSeries.
+     * @example
+     * // Update one EventSeries
+     * const eventSeries = await prisma.eventSeries.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EventSeriesUpdateArgs>(args: SelectSubset<T, EventSeriesUpdateArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more EventSeries.
+     * @param {EventSeriesDeleteManyArgs} args - Arguments to filter EventSeries to delete.
+     * @example
+     * // Delete a few EventSeries
+     * const { count } = await prisma.eventSeries.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EventSeriesDeleteManyArgs>(args?: SelectSubset<T, EventSeriesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EventSeries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EventSeries
+     * const eventSeries = await prisma.eventSeries.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EventSeriesUpdateManyArgs>(args: SelectSubset<T, EventSeriesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one EventSeries.
+     * @param {EventSeriesUpsertArgs} args - Arguments to update or create a EventSeries.
+     * @example
+     * // Update or create a EventSeries
+     * const eventSeries = await prisma.eventSeries.upsert({
+     *   create: {
+     *     // ... data to create a EventSeries
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EventSeries we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EventSeriesUpsertArgs>(args: SelectSubset<T, EventSeriesUpsertArgs<ExtArgs>>): Prisma__EventSeriesClient<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of EventSeries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesCountArgs} args - Arguments to filter EventSeries to count.
+     * @example
+     * // Count the number of EventSeries
+     * const count = await prisma.eventSeries.count({
+     *   where: {
+     *     // ... the filter for the EventSeries we want to count
+     *   }
+     * })
+    **/
+    count<T extends EventSeriesCountArgs>(
+      args?: Subset<T, EventSeriesCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EventSeriesCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EventSeries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EventSeriesAggregateArgs>(args: Subset<T, EventSeriesAggregateArgs>): Prisma.PrismaPromise<GetEventSeriesAggregateType<T>>
+
+    /**
+     * Group by EventSeries.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventSeriesGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EventSeriesGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EventSeriesGroupByArgs['orderBy'] }
+        : { orderBy?: EventSeriesGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EventSeriesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEventSeriesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EventSeries model
+   */
+  readonly fields: EventSeriesFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EventSeries.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EventSeriesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    group<T extends EventSeries$groupArgs<ExtArgs> = {}>(args?: Subset<T, EventSeries$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    events<T extends EventSeries$eventsArgs<ExtArgs> = {}>(args?: Subset<T, EventSeries$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EventSeries model
+   */ 
+  interface EventSeriesFieldRefs {
+    readonly id: FieldRef<"EventSeries", 'String'>
+    readonly title_en: FieldRef<"EventSeries", 'String'>
+    readonly title_zh: FieldRef<"EventSeries", 'String'>
+    readonly groupId: FieldRef<"EventSeries", 'String'>
+    readonly createdById: FieldRef<"EventSeries", 'String'>
+    readonly createdAt: FieldRef<"EventSeries", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EventSeries findUnique
+   */
+  export type EventSeriesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter, which EventSeries to fetch.
+     */
+    where: EventSeriesWhereUniqueInput
+  }
+
+  /**
+   * EventSeries findUniqueOrThrow
+   */
+  export type EventSeriesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter, which EventSeries to fetch.
+     */
+    where: EventSeriesWhereUniqueInput
+  }
+
+  /**
+   * EventSeries findFirst
+   */
+  export type EventSeriesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter, which EventSeries to fetch.
+     */
+    where?: EventSeriesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventSeries to fetch.
+     */
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventSeries.
+     */
+    cursor?: EventSeriesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventSeries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventSeries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventSeries.
+     */
+    distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
+  }
+
+  /**
+   * EventSeries findFirstOrThrow
+   */
+  export type EventSeriesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter, which EventSeries to fetch.
+     */
+    where?: EventSeriesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventSeries to fetch.
+     */
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventSeries.
+     */
+    cursor?: EventSeriesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventSeries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventSeries.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventSeries.
+     */
+    distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
+  }
+
+  /**
+   * EventSeries findMany
+   */
+  export type EventSeriesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter, which EventSeries to fetch.
+     */
+    where?: EventSeriesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventSeries to fetch.
+     */
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EventSeries.
+     */
+    cursor?: EventSeriesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventSeries from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventSeries.
+     */
+    skip?: number
+    distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
+  }
+
+  /**
+   * EventSeries create
+   */
+  export type EventSeriesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EventSeries.
+     */
+    data: XOR<EventSeriesCreateInput, EventSeriesUncheckedCreateInput>
+  }
+
+  /**
+   * EventSeries createMany
+   */
+  export type EventSeriesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EventSeries.
+     */
+    data: EventSeriesCreateManyInput | EventSeriesCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EventSeries createManyAndReturn
+   */
+  export type EventSeriesCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many EventSeries.
+     */
+    data: EventSeriesCreateManyInput | EventSeriesCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EventSeries update
+   */
+  export type EventSeriesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EventSeries.
+     */
+    data: XOR<EventSeriesUpdateInput, EventSeriesUncheckedUpdateInput>
+    /**
+     * Choose, which EventSeries to update.
+     */
+    where: EventSeriesWhereUniqueInput
+  }
+
+  /**
+   * EventSeries updateMany
+   */
+  export type EventSeriesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EventSeries.
+     */
+    data: XOR<EventSeriesUpdateManyMutationInput, EventSeriesUncheckedUpdateManyInput>
+    /**
+     * Filter which EventSeries to update
+     */
+    where?: EventSeriesWhereInput
+  }
+
+  /**
+   * EventSeries upsert
+   */
+  export type EventSeriesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EventSeries to update in case it exists.
+     */
+    where: EventSeriesWhereUniqueInput
+    /**
+     * In case the EventSeries found by the `where` argument doesn't exist, create a new EventSeries with this data.
+     */
+    create: XOR<EventSeriesCreateInput, EventSeriesUncheckedCreateInput>
+    /**
+     * In case the EventSeries was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EventSeriesUpdateInput, EventSeriesUncheckedUpdateInput>
+  }
+
+  /**
+   * EventSeries delete
+   */
+  export type EventSeriesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    /**
+     * Filter which EventSeries to delete.
+     */
+    where: EventSeriesWhereUniqueInput
+  }
+
+  /**
+   * EventSeries deleteMany
+   */
+  export type EventSeriesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventSeries to delete
+     */
+    where?: EventSeriesWhereInput
+  }
+
+  /**
+   * EventSeries.group
+   */
+  export type EventSeries$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+  }
+
+  /**
+   * EventSeries.events
+   */
+  export type EventSeries$eventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Event
+     */
+    select?: EventSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventInclude<ExtArgs> | null
+    where?: EventWhereInput
+    orderBy?: EventOrderByWithRelationInput | EventOrderByWithRelationInput[]
+    cursor?: EventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EventScalarFieldEnum | EventScalarFieldEnum[]
+  }
+
+  /**
+   * EventSeries without action
+   */
+  export type EventSeriesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model EventInvite
    */
 
@@ -4895,6 +6173,11 @@ export namespace Prisma {
     token: string | null
     expiresAt: Date | null
     createdById: string | null
+    acceptedByUserId: string | null
+    acceptedAt: Date | null
+    guestName: string | null
+    guestEmail: string | null
+    guestPhone: string | null
     createdAt: Date | null
   }
 
@@ -4904,6 +6187,11 @@ export namespace Prisma {
     token: string | null
     expiresAt: Date | null
     createdById: string | null
+    acceptedByUserId: string | null
+    acceptedAt: Date | null
+    guestName: string | null
+    guestEmail: string | null
+    guestPhone: string | null
     createdAt: Date | null
   }
 
@@ -4913,6 +6201,11 @@ export namespace Prisma {
     token: number
     expiresAt: number
     createdById: number
+    acceptedByUserId: number
+    acceptedAt: number
+    guestName: number
+    guestEmail: number
+    guestPhone: number
     createdAt: number
     _all: number
   }
@@ -4924,6 +6217,11 @@ export namespace Prisma {
     token?: true
     expiresAt?: true
     createdById?: true
+    acceptedByUserId?: true
+    acceptedAt?: true
+    guestName?: true
+    guestEmail?: true
+    guestPhone?: true
     createdAt?: true
   }
 
@@ -4933,6 +6231,11 @@ export namespace Prisma {
     token?: true
     expiresAt?: true
     createdById?: true
+    acceptedByUserId?: true
+    acceptedAt?: true
+    guestName?: true
+    guestEmail?: true
+    guestPhone?: true
     createdAt?: true
   }
 
@@ -4942,6 +6245,11 @@ export namespace Prisma {
     token?: true
     expiresAt?: true
     createdById?: true
+    acceptedByUserId?: true
+    acceptedAt?: true
+    guestName?: true
+    guestEmail?: true
+    guestPhone?: true
     createdAt?: true
     _all?: true
   }
@@ -5024,6 +6332,11 @@ export namespace Prisma {
     token: string
     expiresAt: Date
     createdById: string
+    acceptedByUserId: string | null
+    acceptedAt: Date | null
+    guestName: string | null
+    guestEmail: string | null
+    guestPhone: string | null
     createdAt: Date
     _count: EventInviteCountAggregateOutputType | null
     _min: EventInviteMinAggregateOutputType | null
@@ -5050,9 +6363,15 @@ export namespace Prisma {
     token?: boolean
     expiresAt?: boolean
     createdById?: boolean
+    acceptedByUserId?: boolean
+    acceptedAt?: boolean
+    guestName?: boolean
+    guestEmail?: boolean
+    guestPhone?: boolean
     createdAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    acceptedBy?: boolean | EventInvite$acceptedByArgs<ExtArgs>
   }, ExtArgs["result"]["eventInvite"]>
 
   export type EventInviteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -5061,9 +6380,15 @@ export namespace Prisma {
     token?: boolean
     expiresAt?: boolean
     createdById?: boolean
+    acceptedByUserId?: boolean
+    acceptedAt?: boolean
+    guestName?: boolean
+    guestEmail?: boolean
+    guestPhone?: boolean
     createdAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    acceptedBy?: boolean | EventInvite$acceptedByArgs<ExtArgs>
   }, ExtArgs["result"]["eventInvite"]>
 
   export type EventInviteSelectScalar = {
@@ -5072,16 +6397,23 @@ export namespace Prisma {
     token?: boolean
     expiresAt?: boolean
     createdById?: boolean
+    acceptedByUserId?: boolean
+    acceptedAt?: boolean
+    guestName?: boolean
+    guestEmail?: boolean
+    guestPhone?: boolean
     createdAt?: boolean
   }
 
   export type EventInviteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    acceptedBy?: boolean | EventInvite$acceptedByArgs<ExtArgs>
   }
   export type EventInviteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     event?: boolean | EventDefaultArgs<ExtArgs>
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    acceptedBy?: boolean | EventInvite$acceptedByArgs<ExtArgs>
   }
 
   export type $EventInvitePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5089,6 +6421,7 @@ export namespace Prisma {
     objects: {
       event: Prisma.$EventPayload<ExtArgs>
       createdBy: Prisma.$UserPayload<ExtArgs>
+      acceptedBy: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5096,6 +6429,11 @@ export namespace Prisma {
       token: string
       expiresAt: Date
       createdById: string
+      acceptedByUserId: string | null
+      acceptedAt: Date | null
+      guestName: string | null
+      guestEmail: string | null
+      guestPhone: string | null
       createdAt: Date
     }, ExtArgs["result"]["eventInvite"]>
     composites: {}
@@ -5463,6 +6801,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    acceptedBy<T extends EventInvite$acceptedByArgs<ExtArgs> = {}>(args?: Subset<T, EventInvite$acceptedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5497,6 +6836,11 @@ export namespace Prisma {
     readonly token: FieldRef<"EventInvite", 'String'>
     readonly expiresAt: FieldRef<"EventInvite", 'DateTime'>
     readonly createdById: FieldRef<"EventInvite", 'String'>
+    readonly acceptedByUserId: FieldRef<"EventInvite", 'String'>
+    readonly acceptedAt: FieldRef<"EventInvite", 'DateTime'>
+    readonly guestName: FieldRef<"EventInvite", 'String'>
+    readonly guestEmail: FieldRef<"EventInvite", 'String'>
+    readonly guestPhone: FieldRef<"EventInvite", 'String'>
     readonly createdAt: FieldRef<"EventInvite", 'DateTime'>
   }
     
@@ -5813,6 +7157,21 @@ export namespace Prisma {
      * Filter which EventInvites to delete
      */
     where?: EventInviteWhereInput
+  }
+
+  /**
+   * EventInvite.acceptedBy
+   */
+  export type EventInvite$acceptedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -11710,6 +13069,7 @@ export namespace Prisma {
     description: string | null
     discoverableBySearch: boolean | null
     memberDataPrivate: boolean | null
+    parentGroupId: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11722,6 +13082,7 @@ export namespace Prisma {
     description: string | null
     discoverableBySearch: boolean | null
     memberDataPrivate: boolean | null
+    parentGroupId: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -11734,6 +13095,7 @@ export namespace Prisma {
     description: number
     discoverableBySearch: number
     memberDataPrivate: number
+    parentGroupId: number
     createdById: number
     createdAt: number
     updatedAt: number
@@ -11748,6 +13110,7 @@ export namespace Prisma {
     description?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
+    parentGroupId?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -11760,6 +13123,7 @@ export namespace Prisma {
     description?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
+    parentGroupId?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -11772,6 +13136,7 @@ export namespace Prisma {
     description?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
+    parentGroupId?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -11857,6 +13222,7 @@ export namespace Prisma {
     description: string
     discoverableBySearch: boolean
     memberDataPrivate: boolean
+    parentGroupId: string | null
     createdById: string
     createdAt: Date
     updatedAt: Date
@@ -11886,16 +13252,20 @@ export namespace Prisma {
     description?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    parentGroup?: boolean | Group$parentGroupArgs<ExtArgs>
+    subgroups?: boolean | Group$subgroupsArgs<ExtArgs>
     memberships?: boolean | Group$membershipsArgs<ExtArgs>
     invites?: boolean | Group$invitesArgs<ExtArgs>
     joinRequests?: boolean | Group$joinRequestsArgs<ExtArgs>
     messages?: boolean | Group$messagesArgs<ExtArgs>
     events?: boolean | Group$eventsArgs<ExtArgs>
     news?: boolean | Group$newsArgs<ExtArgs>
+    eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -11906,10 +13276,12 @@ export namespace Prisma {
     description?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    parentGroup?: boolean | Group$parentGroupArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
   export type GroupSelectScalar = {
@@ -11919,6 +13291,7 @@ export namespace Prisma {
     description?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -11926,28 +13299,35 @@ export namespace Prisma {
 
   export type GroupInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    parentGroup?: boolean | Group$parentGroupArgs<ExtArgs>
+    subgroups?: boolean | Group$subgroupsArgs<ExtArgs>
     memberships?: boolean | Group$membershipsArgs<ExtArgs>
     invites?: boolean | Group$invitesArgs<ExtArgs>
     joinRequests?: boolean | Group$joinRequestsArgs<ExtArgs>
     messages?: boolean | Group$messagesArgs<ExtArgs>
     events?: boolean | Group$eventsArgs<ExtArgs>
     news?: boolean | Group$newsArgs<ExtArgs>
+    eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    parentGroup?: boolean | Group$parentGroupArgs<ExtArgs>
   }
 
   export type $GroupPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Group"
     objects: {
       createdBy: Prisma.$UserPayload<ExtArgs>
+      parentGroup: Prisma.$GroupPayload<ExtArgs> | null
+      subgroups: Prisma.$GroupPayload<ExtArgs>[]
       memberships: Prisma.$GroupMembershipPayload<ExtArgs>[]
       invites: Prisma.$GroupInvitePayload<ExtArgs>[]
       joinRequests: Prisma.$GroupJoinRequestPayload<ExtArgs>[]
       messages: Prisma.$GroupMessagePayload<ExtArgs>[]
       events: Prisma.$EventPayload<ExtArgs>[]
       news: Prisma.$NewsPayload<ExtArgs>[]
+      eventSeries: Prisma.$EventSeriesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11956,6 +13336,7 @@ export namespace Prisma {
       description: string
       discoverableBySearch: boolean
       memberDataPrivate: boolean
+      parentGroupId: string | null
       createdById: string
       createdAt: Date
       updatedAt: Date
@@ -12324,12 +13705,15 @@ export namespace Prisma {
   export interface Prisma__GroupClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    parentGroup<T extends Group$parentGroupArgs<ExtArgs> = {}>(args?: Subset<T, Group$parentGroupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    subgroups<T extends Group$subgroupsArgs<ExtArgs> = {}>(args?: Subset<T, Group$subgroupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findMany"> | Null>
     memberships<T extends Group$membershipsArgs<ExtArgs> = {}>(args?: Subset<T, Group$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupMembershipPayload<ExtArgs>, T, "findMany"> | Null>
     invites<T extends Group$invitesArgs<ExtArgs> = {}>(args?: Subset<T, Group$invitesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupInvitePayload<ExtArgs>, T, "findMany"> | Null>
     joinRequests<T extends Group$joinRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Group$joinRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupJoinRequestPayload<ExtArgs>, T, "findMany"> | Null>
     messages<T extends Group$messagesArgs<ExtArgs> = {}>(args?: Subset<T, Group$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupMessagePayload<ExtArgs>, T, "findMany"> | Null>
     events<T extends Group$eventsArgs<ExtArgs> = {}>(args?: Subset<T, Group$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany"> | Null>
     news<T extends Group$newsArgs<ExtArgs> = {}>(args?: Subset<T, Group$newsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsPayload<ExtArgs>, T, "findMany"> | Null>
+    eventSeries<T extends Group$eventSeriesArgs<ExtArgs> = {}>(args?: Subset<T, Group$eventSeriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -12365,6 +13749,7 @@ export namespace Prisma {
     readonly description: FieldRef<"Group", 'String'>
     readonly discoverableBySearch: FieldRef<"Group", 'Boolean'>
     readonly memberDataPrivate: FieldRef<"Group", 'Boolean'>
+    readonly parentGroupId: FieldRef<"Group", 'String'>
     readonly createdById: FieldRef<"Group", 'String'>
     readonly createdAt: FieldRef<"Group", 'DateTime'>
     readonly updatedAt: FieldRef<"Group", 'DateTime'>
@@ -12686,6 +14071,41 @@ export namespace Prisma {
   }
 
   /**
+   * Group.parentGroup
+   */
+  export type Group$parentGroupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+  }
+
+  /**
+   * Group.subgroups
+   */
+  export type Group$subgroupsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+    orderBy?: GroupOrderByWithRelationInput | GroupOrderByWithRelationInput[]
+    cursor?: GroupWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: GroupScalarFieldEnum | GroupScalarFieldEnum[]
+  }
+
+  /**
    * Group.memberships
    */
   export type Group$membershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12803,6 +14223,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NewsScalarFieldEnum | NewsScalarFieldEnum[]
+  }
+
+  /**
+   * Group.eventSeries
+   */
+  export type Group$eventSeriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventSeries
+     */
+    select?: EventSeriesSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventSeriesInclude<ExtArgs> | null
+    where?: EventSeriesWhereInput
+    orderBy?: EventSeriesOrderByWithRelationInput | EventSeriesOrderByWithRelationInput[]
+    cursor?: EventSeriesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
   }
 
   /**
@@ -15892,6 +17332,7 @@ export namespace Prisma {
     role: 'role',
     muteSms: 'muteSms',
     muteEmail: 'muteEmail',
+    isGuest: 'isGuest',
     createdAt: 'createdAt'
   };
 
@@ -15902,6 +17343,8 @@ export namespace Prisma {
     id: 'id',
     createdById: 'createdById',
     groupId: 'groupId',
+    seriesId: 'seriesId',
+    partNumber: 'partNumber',
     coverImageUrl: 'coverImageUrl',
     title_en: 'title_en',
     title_zh: 'title_zh',
@@ -15914,11 +17357,25 @@ export namespace Prisma {
     timezone: 'timezone',
     feeAmount: 'feeAmount',
     feeCurrency: 'feeCurrency',
+    commentsEnabled: 'commentsEnabled',
+    messagingEnabled: 'messagingEnabled',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+  export const EventSeriesScalarFieldEnum: {
+    id: 'id',
+    title_en: 'title_en',
+    title_zh: 'title_zh',
+    groupId: 'groupId',
+    createdById: 'createdById',
+    createdAt: 'createdAt'
+  };
+
+  export type EventSeriesScalarFieldEnum = (typeof EventSeriesScalarFieldEnum)[keyof typeof EventSeriesScalarFieldEnum]
 
 
   export const EventInviteScalarFieldEnum: {
@@ -15927,6 +17384,11 @@ export namespace Prisma {
     token: 'token',
     expiresAt: 'expiresAt',
     createdById: 'createdById',
+    acceptedByUserId: 'acceptedByUserId',
+    acceptedAt: 'acceptedAt',
+    guestName: 'guestName',
+    guestEmail: 'guestEmail',
+    guestPhone: 'guestPhone',
     createdAt: 'createdAt'
   };
 
@@ -16017,6 +17479,7 @@ export namespace Prisma {
     description: 'description',
     discoverableBySearch: 'discoverableBySearch',
     memberDataPrivate: 'memberDataPrivate',
+    parentGroupId: 'parentGroupId',
     createdById: 'createdById',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -16167,6 +17630,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Decimal'
    */
   export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
@@ -16191,20 +17668,6 @@ export namespace Prisma {
    * Reference to a field of type 'RSVPStatus[]'
    */
   export type ListEnumRSVPStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RSVPStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-  /**
-   * Reference to a field of type 'Int[]'
-   */
-  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -16329,6 +17792,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
+    isGuest?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -16344,6 +17808,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestListRelationFilter
     reviewedJoinRequests?: GroupJoinRequestListRelationFilter
     eventInvitesCreated?: EventInviteListRelationFilter
+    eventInvitesAccepted?: EventInviteListRelationFilter
+    eventSeriesCreated?: EventSeriesListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -16356,6 +17822,7 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    isGuest?: SortOrder
     createdAt?: SortOrder
     events?: EventOrderByRelationAggregateInput
     rsvps?: RSVPOrderByRelationAggregateInput
@@ -16371,6 +17838,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestOrderByRelationAggregateInput
     reviewedJoinRequests?: GroupJoinRequestOrderByRelationAggregateInput
     eventInvitesCreated?: EventInviteOrderByRelationAggregateInput
+    eventInvitesAccepted?: EventInviteOrderByRelationAggregateInput
+    eventSeriesCreated?: EventSeriesOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -16386,6 +17855,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
+    isGuest?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -16401,6 +17871,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestListRelationFilter
     reviewedJoinRequests?: GroupJoinRequestListRelationFilter
     eventInvitesCreated?: EventInviteListRelationFilter
+    eventInvitesAccepted?: EventInviteListRelationFilter
+    eventSeriesCreated?: EventSeriesListRelationFilter
   }, "id" | "email" | "phoneE164">
 
   export type UserOrderByWithAggregationInput = {
@@ -16413,6 +17885,7 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    isGuest?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -16432,6 +17905,7 @@ export namespace Prisma {
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     muteSms?: BoolWithAggregatesFilter<"User"> | boolean
     muteEmail?: BoolWithAggregatesFilter<"User"> | boolean
+    isGuest?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -16442,6 +17916,8 @@ export namespace Prisma {
     id?: StringFilter<"Event"> | string
     createdById?: StringFilter<"Event"> | string
     groupId?: StringNullableFilter<"Event"> | string | null
+    seriesId?: StringNullableFilter<"Event"> | string | null
+    partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
     title_en?: StringFilter<"Event"> | string
     title_zh?: StringFilter<"Event"> | string
@@ -16454,10 +17930,13 @@ export namespace Prisma {
     timezone?: StringFilter<"Event"> | string
     feeAmount?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFilter<"Event"> | string
+    commentsEnabled?: BoolFilter<"Event"> | boolean
+    messagingEnabled?: BoolFilter<"Event"> | boolean
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    series?: XOR<EventSeriesNullableRelationFilter, EventSeriesWhereInput> | null
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     reminderRules?: ReminderRuleListRelationFilter
@@ -16469,6 +17948,8 @@ export namespace Prisma {
     id?: SortOrder
     createdById?: SortOrder
     groupId?: SortOrderInput | SortOrder
+    seriesId?: SortOrderInput | SortOrder
+    partNumber?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     title_en?: SortOrder
     title_zh?: SortOrder
@@ -16481,10 +17962,13 @@ export namespace Prisma {
     timezone?: SortOrder
     feeAmount?: SortOrderInput | SortOrder
     feeCurrency?: SortOrder
+    commentsEnabled?: SortOrder
+    messagingEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdBy?: UserOrderByWithRelationInput
     group?: GroupOrderByWithRelationInput
+    series?: EventSeriesOrderByWithRelationInput
     rsvps?: RSVPOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     reminderRules?: ReminderRuleOrderByRelationAggregateInput
@@ -16499,6 +17983,8 @@ export namespace Prisma {
     NOT?: EventWhereInput | EventWhereInput[]
     createdById?: StringFilter<"Event"> | string
     groupId?: StringNullableFilter<"Event"> | string | null
+    seriesId?: StringNullableFilter<"Event"> | string | null
+    partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
     title_en?: StringFilter<"Event"> | string
     title_zh?: StringFilter<"Event"> | string
@@ -16511,10 +17997,13 @@ export namespace Prisma {
     timezone?: StringFilter<"Event"> | string
     feeAmount?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFilter<"Event"> | string
+    commentsEnabled?: BoolFilter<"Event"> | boolean
+    messagingEnabled?: BoolFilter<"Event"> | boolean
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    series?: XOR<EventSeriesNullableRelationFilter, EventSeriesWhereInput> | null
     rsvps?: RSVPListRelationFilter
     comments?: CommentListRelationFilter
     reminderRules?: ReminderRuleListRelationFilter
@@ -16526,6 +18015,8 @@ export namespace Prisma {
     id?: SortOrder
     createdById?: SortOrder
     groupId?: SortOrderInput | SortOrder
+    seriesId?: SortOrderInput | SortOrder
+    partNumber?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
     title_en?: SortOrder
     title_zh?: SortOrder
@@ -16538,6 +18029,8 @@ export namespace Prisma {
     timezone?: SortOrder
     feeAmount?: SortOrderInput | SortOrder
     feeCurrency?: SortOrder
+    commentsEnabled?: SortOrder
+    messagingEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EventCountOrderByAggregateInput
@@ -16554,6 +18047,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Event"> | string
     createdById?: StringWithAggregatesFilter<"Event"> | string
     groupId?: StringNullableWithAggregatesFilter<"Event"> | string | null
+    seriesId?: StringNullableWithAggregatesFilter<"Event"> | string | null
+    partNumber?: IntNullableWithAggregatesFilter<"Event"> | number | null
     coverImageUrl?: StringNullableWithAggregatesFilter<"Event"> | string | null
     title_en?: StringWithAggregatesFilter<"Event"> | string
     title_zh?: StringWithAggregatesFilter<"Event"> | string
@@ -16566,8 +18061,76 @@ export namespace Prisma {
     timezone?: StringWithAggregatesFilter<"Event"> | string
     feeAmount?: DecimalNullableWithAggregatesFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringWithAggregatesFilter<"Event"> | string
+    commentsEnabled?: BoolWithAggregatesFilter<"Event"> | boolean
+    messagingEnabled?: BoolWithAggregatesFilter<"Event"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
+  }
+
+  export type EventSeriesWhereInput = {
+    AND?: EventSeriesWhereInput | EventSeriesWhereInput[]
+    OR?: EventSeriesWhereInput[]
+    NOT?: EventSeriesWhereInput | EventSeriesWhereInput[]
+    id?: StringFilter<"EventSeries"> | string
+    title_en?: StringFilter<"EventSeries"> | string
+    title_zh?: StringFilter<"EventSeries"> | string
+    groupId?: StringNullableFilter<"EventSeries"> | string | null
+    createdById?: StringFilter<"EventSeries"> | string
+    createdAt?: DateTimeFilter<"EventSeries"> | Date | string
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    events?: EventListRelationFilter
+  }
+
+  export type EventSeriesOrderByWithRelationInput = {
+    id?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    groupId?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    createdBy?: UserOrderByWithRelationInput
+    group?: GroupOrderByWithRelationInput
+    events?: EventOrderByRelationAggregateInput
+  }
+
+  export type EventSeriesWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: EventSeriesWhereInput | EventSeriesWhereInput[]
+    OR?: EventSeriesWhereInput[]
+    NOT?: EventSeriesWhereInput | EventSeriesWhereInput[]
+    title_en?: StringFilter<"EventSeries"> | string
+    title_zh?: StringFilter<"EventSeries"> | string
+    groupId?: StringNullableFilter<"EventSeries"> | string | null
+    createdById?: StringFilter<"EventSeries"> | string
+    createdAt?: DateTimeFilter<"EventSeries"> | Date | string
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    events?: EventListRelationFilter
+  }, "id">
+
+  export type EventSeriesOrderByWithAggregationInput = {
+    id?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    groupId?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    _count?: EventSeriesCountOrderByAggregateInput
+    _max?: EventSeriesMaxOrderByAggregateInput
+    _min?: EventSeriesMinOrderByAggregateInput
+  }
+
+  export type EventSeriesScalarWhereWithAggregatesInput = {
+    AND?: EventSeriesScalarWhereWithAggregatesInput | EventSeriesScalarWhereWithAggregatesInput[]
+    OR?: EventSeriesScalarWhereWithAggregatesInput[]
+    NOT?: EventSeriesScalarWhereWithAggregatesInput | EventSeriesScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"EventSeries"> | string
+    title_en?: StringWithAggregatesFilter<"EventSeries"> | string
+    title_zh?: StringWithAggregatesFilter<"EventSeries"> | string
+    groupId?: StringNullableWithAggregatesFilter<"EventSeries"> | string | null
+    createdById?: StringWithAggregatesFilter<"EventSeries"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"EventSeries"> | Date | string
   }
 
   export type EventInviteWhereInput = {
@@ -16579,9 +18142,15 @@ export namespace Prisma {
     token?: StringFilter<"EventInvite"> | string
     expiresAt?: DateTimeFilter<"EventInvite"> | Date | string
     createdById?: StringFilter<"EventInvite"> | string
+    acceptedByUserId?: StringNullableFilter<"EventInvite"> | string | null
+    acceptedAt?: DateTimeNullableFilter<"EventInvite"> | Date | string | null
+    guestName?: StringNullableFilter<"EventInvite"> | string | null
+    guestEmail?: StringNullableFilter<"EventInvite"> | string | null
+    guestPhone?: StringNullableFilter<"EventInvite"> | string | null
     createdAt?: DateTimeFilter<"EventInvite"> | Date | string
     event?: XOR<EventRelationFilter, EventWhereInput>
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    acceptedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }
 
   export type EventInviteOrderByWithRelationInput = {
@@ -16590,9 +18159,15 @@ export namespace Prisma {
     token?: SortOrder
     expiresAt?: SortOrder
     createdById?: SortOrder
+    acceptedByUserId?: SortOrderInput | SortOrder
+    acceptedAt?: SortOrderInput | SortOrder
+    guestName?: SortOrderInput | SortOrder
+    guestEmail?: SortOrderInput | SortOrder
+    guestPhone?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     event?: EventOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
+    acceptedBy?: UserOrderByWithRelationInput
   }
 
   export type EventInviteWhereUniqueInput = Prisma.AtLeast<{
@@ -16604,9 +18179,15 @@ export namespace Prisma {
     eventId?: StringFilter<"EventInvite"> | string
     expiresAt?: DateTimeFilter<"EventInvite"> | Date | string
     createdById?: StringFilter<"EventInvite"> | string
+    acceptedByUserId?: StringNullableFilter<"EventInvite"> | string | null
+    acceptedAt?: DateTimeNullableFilter<"EventInvite"> | Date | string | null
+    guestName?: StringNullableFilter<"EventInvite"> | string | null
+    guestEmail?: StringNullableFilter<"EventInvite"> | string | null
+    guestPhone?: StringNullableFilter<"EventInvite"> | string | null
     createdAt?: DateTimeFilter<"EventInvite"> | Date | string
     event?: XOR<EventRelationFilter, EventWhereInput>
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    acceptedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }, "id" | "token">
 
   export type EventInviteOrderByWithAggregationInput = {
@@ -16615,6 +18196,11 @@ export namespace Prisma {
     token?: SortOrder
     expiresAt?: SortOrder
     createdById?: SortOrder
+    acceptedByUserId?: SortOrderInput | SortOrder
+    acceptedAt?: SortOrderInput | SortOrder
+    guestName?: SortOrderInput | SortOrder
+    guestEmail?: SortOrderInput | SortOrder
+    guestPhone?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: EventInviteCountOrderByAggregateInput
     _max?: EventInviteMaxOrderByAggregateInput
@@ -16630,6 +18216,11 @@ export namespace Prisma {
     token?: StringWithAggregatesFilter<"EventInvite"> | string
     expiresAt?: DateTimeWithAggregatesFilter<"EventInvite"> | Date | string
     createdById?: StringWithAggregatesFilter<"EventInvite"> | string
+    acceptedByUserId?: StringNullableWithAggregatesFilter<"EventInvite"> | string | null
+    acceptedAt?: DateTimeNullableWithAggregatesFilter<"EventInvite"> | Date | string | null
+    guestName?: StringNullableWithAggregatesFilter<"EventInvite"> | string | null
+    guestEmail?: StringNullableWithAggregatesFilter<"EventInvite"> | string | null
+    guestPhone?: StringNullableWithAggregatesFilter<"EventInvite"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EventInvite"> | Date | string
   }
 
@@ -17053,16 +18644,20 @@ export namespace Prisma {
     description?: StringFilter<"Group"> | string
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
+    parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    parentGroup?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    subgroups?: GroupListRelationFilter
     memberships?: GroupMembershipListRelationFilter
     invites?: GroupInviteListRelationFilter
     joinRequests?: GroupJoinRequestListRelationFilter
     messages?: GroupMessageListRelationFilter
     events?: EventListRelationFilter
     news?: NewsListRelationFilter
+    eventSeries?: EventSeriesListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -17072,16 +18667,20 @@ export namespace Prisma {
     description?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
+    parentGroupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdBy?: UserOrderByWithRelationInput
+    parentGroup?: GroupOrderByWithRelationInput
+    subgroups?: GroupOrderByRelationAggregateInput
     memberships?: GroupMembershipOrderByRelationAggregateInput
     invites?: GroupInviteOrderByRelationAggregateInput
     joinRequests?: GroupJoinRequestOrderByRelationAggregateInput
     messages?: GroupMessageOrderByRelationAggregateInput
     events?: EventOrderByRelationAggregateInput
     news?: NewsOrderByRelationAggregateInput
+    eventSeries?: EventSeriesOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -17094,16 +18693,20 @@ export namespace Prisma {
     description?: StringFilter<"Group"> | string
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
+    parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    parentGroup?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+    subgroups?: GroupListRelationFilter
     memberships?: GroupMembershipListRelationFilter
     invites?: GroupInviteListRelationFilter
     joinRequests?: GroupJoinRequestListRelationFilter
     messages?: GroupMessageListRelationFilter
     events?: EventListRelationFilter
     news?: NewsListRelationFilter
+    eventSeries?: EventSeriesListRelationFilter
   }, "id" | "pid">
 
   export type GroupOrderByWithAggregationInput = {
@@ -17113,6 +18716,7 @@ export namespace Prisma {
     description?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
+    parentGroupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -17131,6 +18735,7 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Group"> | string
     discoverableBySearch?: BoolWithAggregatesFilter<"Group"> | boolean
     memberDataPrivate?: BoolWithAggregatesFilter<"Group"> | boolean
+    parentGroupId?: StringNullableWithAggregatesFilter<"Group"> | string | null
     createdById?: StringWithAggregatesFilter<"Group"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
@@ -17401,6 +19006,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -17416,6 +19022,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -17428,6 +19036,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -17443,6 +19052,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUpdateInput = {
@@ -17455,6 +19066,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -17470,6 +19082,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -17482,6 +19096,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -17497,6 +19112,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -17509,6 +19126,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
   }
 
@@ -17522,6 +19140,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17535,11 +19154,13 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EventCreateInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -17552,10 +19173,13 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
@@ -17567,6 +19191,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -17579,6 +19205,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -17590,6 +19218,7 @@ export namespace Prisma {
 
   export type EventUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -17602,10 +19231,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
@@ -17617,6 +19249,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -17629,6 +19263,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -17642,6 +19278,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -17654,12 +19292,15 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
 
   export type EventUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -17672,6 +19313,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -17680,6 +19323,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -17692,17 +19337,89 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventSeriesCreateInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
+    group?: GroupCreateNestedOneWithoutEventSeriesInput
+    events?: EventCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesUncheckedCreateInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    groupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
+    group?: GroupUpdateOneWithoutEventSeriesNestedInput
+    events?: EventUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesCreateManyInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    groupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type EventSeriesUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventSeriesUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EventInviteCreateInput = {
     id?: string
     token: string
     expiresAt: Date | string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
     event: EventCreateNestedOneWithoutInvitesInput
     createdBy: UserCreateNestedOneWithoutEventInvitesCreatedInput
+    acceptedBy?: UserCreateNestedOneWithoutEventInvitesAcceptedInput
   }
 
   export type EventInviteUncheckedCreateInput = {
@@ -17711,6 +19428,11 @@ export namespace Prisma {
     token: string
     expiresAt: Date | string
     createdById: string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
   }
 
@@ -17718,9 +19440,14 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutInvitesNestedInput
     createdBy?: UserUpdateOneRequiredWithoutEventInvitesCreatedNestedInput
+    acceptedBy?: UserUpdateOneWithoutEventInvitesAcceptedNestedInput
   }
 
   export type EventInviteUncheckedUpdateInput = {
@@ -17729,6 +19456,11 @@ export namespace Prisma {
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17738,6 +19470,11 @@ export namespace Prisma {
     token: string
     expiresAt: Date | string
     createdById: string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
   }
 
@@ -17745,6 +19482,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -17754,6 +19495,11 @@ export namespace Prisma {
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -18172,12 +19918,15 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -18187,15 +19936,18 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUpdateInput = {
@@ -18208,12 +19960,15 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -18223,15 +19978,18 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -18241,6 +19999,7 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -18264,6 +20023,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -18645,6 +20405,12 @@ export namespace Prisma {
     none?: EventInviteWhereInput
   }
 
+  export type EventSeriesListRelationFilter = {
+    every?: EventSeriesWhereInput
+    some?: EventSeriesWhereInput
+    none?: EventSeriesWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -18694,6 +20460,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type EventSeriesOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
@@ -18704,6 +20474,7 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    isGuest?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18717,6 +20488,7 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    isGuest?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18730,6 +20502,7 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    isGuest?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18801,6 +20574,17 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -18833,6 +20617,11 @@ export namespace Prisma {
     isNot?: GroupWhereInput | null
   }
 
+  export type EventSeriesNullableRelationFilter = {
+    is?: EventSeriesWhereInput | null
+    isNot?: EventSeriesWhereInput | null
+  }
+
   export type ReminderRuleListRelationFilter = {
     every?: ReminderRuleWhereInput
     some?: ReminderRuleWhereInput
@@ -18847,6 +20636,8 @@ export namespace Prisma {
     id?: SortOrder
     createdById?: SortOrder
     groupId?: SortOrder
+    seriesId?: SortOrder
+    partNumber?: SortOrder
     coverImageUrl?: SortOrder
     title_en?: SortOrder
     title_zh?: SortOrder
@@ -18859,11 +20650,14 @@ export namespace Prisma {
     timezone?: SortOrder
     feeAmount?: SortOrder
     feeCurrency?: SortOrder
+    commentsEnabled?: SortOrder
+    messagingEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type EventAvgOrderByAggregateInput = {
+    partNumber?: SortOrder
     feeAmount?: SortOrder
   }
 
@@ -18871,6 +20665,8 @@ export namespace Prisma {
     id?: SortOrder
     createdById?: SortOrder
     groupId?: SortOrder
+    seriesId?: SortOrder
+    partNumber?: SortOrder
     coverImageUrl?: SortOrder
     title_en?: SortOrder
     title_zh?: SortOrder
@@ -18883,6 +20679,8 @@ export namespace Prisma {
     timezone?: SortOrder
     feeAmount?: SortOrder
     feeCurrency?: SortOrder
+    commentsEnabled?: SortOrder
+    messagingEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -18891,6 +20689,8 @@ export namespace Prisma {
     id?: SortOrder
     createdById?: SortOrder
     groupId?: SortOrder
+    seriesId?: SortOrder
+    partNumber?: SortOrder
     coverImageUrl?: SortOrder
     title_en?: SortOrder
     title_zh?: SortOrder
@@ -18903,12 +20703,31 @@ export namespace Prisma {
     timezone?: SortOrder
     feeAmount?: SortOrder
     feeCurrency?: SortOrder
+    commentsEnabled?: SortOrder
+    messagingEnabled?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type EventSumOrderByAggregateInput = {
+    partNumber?: SortOrder
     feeAmount?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -18941,9 +20760,41 @@ export namespace Prisma {
     _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
+  export type EventSeriesCountOrderByAggregateInput = {
+    id?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    groupId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EventSeriesMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    groupId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EventSeriesMinOrderByAggregateInput = {
+    id?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    groupId?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type EventRelationFilter = {
     is?: EventWhereInput
     isNot?: EventWhereInput
+  }
+
+  export type UserNullableRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
   }
 
   export type EventInviteCountOrderByAggregateInput = {
@@ -18952,6 +20803,11 @@ export namespace Prisma {
     token?: SortOrder
     expiresAt?: SortOrder
     createdById?: SortOrder
+    acceptedByUserId?: SortOrder
+    acceptedAt?: SortOrder
+    guestName?: SortOrder
+    guestEmail?: SortOrder
+    guestPhone?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18961,6 +20817,11 @@ export namespace Prisma {
     token?: SortOrder
     expiresAt?: SortOrder
     createdById?: SortOrder
+    acceptedByUserId?: SortOrder
+    acceptedAt?: SortOrder
+    guestName?: SortOrder
+    guestEmail?: SortOrder
+    guestPhone?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -18970,6 +20831,11 @@ export namespace Prisma {
     token?: SortOrder
     expiresAt?: SortOrder
     createdById?: SortOrder
+    acceptedByUserId?: SortOrder
+    acceptedAt?: SortOrder
+    guestName?: SortOrder
+    guestEmail?: SortOrder
+    guestPhone?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -19311,6 +21177,7 @@ export namespace Prisma {
     description?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
+    parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19323,6 +21190,7 @@ export namespace Prisma {
     description?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
+    parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19335,6 +21203,7 @@ export namespace Prisma {
     description?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
+    parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -19352,11 +21221,6 @@ export namespace Prisma {
     in?: $Enums.GroupMembershipStatus[] | ListEnumGroupMembershipStatusFieldRefInput<$PrismaModel>
     notIn?: $Enums.GroupMembershipStatus[] | ListEnumGroupMembershipStatusFieldRefInput<$PrismaModel>
     not?: NestedEnumGroupMembershipStatusFilter<$PrismaModel> | $Enums.GroupMembershipStatus
-  }
-
-  export type UserNullableRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type GroupMembershipGroupIdUserIdCompoundUniqueInput = {
@@ -19635,6 +21499,20 @@ export namespace Prisma {
     connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
   }
 
+  export type EventInviteCreateNestedManyWithoutAcceptedByInput = {
+    create?: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput> | EventInviteCreateWithoutAcceptedByInput[] | EventInviteUncheckedCreateWithoutAcceptedByInput[]
+    connectOrCreate?: EventInviteCreateOrConnectWithoutAcceptedByInput | EventInviteCreateOrConnectWithoutAcceptedByInput[]
+    createMany?: EventInviteCreateManyAcceptedByInputEnvelope
+    connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+  }
+
+  export type EventSeriesCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput> | EventSeriesCreateWithoutCreatedByInput[] | EventSeriesUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutCreatedByInput | EventSeriesCreateOrConnectWithoutCreatedByInput[]
+    createMany?: EventSeriesCreateManyCreatedByInputEnvelope
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -19731,6 +21609,20 @@ export namespace Prisma {
     connectOrCreate?: EventInviteCreateOrConnectWithoutCreatedByInput | EventInviteCreateOrConnectWithoutCreatedByInput[]
     createMany?: EventInviteCreateManyCreatedByInputEnvelope
     connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+  }
+
+  export type EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput = {
+    create?: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput> | EventInviteCreateWithoutAcceptedByInput[] | EventInviteUncheckedCreateWithoutAcceptedByInput[]
+    connectOrCreate?: EventInviteCreateOrConnectWithoutAcceptedByInput | EventInviteCreateOrConnectWithoutAcceptedByInput[]
+    createMany?: EventInviteCreateManyAcceptedByInputEnvelope
+    connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+  }
+
+  export type EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput> | EventSeriesCreateWithoutCreatedByInput[] | EventSeriesUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutCreatedByInput | EventSeriesCreateOrConnectWithoutCreatedByInput[]
+    createMany?: EventSeriesCreateManyCreatedByInputEnvelope
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -19949,6 +21841,34 @@ export namespace Prisma {
     deleteMany?: EventInviteScalarWhereInput | EventInviteScalarWhereInput[]
   }
 
+  export type EventInviteUpdateManyWithoutAcceptedByNestedInput = {
+    create?: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput> | EventInviteCreateWithoutAcceptedByInput[] | EventInviteUncheckedCreateWithoutAcceptedByInput[]
+    connectOrCreate?: EventInviteCreateOrConnectWithoutAcceptedByInput | EventInviteCreateOrConnectWithoutAcceptedByInput[]
+    upsert?: EventInviteUpsertWithWhereUniqueWithoutAcceptedByInput | EventInviteUpsertWithWhereUniqueWithoutAcceptedByInput[]
+    createMany?: EventInviteCreateManyAcceptedByInputEnvelope
+    set?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    disconnect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    delete?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    update?: EventInviteUpdateWithWhereUniqueWithoutAcceptedByInput | EventInviteUpdateWithWhereUniqueWithoutAcceptedByInput[]
+    updateMany?: EventInviteUpdateManyWithWhereWithoutAcceptedByInput | EventInviteUpdateManyWithWhereWithoutAcceptedByInput[]
+    deleteMany?: EventInviteScalarWhereInput | EventInviteScalarWhereInput[]
+  }
+
+  export type EventSeriesUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput> | EventSeriesCreateWithoutCreatedByInput[] | EventSeriesUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutCreatedByInput | EventSeriesCreateOrConnectWithoutCreatedByInput[]
+    upsert?: EventSeriesUpsertWithWhereUniqueWithoutCreatedByInput | EventSeriesUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: EventSeriesCreateManyCreatedByInputEnvelope
+    set?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    disconnect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    delete?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    update?: EventSeriesUpdateWithWhereUniqueWithoutCreatedByInput | EventSeriesUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: EventSeriesUpdateManyWithWhereWithoutCreatedByInput | EventSeriesUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -20145,6 +22065,34 @@ export namespace Prisma {
     deleteMany?: EventInviteScalarWhereInput | EventInviteScalarWhereInput[]
   }
 
+  export type EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput = {
+    create?: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput> | EventInviteCreateWithoutAcceptedByInput[] | EventInviteUncheckedCreateWithoutAcceptedByInput[]
+    connectOrCreate?: EventInviteCreateOrConnectWithoutAcceptedByInput | EventInviteCreateOrConnectWithoutAcceptedByInput[]
+    upsert?: EventInviteUpsertWithWhereUniqueWithoutAcceptedByInput | EventInviteUpsertWithWhereUniqueWithoutAcceptedByInput[]
+    createMany?: EventInviteCreateManyAcceptedByInputEnvelope
+    set?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    disconnect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    delete?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
+    update?: EventInviteUpdateWithWhereUniqueWithoutAcceptedByInput | EventInviteUpdateWithWhereUniqueWithoutAcceptedByInput[]
+    updateMany?: EventInviteUpdateManyWithWhereWithoutAcceptedByInput | EventInviteUpdateManyWithWhereWithoutAcceptedByInput[]
+    deleteMany?: EventInviteScalarWhereInput | EventInviteScalarWhereInput[]
+  }
+
+  export type EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput> | EventSeriesCreateWithoutCreatedByInput[] | EventSeriesUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutCreatedByInput | EventSeriesCreateOrConnectWithoutCreatedByInput[]
+    upsert?: EventSeriesUpsertWithWhereUniqueWithoutCreatedByInput | EventSeriesUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: EventSeriesCreateManyCreatedByInputEnvelope
+    set?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    disconnect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    delete?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    update?: EventSeriesUpdateWithWhereUniqueWithoutCreatedByInput | EventSeriesUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: EventSeriesUpdateManyWithWhereWithoutCreatedByInput | EventSeriesUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutEventsInput = {
     create?: XOR<UserCreateWithoutEventsInput, UserUncheckedCreateWithoutEventsInput>
     connectOrCreate?: UserCreateOrConnectWithoutEventsInput
@@ -20155,6 +22103,12 @@ export namespace Prisma {
     create?: XOR<GroupCreateWithoutEventsInput, GroupUncheckedCreateWithoutEventsInput>
     connectOrCreate?: GroupCreateOrConnectWithoutEventsInput
     connect?: GroupWhereUniqueInput
+  }
+
+  export type EventSeriesCreateNestedOneWithoutEventsInput = {
+    create?: XOR<EventSeriesCreateWithoutEventsInput, EventSeriesUncheckedCreateWithoutEventsInput>
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutEventsInput
+    connect?: EventSeriesWhereUniqueInput
   }
 
   export type RSVPCreateNestedManyWithoutEventInput = {
@@ -20227,6 +22181,14 @@ export namespace Prisma {
     connect?: EventInviteWhereUniqueInput | EventInviteWhereUniqueInput[]
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
   }
@@ -20255,6 +22217,16 @@ export namespace Prisma {
     delete?: GroupWhereInput | boolean
     connect?: GroupWhereUniqueInput
     update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutEventsInput, GroupUpdateWithoutEventsInput>, GroupUncheckedUpdateWithoutEventsInput>
+  }
+
+  export type EventSeriesUpdateOneWithoutEventsNestedInput = {
+    create?: XOR<EventSeriesCreateWithoutEventsInput, EventSeriesUncheckedCreateWithoutEventsInput>
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutEventsInput
+    upsert?: EventSeriesUpsertWithoutEventsInput
+    disconnect?: EventSeriesWhereInput | boolean
+    delete?: EventSeriesWhereInput | boolean
+    connect?: EventSeriesWhereUniqueInput
+    update?: XOR<XOR<EventSeriesUpdateToOneWithWhereWithoutEventsInput, EventSeriesUpdateWithoutEventsInput>, EventSeriesUncheckedUpdateWithoutEventsInput>
   }
 
   export type RSVPUpdateManyWithoutEventNestedInput = {
@@ -20397,6 +22369,78 @@ export namespace Prisma {
     deleteMany?: EventInviteScalarWhereInput | EventInviteScalarWhereInput[]
   }
 
+  export type UserCreateNestedOneWithoutEventSeriesCreatedInput = {
+    create?: XOR<UserCreateWithoutEventSeriesCreatedInput, UserUncheckedCreateWithoutEventSeriesCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEventSeriesCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GroupCreateNestedOneWithoutEventSeriesInput = {
+    create?: XOR<GroupCreateWithoutEventSeriesInput, GroupUncheckedCreateWithoutEventSeriesInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutEventSeriesInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type EventCreateNestedManyWithoutSeriesInput = {
+    create?: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput> | EventCreateWithoutSeriesInput[] | EventUncheckedCreateWithoutSeriesInput[]
+    connectOrCreate?: EventCreateOrConnectWithoutSeriesInput | EventCreateOrConnectWithoutSeriesInput[]
+    createMany?: EventCreateManySeriesInputEnvelope
+    connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+  }
+
+  export type EventUncheckedCreateNestedManyWithoutSeriesInput = {
+    create?: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput> | EventCreateWithoutSeriesInput[] | EventUncheckedCreateWithoutSeriesInput[]
+    connectOrCreate?: EventCreateOrConnectWithoutSeriesInput | EventCreateOrConnectWithoutSeriesInput[]
+    createMany?: EventCreateManySeriesInputEnvelope
+    connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+  }
+
+  export type UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutEventSeriesCreatedInput, UserUncheckedCreateWithoutEventSeriesCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEventSeriesCreatedInput
+    upsert?: UserUpsertWithoutEventSeriesCreatedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEventSeriesCreatedInput, UserUpdateWithoutEventSeriesCreatedInput>, UserUncheckedUpdateWithoutEventSeriesCreatedInput>
+  }
+
+  export type GroupUpdateOneWithoutEventSeriesNestedInput = {
+    create?: XOR<GroupCreateWithoutEventSeriesInput, GroupUncheckedCreateWithoutEventSeriesInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutEventSeriesInput
+    upsert?: GroupUpsertWithoutEventSeriesInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutEventSeriesInput, GroupUpdateWithoutEventSeriesInput>, GroupUncheckedUpdateWithoutEventSeriesInput>
+  }
+
+  export type EventUpdateManyWithoutSeriesNestedInput = {
+    create?: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput> | EventCreateWithoutSeriesInput[] | EventUncheckedCreateWithoutSeriesInput[]
+    connectOrCreate?: EventCreateOrConnectWithoutSeriesInput | EventCreateOrConnectWithoutSeriesInput[]
+    upsert?: EventUpsertWithWhereUniqueWithoutSeriesInput | EventUpsertWithWhereUniqueWithoutSeriesInput[]
+    createMany?: EventCreateManySeriesInputEnvelope
+    set?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    disconnect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    delete?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    update?: EventUpdateWithWhereUniqueWithoutSeriesInput | EventUpdateWithWhereUniqueWithoutSeriesInput[]
+    updateMany?: EventUpdateManyWithWhereWithoutSeriesInput | EventUpdateManyWithWhereWithoutSeriesInput[]
+    deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
+  }
+
+  export type EventUncheckedUpdateManyWithoutSeriesNestedInput = {
+    create?: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput> | EventCreateWithoutSeriesInput[] | EventUncheckedCreateWithoutSeriesInput[]
+    connectOrCreate?: EventCreateOrConnectWithoutSeriesInput | EventCreateOrConnectWithoutSeriesInput[]
+    upsert?: EventUpsertWithWhereUniqueWithoutSeriesInput | EventUpsertWithWhereUniqueWithoutSeriesInput[]
+    createMany?: EventCreateManySeriesInputEnvelope
+    set?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    disconnect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    delete?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    connect?: EventWhereUniqueInput | EventWhereUniqueInput[]
+    update?: EventUpdateWithWhereUniqueWithoutSeriesInput | EventUpdateWithWhereUniqueWithoutSeriesInput[]
+    updateMany?: EventUpdateManyWithWhereWithoutSeriesInput | EventUpdateManyWithWhereWithoutSeriesInput[]
+    deleteMany?: EventScalarWhereInput | EventScalarWhereInput[]
+  }
+
   export type EventCreateNestedOneWithoutInvitesInput = {
     create?: XOR<EventCreateWithoutInvitesInput, EventUncheckedCreateWithoutInvitesInput>
     connectOrCreate?: EventCreateOrConnectWithoutInvitesInput
@@ -20406,6 +22450,12 @@ export namespace Prisma {
   export type UserCreateNestedOneWithoutEventInvitesCreatedInput = {
     create?: XOR<UserCreateWithoutEventInvitesCreatedInput, UserUncheckedCreateWithoutEventInvitesCreatedInput>
     connectOrCreate?: UserCreateOrConnectWithoutEventInvitesCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutEventInvitesAcceptedInput = {
+    create?: XOR<UserCreateWithoutEventInvitesAcceptedInput, UserUncheckedCreateWithoutEventInvitesAcceptedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEventInvitesAcceptedInput
     connect?: UserWhereUniqueInput
   }
 
@@ -20423,6 +22473,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutEventInvitesCreatedInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEventInvitesCreatedInput, UserUpdateWithoutEventInvitesCreatedInput>, UserUncheckedUpdateWithoutEventInvitesCreatedInput>
+  }
+
+  export type UserUpdateOneWithoutEventInvitesAcceptedNestedInput = {
+    create?: XOR<UserCreateWithoutEventInvitesAcceptedInput, UserUncheckedCreateWithoutEventInvitesAcceptedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEventInvitesAcceptedInput
+    upsert?: UserUpsertWithoutEventInvitesAcceptedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEventInvitesAcceptedInput, UserUpdateWithoutEventInvitesAcceptedInput>, UserUncheckedUpdateWithoutEventInvitesAcceptedInput>
   }
 
   export type EventCreateNestedOneWithoutRsvpsInput = {
@@ -20667,6 +22727,19 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type GroupCreateNestedOneWithoutSubgroupsInput = {
+    create?: XOR<GroupCreateWithoutSubgroupsInput, GroupUncheckedCreateWithoutSubgroupsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutSubgroupsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type GroupCreateNestedManyWithoutParentGroupInput = {
+    create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
+    createMany?: GroupCreateManyParentGroupInputEnvelope
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+  }
+
   export type GroupMembershipCreateNestedManyWithoutGroupInput = {
     create?: XOR<GroupMembershipCreateWithoutGroupInput, GroupMembershipUncheckedCreateWithoutGroupInput> | GroupMembershipCreateWithoutGroupInput[] | GroupMembershipUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: GroupMembershipCreateOrConnectWithoutGroupInput | GroupMembershipCreateOrConnectWithoutGroupInput[]
@@ -20707,6 +22780,20 @@ export namespace Prisma {
     connectOrCreate?: NewsCreateOrConnectWithoutGroupInput | NewsCreateOrConnectWithoutGroupInput[]
     createMany?: NewsCreateManyGroupInputEnvelope
     connect?: NewsWhereUniqueInput | NewsWhereUniqueInput[]
+  }
+
+  export type EventSeriesCreateNestedManyWithoutGroupInput = {
+    create?: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput> | EventSeriesCreateWithoutGroupInput[] | EventSeriesUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutGroupInput | EventSeriesCreateOrConnectWithoutGroupInput[]
+    createMany?: EventSeriesCreateManyGroupInputEnvelope
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+  }
+
+  export type GroupUncheckedCreateNestedManyWithoutParentGroupInput = {
+    create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
+    createMany?: GroupCreateManyParentGroupInputEnvelope
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
   }
 
   export type GroupMembershipUncheckedCreateNestedManyWithoutGroupInput = {
@@ -20751,12 +22838,43 @@ export namespace Prisma {
     connect?: NewsWhereUniqueInput | NewsWhereUniqueInput[]
   }
 
+  export type EventSeriesUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput> | EventSeriesCreateWithoutGroupInput[] | EventSeriesUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutGroupInput | EventSeriesCreateOrConnectWithoutGroupInput[]
+    createMany?: EventSeriesCreateManyGroupInputEnvelope
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutCreatedGroupsNestedInput = {
     create?: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
     connectOrCreate?: UserCreateOrConnectWithoutCreatedGroupsInput
     upsert?: UserUpsertWithoutCreatedGroupsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCreatedGroupsInput, UserUpdateWithoutCreatedGroupsInput>, UserUncheckedUpdateWithoutCreatedGroupsInput>
+  }
+
+  export type GroupUpdateOneWithoutSubgroupsNestedInput = {
+    create?: XOR<GroupCreateWithoutSubgroupsInput, GroupUncheckedCreateWithoutSubgroupsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutSubgroupsInput
+    upsert?: GroupUpsertWithoutSubgroupsInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutSubgroupsInput, GroupUpdateWithoutSubgroupsInput>, GroupUncheckedUpdateWithoutSubgroupsInput>
+  }
+
+  export type GroupUpdateManyWithoutParentGroupNestedInput = {
+    create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutParentGroupInput | GroupUpsertWithWhereUniqueWithoutParentGroupInput[]
+    createMany?: GroupCreateManyParentGroupInputEnvelope
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutParentGroupInput | GroupUpdateWithWhereUniqueWithoutParentGroupInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutParentGroupInput | GroupUpdateManyWithWhereWithoutParentGroupInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
   }
 
   export type GroupMembershipUpdateManyWithoutGroupNestedInput = {
@@ -20843,6 +22961,34 @@ export namespace Prisma {
     deleteMany?: NewsScalarWhereInput | NewsScalarWhereInput[]
   }
 
+  export type EventSeriesUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput> | EventSeriesCreateWithoutGroupInput[] | EventSeriesUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutGroupInput | EventSeriesCreateOrConnectWithoutGroupInput[]
+    upsert?: EventSeriesUpsertWithWhereUniqueWithoutGroupInput | EventSeriesUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: EventSeriesCreateManyGroupInputEnvelope
+    set?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    disconnect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    delete?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    update?: EventSeriesUpdateWithWhereUniqueWithoutGroupInput | EventSeriesUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: EventSeriesUpdateManyWithWhereWithoutGroupInput | EventSeriesUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+  }
+
+  export type GroupUncheckedUpdateManyWithoutParentGroupNestedInput = {
+    create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
+    connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
+    upsert?: GroupUpsertWithWhereUniqueWithoutParentGroupInput | GroupUpsertWithWhereUniqueWithoutParentGroupInput[]
+    createMany?: GroupCreateManyParentGroupInputEnvelope
+    set?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    disconnect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    delete?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    connect?: GroupWhereUniqueInput | GroupWhereUniqueInput[]
+    update?: GroupUpdateWithWhereUniqueWithoutParentGroupInput | GroupUpdateWithWhereUniqueWithoutParentGroupInput[]
+    updateMany?: GroupUpdateManyWithWhereWithoutParentGroupInput | GroupUpdateManyWithWhereWithoutParentGroupInput[]
+    deleteMany?: GroupScalarWhereInput | GroupScalarWhereInput[]
+  }
+
   export type GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput = {
     create?: XOR<GroupMembershipCreateWithoutGroupInput, GroupMembershipUncheckedCreateWithoutGroupInput> | GroupMembershipCreateWithoutGroupInput[] | GroupMembershipUncheckedCreateWithoutGroupInput[]
     connectOrCreate?: GroupMembershipCreateOrConnectWithoutGroupInput | GroupMembershipCreateOrConnectWithoutGroupInput[]
@@ -20925,6 +23071,20 @@ export namespace Prisma {
     update?: NewsUpdateWithWhereUniqueWithoutGroupInput | NewsUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: NewsUpdateManyWithWhereWithoutGroupInput | NewsUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: NewsScalarWhereInput | NewsScalarWhereInput[]
+  }
+
+  export type EventSeriesUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput> | EventSeriesCreateWithoutGroupInput[] | EventSeriesUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: EventSeriesCreateOrConnectWithoutGroupInput | EventSeriesCreateOrConnectWithoutGroupInput[]
+    upsert?: EventSeriesUpsertWithWhereUniqueWithoutGroupInput | EventSeriesUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: EventSeriesCreateManyGroupInputEnvelope
+    set?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    disconnect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    delete?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+    update?: EventSeriesUpdateWithWhereUniqueWithoutGroupInput | EventSeriesUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: EventSeriesUpdateManyWithWhereWithoutGroupInput | EventSeriesUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutGroupMembershipInvitesInput = {
@@ -21236,6 +23396,33 @@ export namespace Prisma {
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
   }
 
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -21436,6 +23623,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutCreatedByInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -21448,9 +23636,12 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
@@ -21461,6 +23652,8 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutCreatedByInput = {
     id?: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -21473,6 +23666,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -21645,12 +23840,15 @@ export namespace Prisma {
     memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutCreatedByInput = {
@@ -21660,14 +23858,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutCreatedByInput = {
@@ -21884,8 +24085,13 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
     event: EventCreateNestedOneWithoutInvitesInput
+    acceptedBy?: UserCreateNestedOneWithoutEventInvitesAcceptedInput
   }
 
   export type EventInviteUncheckedCreateWithoutCreatedByInput = {
@@ -21893,6 +24099,11 @@ export namespace Prisma {
     eventId: string
     token: string
     expiresAt: Date | string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
   }
 
@@ -21903,6 +24114,70 @@ export namespace Prisma {
 
   export type EventInviteCreateManyCreatedByInputEnvelope = {
     data: EventInviteCreateManyCreatedByInput | EventInviteCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EventInviteCreateWithoutAcceptedByInput = {
+    id?: string
+    token: string
+    expiresAt: Date | string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
+    createdAt?: Date | string
+    event: EventCreateNestedOneWithoutInvitesInput
+    createdBy: UserCreateNestedOneWithoutEventInvitesCreatedInput
+  }
+
+  export type EventInviteUncheckedCreateWithoutAcceptedByInput = {
+    id?: string
+    eventId: string
+    token: string
+    expiresAt: Date | string
+    createdById: string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
+    createdAt?: Date | string
+  }
+
+  export type EventInviteCreateOrConnectWithoutAcceptedByInput = {
+    where: EventInviteWhereUniqueInput
+    create: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput>
+  }
+
+  export type EventInviteCreateManyAcceptedByInputEnvelope = {
+    data: EventInviteCreateManyAcceptedByInput | EventInviteCreateManyAcceptedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EventSeriesCreateWithoutCreatedByInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdAt?: Date | string
+    group?: GroupCreateNestedOneWithoutEventSeriesInput
+    events?: EventCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    groupId?: string | null
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesCreateOrConnectWithoutCreatedByInput = {
+    where: EventSeriesWhereUniqueInput
+    create: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type EventSeriesCreateManyCreatedByInputEnvelope = {
+    data: EventSeriesCreateManyCreatedByInput | EventSeriesCreateManyCreatedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -21929,6 +24204,8 @@ export namespace Prisma {
     id?: StringFilter<"Event"> | string
     createdById?: StringFilter<"Event"> | string
     groupId?: StringNullableFilter<"Event"> | string | null
+    seriesId?: StringNullableFilter<"Event"> | string | null
+    partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
     title_en?: StringFilter<"Event"> | string
     title_zh?: StringFilter<"Event"> | string
@@ -21941,6 +24218,8 @@ export namespace Prisma {
     timezone?: StringFilter<"Event"> | string
     feeAmount?: DecimalNullableFilter<"Event"> | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFilter<"Event"> | string
+    commentsEnabled?: BoolFilter<"Event"> | boolean
+    messagingEnabled?: BoolFilter<"Event"> | boolean
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
   }
@@ -22117,6 +24396,7 @@ export namespace Prisma {
     description?: StringFilter<"Group"> | string
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
+    parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
@@ -22290,7 +24570,56 @@ export namespace Prisma {
     token?: StringFilter<"EventInvite"> | string
     expiresAt?: DateTimeFilter<"EventInvite"> | Date | string
     createdById?: StringFilter<"EventInvite"> | string
+    acceptedByUserId?: StringNullableFilter<"EventInvite"> | string | null
+    acceptedAt?: DateTimeNullableFilter<"EventInvite"> | Date | string | null
+    guestName?: StringNullableFilter<"EventInvite"> | string | null
+    guestEmail?: StringNullableFilter<"EventInvite"> | string | null
+    guestPhone?: StringNullableFilter<"EventInvite"> | string | null
     createdAt?: DateTimeFilter<"EventInvite"> | Date | string
+  }
+
+  export type EventInviteUpsertWithWhereUniqueWithoutAcceptedByInput = {
+    where: EventInviteWhereUniqueInput
+    update: XOR<EventInviteUpdateWithoutAcceptedByInput, EventInviteUncheckedUpdateWithoutAcceptedByInput>
+    create: XOR<EventInviteCreateWithoutAcceptedByInput, EventInviteUncheckedCreateWithoutAcceptedByInput>
+  }
+
+  export type EventInviteUpdateWithWhereUniqueWithoutAcceptedByInput = {
+    where: EventInviteWhereUniqueInput
+    data: XOR<EventInviteUpdateWithoutAcceptedByInput, EventInviteUncheckedUpdateWithoutAcceptedByInput>
+  }
+
+  export type EventInviteUpdateManyWithWhereWithoutAcceptedByInput = {
+    where: EventInviteScalarWhereInput
+    data: XOR<EventInviteUpdateManyMutationInput, EventInviteUncheckedUpdateManyWithoutAcceptedByInput>
+  }
+
+  export type EventSeriesUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: EventSeriesWhereUniqueInput
+    update: XOR<EventSeriesUpdateWithoutCreatedByInput, EventSeriesUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<EventSeriesCreateWithoutCreatedByInput, EventSeriesUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type EventSeriesUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: EventSeriesWhereUniqueInput
+    data: XOR<EventSeriesUpdateWithoutCreatedByInput, EventSeriesUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type EventSeriesUpdateManyWithWhereWithoutCreatedByInput = {
+    where: EventSeriesScalarWhereInput
+    data: XOR<EventSeriesUpdateManyMutationInput, EventSeriesUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type EventSeriesScalarWhereInput = {
+    AND?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+    OR?: EventSeriesScalarWhereInput[]
+    NOT?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+    id?: StringFilter<"EventSeries"> | string
+    title_en?: StringFilter<"EventSeries"> | string
+    title_zh?: StringFilter<"EventSeries"> | string
+    groupId?: StringNullableFilter<"EventSeries"> | string | null
+    createdById?: StringFilter<"EventSeries"> | string
+    createdAt?: DateTimeFilter<"EventSeries"> | Date | string
   }
 
   export type UserCreateWithoutEventsInput = {
@@ -22303,6 +24632,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     rsvps?: RSVPCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -22317,6 +24647,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -22329,6 +24661,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -22343,6 +24676,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -22360,11 +24695,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutEventsInput = {
@@ -22374,19 +24712,45 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutEventsInput = {
     where: GroupWhereUniqueInput
     create: XOR<GroupCreateWithoutEventsInput, GroupUncheckedCreateWithoutEventsInput>
+  }
+
+  export type EventSeriesCreateWithoutEventsInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
+    group?: GroupCreateNestedOneWithoutEventSeriesInput
+  }
+
+  export type EventSeriesUncheckedCreateWithoutEventsInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    groupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type EventSeriesCreateOrConnectWithoutEventsInput = {
+    where: EventSeriesWhereUniqueInput
+    create: XOR<EventSeriesCreateWithoutEventsInput, EventSeriesUncheckedCreateWithoutEventsInput>
   }
 
   export type RSVPCreateWithoutEventInput = {
@@ -22503,8 +24867,13 @@ export namespace Prisma {
     id?: string
     token: string
     expiresAt: Date | string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventInvitesCreatedInput
+    acceptedBy?: UserCreateNestedOneWithoutEventInvitesAcceptedInput
   }
 
   export type EventInviteUncheckedCreateWithoutEventInput = {
@@ -22512,6 +24881,11 @@ export namespace Prisma {
     token: string
     expiresAt: Date | string
     createdById: string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
   }
 
@@ -22546,6 +24920,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -22560,6 +24935,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -22572,6 +24949,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -22586,6 +24964,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutEventsInput = {
@@ -22609,11 +24989,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutEventsInput = {
@@ -22623,14 +25006,46 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type EventSeriesUpsertWithoutEventsInput = {
+    update: XOR<EventSeriesUpdateWithoutEventsInput, EventSeriesUncheckedUpdateWithoutEventsInput>
+    create: XOR<EventSeriesCreateWithoutEventsInput, EventSeriesUncheckedCreateWithoutEventsInput>
+    where?: EventSeriesWhereInput
+  }
+
+  export type EventSeriesUpdateToOneWithWhereWithoutEventsInput = {
+    where?: EventSeriesWhereInput
+    data: XOR<EventSeriesUpdateWithoutEventsInput, EventSeriesUncheckedUpdateWithoutEventsInput>
+  }
+
+  export type EventSeriesUpdateWithoutEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
+    group?: GroupUpdateOneWithoutEventSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateWithoutEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RSVPUpsertWithWhereUniqueWithoutEventInput = {
@@ -22724,8 +25139,117 @@ export namespace Prisma {
     data: XOR<EventInviteUpdateManyMutationInput, EventInviteUncheckedUpdateManyWithoutEventInput>
   }
 
-  export type EventCreateWithoutInvitesInput = {
+  export type UserCreateWithoutEventSeriesCreatedInput = {
     id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+  }
+
+  export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+  }
+
+  export type UserCreateOrConnectWithoutEventSeriesCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEventSeriesCreatedInput, UserUncheckedCreateWithoutEventSeriesCreatedInput>
+  }
+
+  export type GroupCreateWithoutEventSeriesInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageCreateNestedManyWithoutGroupInput
+    events?: EventCreateNestedManyWithoutGroupInput
+    news?: NewsCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutEventSeriesInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    parentGroupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
+    events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutEventSeriesInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutEventSeriesInput, GroupUncheckedCreateWithoutEventSeriesInput>
+  }
+
+  export type EventCreateWithoutSeriesInput = {
+    id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -22738,10 +25262,215 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    rsvps?: RSVPCreateNestedManyWithoutEventInput
+    comments?: CommentCreateNestedManyWithoutEventInput
+    reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
+    messageLogs?: MessageLogCreateNestedManyWithoutEventInput
+    invites?: EventInviteCreateNestedManyWithoutEventInput
+  }
+
+  export type EventUncheckedCreateWithoutSeriesInput = {
+    id?: string
+    createdById: string
+    groupId?: string | null
+    partNumber?: number | null
+    coverImageUrl?: string | null
+    title_en: string
+    title_zh: string
+    description_en?: string
+    description_zh?: string
+    location_en?: string
+    location_zh?: string
+    startAt: Date | string
+    endAt?: Date | string | null
+    timezone?: string
+    feeAmount?: Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
+    comments?: CommentUncheckedCreateNestedManyWithoutEventInput
+    reminderRules?: ReminderRuleUncheckedCreateNestedManyWithoutEventInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutEventInput
+    invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
+  }
+
+  export type EventCreateOrConnectWithoutSeriesInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput>
+  }
+
+  export type EventCreateManySeriesInputEnvelope = {
+    data: EventCreateManySeriesInput | EventCreateManySeriesInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithoutEventSeriesCreatedInput = {
+    update: XOR<UserUpdateWithoutEventSeriesCreatedInput, UserUncheckedUpdateWithoutEventSeriesCreatedInput>
+    create: XOR<UserCreateWithoutEventSeriesCreatedInput, UserUncheckedCreateWithoutEventSeriesCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEventSeriesCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEventSeriesCreatedInput, UserUncheckedUpdateWithoutEventSeriesCreatedInput>
+  }
+
+  export type UserUpdateWithoutEventSeriesCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+  }
+
+  export type GroupUpsertWithoutEventSeriesInput = {
+    update: XOR<GroupUpdateWithoutEventSeriesInput, GroupUncheckedUpdateWithoutEventSeriesInput>
+    create: XOR<GroupCreateWithoutEventSeriesInput, GroupUncheckedCreateWithoutEventSeriesInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutEventSeriesInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutEventSeriesInput, GroupUncheckedUpdateWithoutEventSeriesInput>
+  }
+
+  export type GroupUpdateWithoutEventSeriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUpdateManyWithoutGroupNestedInput
+    events?: EventUpdateManyWithoutGroupNestedInput
+    news?: NewsUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutEventSeriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
+    events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type EventUpsertWithWhereUniqueWithoutSeriesInput = {
+    where: EventWhereUniqueInput
+    update: XOR<EventUpdateWithoutSeriesInput, EventUncheckedUpdateWithoutSeriesInput>
+    create: XOR<EventCreateWithoutSeriesInput, EventUncheckedCreateWithoutSeriesInput>
+  }
+
+  export type EventUpdateWithWhereUniqueWithoutSeriesInput = {
+    where: EventWhereUniqueInput
+    data: XOR<EventUpdateWithoutSeriesInput, EventUncheckedUpdateWithoutSeriesInput>
+  }
+
+  export type EventUpdateManyWithWhereWithoutSeriesInput = {
+    where: EventScalarWhereInput
+    data: XOR<EventUpdateManyMutationInput, EventUncheckedUpdateManyWithoutSeriesInput>
+  }
+
+  export type EventCreateWithoutInvitesInput = {
+    id?: string
+    partNumber?: number | null
+    coverImageUrl?: string | null
+    title_en: string
+    title_zh: string
+    description_en?: string
+    description_zh?: string
+    location_en?: string
+    location_zh?: string
+    startAt: Date | string
+    endAt?: Date | string | null
+    timezone?: string
+    feeAmount?: Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutEventsInput
+    group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
@@ -22752,6 +25481,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -22764,6 +25495,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -22787,6 +25520,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -22801,6 +25535,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
@@ -22813,6 +25549,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -22827,11 +25564,76 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesCreatedInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutEventInvitesCreatedInput, UserUncheckedCreateWithoutEventInvitesCreatedInput>
+  }
+
+  export type UserCreateWithoutEventInvitesAcceptedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutEventInvitesAcceptedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEventInvitesAcceptedInput, UserUncheckedCreateWithoutEventInvitesAcceptedInput>
   }
 
   export type EventUpsertWithoutInvitesInput = {
@@ -22847,6 +25649,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutInvitesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -22859,10 +25662,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
@@ -22873,6 +25679,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -22885,6 +25693,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -22914,6 +25724,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -22928,6 +25739,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
@@ -22940,6 +25753,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -22954,10 +25768,82 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUpsertWithoutEventInvitesAcceptedInput = {
+    update: XOR<UserUpdateWithoutEventInvitesAcceptedInput, UserUncheckedUpdateWithoutEventInvitesAcceptedInput>
+    create: XOR<UserCreateWithoutEventInvitesAcceptedInput, UserUncheckedCreateWithoutEventInvitesAcceptedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEventInvitesAcceptedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEventInvitesAcceptedInput, UserUncheckedUpdateWithoutEventInvitesAcceptedInput>
+  }
+
+  export type UserUpdateWithoutEventInvitesAcceptedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutRsvpsInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -22970,10 +25856,13 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
@@ -22984,6 +25873,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -22996,6 +25887,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentUncheckedCreateNestedManyWithoutEventInput
@@ -23019,6 +25912,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -23033,6 +25927,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
@@ -23045,6 +25941,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -23059,6 +25956,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutRsvpsInput = {
@@ -23079,6 +25978,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutRsvpsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23091,10 +25991,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
@@ -23105,6 +26008,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23117,6 +26022,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
@@ -23146,6 +26053,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -23160,6 +26068,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
@@ -23172,6 +26082,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -23186,10 +26097,13 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23202,10 +26116,13 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
@@ -23216,6 +26133,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23228,6 +26147,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -23251,6 +26172,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -23265,6 +26187,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -23277,6 +26201,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -23291,6 +26216,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -23366,6 +26293,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23378,10 +26306,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
@@ -23392,6 +26323,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23404,6 +26337,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -23433,6 +26368,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -23447,6 +26383,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -23459,6 +26397,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -23473,6 +26412,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type CommentUpsertWithoutRepliesInput = {
@@ -23532,11 +26473,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMessagesInput = {
@@ -23546,14 +26490,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMessagesInput = {
@@ -23571,6 +26518,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -23585,6 +26533,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
@@ -23597,6 +26547,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -23611,6 +26562,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMessagesInput = {
@@ -23639,11 +26592,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMessagesInput = {
@@ -23653,14 +26609,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMessagesInput = {
@@ -23684,6 +26643,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -23698,6 +26658,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
@@ -23710,6 +26672,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -23724,10 +26687,13 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutReminderRulesInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23740,10 +26706,13 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
@@ -23754,6 +26723,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23766,6 +26737,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -23792,6 +26765,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutReminderRulesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23804,10 +26778,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
@@ -23818,6 +26795,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23830,6 +26809,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -23840,6 +26821,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutMessageLogsInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23852,10 +26834,13 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
     group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
@@ -23866,6 +26851,8 @@ export namespace Prisma {
     id?: string
     createdById: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -23878,6 +26865,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -23901,6 +26890,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -23915,6 +26905,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
@@ -23927,6 +26919,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -23941,6 +26934,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutMessageLogsInput = {
@@ -23961,6 +26956,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutMessageLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23973,10 +26969,13 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
@@ -23987,6 +26986,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -23999,6 +27000,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -24028,6 +27031,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -24042,6 +27046,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
@@ -24054,6 +27060,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -24068,6 +27075,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupCreateWithoutNewsInput = {
@@ -24080,11 +27089,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutNewsInput = {
@@ -24094,14 +27106,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutNewsInput = {
@@ -24119,6 +27134,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -24133,6 +27149,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutNewsInput = {
@@ -24145,6 +27163,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -24159,6 +27178,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutNewsInput = {
@@ -24187,11 +27208,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutNewsInput = {
@@ -24201,14 +27225,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutNewsInput = {
@@ -24232,6 +27259,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -24246,6 +27274,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsInput = {
@@ -24258,6 +27288,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -24272,6 +27303,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -24284,6 +27317,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -24298,6 +27332,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -24310,6 +27346,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -24324,11 +27361,108 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
+  }
+
+  export type GroupCreateWithoutSubgroupsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageCreateNestedManyWithoutGroupInput
+    events?: EventCreateNestedManyWithoutGroupInput
+    news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutSubgroupsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    parentGroupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
+    events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutSubgroupsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutSubgroupsInput, GroupUncheckedCreateWithoutSubgroupsInput>
+  }
+
+  export type GroupCreateWithoutParentGroupInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageCreateNestedManyWithoutGroupInput
+    events?: EventCreateNestedManyWithoutGroupInput
+    news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutParentGroupInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
+    events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutParentGroupInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput>
+  }
+
+  export type GroupCreateManyParentGroupInputEnvelope = {
+    data: GroupCreateManyParentGroupInput | GroupCreateManyParentGroupInput[]
+    skipDuplicates?: boolean
   }
 
   export type GroupMembershipCreateWithoutGroupInput = {
@@ -24459,6 +27593,7 @@ export namespace Prisma {
 
   export type EventCreateWithoutGroupInput = {
     id?: string
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -24471,9 +27606,12 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
     rsvps?: RSVPCreateNestedManyWithoutEventInput
     comments?: CommentCreateNestedManyWithoutEventInput
     reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
@@ -24484,6 +27622,8 @@ export namespace Prisma {
   export type EventUncheckedCreateWithoutGroupInput = {
     id?: string
     createdById: string
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -24496,6 +27636,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -24547,6 +27689,34 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EventSeriesCreateWithoutGroupInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
+    events?: EventCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesUncheckedCreateWithoutGroupInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdById: string
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutSeriesInput
+  }
+
+  export type EventSeriesCreateOrConnectWithoutGroupInput = {
+    where: EventSeriesWhereUniqueInput
+    create: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput>
+  }
+
+  export type EventSeriesCreateManyGroupInputEnvelope = {
+    data: EventSeriesCreateManyGroupInput | EventSeriesCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutCreatedGroupsInput = {
     update: XOR<UserUpdateWithoutCreatedGroupsInput, UserUncheckedUpdateWithoutCreatedGroupsInput>
     create: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
@@ -24568,6 +27738,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -24582,6 +27753,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -24594,6 +27767,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -24608,6 +27782,75 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type GroupUpsertWithoutSubgroupsInput = {
+    update: XOR<GroupUpdateWithoutSubgroupsInput, GroupUncheckedUpdateWithoutSubgroupsInput>
+    create: XOR<GroupCreateWithoutSubgroupsInput, GroupUncheckedCreateWithoutSubgroupsInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutSubgroupsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutSubgroupsInput, GroupUncheckedUpdateWithoutSubgroupsInput>
+  }
+
+  export type GroupUpdateWithoutSubgroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUpdateManyWithoutGroupNestedInput
+    events?: EventUpdateManyWithoutGroupNestedInput
+    news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutSubgroupsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
+    events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUpsertWithWhereUniqueWithoutParentGroupInput = {
+    where: GroupWhereUniqueInput
+    update: XOR<GroupUpdateWithoutParentGroupInput, GroupUncheckedUpdateWithoutParentGroupInput>
+    create: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput>
+  }
+
+  export type GroupUpdateWithWhereUniqueWithoutParentGroupInput = {
+    where: GroupWhereUniqueInput
+    data: XOR<GroupUpdateWithoutParentGroupInput, GroupUncheckedUpdateWithoutParentGroupInput>
+  }
+
+  export type GroupUpdateManyWithWhereWithoutParentGroupInput = {
+    where: GroupScalarWhereInput
+    data: XOR<GroupUpdateManyMutationInput, GroupUncheckedUpdateManyWithoutParentGroupInput>
   }
 
   export type GroupMembershipUpsertWithWhereUniqueWithoutGroupInput = {
@@ -24706,6 +27949,22 @@ export namespace Prisma {
     data: XOR<NewsUpdateManyMutationInput, NewsUncheckedUpdateManyWithoutGroupInput>
   }
 
+  export type EventSeriesUpsertWithWhereUniqueWithoutGroupInput = {
+    where: EventSeriesWhereUniqueInput
+    update: XOR<EventSeriesUpdateWithoutGroupInput, EventSeriesUncheckedUpdateWithoutGroupInput>
+    create: XOR<EventSeriesCreateWithoutGroupInput, EventSeriesUncheckedCreateWithoutGroupInput>
+  }
+
+  export type EventSeriesUpdateWithWhereUniqueWithoutGroupInput = {
+    where: EventSeriesWhereUniqueInput
+    data: XOR<EventSeriesUpdateWithoutGroupInput, EventSeriesUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type EventSeriesUpdateManyWithWhereWithoutGroupInput = {
+    where: EventSeriesScalarWhereInput
+    data: XOR<EventSeriesUpdateManyMutationInput, EventSeriesUncheckedUpdateManyWithoutGroupInput>
+  }
+
   export type UserCreateWithoutGroupMembershipInvitesInput = {
     id?: string
     email: string
@@ -24716,6 +27975,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -24730,6 +27990,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
@@ -24742,6 +28004,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -24756,6 +28019,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInvitesInput = {
@@ -24773,11 +28038,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMembershipsInput = {
@@ -24787,14 +28055,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMembershipsInput = {
@@ -24812,6 +28083,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -24826,6 +28098,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -24838,6 +28112,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -24852,6 +28127,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -24880,6 +28157,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -24894,6 +28172,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
@@ -24906,6 +28186,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -24920,6 +28201,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutMembershipsInput = {
@@ -24943,11 +28226,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMembershipsInput = {
@@ -24957,14 +28243,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMembershipsInput = {
@@ -24988,6 +28277,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -25002,6 +28292,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -25014,6 +28306,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -25028,6 +28321,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutGroupInvitesSentInput = {
@@ -25040,6 +28335,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -25054,6 +28350,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
@@ -25066,6 +28364,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -25080,6 +28379,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesSentInput = {
@@ -25097,6 +28398,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -25111,6 +28413,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
@@ -25123,6 +28427,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -25137,6 +28442,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesReceivedInput = {
@@ -25154,11 +28461,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutInvitesInput = {
@@ -25168,14 +28478,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutInvitesInput = {
@@ -25204,6 +28517,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -25218,6 +28532,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
@@ -25230,6 +28546,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -25244,6 +28561,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutGroupInvitesReceivedInput = {
@@ -25267,6 +28586,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -25281,6 +28601,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
@@ -25293,6 +28615,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -25307,6 +28630,8 @@ export namespace Prisma {
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutInvitesInput = {
@@ -25330,11 +28655,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutInvitesInput = {
@@ -25344,14 +28672,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateWithoutJoinRequestsInput = {
@@ -25364,11 +28695,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
     invites?: GroupInviteCreateNestedManyWithoutGroupInput
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutJoinRequestsInput = {
@@ -25378,14 +28712,17 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
     memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
     invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutJoinRequestsInput = {
@@ -25403,6 +28740,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -25417,6 +28755,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
     reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
@@ -25429,6 +28769,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -25443,6 +28784,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupJoinRequestsInput = {
@@ -25460,6 +28803,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -25474,6 +28818,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
     groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
@@ -25486,6 +28832,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -25500,6 +28847,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
     groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedJoinRequestsInput = {
@@ -25528,11 +28877,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutJoinRequestsInput = {
@@ -25542,14 +28894,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupJoinRequestsInput = {
@@ -25573,6 +28928,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -25587,6 +28943,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
     reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
@@ -25599,6 +28957,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -25613,6 +28972,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
     reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutReviewedJoinRequestsInput = {
@@ -25636,6 +28997,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -25650,6 +29012,8 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
     groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
@@ -25662,6 +29026,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -25676,11 +29041,15 @@ export namespace Prisma {
     groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
     groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateManyCreatedByInput = {
     id?: string
     groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -25693,6 +29062,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25750,6 +29121,7 @@ export namespace Prisma {
     description?: string
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
+    parentGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25829,11 +29201,38 @@ export namespace Prisma {
     eventId: string
     token: string
     expiresAt: Date | string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
+    createdAt?: Date | string
+  }
+
+  export type EventInviteCreateManyAcceptedByInput = {
+    id?: string
+    eventId: string
+    token: string
+    expiresAt: Date | string
+    createdById: string
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
+    createdAt?: Date | string
+  }
+
+  export type EventSeriesCreateManyCreatedByInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    groupId?: string | null
     createdAt?: Date | string
   }
 
   export type EventUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -25846,9 +29245,12 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
@@ -25859,6 +29261,8 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -25871,6 +29275,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -25883,6 +29289,8 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -25895,6 +29303,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26048,12 +29458,15 @@ export namespace Prisma {
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutCreatedByInput = {
@@ -26063,14 +29476,17 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
     memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
     invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
     joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutCreatedByInput = {
@@ -26080,6 +29496,7 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26298,8 +29715,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutInvitesNestedInput
+    acceptedBy?: UserUpdateOneWithoutEventInvitesAcceptedNestedInput
   }
 
   export type EventInviteUncheckedUpdateWithoutCreatedByInput = {
@@ -26307,6 +29729,11 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26315,6 +29742,76 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventInviteUpdateWithoutAcceptedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutInvitesNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutEventInvitesCreatedNestedInput
+  }
+
+  export type EventInviteUncheckedUpdateWithoutAcceptedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventInviteUncheckedUpdateManyWithoutAcceptedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventSeriesUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneWithoutEventSeriesNestedInput
+    events?: EventUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26357,6 +29854,11 @@ export namespace Prisma {
     token: string
     expiresAt: Date | string
     createdById: string
+    acceptedByUserId?: string | null
+    acceptedAt?: Date | string | null
+    guestName?: string | null
+    guestEmail?: string | null
+    guestPhone?: string | null
     createdAt?: Date | string
   }
 
@@ -26468,8 +29970,13 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventInvitesCreatedNestedInput
+    acceptedBy?: UserUpdateOneWithoutEventInvitesAcceptedNestedInput
   }
 
   export type EventInviteUncheckedUpdateWithoutEventInput = {
@@ -26477,6 +29984,11 @@ export namespace Prisma {
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26485,7 +29997,114 @@ export namespace Prisma {
     token?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdById?: StringFieldUpdateOperationsInput | string
+    acceptedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    acceptedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    guestName?: NullableStringFieldUpdateOperationsInput | string | null
+    guestEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    guestPhone?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventCreateManySeriesInput = {
+    id?: string
+    createdById: string
+    groupId?: string | null
+    partNumber?: number | null
+    coverImageUrl?: string | null
+    title_en: string
+    title_zh: string
+    description_en?: string
+    description_zh?: string
+    location_en?: string
+    location_zh?: string
+    startAt: Date | string
+    endAt?: Date | string | null
+    timezone?: string
+    feeAmount?: Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EventUpdateWithoutSeriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    description_en?: StringFieldUpdateOperationsInput | string
+    description_zh?: StringFieldUpdateOperationsInput | string
+    location_en?: StringFieldUpdateOperationsInput | string
+    location_zh?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
+    group?: GroupUpdateOneWithoutEventsNestedInput
+    rsvps?: RSVPUpdateManyWithoutEventNestedInput
+    comments?: CommentUpdateManyWithoutEventNestedInput
+    reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
+    invites?: EventInviteUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutSeriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    description_en?: StringFieldUpdateOperationsInput | string
+    description_zh?: StringFieldUpdateOperationsInput | string
+    location_en?: StringFieldUpdateOperationsInput | string
+    location_zh?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
+    reminderRules?: ReminderRuleUncheckedUpdateManyWithoutEventNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
+    invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
+  }
+
+  export type EventUncheckedUpdateManyWithoutSeriesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    description_en?: StringFieldUpdateOperationsInput | string
+    description_zh?: StringFieldUpdateOperationsInput | string
+    location_en?: StringFieldUpdateOperationsInput | string
+    location_zh?: StringFieldUpdateOperationsInput | string
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CommentCreateManyReplyToInput = {
@@ -26524,6 +30143,18 @@ export namespace Prisma {
     body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GroupCreateManyParentGroupInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type GroupMembershipCreateManyGroupInput = {
@@ -26572,6 +30203,8 @@ export namespace Prisma {
   export type EventCreateManyGroupInput = {
     id?: string
     createdById: string
+    seriesId?: string | null
+    partNumber?: number | null
     coverImageUrl?: string | null
     title_en: string
     title_zh: string
@@ -26584,6 +30217,8 @@ export namespace Prisma {
     timezone?: string
     feeAmount?: Decimal | DecimalJsLike | number | string | null
     feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26597,6 +30232,66 @@ export namespace Prisma {
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type EventSeriesCreateManyGroupInput = {
+    id?: string
+    title_en: string
+    title_zh: string
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type GroupUpdateWithoutParentGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUpdateManyWithoutGroupNestedInput
+    events?: EventUpdateManyWithoutGroupNestedInput
+    news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutParentGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
+    events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateManyWithoutParentGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type GroupMembershipUpdateWithoutGroupInput = {
@@ -26730,6 +30425,7 @@ export namespace Prisma {
 
   export type EventUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -26742,9 +30438,12 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
     rsvps?: RSVPUpdateManyWithoutEventNestedInput
     comments?: CommentUpdateManyWithoutEventNestedInput
     reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
@@ -26755,6 +30454,8 @@ export namespace Prisma {
   export type EventUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -26767,6 +30468,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -26779,6 +30482,8 @@ export namespace Prisma {
   export type EventUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     title_en?: StringFieldUpdateOperationsInput | string
     title_zh?: StringFieldUpdateOperationsInput | string
@@ -26791,6 +30496,8 @@ export namespace Prisma {
     timezone?: StringFieldUpdateOperationsInput | string
     feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26828,6 +30535,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type EventSeriesUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
+    events?: EventUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutSeriesNestedInput
+  }
+
+  export type EventSeriesUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -26841,6 +30574,10 @@ export namespace Prisma {
      * @deprecated Use EventCountOutputTypeDefaultArgs instead
      */
     export type EventCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use EventSeriesCountOutputTypeDefaultArgs instead
+     */
+    export type EventSeriesCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventSeriesCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use CommentCountOutputTypeDefaultArgs instead
      */
@@ -26857,6 +30594,10 @@ export namespace Prisma {
      * @deprecated Use EventDefaultArgs instead
      */
     export type EventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use EventSeriesDefaultArgs instead
+     */
+    export type EventSeriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventSeriesDefaultArgs<ExtArgs>
     /**
      * @deprecated Use EventInviteDefaultArgs instead
      */

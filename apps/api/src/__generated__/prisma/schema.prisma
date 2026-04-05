@@ -73,6 +73,7 @@ model User {
   role              Role     @default(USER)
   muteSms           Boolean  @default(false)
   muteEmail         Boolean  @default(false)
+  isGuest           Boolean  @default(false)
   createdAt         DateTime @default(now())
 
   events                 Event[]
@@ -89,17 +90,22 @@ model User {
   groupJoinRequests      GroupJoinRequest[] @relation("GroupJoinRequestRequester")
   reviewedJoinRequests   GroupJoinRequest[] @relation("GroupJoinRequestReviewer")
   eventInvitesCreated    EventInvite[]      @relation("EventInviteCreatedBy")
+  eventInvitesAccepted   EventInvite[]      @relation("EventInviteAcceptedBy")
+  eventSeriesCreated     EventSeries[]      @relation("EventSeriesCreatedBy")
 
   @@index([email])
   @@index([role])
 }
 
 model Event {
-  id          String  @id @default(cuid())
+  id          String       @id @default(cuid())
   createdById String
-  createdBy   User    @relation(fields: [createdById], references: [id])
+  createdBy   User         @relation(fields: [createdById], references: [id])
   groupId     String?
-  group       Group?  @relation(fields: [groupId], references: [id])
+  group       Group?       @relation(fields: [groupId], references: [id])
+  seriesId    String?
+  series      EventSeries? @relation(fields: [seriesId], references: [id])
+  partNumber  Int?
 
   coverImageUrl String?
 
@@ -117,6 +123,9 @@ model Event {
   feeAmount   Decimal? @db.Decimal(10, 2)
   feeCurrency String   @default("TWD")
 
+  commentsEnabled  Boolean @default(true)
+  messagingEnabled Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -129,18 +138,41 @@ model Event {
   @@index([startAt])
   @@index([createdById])
   @@index([groupId])
+  @@index([seriesId])
 }
 
-model EventInvite {
+model EventSeries {
   id          String   @id @default(cuid())
-  eventId     String
-  token       String   @unique
-  expiresAt   DateTime
+  title_en    String
+  title_zh    String
+  groupId     String?
   createdById String
   createdAt   DateTime @default(now())
 
-  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  createdBy User  @relation("EventInviteCreatedBy", fields: [createdById], references: [id])
+  createdBy User    @relation("EventSeriesCreatedBy", fields: [createdById], references: [id])
+  group     Group?  @relation(fields: [groupId], references: [id])
+  events    Event[]
+
+  @@index([createdById])
+  @@index([groupId])
+}
+
+model EventInvite {
+  id               String    @id @default(cuid())
+  eventId          String
+  token            String    @unique
+  expiresAt        DateTime
+  createdById      String
+  acceptedByUserId String?
+  acceptedAt       DateTime?
+  guestName        String?
+  guestEmail       String?
+  guestPhone       String?
+  createdAt        DateTime  @default(now())
+
+  event      Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy  User  @relation("EventInviteCreatedBy", fields: [createdById], references: [id])
+  acceptedBy User? @relation("EventInviteAcceptedBy", fields: [acceptedByUserId], references: [id])
 
   @@index([eventId])
   @@index([token])
@@ -250,20 +282,25 @@ model Group {
   description          String   @default("")
   discoverableBySearch Boolean  @default(false)
   memberDataPrivate    Boolean  @default(false)
+  parentGroupId        String?
   createdById          String
   createdBy            User     @relation("GroupCreatedBy", fields: [createdById], references: [id])
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
+  parentGroup  Group?             @relation("GroupSubgroups", fields: [parentGroupId], references: [id])
+  subgroups    Group[]            @relation("GroupSubgroups")
   memberships  GroupMembership[]
   invites      GroupInvite[]
   joinRequests GroupJoinRequest[]
   messages     GroupMessage[]
   events       Event[]
   news         News[]
+  eventSeries  EventSeries[]
 
   @@index([name])
   @@index([discoverableBySearch])
+  @@index([parentGroupId])
 }
 
 model GroupMembership {

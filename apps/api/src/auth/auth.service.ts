@@ -2,11 +2,14 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import type { SignupDto } from '@judien/shared';
+import type { GuestGroupJoinDto, SignupDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { JwtPayload } from './jwt.strategy';
 
@@ -70,5 +73,53 @@ export class AuthService {
     }
     if (payload.type !== 'refresh') throw new UnauthorizedException();
     return payload;
+  }
+
+  /**
+   * Guest join: validate a group invite token, create/find a minimal (isGuest) user,
+   * accept the group membership, and return JWT tokens.
+   */
+  async guestGroupJoin(dto: GuestGroupJoinDto): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+    const invite = await this.prisma.groupInvite.findUnique({ where: { token: dto.groupInviteToken } });
+    if (!invite) throw new NotFoundException('Invite not found.');
+    if (invite.status !== 'PENDING') throw new BadRequestException('Invite is already resolved.');
+    if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite has expired.');
+
+    const phone = dto.phoneE164;
+    const email = dto.email ?? invite.email ?? `guest_${randomBytes(6).toString('hex')}@guest.local`;
+
+    let user = await this.prisma.user.findFirst({
+      where: { OR: [{ phoneE164: phone }, ...(dto.email ? [{ email: dto.email }] : [])] },
+    });
+
+    if (!user) {
+      const passwordHash = await bcrypt.hash(randomBytes(16).toString('hex'), 10);
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          phoneE164: phone,
+          displayName: dto.displayName,
+          isGuest: true,
+          role: 'USER',
+        },
+      });
+    }
+
+    // Accept the group membership
+    await this.prisma.$transaction(async (tx) => {
+      await tx.groupInvite.update({
+        where: { id: invite.id },
+        data: { status: 'ACCEPTED', invitedUserId: user!.id, respondedAt: new Date() },
+      });
+      await tx.groupMembership.upsert({
+        where: { groupId_userId: { groupId: invite.groupId, userId: user!.id } },
+        create: { groupId: invite.groupId, userId: user!.id, status: 'ACCEPTED', role: 'MEMBER', joinedAt: new Date() },
+        update: { status: 'ACCEPTED', joinedAt: new Date() },
+      });
+    });
+
+    const tokens = this.issueTokens(user);
+    return { user, ...tokens };
   }
 }

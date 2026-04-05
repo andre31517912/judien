@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { apiFetch, resolveImageUrl } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import ConfirmModal from '../../../../components/ConfirmModal';
-import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
+import type { EventWithCounts, Comment, PaginatedResponse, EventSeries, EventInvitee } from '@judien/shared';
 
 const EventMap = dynamic(() => import('../../../../components/EventMapInner'), { ssr: false });
 
@@ -80,6 +80,30 @@ export default function EventDetailPage() {
     navigator.clipboard.writeText(inviteLink);
     alert(zh ? '已複製到剪貼簿' : 'Copied to clipboard');
   };
+
+  // invitees state (admin only)
+  const [invitees, setInvitees] = useState<EventInvitee[]>([]);
+  const [inviteesLoading, setInviteesLoading] = useState(false);
+  const [showInvitees, setShowInvitees] = useState(false);
+
+  const loadInvitees = async () => {
+    setInviteesLoading(true);
+    try {
+      const data = await apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`);
+      setInvitees(data);
+    } finally {
+      setInviteesLoading(false);
+    }
+  };
+
+  // event series state
+  const [eventSeries, setEventSeries] = useState<EventSeries | null>(null);
+
+  useEffect(() => {
+    if (event?.seriesId) {
+      apiFetch<EventSeries>(`/event-series/${event.seriesId}`).then(setEventSeries).catch(() => {});
+    }
+  }, [event?.seriesId]);
 
   useEffect(() => {
     Promise.all([
@@ -303,6 +327,21 @@ export default function EventDetailPage() {
 
       <h1 className="text-3xl font-bold">{title}</h1>
 
+      {/* Series badge */}
+      {eventSeries && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium px-3 py-1 rounded-full">
+            📚 {zh ? (eventSeries.title_zh || eventSeries.title_en) : (eventSeries.title_en || eventSeries.title_zh)}
+            {event.partNumber != null && ` — ${zh ? '第' : 'Part'} ${event.partNumber}`}
+          </span>
+          {eventSeries.events && eventSeries.events.length > 1 && (
+            <span className="text-xs text-gray-400">
+              {zh ? `系列共 ${eventSeries.events.length} 場` : `${eventSeries.events.length} events in series`}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="text-sm text-gray-700 space-y-2">
         {event.groupName && (
           <div className="flex gap-2">
@@ -331,6 +370,18 @@ export default function EventDetailPage() {
           <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '費用' : 'Price'}</span>
           <span>{fee}</span>
         </div>
+        {event.commentsEnabled === false && (
+          <div className="flex gap-2">
+            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '留言' : 'Comments'}</span>
+            <span className="text-orange-500 text-sm">{zh ? '已關閉' : 'Disabled'}</span>
+          </div>
+        )}
+        {event.messagingEnabled === false && (
+          <div className="flex gap-2">
+            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '訊息' : 'Messaging'}</span>
+            <span className="text-orange-500 text-sm">{zh ? '已關閉' : 'Disabled'}</span>
+          </div>
+        )}
       </div>
 
       {description && (
@@ -373,6 +424,21 @@ export default function EventDetailPage() {
           >
             {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '📬 邀請朋友' : '📬 Invite Friends')}
           </button>
+          {user?.role === 'ADMIN' && (
+            <button
+              onClick={() => {
+                if (showInvitees) {
+                  setShowInvitees(false);
+                } else {
+                  setShowInvitees(true);
+                  loadInvitees();
+                }
+              }}
+              className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-purple-400 transition"
+            >
+              {zh ? '受邀名單' : 'Invitees'}
+            </button>
+          )}
         </div>
       ) : (
         <div className="flex items-center gap-3">
@@ -446,6 +512,39 @@ export default function EventDetailPage() {
           </div>
         )}
 
+      {/* Invitees panel (admin only) */}
+      {showInvitees && user?.role === 'ADMIN' && (
+        <div className="bg-white rounded-xl border border-purple-100 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-purple-50">
+            <h3 className="text-sm font-semibold text-purple-700">{zh ? '受邀名單' : 'Invitees'}</h3>
+          </div>
+          <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+            {inviteesLoading ? (
+              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : invitees.length === 0 ? (
+              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '尚無受邀用戶。' : 'No invitees yet.'}</p>
+            ) : (
+              invitees.map((inv) => (
+                <div key={inv.inviteId} className="flex items-center gap-3 px-4 py-2.5">
+                  <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-xs font-bold text-purple-500 shrink-0">
+                    {(inv.guestName ?? inv.displayName ?? '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-800 truncate">{inv.guestName ?? inv.displayName ?? (zh ? '未知' : 'Unknown')}</p>
+                    {inv.email && <p className="text-xs text-gray-400 truncate">{inv.email}</p>}
+                  </div>
+                  {inv.acceptedAt ? (
+                    <span className="text-xs text-green-600 shrink-0">{zh ? '已接受' : 'Accepted'}</span>
+                  ) : (
+                    <span className="text-xs text-gray-400 shrink-0">{zh ? '待接受' : 'Pending'}</span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Send Message Blast (admin only) */}
       {user?.role === 'ADMIN' && (
         <section className="border border-dashed border-indigo-200 rounded-xl p-5 bg-indigo-50/40">
@@ -509,7 +608,9 @@ export default function EventDetailPage() {
       <section>
         <h2 className="text-lg font-semibold mb-3">{zh ? '留言' : 'Comments'}</h2>
 
-        {user && (
+        {event.commentsEnabled === false ? (
+          <p className="text-sm text-gray-400 italic mb-4">{zh ? '此活動已關閉留言功能。' : 'Comments are disabled for this event.'}</p>
+        ) : user && (
           <form onSubmit={handleComment} className="flex gap-2 mb-4">
             <input
               value={commentBody}

@@ -132,6 +132,7 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   muteSms: 'muteSms',
   muteEmail: 'muteEmail',
+  isGuest: 'isGuest',
   createdAt: 'createdAt'
 };
 
@@ -139,6 +140,8 @@ exports.Prisma.EventScalarFieldEnum = {
   id: 'id',
   createdById: 'createdById',
   groupId: 'groupId',
+  seriesId: 'seriesId',
+  partNumber: 'partNumber',
   coverImageUrl: 'coverImageUrl',
   title_en: 'title_en',
   title_zh: 'title_zh',
@@ -151,8 +154,19 @@ exports.Prisma.EventScalarFieldEnum = {
   timezone: 'timezone',
   feeAmount: 'feeAmount',
   feeCurrency: 'feeCurrency',
+  commentsEnabled: 'commentsEnabled',
+  messagingEnabled: 'messagingEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventSeriesScalarFieldEnum = {
+  id: 'id',
+  title_en: 'title_en',
+  title_zh: 'title_zh',
+  groupId: 'groupId',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.EventInviteScalarFieldEnum = {
@@ -161,6 +175,11 @@ exports.Prisma.EventInviteScalarFieldEnum = {
   token: 'token',
   expiresAt: 'expiresAt',
   createdById: 'createdById',
+  acceptedByUserId: 'acceptedByUserId',
+  acceptedAt: 'acceptedAt',
+  guestName: 'guestName',
+  guestEmail: 'guestEmail',
+  guestPhone: 'guestPhone',
   createdAt: 'createdAt'
 };
 
@@ -230,6 +249,7 @@ exports.Prisma.GroupScalarFieldEnum = {
   description: 'description',
   discoverableBySearch: 'discoverableBySearch',
   memberDataPrivate: 'memberDataPrivate',
+  parentGroupId: 'parentGroupId',
   createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -348,6 +368,7 @@ exports.GroupJoinRequestStatus = exports.$Enums.GroupJoinRequestStatus = {
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
+  EventSeries: 'EventSeries',
   EventInvite: 'EventInvite',
   RSVP: 'RSVP',
   Comment: 'Comment',

@@ -27,6 +27,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     timezone: 'Asia/Taipei',
     feeAmount: '',
     feeCurrency: 'TWD',
+    commentsEnabled: true,
+    messagingEnabled: true,
   });
 
   const set = (k: keyof typeof form) =>
@@ -63,6 +65,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency || 'TWD',
         coverImageUrl,
+        commentsEnabled: form.commentsEnabled,
+        messagingEnabled: form.messagingEnabled,
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
       router.push(`/${params.locale}/events/${ev.id}`);
@@ -120,6 +124,28 @@ export default function NewEventPage({ params }: { params: { locale: string } })
           <Field label="Currency">
             <input value={form.feeCurrency} onChange={set('feeCurrency')} className={inp} />
           </Field>
+        </div>
+
+        {/* Settings toggles */}
+        <div className="grid grid-cols-2 gap-4">
+          <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+            <input
+              type="checkbox"
+              checked={form.commentsEnabled}
+              onChange={(e) => setForm((f) => ({ ...f, commentsEnabled: e.target.checked }))}
+              className="w-4 h-4 text-indigo-600 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">Comments enabled</span>
+          </label>
+          <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+            <input
+              type="checkbox"
+              checked={form.messagingEnabled}
+              onChange={(e) => setForm((f) => ({ ...f, messagingEnabled: e.target.checked }))}
+              className="w-4 h-4 text-indigo-600 rounded"
+            />
+            <span className="text-sm font-medium text-gray-700">Messaging enabled</span>
+          </label>
         </div>
 
         {/* Cover image upload */}
