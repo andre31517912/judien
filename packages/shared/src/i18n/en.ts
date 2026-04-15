@@ -89,7 +89,7 @@ const en = {
   home: {
     title: 'Home',
     noNews: "No news yet — you're all caught up!",
-    createPost: 'Post Announcement',
+    createPost: 'Create Post',
     deletePost: 'Delete Post',
     deleteConfirm: 'Delete this post? This cannot be undone.',
     postCreated: 'Posted.',

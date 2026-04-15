@@ -420,7 +420,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               ← {zh ? '所有群組' : 'All Groups'}
             </Link>
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">{group.name}</h1>
-            {group.description && <p className="text-sm text-gray-500">{group.description}</p>}
             {/* Hierarchy breadcrumb */}
             {relationships?.lineage && relationships.lineage.length > 1 && (
               <p className="text-xs text-gray-400">
@@ -448,7 +447,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </span>
               )}
               <Link
-                href={`/${params.locale}/admin/groups/${params.groupId}`}
+                href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
                 className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
               >
                 ⚙️ {zh ? '群組設定' : 'Settings'}

@@ -2,14 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch, apiUpload } from '@/lib/api';
-import type { Event, EventWithCounts, News, PaginatedResponse } from '@judien/shared';
+import { apiFetch } from '@/lib/api';
+import type { EventWithCounts, GroupMessage, News, PaginatedResponse } from '@judien/shared';
 
-const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
-
-type GroupListItem = {
+type AdminGroupItem = {
   group: {
     id: string;
     pid: string;
@@ -17,8 +14,6 @@ type GroupListItem = {
     description: string;
     discoverableBySearch: boolean;
     memberDataPrivate: boolean;
-    createdAt: string;
-    updatedAt: string;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'MEMBER';
@@ -36,134 +31,59 @@ type GroupMember = {
   phoneE164: string | null;
 };
 
-export default function GroupWorkspacePage({ params }: { params: { locale: string; groupId: string } }) {
+type JoinRequest = {
+  id: string;
+  status: string;
+  note: string | null;
+  createdAt: string;
+  requester: { id: string; displayName: string | null; email: string };
+};
+
+export default function AdminGroupPage({ params }: { params: { locale: string; groupId: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
 
-  const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
+  const [groupItem, setGroupItem] = useState<AdminGroupItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
+  const [messages, setMessages] = useState<GroupMessage[]>([]);
+  const [chatBody, setChatBody] = useState('');
+  const [chatSending, setChatSending] = useState(false);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
-  const [inviteLoading, setInviteLoading] = useState(false);
-
-  const [addIdentifier, setAddIdentifier] = useState('');
-  const [addRole, setAddRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
-  const [addLoading, setAddLoading] = useState(false);
-
-  const importFileRef = useRef<HTMLInputElement>(null);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importResult, setImportResult] = useState<{ added: number; already_member: number; not_found: number } | null>(null);
-  const [exportLoading, setExportLoading] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showExportModal, setShowExportModal] = useState(false);
-  const [pendingImportType, setPendingImportType] = useState<'xlsx' | 'txt' | null>(null);
-
-  const [newsForm, setNewsForm] = useState({ title: '', body: '' });
-  const [newsLoading, setNewsLoading] = useState(false);
-
-  const [eventForm, setEventForm] = useState({
-    title: '',
-    description: '',
-    location: '',
-    startAt: '',
-    endAt: '',
-    timezone: 'Asia/Taipei',
-    feeAmount: '',
-    feeCurrency: 'TWD',
-  });
-  const [eventLoading, setEventLoading] = useState(false);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const coverFileRef = useRef<HTMLInputElement>(null);
-
-  const handleImportMembers = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setShowImportModal(false);
-    setPendingImportType(null);
-    setImportLoading(true);
-    setImportResult(null);
-    setError('');
-    setSuccess('');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? ''}/groups/${params.groupId}/members/import`,
-        { method: 'POST', body: formData, credentials: 'include' }
-      );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: 'Import failed' }));
-        throw new Error(err.message ?? 'Import failed');
-      }
-      const data = await res.json();
-      setImportResult(data);
-      setSuccess(zh ? '匯入完成。' : 'Import complete.');
-      await loadPage();
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Import failed.');
-    } finally {
-      setImportLoading(false);
-      if (importFileRef.current) importFileRef.current.value = '';
-    }
-  };
-
-  const triggerImport = (type: 'xlsx' | 'txt') => {
-    setPendingImportType(type);
-    setShowImportModal(false);
-    setTimeout(() => importFileRef.current?.click(), 50);
-  };
-
-  const handleExportMembers = async (format: 'xlsx' | 'txt') => {
-    setShowExportModal(false);
-    setExportLoading(true);
-    setError('');
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
-      const res = await fetch(
-        `${apiBase}/groups/${params.groupId}/members/export?format=${format}`,
-        { credentials: 'include' }
-      );
-      if (!res.ok) throw new Error('Export failed');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `members-${params.groupId}.${format === 'xlsx' ? 'xlsx' : 'txt'}`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Export failed.');
-    } finally {
-      setExportLoading(false);
-    }
-  };
+  type ViewTab = 'feed' | 'upcoming' | 'past' | 'chat' | 'members';
+  const [viewTab, setViewTab] = useState<ViewTab>('feed');
+  const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
+  const [pastLoaded, setPastLoaded] = useState(false);
+  const [pastLoading, setPastLoading] = useState(false);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const loadPage = async () => {
     setPageLoading(true);
     setError('');
     try {
-      const [groups, memberList, groupNews, groupEvents] = await Promise.all([
-        apiFetch<GroupListItem[]>('/groups/me'),
+      const [groups, memberList, groupNews, groupEvents, messageRes] = await Promise.all([
+        apiFetch<AdminGroupItem[]>('/groups/me'),
         apiFetch<GroupMember[]>(`/groups/${params.groupId}/members`),
         apiFetch<News[]>(`/news?groupId=${params.groupId}`),
         apiFetch<PaginatedResponse<EventWithCounts>>(`/events?scope=future&groupId=${params.groupId}&page=1&pageSize=20`),
+        apiFetch<PaginatedResponse<GroupMessage>>(`/groups/${params.groupId}/messages?page=1&pageSize=100`).catch(() => ({ data: [] as GroupMessage[] } as PaginatedResponse<GroupMessage>)),
       ]);
       const current = groups.find((item) => item.group.id === params.groupId) ?? null;
       setGroupItem(current);
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
+      setMessages(messageRes.data);
+      const reqRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);
+      setJoinRequests((reqRes ?? []).filter((r) => r.status === 'PENDING'));
       if (!current) setError(zh ? '找不到此群組。' : 'Group not found.');
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to load group workspace.');
+      setError((err as Error).message ?? 'Failed to load group.');
     } finally {
       setPageLoading(false);
     }
@@ -174,402 +94,342 @@ export default function GroupWorkspacePage({ params }: { params: { locale: strin
     loadPage();
   }, [loading, user, params.groupId]);
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
-    setError('');
-    setInviteLoading(true);
+  const loadPastEvents = async () => {
+    if (pastLoaded) return;
+    setPastLoading(true);
     try {
-      const payload: Record<string, unknown> = { role: inviteRole };
-      if (inviteEmail.trim()) payload.email = inviteEmail.trim();
-      if (invitePhone.trim()) payload.phoneE164 = invitePhone.trim();
-      await apiFetch(`/groups/${params.groupId}/invites`, {
-        method: 'POST',
-        body: JSON.stringify({ invites: [payload] }),
-      });
-      setInviteEmail('');
-      setInvitePhone('');
-      setInviteRole('MEMBER');
-      setSuccess(zh ? '邀請已送出。' : 'Invitation sent.');
-      await loadPage();
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to invite member.');
+      const res = await apiFetch<PaginatedResponse<EventWithCounts>>(
+        `/events?scope=past&groupId=${params.groupId}&page=1&pageSize=40`,
+      );
+      setPastEvents(res.data);
+      setPastLoaded(true);
+    } catch {
+      // silently fail
     } finally {
-      setInviteLoading(false);
+      setPastLoading(false);
     }
   };
 
-  const handleAddMember = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (viewTab === 'past' && user) loadPastEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewTab]);
+
+  useEffect(() => {
+    if (viewTab === 'chat' && chatBottomRef.current) {
+      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, viewTab]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess('');
+    if (!chatBody.trim()) return;
+    setChatSending(true);
     setError('');
-    setAddLoading(true);
     try {
-      const result = await apiFetch<{ added: boolean; displayName: string | null }>(`/groups/${params.groupId}/members`, {
+      const created = await apiFetch<GroupMessage>(`/groups/${params.groupId}/messages`, {
         method: 'POST',
-        body: JSON.stringify({ identifier: addIdentifier.trim(), role: addRole }),
+        body: JSON.stringify({ body: chatBody.trim() }),
       });
-      setAddIdentifier('');
-      setAddRole('MEMBER');
-      setSuccess(zh ? `成員已新增：${result.displayName ?? addIdentifier.trim()}` : `Member added: ${result.displayName ?? addIdentifier.trim()}`);
-      await loadPage();
+      setMessages((prev) => [...prev, created]);
+      setChatBody('');
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to add member.');
+      setError((err as Error).message ?? 'Failed to send message.');
     } finally {
-      setAddLoading(false);
+      setChatSending(false);
     }
   };
 
-  const handleCreateNews = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
+  const handleRemoveMember = async (memberUserId: string) => {
+    if (!confirm(zh ? '確定要移除此成員嗎？' : 'Remove this member?')) return;
     setError('');
-    setNewsLoading(true);
+    setSuccess('');
     try {
-      await apiFetch('/news', {
-        method: 'POST',
-        body: JSON.stringify({
-          groupId: params.groupId,
-          title_en: newsForm.title,
-          title_zh: newsForm.title,
-          body_en: newsForm.body,
-          body_zh: newsForm.body,
-        }),
-      });
-      setNewsForm({ title: '', body: '' });
-      setSuccess(zh ? '群組公告已發布。' : 'Group news posted.');
+      await apiFetch(`/groups/${params.groupId}/members/${memberUserId}`, { method: 'DELETE' });
+      setSuccess(zh ? '成員已移除。' : 'Member removed.');
       await loadPage();
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to post group news.');
-    } finally {
-      setNewsLoading(false);
+      setError((err as Error).message ?? 'Failed to remove member.');
     }
   };
 
-  const handleEventFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    setCoverPreview(URL.createObjectURL(file));
-  };
-
-  const handleCreateEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
+  const handleChangeRole = async (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'MEMBER') => {
+    const newRole = currentRole === 'GROUP_ADMIN' ? 'MEMBER' : 'GROUP_ADMIN';
+    if (!confirm(newRole === 'GROUP_ADMIN' ? (zh ? '升為管理員？' : 'Promote to admin?') : (zh ? '降為成員？' : 'Demote to member?'))) return;
     setError('');
-    setEventLoading(true);
+    setSuccess('');
     try {
-      let coverImageUrl: string | null = null;
-      if (coverFile) {
-        const uploaded = await apiUpload(coverFile);
-        coverImageUrl = uploaded.url;
-      }
-      await apiFetch<Event>('/events', {
-        method: 'POST',
-        body: JSON.stringify({
-          groupId: params.groupId,
-          title_en: eventForm.title,
-          title_zh: eventForm.title,
-          description_en: eventForm.description,
-          description_zh: eventForm.description,
-          location_en: eventForm.location,
-          location_zh: eventForm.location,
-          startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
-          endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
-          timezone: eventForm.timezone,
-          feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
-          feeCurrency: eventForm.feeCurrency || 'TWD',
-          coverImageUrl,
-        }),
+      await apiFetch(`/groups/${params.groupId}/members/${memberUserId}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role: newRole }),
       });
-      setEventForm({
-        title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD',
-      });
-      setCoverFile(null);
-      setCoverPreview(null);
-      setSuccess(zh ? '群組活動已建立。' : 'Group event created.');
+      setSuccess(zh ? '成員角色已更新。' : 'Member role updated.');
       await loadPage();
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to create group event.');
-    } finally {
-      setEventLoading(false);
+      setError((err as Error).message ?? 'Failed to change role.');
     }
   };
 
-  if (loading || pageLoading) return <p className="py-16 text-center text-gray-400">Loading…</p>;
+  if (loading || pageLoading) return <p className="py-16 text-center text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>;
 
-  if (!user || user.role !== 'ADMIN') {
-    return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{zh ? '只有平台管理員可以管理群組。' : 'Only platform admins can manage groups.'}</div>;
+  const isPlatformAdmin = user?.role === 'ADMIN';
+  const isGroupAdmin = groupItem?.membership.role === 'GROUP_ADMIN';
+
+  if (!user || (!isPlatformAdmin && !isGroupAdmin)) {
+    return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{zh ? '您沒有管理此群組的權限。' : 'You do not have permission to manage this group.'}</div>;
   }
 
   if (!groupItem) {
-    return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>;
+    return (
+      <div className="space-y-4">
+        <Link href={`/${params.locale}/admin/groups`} className="text-sm text-gray-500 hover:text-gray-800">← {zh ? '所有群組' : 'All Groups'}</Link>
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>
+      </div>
+    );
   }
 
+  const { group } = groupItem;
+
+  const VIEW_TABS: { key: ViewTab; label: string; labelZh: string }[] = [
+    { key: 'feed',     label: 'Feed',     labelZh: '動態' },
+    { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
+    { key: 'past',     label: 'Past',     labelZh: '過去活動' },
+    { key: 'chat',     label: 'Chat',     labelZh: '聊天室' },
+    { key: 'members',  label: 'Members',  labelZh: '成員' },
+  ];
+
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <Link href={`/${params.locale}/admin/groups`} className="text-sm text-gray-500 hover:text-gray-800">← {zh ? '返回群組列表' : 'Back to groups'}</Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">{groupItem.group.name}</h1>
-          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700">{groupItem.membership.role}</span>
-        </div>
-        {groupItem.group.description && <p className="text-sm text-gray-500">{groupItem.group.description}</p>}
-      </div>
-
-      {error && <p className="text-sm text-red-500">{error}</p>}
-      {success && <p className="text-sm text-green-600">{success}</p>}
-
-      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">{zh ? '邀請成員' : 'Invite Member'}</h2>
-        <p className="mt-1 text-sm text-gray-500">{zh ? '輸入電子郵件或手機號碼發送群組邀請。' : 'Send a group invitation by email or phone.'}</p>
-        <form onSubmit={handleInvite} className="mt-4 grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-            <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" placeholder="member@example.com" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-            <input value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" placeholder="+886900000123" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '角色' : 'Role'}</label>
-            <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as 'MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border px-3 py-2 text-sm">
-              <option value="MEMBER">{zh ? '成員' : 'Member'}</option>
-              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group admin'}</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button type="submit" disabled={inviteLoading || (!inviteEmail.trim() && !invitePhone.trim())} className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {inviteLoading ? (zh ? '發送中…' : 'Sending…') : (zh ? '發送邀請' : 'Send Invite')}
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
-        <p className="mt-1 text-sm text-gray-500">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
-        <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '電子郵件 / 手機 / 用戶 ID' : 'Email / Phone / User ID'}</label>
-            <input value={addIdentifier} onChange={(e) => setAddIdentifier(e.target.value)} className="w-full rounded-md border px-3 py-2 text-sm" placeholder={zh ? 'member@example.com 或 +886…' : 'member@example.com or +886…'} />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '角色' : 'Role'}</label>
-            <select value={addRole} onChange={(e) => setAddRole(e.target.value as 'MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border px-3 py-2 text-sm">
-              <option value="MEMBER">{zh ? '成員' : 'Member'}</option>
-              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group admin'}</option>
-            </select>
-          </div>
-          <div className="flex items-end md:col-span-3">
-            <button type="submit" disabled={addLoading || !addIdentifier.trim()} className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
-              {addLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '直接新增' : 'Add Directly')}
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">{zh ? '群組成員' : 'Members'}</h2>
-            <p className="mt-1 text-sm text-gray-500">{zh ? '目前此群組內可見的成員名單。' : 'Current visible members in this group.'}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{members.length} {zh ? '位成員' : 'members'}</span>
-            <div className="relative">
-              <button
-                onClick={() => setShowImportModal(true)}
-                disabled={importLoading}
-                className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入' : '📥 Import')}
-              </button>
-              {showImportModal && (
-                <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 bg-white shadow-lg">
-                  <p className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100">{zh ? '選擇格式' : 'Choose format'}</p>
-                  <button
-                    onClick={() => triggerImport('xlsx')}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    📊 Excel (.xlsx)
-                  </button>
-                  <button
-                    onClick={() => triggerImport('txt')}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    📄 Text (.txt)
-                  </button>
-                  <button
-                    onClick={() => setShowImportModal(false)}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 border-t border-gray-100"
-                  >
-                    {zh ? '取消' : 'Cancel'}
-                  </button>
-                </div>
+    <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+      {/* ── Group cover header ── */}
+      <div className="border-b border-gray-200 bg-white px-4 pb-0 pt-6 sm:px-6 lg:px-8">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+          <div className="space-y-1">
+            <Link href={`/${params.locale}/admin/groups`} className="text-xs text-gray-400 hover:text-gray-600">
+              ← {zh ? '管理：所有群組' : 'Admin: All Groups'}
+            </Link>
+            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">{group.name}</h1>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {isPlatformAdmin && (
+                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
+                  {zh ? '平台管理員' : 'Platform Admin'}
+                </span>
               )}
-              <input
-                ref={importFileRef}
-                type="file"
-                accept={pendingImportType === 'txt' ? '.txt' : '.xlsx,.xls'}
-                onChange={handleImportMembers}
-                className="hidden"
-              />
-            </div>
-            <div className="relative">
-              <button
-                onClick={() => setShowExportModal(true)}
-                disabled={exportLoading}
-                className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出' : '📤 Export')}
-              </button>
-              {showExportModal && (
-                <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 bg-white shadow-lg">
-                  <p className="px-3 py-2 text-xs font-semibold text-gray-500 border-b border-gray-100">{zh ? '選擇格式' : 'Choose format'}</p>
-                  <button
-                    onClick={() => handleExportMembers('xlsx')}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    📊 Excel (.xlsx)
-                  </button>
-                  <button
-                    onClick={() => handleExportMembers('txt')}
-                    className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    📄 Text (.txt)
-                  </button>
-                  <button
-                    onClick={() => setShowExportModal(false)}
-                    className="w-full px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 border-t border-gray-100"
-                  >
-                    {zh ? '取消' : 'Cancel'}
-                  </button>
-                </div>
+              {!isPlatformAdmin && isGroupAdmin && (
+                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
+                  {zh ? '群組管理員' : 'Group Admin'}
+                </span>
               )}
+              <span className="text-xs text-gray-400">{members.length} {zh ? '位成員' : 'members'}</span>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {joinRequests.length > 0 && (
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                {joinRequests.length} {zh ? '待審核' : 'pending'}
+              </span>
+            )}
+            <Link
+              href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
+              className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+            >
+              ⚙️ {zh ? '管理群組' : 'Manage'}
+            </Link>
           </div>
         </div>
-        {importResult && (
-          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-800">
-            {zh
-              ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
-              : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
-          </div>
-        )}
-        <div className="grid gap-3">
-          {members.map((member) => (
-            <div key={member.userId} className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium text-gray-900">{member.displayName || (member.email ?? member.userId)}</p>
-                  <p className="text-xs text-gray-500">{member.role} • {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : (zh ? '尚未加入' : 'Not joined yet')}</p>
-                </div>
-                <div className="text-right text-xs text-gray-500">
-                  {member.email && <p>{member.email}</p>}
-                  {member.phoneE164 && <p>{member.phoneE164}</p>}
-                </div>
-              </div>
-            </div>
+
+        {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
+        {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
+
+        {/* ── Tab bar ── */}
+        <div className="flex overflow-x-auto">
+          {VIEW_TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setViewTab(t.key)}
+              className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+                viewTab === t.key
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              }`}
+            >
+              {zh ? t.labelZh : t.label}
+            </button>
           ))}
         </div>
-      </section>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <section className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">{zh ? '發布群組公告' : 'Post Group News'}</h2>
-          <form onSubmit={handleCreateNews} className="mt-4 space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '標題' : 'Title'}</label>
-              <input value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '內容' : 'Body'}</label>
-              <textarea value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} rows={4} className="w-full rounded-md border px-3 py-2 text-sm" />
-            </div>
-            <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post News')}
-            </button>
-          </form>
+      {/* ── Tab content ── */}
+      <div className="px-4 py-6 sm:px-6 lg:px-8">
 
-          <div className="mt-6 space-y-3">
-            {news.length === 0 ? <p className="text-sm text-gray-400">{zh ? '尚無群組公告。' : 'No group news yet.'}</p> : news.map((item) => (
-              <div key={item.id} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
-                <h3 className="font-medium text-gray-900">{zh ? item.title_zh : item.title_en}</h3>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-gray-600">{zh ? item.body_zh : item.body_en}</p>
+        {/* Feed */}
+        {viewTab === 'feed' && (
+          <div className="mx-auto max-w-2xl space-y-4">
+            {news.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+                <p className="text-3xl">📢</p>
+                <p className="mt-3 text-sm text-gray-400">{zh ? '目前沒有公告' : 'No announcements yet'}</p>
+              </div>
+            ) : news.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h3 className="font-semibold text-gray-900">{zh ? item.title_zh : item.title_en}</h3>
+                <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{zh ? item.body_zh : item.body_en}</p>
+                {item.createdAt && (
+                  <p className="mt-3 text-xs text-gray-400">
+                    {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
+                    {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
+                  </p>
+                )}
               </div>
             ))}
           </div>
-        </section>
+        )}
 
-        <section className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900">{zh ? '建立群組活動' : 'Create Group Event'}</h2>
-          <form onSubmit={handleCreateEvent} className="mt-4 space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '名稱' : 'Title'}</label>
-              <input value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '地點' : 'Location'}</label>
-              <LocationPicker value={eventForm.location} onChange={(value) => setEventForm((f) => ({ ...f, location: value }))} showMapPreview={false} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '描述' : 'Description'}</label>
-              <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full rounded-md border px-3 py-2 text-sm" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '開始' : 'Start'}</label>
-                <input type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
+        {/* Upcoming events */}
+        {viewTab === 'upcoming' && (
+          <div className="mx-auto max-w-2xl space-y-3">
+            {events.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+                <p className="text-3xl">📅</p>
+                <p className="mt-3 text-sm text-gray-400">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '結束' : 'End'}</label>
-                <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '時區' : 'Timezone'}</label>
-                <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '費用' : 'Fee'}</label>
-                <input type="number" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '幣別' : 'Currency'}</label>
-                <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border px-3 py-2 text-sm" />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">{zh ? '封面照片' : 'Cover photo'}</label>
-              <div onClick={() => coverFileRef.current?.click()} className="relative flex h-28 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:bg-gray-100">
-                {coverPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={coverPreview} alt="preview" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-sm text-gray-400">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
-                )}
-              </div>
-              <input ref={coverFileRef} type="file" accept="image/*" onChange={handleEventFileChange} className="hidden" />
-            </div>
-            <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.location.trim() || !eventForm.startAt} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
-            </button>
-          </form>
-
-          <div className="mt-6 space-y-3">
-            {events.length === 0 ? <p className="text-sm text-gray-400">{zh ? '尚無群組活動。' : 'No group events yet.'}</p> : events.map((event) => (
-              <Link key={event.id} href={`/${params.locale}/events/${event.id}`} className="block rounded-xl border border-gray-100 bg-gray-50 p-4 transition hover:bg-gray-100">
-                <h3 className="font-medium text-gray-900">{zh ? event.title_zh : event.title_en}</h3>
-                <p className="mt-1 text-sm text-gray-500">{new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-                <p className="mt-1 text-sm text-gray-500">{zh ? event.location_zh : event.location_en}</p>
+            ) : events.map((ev) => (
+              <Link
+                key={ev.id}
+                href={`/${params.locale}/events/${ev.id}`}
+                className="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-gray-900">{zh ? ev.title_zh : ev.title_en}</h3>
+                    <p className="text-sm text-gray-500">
+                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                    {(zh ? ev.location_zh : ev.location_en) && (
+                      <p className="text-sm text-gray-400">{zh ? ev.location_zh : ev.location_en}</p>
+                    )}
+                    <p className="text-xs text-gray-400">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                  </div>
+                  {ev.feeAmount != null && ev.feeAmount > 0 && (
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      {ev.feeAmount} {ev.feeCurrency}
+                    </span>
+                  )}
+                </div>
               </Link>
             ))}
           </div>
-        </section>
+        )}
+
+        {/* Past events */}
+        {viewTab === 'past' && (
+          <div className="mx-auto max-w-2xl space-y-3">
+            {pastLoading ? (
+              <p className="py-16 text-center text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : pastEvents.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+                <p className="text-3xl">🕐</p>
+                <p className="mt-3 text-sm text-gray-400">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
+              </div>
+            ) : pastEvents.map((ev) => (
+              <Link
+                key={ev.id}
+                href={`/${params.locale}/events/${ev.id}`}
+                className="block rounded-2xl border border-gray-100 bg-white p-5 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="space-y-1">
+                    <h3 className="font-semibold text-gray-600">{zh ? ev.title_zh : ev.title_en}</h3>
+                    <p className="text-sm text-gray-400">
+                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </p>
+                    {(zh ? ev.location_zh : ev.location_en) && (
+                      <p className="text-sm text-gray-400">{zh ? ev.location_zh : ev.location_en}</p>
+                    )}
+                    <p className="text-xs text-gray-400">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Chat */}
+        {viewTab === 'chat' && (
+          <div className="mx-auto max-w-2xl">
+            <div className="mb-4 max-h-[480px] min-h-[240px] space-y-2 overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-4">
+              {messages.length === 0 ? (
+                <p className="pt-10 text-center text-sm text-gray-400">{zh ? '聊天室目前沒有訊息' : 'No messages yet.'}</p>
+              ) : messages.map((msg) => {
+                const mine = msg.userId === user!.id;
+                return (
+                  <div key={msg.id} className={`max-w-[80%] rounded-2xl px-4 py-2 ${mine ? 'ml-auto bg-indigo-600 text-white' : 'bg-white text-gray-800 shadow-sm'}`}>
+                    <p className={`text-[11px] font-medium ${mine ? 'text-indigo-200' : 'text-gray-400'}`}>{msg.userHandle}</p>
+                    <p className="mt-0.5 whitespace-pre-wrap text-sm">{msg.body}</p>
+                    <p className={`mt-1 text-[10px] ${mine ? 'text-indigo-300' : 'text-gray-400'}`}>
+                      {new Date(msg.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
+                    </p>
+                  </div>
+                );
+              })}
+              <div ref={chatBottomRef} />
+            </div>
+            <form onSubmit={handleSendMessage} className="flex gap-2">
+              <input
+                value={chatBody}
+                onChange={(e) => setChatBody(e.target.value)}
+                placeholder={zh ? '輸入訊息…' : 'Type a message...'}
+                className="flex-1 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              />
+              <button
+                type="submit"
+                disabled={chatSending || !chatBody.trim()}
+                className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+              >
+                {chatSending ? '…' : (zh ? '送出' : 'Send')}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Members */}
+        {viewTab === 'members' && (
+          <div className="mx-auto max-w-2xl space-y-2">
+            {members.map((member) => (
+              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+                <div>
+                  <p className="font-medium text-gray-900">{member.displayName || (member.email ?? member.userId)}</p>
+                  <p className="text-xs text-gray-500">
+                    {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
+                    {member.joinedAt ? ` · ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                  </p>
+                  {(member.email || member.phoneE164) && (
+                    <p className="text-xs text-gray-400">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
+                  )}
+                </div>
+                {user && member.userId !== user.id && (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleChangeRole(member.userId, member.role)}
+                      className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
+                    >
+                      {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                    </button>
+                    <button
+                      onClick={() => handleRemoveMember(member.userId)}
+                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition"
+                    >
+                      {zh ? '移除' : 'Remove'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+            <p className="pt-2 text-center text-xs text-gray-400">{members.length} {zh ? '位成員' : 'members'}</p>
+          </div>
+        )}
+
       </div>
     </div>
   );
 }
+

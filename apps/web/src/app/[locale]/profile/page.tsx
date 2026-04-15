@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
@@ -20,6 +21,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     if (user) {
@@ -127,6 +129,29 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
                 }`}
               >
                 {l === 'en' ? 'English' : '中文'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            {zh ? '主題' : 'Theme'}
+          </label>
+          <div className="flex gap-2">
+            {(['light', 'dark'] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTheme(t)}
+                className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  theme === t
+                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                    : 'border-gray-300 text-gray-600 hover:border-indigo-400'
+                }`}
+              >
+                {t === 'light' ? '☀️ ' : '🌙 '}
+                {t === 'light' ? (zh ? '淺色' : 'Light') : (zh ? '深色' : 'Dark')}
               </button>
             ))}
           </div>

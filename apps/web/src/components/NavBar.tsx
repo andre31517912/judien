@@ -19,32 +19,32 @@ export default function NavBar({ locale }: NavBarProps) {
   const zh = locale === 'zh';
 
   return (
-    <nav className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
-      <Link href={`/${locale}/events`} className="font-bold text-xl text-indigo-600">
+    <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center justify-between transition-colors">
+      <Link href={`/${locale}/events`} className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
         {zh ? '聚點' : 'Judien'}
       </Link>
       <div className="flex items-center gap-4 text-sm">
         {user ? (
           <>
             {user.role === 'ADMIN' ? (
-              <Link href={`/${locale}/admin/groups`} className="text-gray-600 hover:text-gray-900">
+              <Link href={`/${locale}/admin/groups`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                 {zh ? '群組管理' : 'Groups'}
               </Link>
             ) : (
-              <Link href={`/${locale}/groups`} className="text-gray-600 hover:text-gray-900">
+              <Link href={`/${locale}/groups`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                 {zh ? '我的群組' : 'My Groups'}
               </Link>
             )}
-            <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 hover:text-gray-900 max-w-[120px] truncate">
+            <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white max-w-[120px] truncate">
               {(user as any).displayName || user.email.split('@')[0]}
             </Link>
-            <button onClick={handleLogout} className="text-red-500 hover:text-red-700">
+            <button onClick={handleLogout} className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300">
               {zh ? '登出' : 'Logout'}
             </button>
           </>
         ) : (
           <>
-            <Link href={`/${locale}/login`} className="text-gray-600 hover:text-gray-900">
+            <Link href={`/${locale}/login`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
               {zh ? '登入' : 'Login'}
             </Link>
             <Link

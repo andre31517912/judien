@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/auth.context';
 import { apiFetch } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +16,13 @@ export default function ProfileScreen() {
   const [muteSms, setMuteSms] = useState(false);
   const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [colorTheme, setColorThemeState] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
+    AsyncStorage.getItem('theme').then((stored) => {
+      if (stored === 'dark' || stored === 'light') setColorThemeState(stored);
+    });
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -50,6 +58,11 @@ export default function ProfileScreen() {
     await logout();
   };
 
+  const handleSetTheme = async (t: 'light' | 'dark') => {
+    setColorThemeState(t);
+    await AsyncStorage.setItem('theme', t);
+  };
+
   if (!user) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Please log in.</Text></View>;
 
   return (
@@ -80,6 +93,18 @@ export default function ProfileScreen() {
             style={[styles.langBtn, lang === l && styles.langBtnActive]}>
             <Text style={[styles.langBtnText, lang === l && styles.langBtnTextActive]}>
               {l === 'en' ? 'English' : '中文'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.label}>{lang === 'zh' ? '主題' : 'Theme'}</Text>
+      <View style={styles.langRow}>
+        {(['light', 'dark'] as const).map((t) => (
+          <TouchableOpacity key={t} onPress={() => handleSetTheme(t)}
+            style={[styles.langBtn, colorTheme === t && styles.langBtnActive]}>
+            <Text style={[styles.langBtnText, colorTheme === t && styles.langBtnTextActive]}>
+              {t === 'light' ? (lang === 'zh' ? '☀️ 淺色' : '☀️ Light') : (lang === 'zh' ? '🌙 深色' : '🌙 Dark')}
             </Text>
           </TouchableOpacity>
         ))}

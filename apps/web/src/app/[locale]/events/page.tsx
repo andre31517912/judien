@@ -160,7 +160,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             onClick={() => setComposing((v) => !v)}
             className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
           >
-            {composing ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Post Announcement'}`}
+            {composing ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Create Post'}`}
           </button>
         )}
       </div>
@@ -171,7 +171,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           {/* Compose form for any authenticated user */}
           {user && composing && (
             <form onSubmit={handleCreateNews} className="bg-white rounded-xl shadow-sm p-5 flex flex-col gap-3 border border-indigo-100">
-              <h3 className="font-semibold text-gray-800">{zh ? '發布公告' : 'Post Announcement'}</h3>
+              <h3 className="font-semibold text-gray-800">{zh ? '發布公告' : 'Create Post'}</h3>
               {newsMsg && <p className="text-red-500 text-sm">{newsMsg}</p>}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">{zh ? '標題' : 'Title'}</label>

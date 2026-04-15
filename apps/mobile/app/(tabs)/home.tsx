@@ -61,7 +61,7 @@ export default function HomeTab() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{
-        title: composing ? (zh ? '發布公告' : 'New Announcement') : (zh ? '動態' : 'Feed'),
+        title: composing ? (zh ? '發布公告' : 'Create Post') : (zh ? '動態' : 'Feed'),
         headerRight: user && !composing ? () => (
           <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
             <Text style={styles.headerBtn}>＋</Text>
