@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,6 @@ import { apiFetch } from '../../lib/api';
 import type { EventWithCounts, GroupMessage, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/auth.context';
-import DateTimeField from '../../components/DateTimeField';
 
 type GroupListItem = {
   group: {
@@ -68,17 +67,23 @@ export default function GroupDetailScreen() {
   const { user } = useAuth();
   const zh = i18n.language === 'zh';
 
+  type Tab = 'feed' | 'upcoming' | 'past' | 'chat' | 'members';
+
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>('feed');
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
+  const [pastLoaded, setPastLoaded] = useState(false);
+  const [pastLoading, setPastLoading] = useState(false);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [chatBody, setChatBody] = useState('');
   const [chatSubmitting, setChatSubmitting] = useState(false);
+  const chatScrollRef = useRef<ScrollView>(null);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
-  const [membersOpen, setMembersOpen] = useState(true);
 
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
 
@@ -121,6 +126,26 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     loadPage();
   }, [loadPage]);
+
+  const loadPastEvents = useCallback(async () => {
+    if (!groupId || pastLoaded) return;
+    setPastLoading(true);
+    try {
+      const res = await apiFetch<PaginatedResponse<EventWithCounts>>(
+        `/events?scope=past&groupId=${groupId}&page=1&pageSize=40`,
+      );
+      setPastEvents(res.data);
+      setPastLoaded(true);
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to load past events');
+    } finally {
+      setPastLoading(false);
+    }
+  }, [groupId, pastLoaded]);
+
+  useEffect(() => {
+    if (tab === 'past') loadPastEvents();
+  }, [tab, loadPastEvents]);
 
   const removeMember = (memberUserId: string) => {
     if (!groupId) return;
@@ -206,9 +231,343 @@ export default function GroupDetailScreen() {
     );
   }
 
+  const TABS: { key: Tab; label: string; labelZh: string }[] = [
+    { key: 'feed',     label: 'Feed',    labelZh: '動態' },
+    { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
+    { key: 'past',     label: 'Past',    labelZh: '過去活動' },
+    { key: 'chat',     label: 'Chat',    labelZh: '聊天室' },
+    { key: 'members',  label: 'Members', labelZh: '成員' },
+  ];
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Stack.Screen options={{ title: groupItem.group.name }} />
+    <View style={styles.screen}>
+      <Stack.Screen options={{ title: '' }} />
+
+      {/* ── Group header (Facebook-style cover) ── */}
+      <View style={styles.coverHeader}>
+        <View style={styles.coverContent}>
+          <View style={styles.coverLeft}>
+            <Text style={styles.groupTitle} numberOfLines={2}>{groupItem.group.name}</Text>
+            {groupItem.group.description ? (
+              <Text style={styles.groupDesc} numberOfLines={2}>{groupItem.group.description}</Text>
+            ) : null}
+            {relationships && relationships.lineage && relationships.lineage.length > 1 && (
+              <Text style={styles.breadcrumb}>
+                {relationships.lineage.map((n) => n.name).join(' › ')}
+              </Text>
+            )}
+            <View style={styles.roleBadge}>
+              <Text style={styles.roleBadgeText}>
+                {isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
+              </Text>
+            </View>
+          </View>
+          {isGroupAdmin && (
+            <TouchableOpacity
+              style={styles.settingsBtn}
+              onPress={() => router.push(`/groups/${groupId}/settings`)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.settingsBtnText}>⚙️</Text>
+              {joinRequests.length > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{joinRequests.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+
+      {/* ── Tab bar ── */}
+      <View style={styles.tabBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+          {TABS.map((t) => (
+            <TouchableOpacity
+              key={t.key}
+              style={[styles.tabItem, tab === t.key && styles.tabItemActive]}
+              onPress={() => setTab(t.key)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+                {zh ? t.labelZh : t.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* ── Tab content ── */}
+      {tab === 'feed' && (
+        <ScrollView contentContainerStyle={styles.tabContent}>
+          {news.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyEmoji}>📢</Text>
+              <Text style={styles.emptyText}>{zh ? '目前沒有公告' : 'No announcements yet'}</Text>
+            </View>
+          ) : news.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <Text style={styles.cardTitle}>{zh ? item.title_zh : item.title_en}</Text>
+              <Text style={styles.cardBody}>{zh ? item.body_zh : item.body_en}</Text>
+              <Text style={styles.cardMeta}>
+                {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
+                {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {tab === 'upcoming' && (
+        <ScrollView contentContainerStyle={styles.tabContent}>
+          {events.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyEmoji}>📅</Text>
+              <Text style={styles.emptyText}>{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</Text>
+            </View>
+          ) : events.map((ev) => (
+            <TouchableOpacity key={ev.id} style={styles.card} onPress={() => router.push(`/events/${ev.id}`)}>
+              <Text style={styles.cardTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
+              <Text style={styles.cardMeta}>
+                {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+              </Text>
+              {(zh ? ev.location_zh : ev.location_en) ? (
+                <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
+              ) : null}
+              {ev.feeAmount != null && ev.feeAmount > 0 && (
+                <Text style={styles.feeTag}>{ev.feeAmount} {ev.feeCurrency}</Text>
+              )}
+              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
+      {tab === 'past' && (
+        <ScrollView contentContainerStyle={styles.tabContent}>
+          {pastLoading ? (
+            <ActivityIndicator style={{ marginTop: 40 }} />
+          ) : pastEvents.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyEmoji}>🕐</Text>
+              <Text style={styles.emptyText}>{zh ? '沒有過去的活動記錄' : 'No past events'}</Text>
+            </View>
+          ) : pastEvents.map((ev) => (
+            <TouchableOpacity key={ev.id} style={[styles.card, styles.cardPast]} onPress={() => router.push(`/events/${ev.id}`)}>
+              <Text style={[styles.cardTitle, styles.cardTitlePast]}>{zh ? ev.title_zh : ev.title_en}</Text>
+              <Text style={styles.cardMeta}>
+                {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+              </Text>
+              {(zh ? ev.location_zh : ev.location_en) ? (
+                <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
+              ) : null}
+              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
+
+      {tab === 'chat' && (
+        <View style={styles.chatScreen}>
+          <ScrollView
+            ref={chatScrollRef}
+            contentContainerStyle={styles.chatMessages}
+            onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: false })}
+          >
+            {messages.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <Text style={styles.emptyEmoji}>💬</Text>
+                <Text style={styles.emptyText}>{zh ? '聊天室目前沒有訊息' : 'No chat messages yet'}</Text>
+              </View>
+            ) : messages.map((msg) => {
+              const mine = msg.userId === user?.id;
+              return (
+                <View key={msg.id} style={[styles.chatBubble, mine ? styles.chatBubbleMine : styles.chatBubbleOther]}>
+                  <Text style={[styles.chatUser, mine && styles.chatUserMine]}>{msg.userHandle}</Text>
+                  <Text style={[styles.chatBody, mine && styles.chatBodyMine]}>{msg.body}</Text>
+                  <Text style={[styles.chatTime, mine && styles.chatTimeMine]}>
+                    {new Date(msg.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
+                  </Text>
+                </View>
+              );
+            })}
+          </ScrollView>
+          <View style={styles.chatInputRow}>
+            <TextInput
+              value={chatBody}
+              onChangeText={setChatBody}
+              placeholder={zh ? '輸入訊息…' : 'Type a message...'}
+              style={styles.chatInput}
+              placeholderTextColor="#9CA3AF"
+              multiline
+            />
+            <TouchableOpacity
+              style={[styles.sendBtn, (!chatBody.trim() || chatSubmitting) && styles.disabledBtn]}
+              onPress={sendGroupMessage}
+              disabled={!chatBody.trim() || chatSubmitting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.sendBtnText}>{zh ? '送出' : 'Send'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {tab === 'members' && (
+        <ScrollView contentContainerStyle={styles.tabContent}>
+          {groupItem.group.memberDataPrivate && !isGroupAdmin ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyEmoji}>🔒</Text>
+              <Text style={styles.emptyText}>{zh ? '此群組成員資料為私人' : 'Member directory is private'}</Text>
+            </View>
+          ) : members.map((m) => (
+            <View key={m.userId} style={styles.memberCard}>
+              <View style={styles.memberInfo}>
+                <Text style={styles.memberName}>{m.displayName || m.email || m.userId}</Text>
+                <Text style={styles.memberRole}>
+                  {m.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
+                  {m.joinedAt ? ` · ${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                </Text>
+                {isGroupAdmin && (m.email || m.phoneE164) ? (
+                  <Text style={styles.memberContact}>{[m.email, m.phoneE164].filter(Boolean).join(' · ')}</Text>
+                ) : null}
+              </View>
+              {isGroupAdmin && m.userId !== user?.id && (
+                <View style={styles.memberActions}>
+                  <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
+                    <Text style={styles.promoteBtnText}>
+                      {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
+                    <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          ))}
+          <Text style={styles.memberCount}>{members.length} {zh ? '位成員' : 'members'}</Text>
+        </ScrollView>
+      )}
+    </View>
+  );
+}
+
+const INDIGO = '#4F46E5';
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: '#F9FAFB' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
+
+  // ── Cover header ──
+  coverHeader: {
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
+  },
+  coverContent: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  coverLeft: { flex: 1, gap: 4 },
+  groupTitle: { fontSize: 22, fontWeight: '800', color: '#111827', lineHeight: 28 },
+  groupDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
+  breadcrumb: { fontSize: 11, color: '#9CA3AF' },
+  roleBadge: { alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, marginTop: 4 },
+  roleBadgeText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
+  settingsBtn: {
+    width: 40, height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  settingsBtnText: { fontSize: 18 },
+  badge: {
+    position: 'absolute', top: -2, right: -2,
+    backgroundColor: '#EF4444', borderRadius: 999,
+    minWidth: 16, height: 16,
+    alignItems: 'center', justifyContent: 'center',
+    padding: 2,
+  },
+  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+
+  // ── Tab bar ──
+  tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+  tabScroll: { paddingHorizontal: 8 },
+  tabItem: {
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 2, borderBottomColor: 'transparent',
+  },
+  tabItemActive: { borderBottomColor: INDIGO },
+  tabText: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
+  tabTextActive: { color: INDIGO, fontWeight: '700' },
+
+  // ── Content area ──
+  tabContent: { padding: 16, gap: 12, paddingBottom: 40 },
+
+  // ── Cards ──
+  card: {
+    backgroundColor: '#fff', borderRadius: 14, padding: 14,
+    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    gap: 4,
+  },
+  cardPast: { opacity: 0.75 },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  cardTitlePast: { color: '#6B7280' },
+  cardBody: { fontSize: 14, color: '#374151', lineHeight: 20 },
+  cardMeta: { fontSize: 12, color: '#9CA3AF' },
+  feeTag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '700', color: '#B45309', backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+
+  // ── Empty state ──
+  emptyBox: { alignItems: 'center', marginTop: 40, gap: 10 },
+  emptyEmoji: { fontSize: 40 },
+  emptyText: { color: '#9CA3AF', textAlign: 'center', fontSize: 14 },
+
+  // ── Chat ──
+  chatScreen: { flex: 1 },
+  chatMessages: { padding: 14, gap: 8, flexGrow: 1 },
+  chatBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, maxWidth: '85%' },
+  chatBubbleMine: { alignSelf: 'flex-end', backgroundColor: INDIGO },
+  chatBubbleOther: { alignSelf: 'flex-start', backgroundColor: '#F3F4F6' },
+  chatUser: { fontSize: 11, fontWeight: '700', color: '#6B7280' },
+  chatUserMine: { color: '#C7D2FE' },
+  chatBody: { fontSize: 14, color: '#111827', marginTop: 2 },
+  chatBodyMine: { color: '#fff' },
+  chatTime: { fontSize: 10, color: '#9CA3AF', marginTop: 3 },
+  chatTimeMine: { color: '#C7D2FE' },
+  chatInputRow: {
+    flexDirection: 'row', gap: 8, alignItems: 'flex-end',
+    borderTopWidth: 1, borderTopColor: '#E5E7EB',
+    backgroundColor: '#fff', padding: 10,
+  },
+  chatInput: {
+    flex: 1, borderWidth: 1, borderColor: '#D1D5DB',
+    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
+    backgroundColor: '#F9FAFB', color: '#111827', fontSize: 14,
+    minHeight: 42, maxHeight: 120,
+  },
+  sendBtn: { backgroundColor: INDIGO, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, minHeight: 42, justifyContent: 'center' },
+  sendBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  disabledBtn: { opacity: 0.45 },
+
+  // ── Members ──
+  memberCard: {
+    backgroundColor: '#fff', borderRadius: 12, padding: 12,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+  },
+  memberInfo: { flex: 1, gap: 2 },
+  memberName: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  memberRole: { fontSize: 12, color: '#6B7280' },
+  memberContact: { fontSize: 11, color: '#9CA3AF' },
+  memberActions: { flexDirection: 'row', gap: 6 },
+  promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
+  promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
+  removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
+  removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
+  memberCount: { textAlign: 'center', color: '#9CA3AF', fontSize: 12, marginTop: 8 },
+});
 
       <View style={styles.headerCard}>
         <Text style={styles.groupTitle}>{groupItem.group.name}</Text>
