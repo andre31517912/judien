@@ -62,15 +62,15 @@ export default function EventDetailPage() {
     if (!user) return;
     setInviteLoading(true);
     try {
-      const res = await apiFetch<{ token: string }>(`/event-invites`, {
+      const res = await apiFetch<{ token: string }>(`/events/${params.id}/share-link`, {
         method: 'POST',
-        body: JSON.stringify({ eventId: params.id }),
       });
-      const link = `https://app.judien.tw/${locale}/invite/${res.token}`;
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.judien.tw';
+      const link = `${origin}/${locale}/events/share/${res.token}`;
       setInviteLink(link);
       setShowInviteModal(true);
     } catch (err) {
-      alert(zh ? '無法生成邀請連結' : 'Failed to generate invite link');
+      alert(zh ? '無法生成分享連結' : 'Failed to generate share link');
     } finally {
       setInviteLoading(false);
     }
@@ -422,7 +422,7 @@ export default function EventDetailPage() {
             disabled={inviteLoading}
             className="px-4 py-2 rounded-full text-sm font-medium border bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 transition disabled:opacity-50"
           >
-            {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '📬 邀請朋友' : '📬 Invite Friends')}
+            {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
           </button>
           {user?.role === 'ADMIN' && (
             <button
@@ -770,7 +770,7 @@ export default function EventDetailPage() {
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center">{zh ? '邀請連結' : 'Invite Link'}</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center">{zh ? '活動分享連結' : 'Event Share Link'}</h3>
             <div className="bg-gray-100 rounded-lg p-4 mb-4 break-all">
               <p className="text-sm font-mono text-indigo-600">{inviteLink}</p>
             </div>

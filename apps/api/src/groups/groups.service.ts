@@ -609,33 +609,128 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        parentGroup: { select: { id: true, name: true } },
+        parentGroup: { select: { id: true, name: true, parentGroupId: true } },
         subgroups: {
-          select: { id: true, name: true, description: true },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            subgroups: { select: { id: true, name: true, description: true }, orderBy: { name: 'asc' } },
+          },
           orderBy: { name: 'asc' },
         },
       },
     });
     if (!group) throw new NotFoundException('Group not found.');
+
+    const lineage = await this.buildLineage(groupId);
+
+    const parentGroup = group.parentGroup
+      ? { id: group.parentGroup.id, name: group.parentGroup.name }
+      : null;
+    const subgroups = group.subgroups.map((sg) => ({ id: sg.id, name: sg.name, description: sg.description }));
+
     return {
-      parent: group.parentGroup ?? null,
-      subgroups: group.subgroups,
+      parentGroup,
+      subgroups,
+      lineage,
+      tree: group.subgroups.map((sg) => ({
+        id: sg.id,
+        name: sg.name,
+        description: sg.description,
+        children: sg.subgroups,
+      })),
     };
   }
 
   async setParentGroup(groupId: string, dto: SetParentGroupDto, user: User) {
     this.assertPlatformAdmin(user);
     await this.ensureGroupExists(groupId);
+
     if (dto.parentGroupId) {
       if (dto.parentGroupId === groupId) {
         throw new BadRequestException('A group cannot be its own parent.');
       }
       await this.ensureGroupExists(dto.parentGroupId);
+
+      await this.assertNoHierarchyCycle(groupId, dto.parentGroupId);
+      await this.assertDepthWithinLimit(groupId, dto.parentGroupId);
     }
+
     return this.prisma.group.update({
       where: { id: groupId },
       data: { parentGroupId: dto.parentGroupId },
     });
+  }
+
+  private async assertNoHierarchyCycle(groupId: string, parentGroupId: string) {
+    let cursor: string | null = parentGroupId;
+    while (cursor) {
+      if (cursor === groupId) {
+        throw new BadRequestException('Circular group relationships are not allowed.');
+      }
+      const row: { parentGroupId: string | null } | null = await this.prisma.group.findUnique({
+        where: { id: cursor },
+        select: { parentGroupId: true },
+      });
+      cursor = row?.parentGroupId ?? null;
+    }
+  }
+
+  private async assertDepthWithinLimit(groupId: string, newParentGroupId: string) {
+    const groups = await this.prisma.group.findMany({
+      select: { id: true, parentGroupId: true },
+    });
+    const byId = new Map(groups.map((g) => [g.id, g.parentGroupId]));
+
+    const childMap = new Map<string, string[]>();
+    for (const g of groups) {
+      if (!g.parentGroupId) continue;
+      const arr = childMap.get(g.parentGroupId) ?? [];
+      arr.push(g.id);
+      childMap.set(g.parentGroupId, arr);
+    }
+
+    const parentDepth = this.computeNodeDepth(newParentGroupId, byId);
+    const subtreeHeight = this.computeSubtreeHeight(groupId, childMap);
+    const deepestDepthAfterMove = parentDepth + subtreeHeight;
+    if (deepestDepthAfterMove > 3) {
+      throw new BadRequestException('Group hierarchy supports at most 3 levels.');
+    }
+  }
+
+  private computeNodeDepth(nodeId: string, parentById: Map<string, string | null>) {
+    let depth = 1;
+    let cursor = parentById.get(nodeId) ?? null;
+    while (cursor) {
+      depth += 1;
+      cursor = parentById.get(cursor) ?? null;
+    }
+    return depth;
+  }
+
+  private computeSubtreeHeight(rootId: string, childMap: Map<string, string[]>): number {
+    const children = childMap.get(rootId) ?? [];
+    if (children.length === 0) return 1;
+    const childHeights: number[] = children.map((childId) => this.computeSubtreeHeight(childId, childMap));
+    return 1 + Math.max(...childHeights);
+  }
+
+  private async buildLineage(groupId: string) {
+    const lineage: Array<{ id: string; name: string }> = [];
+    let cursor: string | null = groupId;
+
+    while (cursor) {
+      const current: { id: string; name: string; parentGroupId: string | null } | null = await this.prisma.group.findUnique({
+        where: { id: cursor },
+        select: { id: true, name: true, parentGroupId: true },
+      });
+      if (!current) break;
+      lineage.unshift({ id: current.id, name: current.name });
+      cursor = current.parentGroupId;
+    }
+
+    return lineage;
   }
 
   // ─── Import / Export ─────────────────────────────────────────────────────────

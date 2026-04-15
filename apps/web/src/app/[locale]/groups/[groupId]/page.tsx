@@ -104,6 +104,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   type RelationshipsData = {
     parentGroup: SubgroupInfo | null;
     subgroups: SubgroupInfo[];
+    lineage?: Array<{ id: string; name: string }>;
+    tree?: Array<SubgroupInfo & { children: SubgroupInfo[] }>;
   };
   const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
   const [relationshipsLoading, setRelationshipsLoading] = useState(false);
@@ -388,335 +390,25 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       {error && <p className="text-sm text-red-500">{error}</p>}
       {success && <p className="text-sm text-green-600">{success}</p>}
 
-      {/* GROUP_ADMIN management panel */}
+      {/* GROUP_ADMIN quick actions moved out of main content */}
       {isGroupAdmin && (
-        <section className="rounded-2xl border border-indigo-100 bg-white shadow-sm">
-          {/* Tab bar */}
-          <div className="flex overflow-x-auto border-b border-indigo-100">
-            {(
-              [
-                { key: 'invite', label: zh ? '邀請成員' : 'Invite' },
-                { key: 'news', label: zh ? '發布公告' : 'Post Announcement' },
-                { key: 'event', label: zh ? '建立活動' : 'Create Event' },
-                {
-                  key: 'requests',
-                  label: zh
-                    ? `加入申請${joinRequests.length > 0 ? ` (${joinRequests.length})` : ''}`
-                    : `Requests${joinRequests.length > 0 ? ` (${joinRequests.length})` : ''}`,
-                },
-              ] as const
-            ).map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setAdminTab(key)}
-                className={`whitespace-nowrap px-5 py-3 text-sm font-medium transition ${
-                  adminTab === key
-                    ? 'border-b-2 border-indigo-600 text-indigo-600'
-                    : 'text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="p-6">
-            {/* Invite tab */}
-            {adminTab === 'invite' && (
-              <div>
-                <p className="mb-4 text-sm text-gray-500">
-                  {zh ? '輸入電子郵件或手機號碼發送群組邀請。' : 'Send a group invitation by email or phone number.'}
-                </p>
-                <form onSubmit={handleInvite} className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                      placeholder="member@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '手機號碼' : 'Phone'}
-                    </label>
-                    <input
-                      value={invitePhone}
-                      onChange={(e) => setInvitePhone(e.target.value)}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                      placeholder="+886900000123"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '角色' : 'Role'}
-                    </label>
-                    <select
-                      value={inviteRole}
-                      onChange={(e) => setInviteRole(e.target.value as 'MEMBER' | 'GROUP_ADMIN')}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    >
-                      <option value="MEMBER">{zh ? '成員' : 'Member'}</option>
-                      <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
-                    </select>
-                  </div>
-                  <div className="flex items-end">
-                    <button
-                      type="submit"
-                      disabled={inviteLoading || (!inviteEmail.trim() && !invitePhone.trim())}
-                      className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      {inviteLoading ? (zh ? '發送中…' : 'Sending…') : (zh ? '發送邀請' : 'Send Invite')}
-                    </button>
-                  </div>
-                </form>
-
-                {pendingInvites.length > 0 && (
-                  <div className="mt-6">
-                    <h3 className="mb-3 text-sm font-semibold text-gray-700">
-                      {zh ? '待接受的邀請' : 'Pending Invitations'}
-                    </h3>
-                    <div className="space-y-2">
-                      {pendingInvites.map((inv) => (
-                        <div
-                          key={inv.id}
-                          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gray-100 bg-gray-50 px-4 py-2 text-sm"
-                        >
-                          <span className="text-gray-800">
-                            {inv.email || inv.phoneE164 || inv.id}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {zh ? '到期：' : 'Expires: '}
-                            {new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Post announcement tab */}
-            {adminTab === 'news' && (
-              <form onSubmit={handleCreateNews} className="space-y-4">
-                <p className="text-sm text-gray-500">
-                  {zh
-                    ? `此公告將發布至「${group.name}」的所有成員。`
-                    : `This announcement will be visible to all members of "${group.name}".`}
-                </p>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '標題' : 'Title'}
-                  </label>
-                  <input
-                    value={newsForm.title}
-                    onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))}
-                    className="w-full rounded-md border px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '內容' : 'Body'}
-                  </label>
-                  <textarea
-                    value={newsForm.body}
-                    onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))}
-                    rows={5}
-                    className="w-full rounded-md border px-3 py-2 text-sm"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post Announcement')}
-                </button>
-              </form>
-            )}
-
-            {/* Create event tab */}
-            {adminTab === 'event' && (
-              <form onSubmit={handleCreateEvent} className="space-y-4">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '活動名稱' : 'Title'}
-                  </label>
-                  <input
-                    value={eventForm.title}
-                    onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))}
-                    className="w-full rounded-md border px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '地點' : 'Location'}
-                  </label>
-                  <LocationPicker
-                    value={eventForm.location}
-                    onChange={(value) => setEventForm((f) => ({ ...f, location: value }))}
-                    showMapPreview={false}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '描述' : 'Description'}
-                  </label>
-                  <textarea
-                    value={eventForm.description}
-                    onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))}
-                    rows={3}
-                    className="w-full rounded-md border px-3 py-2 text-sm"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '開始時間' : 'Start'}
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={eventForm.startAt}
-                      onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '結束時間' : 'End'}
-                    </label>
-                    <input
-                      type="datetime-local"
-                      value={eventForm.endAt}
-                      onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '時區' : 'Timezone'}
-                    </label>
-                    <input
-                      value={eventForm.timezone}
-                      onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '費用' : 'Fee'}
-                    </label>
-                    <input
-                      type="number"
-                      value={eventForm.feeAmount}
-                      onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700">
-                      {zh ? '幣別' : 'Currency'}
-                    </label>
-                    <input
-                      value={eventForm.feeCurrency}
-                      onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))}
-                      className="w-full rounded-md border px-3 py-2 text-sm"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {zh ? '封面照片' : 'Cover Photo'}
-                  </label>
-                  <div
-                    onClick={() => coverFileRef.current?.click()}
-                    className="relative flex h-28 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:bg-gray-100"
-                  >
-                    {coverPreview ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={coverPreview} alt="preview" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-sm text-gray-400">
-                        {zh ? '點擊上傳照片' : 'Click to upload'}
-                      </span>
-                    )}
-                  </div>
-                  <input
-                    ref={coverFileRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setCoverFile(file);
-                      setCoverPreview(URL.createObjectURL(file));
-                    }}
-                    className="hidden"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={
-                    eventLoading ||
-                    !eventForm.title.trim() ||
-                    !eventForm.location.trim() ||
-                    !eventForm.startAt
-                  }
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
-                </button>
-              </form>
-            )}
-
-            {/* Join requests tab */}
-            {adminTab === 'requests' && (
-              <div>
-                {joinRequests.length === 0 ? (
-                  <p className="text-sm text-gray-400">{zh ? '目前沒有待審核的加入申請。' : 'No pending join requests.'}</p>
-                ) : (
-                  <div className="space-y-3">
-                    {joinRequests.map((req) => (
-                      <div
-                        key={req.id}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {req.requester.displayName || req.requester.email}
-                          </p>
-                          <p className="text-xs text-gray-500">{req.requester.email}</p>
-                          {req.note && (
-                            <p className="mt-1 text-sm text-gray-600">{req.note}</p>
-                          )}
-                          <p className="mt-1 text-xs text-gray-400">
-                            {new Date(req.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US')}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleReviewRequest(req.id, true)}
-                            className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
-                          >
-                            {zh ? '核准' : 'Approve'}
-                          </button>
-                          <button
-                            onClick={() => handleReviewRequest(req.id, false)}
-                            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                          >
-                            {zh ? '拒絕' : 'Decline'}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+        <section className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4">
+          <h2 className="text-sm font-semibold text-indigo-800 mb-3">
+            {zh ? '管理入口' : 'Admin Shortcuts'}
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/${params.locale}/admin/groups/${params.groupId}`}
+              className="rounded-md bg-white border border-indigo-200 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-100"
+            >
+              {zh ? '群組設定（邀請與權限）' : 'Group Settings (Invite & Access)'}
+            </Link>
+            <Link
+              href={`/${params.locale}/admin/events/new?groupId=${params.groupId}`}
+              className="rounded-md bg-white border border-indigo-200 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-100"
+            >
+              {zh ? '發布群組活動' : 'Create Group Event'}
+            </Link>
           </div>
         </section>
       )}
@@ -925,6 +617,25 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               <p className="text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
             ) : !relationships ? null : (
               <>
+                {relationships.lineage && relationships.lineage.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '層級路徑（最多 3 層）' : 'Hierarchy Path (max 3 levels)'}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {relationships.lineage.map((node, idx) => (
+                        <div key={node.id} className="flex items-center gap-2">
+                          {idx > 0 && <span className="text-gray-300">→</span>}
+                          <Link
+                            href={`/${params.locale}/groups/${node.id}`}
+                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${idx === relationships.lineage!.length - 1 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                          >
+                            {node.name}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '上層群組' : 'Parent Group'}</p>
                   {relationships.parentGroup ? (
@@ -939,20 +650,48 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   )}
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '子群組' : 'Subgroups'}</p>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{zh ? '下層群組' : 'Child Groups'}</p>
                   {relationships.subgroups.length === 0 ? (
                     <p className="text-sm text-gray-400">{zh ? '無子群組。' : 'No subgroups.'}</p>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {relationships.subgroups.map((sg) => (
-                        <Link
-                          key={sg.id}
-                          href={`/${params.locale}/groups/${sg.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 transition"
-                        >
-                          👥 {sg.name}
-                        </Link>
-                      ))}
+                    <div className="space-y-2">
+                      {relationships.tree?.map((node) => (
+                        <div key={node.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                          <Link
+                            href={`/${params.locale}/groups/${node.id}`}
+                            className="inline-flex items-center gap-2 text-sm font-medium text-gray-800 hover:text-indigo-700"
+                          >
+                            <span className="text-indigo-500">▣</span>
+                            {node.name}
+                          </Link>
+                          {node.children?.length > 0 && (
+                            <div className="mt-2 ml-5 flex flex-wrap gap-2">
+                              {node.children.map((child) => (
+                                <Link
+                                  key={child.id}
+                                  href={`/${params.locale}/groups/${child.id}`}
+                                  className="inline-flex items-center gap-1 rounded-full border border-indigo-100 bg-white px-3 py-1 text-xs text-indigo-700 hover:bg-indigo-50"
+                                >
+                                  <span>↳</span>
+                                  {child.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )) ?? (
+                        <div className="flex flex-wrap gap-2">
+                          {relationships.subgroups.map((sg) => (
+                            <Link
+                              key={sg.id}
+                              href={`/${params.locale}/groups/${sg.id}`}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 transition"
+                            >
+                              👥 {sg.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

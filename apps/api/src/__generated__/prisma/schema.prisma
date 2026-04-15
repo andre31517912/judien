@@ -92,6 +92,7 @@ model User {
   eventInvitesCreated    EventInvite[]      @relation("EventInviteCreatedBy")
   eventInvitesAccepted   EventInvite[]      @relation("EventInviteAcceptedBy")
   eventSeriesCreated     EventSeries[]      @relation("EventSeriesCreatedBy")
+  eventShareLinks        EventShareLink[]
 
   @@index([email])
   @@index([role])
@@ -130,15 +131,49 @@ model Event {
   updatedAt DateTime @updatedAt
 
   rsvps         RSVP[]
+  guestRsvps    GuestRSVP[]
   comments      Comment[]
   reminderRules ReminderRule[]
   messageLogs   MessageLog[]
   invites       EventInvite[]
+  shareLink     EventShareLink?
 
   @@index([startAt])
   @@index([createdById])
   @@index([groupId])
   @@index([seriesId])
+}
+
+model EventShareLink {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  token       String   @unique
+  createdById String
+  createdAt   DateTime @default(now())
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy User  @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([createdById])
+}
+
+model GuestRSVP {
+  id           String     @id @default(cuid())
+  eventId      String
+  guestName    String
+  guestEmail   String
+  guestPhone   String
+  identityHash String
+  status       RSVPStatus
+  ipAddress    String?
+  userAgent    String?
+  updatedAt    DateTime   @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, identityHash])
+  @@index([eventId])
 }
 
 model EventSeries {

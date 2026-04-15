@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet, Alert, Image, Share,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  Alert,
+  Image,
+  Share,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch, resolveImageUrl } from '../../lib/api';
@@ -24,13 +32,7 @@ export default function EventDetailScreen() {
   const [replyBody, setReplyBody] = useState('');
   const [myRsvp, setMyRsvp] = useState<string | null>(null);
 
-  // blast state
-  const [blastMsg, setBlastMsg] = useState('');
-  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
-  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
-  const [blastResult, setBlastResult] = useState('');
-
-  // invite state
+  // share link state
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -58,6 +60,7 @@ export default function EventDetailScreen() {
       }
       const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
       setEvent(ev);
+      setMyRsvp(ev.myRsvp);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to update RSVP.');
     }
@@ -80,59 +83,33 @@ export default function EventDetailScreen() {
     );
   };
 
-  const toggleBlastChannel = (ch: string) =>
-    setBlastChannels((prev) =>
-      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
-    );
-
-  const handleBlast = async () => {
-    if (!blastMsg.trim()) { setBlastResult(zh ? '請輸入訊息。' : 'Please enter a message.'); return; }
-    if (blastChannels.length === 0) { setBlastResult(zh ? '請選擇發送方式。' : 'Select at least one channel.'); return; }
-    setBlastResult(zh ? '發送中…' : 'Sending…');
+  const handleCreateShareLink = async () => {
+    if (!user) { Alert.alert(zh ? '請登入' : 'Login required'); return; }
+    setInviteLoading(true);
     try {
-      const res = await apiFetch<{ sent: number }>(`/events/${id}/blast`, {
+      const res = await apiFetch<{ token: string }>(`/events/${id}/share-link`, {
         method: 'POST',
-        body: JSON.stringify({ channels: blastChannels, audience: blastAudience, messageEn: blastMsg, messageZh: blastMsg }),
       });
-      const msg = zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`;
-      setBlastResult(msg);
-      setBlastMsg('');
-      setTimeout(() => setBlastResult(''), 4000);
+      const link = `https://app.judien.tw/${i18n.language}/events/share/${res.token}`;
+      setInviteLink(link);
+      setShowInviteModal(true);
     } catch (err: any) {
-      setBlastResult(err.message ?? (zh ? '發送失敗。' : 'Failed to send.'));
+      Alert.alert(zh ? '無法生成分享連結' : 'Failed to generate share link', err.message);
+    } finally {
+      setInviteLoading(false);
     }
+  };
 
-    const handleCreateInvite = async () => {
-      if (!user) { Alert.alert(zh ? '請登入' : 'Login required'); return; }
-      setInviteLoading(true);
-      try {
-        const res = await apiFetch<{ token: string }>(`/event-invites`, {
-          method: 'POST',
-          body: JSON.stringify({ eventId: id }),
-        });
-        const link = `https://app.judien.tw/${i18n.language}/invite/${res.token}`;
-        setInviteLink(link);
-        setShowInviteModal(true);
-      } catch (err: any) {
-        Alert.alert(zh ? '無法生成邀請連結' : 'Failed to generate invite link', err.message);
-      } finally {
-        setInviteLoading(false);
-      }
-    };
-
-    const handleShareInvite = async () => {
-      try {
-        await Share.share({
-          message: zh
-            ? `加入我的活動！${inviteLink}`
-            : `Join my event! ${inviteLink}`,
-          url: inviteLink,
-          title: title,
-        });
-      } catch (err) {
-        Alert.alert('Share failed');
-      }
-    };
+  const handleShareInvite = async () => {
+    try {
+      await Share.share({
+        message: zh ? `活動分享：${inviteLink}` : `Event share: ${inviteLink}`,
+        url: inviteLink,
+        title: zh ? '活動分享連結' : 'Event Share Link',
+      });
+    } catch {
+      Alert.alert(zh ? '分享失敗' : 'Share failed');
+    }
   };
 
   const handleComment = async () => {
@@ -230,15 +207,15 @@ export default function EventDetailScreen() {
         </View>
 
         {user && (
-          <TouchableOpacity style={styles.inviteBtn} onPress={handleCreateInvite} disabled={inviteLoading}>
-            <Text style={styles.inviteBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '📬 邀請朋友' : '📬 Invite Friends')}</Text>
+          <TouchableOpacity style={styles.inviteBtn} onPress={handleCreateShareLink} disabled={inviteLoading}>
+            <Text style={styles.inviteBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}</Text>
           </TouchableOpacity>
         )}
 
         {showInviteModal && (
           <View style={styles.modal}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{zh ? '邀請連結' : 'Invite Link'}</Text>
+              <Text style={styles.modalTitle}>{zh ? '活動分享連結' : 'Event Share Link'}</Text>
               <Text style={styles.inviteLinkText}>{inviteLink}</Text>
               <View style={styles.modalActions}>
                 <TouchableOpacity style={styles.shareBtn} onPress={handleShareInvite}>
@@ -319,55 +296,6 @@ export default function EventDetailScreen() {
             )}
           </View>
         ))}
-
-        {/* Admin blast section */}
-        {isAdmin && (
-          <View style={styles.blastSection}>
-            <Text style={styles.sectionTitle}>{t('admin.sendBlast')}</Text>
-
-            <Text style={styles.label}>{t('admin.audience')}</Text>
-            <View style={styles.toggleRow}>
-              {(['rsvped', 'all'] as const).map((a) => (
-                <TouchableOpacity
-                  key={a}
-                  style={[styles.toggleBtn, blastAudience === a && styles.toggleBtnActive]}
-                  onPress={() => setBlastAudience(a)}
-                >
-                  <Text style={[styles.toggleBtnText, blastAudience === a && styles.toggleBtnTextActive]}>
-                    {a === 'rsvped' ? t('admin.audienceRsvped') : t('admin.audienceAll')}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.label}>{t('admin.channels')}</Text>
-            <View style={styles.toggleRow}>
-              {(['EMAIL', 'SMS'] as const).map((ch) => (
-                <TouchableOpacity
-                  key={ch}
-                  style={[styles.toggleBtn, blastChannels.includes(ch) && styles.toggleBtnActive]}
-                  onPress={() => toggleBlastChannel(ch)}
-                >
-                  <Text style={[styles.toggleBtnText, blastChannels.includes(ch) && styles.toggleBtnTextActive]}>
-                    {ch === 'EMAIL' ? t('admin.email') : t('admin.sms')}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TextInput
-              style={[styles.commentInput, { marginTop: 8 }]}
-              placeholder={zh ? '輸入訊息…' : 'Enter message…'}
-              value={blastMsg}
-              onChangeText={setBlastMsg}
-              multiline
-            />
-            <TouchableOpacity style={styles.blastBtn} onPress={handleBlast}>
-              <Text style={styles.blastBtnText}>{t('admin.sendBlast')}</Text>
-            </TouchableOpacity>
-            {blastResult ? <Text style={styles.blastResult}>{blastResult}</Text> : null}
-          </View>
-        )}
       </View>
     </ScrollView>
   );
@@ -415,16 +343,6 @@ const styles = StyleSheet.create({
   commentInput: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 14 },
   postBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, justifyContent: 'center' },
   postBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  blastSection: { marginTop: 8, borderTopWidth: 1, borderColor: '#E5E7EB', paddingTop: 8 },
-  label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 6, marginTop: 10 },
-  toggleRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  toggleBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  toggleBtnActive: { backgroundColor: INDIGO, borderColor: INDIGO },
-  toggleBtnText: { fontSize: 13, color: '#374151' },
-  toggleBtnTextActive: { color: '#fff' },
-  blastBtn: { backgroundColor: INDIGO, borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 10 },
-  blastBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  blastResult: { marginTop: 8, fontSize: 13, color: '#6B7280', textAlign: 'center' },
   inviteBtn: { backgroundColor: '#06B6D4', borderRadius: 8, padding: 12, alignItems: 'center', marginTop: 12 },
   inviteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   modal: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 999 },

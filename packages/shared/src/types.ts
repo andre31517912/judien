@@ -58,6 +58,7 @@ export interface Event {
 export interface EventWithCounts extends Event {
   rsvpCounts: { GOING: number; MAYBE: number; NO: number };
   myRsvp: RSVPStatus | null; // populated when authenticated
+  shareToken?: string | null;
 }
 
 // ─── News ────────────────────────────────────────────────────────────────────
@@ -84,6 +85,24 @@ export interface RSVP {
   userId: string;
   status: RSVPStatus;
   updatedAt: string;
+}
+
+export interface GuestRSVP {
+  id: string;
+  eventId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  status: RSVPStatus;
+  updatedAt: string;
+}
+
+export interface EventShareLink {
+  id: string;
+  eventId: string;
+  token: string;
+  createdById: string;
+  createdAt: string;
 }
 
 // ─── Comments ─────────────────────────────────────────────────────────────────

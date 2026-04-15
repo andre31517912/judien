@@ -160,6 +160,27 @@ exports.Prisma.EventScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.EventShareLinkScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  token: 'token',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.GuestRSVPScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  guestName: 'guestName',
+  guestEmail: 'guestEmail',
+  guestPhone: 'guestPhone',
+  identityHash: 'identityHash',
+  status: 'status',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.EventSeriesScalarFieldEnum = {
   id: 'id',
   title_en: 'title_en',
@@ -368,6 +389,8 @@ exports.GroupJoinRequestStatus = exports.$Enums.GroupJoinRequestStatus = {
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
+  EventShareLink: 'EventShareLink',
+  GuestRSVP: 'GuestRSVP',
   EventSeries: 'EventSeries',
   EventInvite: 'EventInvite',
   RSVP: 'RSVP',

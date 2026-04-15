@@ -40,14 +40,6 @@ type GroupMember = {
   phoneE164: string | null;
 };
 
-type PendingInvite = {
-  id: string;
-  token: string;
-  status: string;
-  expiresAt: string;
-  email: string | null;
-  phoneE164: string | null;
-};
 
 type JoinRequest = {
   id: string;
@@ -59,6 +51,14 @@ type JoinRequest = {
     displayName: string | null;
     email: string;
   };
+};
+
+type GroupRelationshipNode = { id: string; name: string; description?: string };
+type GroupRelationships = {
+  parentGroup: GroupRelationshipNode | null;
+  subgroups: GroupRelationshipNode[];
+  lineage?: GroupRelationshipNode[];
+  tree?: Array<GroupRelationshipNode & { children: GroupRelationshipNode[] }>;
 };
 
 export default function GroupDetailScreen() {
@@ -76,32 +76,9 @@ export default function GroupDetailScreen() {
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [chatBody, setChatBody] = useState('');
   const [chatSubmitting, setChatSubmitting] = useState(false);
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [newsOpen, setNewsOpen] = useState(false);
-  const [eventOpen, setEventOpen] = useState(false);
-  const [requestsOpen, setRequestsOpen] = useState(false);
+  const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
   const [membersOpen, setMembersOpen] = useState(true);
-
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
-  const [inviteSubmitting, setInviteSubmitting] = useState(false);
-
-  const [newsTitle, setNewsTitle] = useState('');
-  const [newsBody, setNewsBody] = useState('');
-  const [newsSubmitting, setNewsSubmitting] = useState(false);
-
-  const [eventTitle, setEventTitle] = useState('');
-  const [eventLocation, setEventLocation] = useState('');
-  const [eventDescription, setEventDescription] = useState('');
-  const [eventStartAt, setEventStartAt] = useState('');
-  const [eventEndAt, setEventEndAt] = useState('');
-  const [eventTimezone, setEventTimezone] = useState('Asia/Taipei');
-  const [eventFeeAmount, setEventFeeAmount] = useState('');
-  const [eventFeeCurrency, setEventFeeCurrency] = useState('TWD');
-  const [eventSubmitting, setEventSubmitting] = useState(false);
 
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
 
@@ -109,11 +86,12 @@ export default function GroupDetailScreen() {
     if (!groupId) return;
     setLoading(true);
     try {
-      const [myGroups, memberList, groupNews, groupEvents] = await Promise.all([
+      const [myGroups, memberList, groupNews, groupEvents, relationshipData] = await Promise.all([
         apiFetch<GroupListItem[]>('/groups/me'),
         apiFetch<GroupMember[]>(`/groups/${groupId}/members`),
         apiFetch<News[]>(`/news?groupId=${groupId}`),
         apiFetch<PaginatedResponse<EventWithCounts>>(`/events?scope=future&groupId=${groupId}&page=1&pageSize=20`),
+        apiFetch<GroupRelationships>(`/groups/${groupId}/relationships`).catch(() => null),
       ]);
 
       const current = myGroups.find((item) => item.group.id === groupId) ?? null;
@@ -121,20 +99,16 @@ export default function GroupDetailScreen() {
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
+      setRelationships(relationshipData);
       const messageRes = await apiFetch<PaginatedResponse<GroupMessage>>(
         `/groups/${groupId}/messages?page=1&pageSize=100`,
       ).catch(() => ({ data: [] as GroupMessage[] } as PaginatedResponse<GroupMessage>));
       setMessages(messageRes.data);
 
       if (current?.membership.role === 'GROUP_ADMIN') {
-        const [invitesRes, requestsRes] = await Promise.all([
-          apiFetch<PendingInvite[]>(`/groups/${groupId}/invites`).catch(() => [] as PendingInvite[]),
-          apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => [] as JoinRequest[]),
-        ]);
-        setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
+        const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => [] as JoinRequest[]);
         setJoinRequests((requestsRes ?? []).filter((req) => req.status === 'PENDING'));
       } else {
-        setPendingInvites([]);
         setJoinRequests([]);
       }
     } catch (err: any) {
@@ -147,117 +121,6 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     loadPage();
   }, [loadPage]);
-
-  const submitInvite = async () => {
-    if (!groupId) return;
-    if (!inviteEmail.trim() && !invitePhone.trim()) {
-      Alert.alert('Required', zh ? '請輸入 email 或電話' : 'Please provide email or phone');
-      return;
-    }
-    setInviteSubmitting(true);
-    try {
-      const payload: Record<string, unknown> = { role: inviteRole };
-      if (inviteEmail.trim()) payload.email = inviteEmail.trim();
-      if (invitePhone.trim()) payload.phoneE164 = invitePhone.trim();
-      await apiFetch(`/groups/${groupId}/invites`, {
-        method: 'POST',
-        body: JSON.stringify({ invites: [payload] }),
-      });
-      setInviteEmail('');
-      setInvitePhone('');
-      setInviteRole('MEMBER');
-      await loadPage();
-      Alert.alert('Success', zh ? '邀請已送出' : 'Invitation sent');
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to send invite');
-    } finally {
-      setInviteSubmitting(false);
-    }
-  };
-
-  const submitGroupNews = async () => {
-    if (!groupId) return;
-    if (!newsTitle.trim() || !newsBody.trim()) {
-      Alert.alert('Required', zh ? '請輸入標題和內容' : 'Please enter title and body');
-      return;
-    }
-    setNewsSubmitting(true);
-    try {
-      await apiFetch('/news', {
-        method: 'POST',
-        body: JSON.stringify({
-          groupId,
-          title_en: newsTitle,
-          title_zh: newsTitle,
-          body_en: newsBody,
-          body_zh: newsBody,
-        }),
-      });
-      setNewsTitle('');
-      setNewsBody('');
-      await loadPage();
-      Alert.alert('Success', zh ? '公告已發布' : 'News posted');
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to post news');
-    } finally {
-      setNewsSubmitting(false);
-    }
-  };
-
-  const submitGroupEvent = async () => {
-    if (!groupId) return;
-    if (!eventTitle.trim() || !eventLocation.trim() || !eventStartAt.trim()) {
-      Alert.alert('Required', zh ? '請填寫標題、地點、開始時間' : 'Please provide title, location, and start time');
-      return;
-    }
-    setEventSubmitting(true);
-    try {
-      await apiFetch('/events', {
-        method: 'POST',
-        body: JSON.stringify({
-          groupId,
-          title_en: eventTitle,
-          title_zh: eventTitle,
-          description_en: eventDescription,
-          description_zh: eventDescription,
-          location_en: eventLocation,
-          location_zh: eventLocation,
-          startAt: new Date(eventStartAt).toISOString(),
-          endAt: eventEndAt.trim() ? new Date(eventEndAt).toISOString() : null,
-          timezone: eventTimezone,
-          feeAmount: eventFeeAmount.trim() ? parseFloat(eventFeeAmount) : null,
-          feeCurrency: eventFeeCurrency || 'TWD',
-          coverImageUrl: null,
-        }),
-      });
-      setEventTitle('');
-      setEventLocation('');
-      setEventDescription('');
-      setEventStartAt('');
-      setEventEndAt('');
-      setEventTimezone('Asia/Taipei');
-      setEventFeeAmount('');
-      setEventFeeCurrency('TWD');
-      await loadPage();
-      Alert.alert('Success', zh ? '群組活動已建立' : 'Group event created');
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to create event');
-    } finally {
-      setEventSubmitting(false);
-    }
-  };
-
-  const reviewJoinRequest = async (requestId: string, action: 'approve' | 'reject') => {
-    try {
-      await apiFetch(`/groups/join-requests/${requestId}/review`, {
-        method: 'POST',
-        body: JSON.stringify({ action }),
-      });
-      await loadPage();
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to review join request');
-    }
-  };
 
   const removeMember = (memberUserId: string) => {
     if (!groupId) return;
@@ -356,179 +219,40 @@ export default function GroupDetailScreen() {
         </View>
       </View>
 
-      {isGroupAdmin && (
-        <View style={styles.adminPanel}>
-          <View style={styles.adminBtnGrid}>
-            <TouchableOpacity
-              style={[styles.adminActionBtn, inviteOpen && styles.adminActionBtnActive]}
-              onPress={() => setInviteOpen((v) => !v)}
-            >
-              <Text style={styles.adminActionBtnIcon}>👥</Text>
-              <Text style={[styles.adminActionBtnText, inviteOpen && styles.adminActionBtnTextActive]}>
-                {zh ? '邀請成員' : 'Invite'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.adminActionBtn, newsOpen && styles.adminActionBtnActive]}
-              onPress={() => setNewsOpen((v) => !v)}
-            >
-              <Text style={styles.adminActionBtnIcon}>📢</Text>
-              <Text style={[styles.adminActionBtnText, newsOpen && styles.adminActionBtnTextActive]}>
-                {zh ? '發布公告' : 'Post News'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.adminActionBtn, eventOpen && styles.adminActionBtnActive]}
-              onPress={() => setEventOpen((v) => !v)}
-            >
-              <Text style={styles.adminActionBtnIcon}>🗓</Text>
-              <Text style={[styles.adminActionBtnText, eventOpen && styles.adminActionBtnTextActive]}>
-                {zh ? '建立活動' : 'New Event'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.adminActionBtn, requestsOpen && styles.adminActionBtnActive]}
-              onPress={() => setRequestsOpen((v) => !v)}
-            >
-              <Text style={styles.adminActionBtnIcon}>📋</Text>
-              <Text style={[styles.adminActionBtnText, requestsOpen && styles.adminActionBtnTextActive]}>
-                {joinRequests.length > 0
-                  ? (zh ? `申請 (${joinRequests.length})` : `Requests (${joinRequests.length})`)
-                  : (zh ? '申請' : 'Requests')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {inviteOpen && (
-            <View style={styles.adminSection}>
-              <Text style={styles.sectionTitle}>{zh ? '邀請成員' : 'Invite Members'}</Text>
-              <TextInput
-                value={inviteEmail}
-                onChangeText={setInviteEmail}
-                placeholder="member@example.com"
-                style={styles.input}
-                placeholderTextColor="#9CA3AF"
-                autoCapitalize="none"
-                keyboardType="email-address"
-              />
-              <TextInput
-                value={invitePhone}
-                onChangeText={setInvitePhone}
-                placeholder="+886900000123"
-                style={styles.input}
-                placeholderTextColor="#9CA3AF"
-                keyboardType="phone-pad"
-              />
-              <View style={styles.pillRow}>
-                <TouchableOpacity
-                  style={[styles.pill, inviteRole === 'MEMBER' && styles.pillActive]}
-                  onPress={() => setInviteRole('MEMBER')}
-                >
-                  <Text style={[styles.pillText, inviteRole === 'MEMBER' && styles.pillTextActive]}>{zh ? '成員' : 'Member'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.pill, inviteRole === 'GROUP_ADMIN' && styles.pillActive]}
-                  onPress={() => setInviteRole('GROUP_ADMIN')}
-                >
-                  <Text style={[styles.pillText, inviteRole === 'GROUP_ADMIN' && styles.pillTextActive]}>{zh ? '管理員' : 'Group Admin'}</Text>
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity style={styles.primaryBtn} onPress={submitInvite} disabled={inviteSubmitting}>
-                <Text style={styles.primaryBtnText}>{inviteSubmitting ? (zh ? '發送中…' : 'Sending…') : (zh ? '發送邀請' : 'Send Invite')}</Text>
-              </TouchableOpacity>
-              {pendingInvites.length > 0 && (
-                <View style={{ gap: 8, marginTop: 10 }}>
-                  <Text style={styles.subtleTitle}>{zh ? '待接受邀請' : 'Pending Invites'}</Text>
-                  {pendingInvites.map((inv) => (
-                    <View key={inv.id} style={styles.inlineCard}>
-                      <Text style={styles.inlineTitle}>{inv.email || inv.phoneE164 || inv.id}</Text>
-                      <Text style={styles.inlineMeta}>{zh ? '到期：' : 'Expires: '}{new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-
-          {newsOpen && (
-            <View style={styles.adminSection}>
-              <Text style={styles.sectionTitle}>{zh ? '發布群組公告' : 'Post Group News'}</Text>
-              <TextInput
-                value={newsTitle}
-                onChangeText={setNewsTitle}
-                placeholder={zh ? '標題' : 'Title'}
-                style={styles.input}
-                placeholderTextColor="#9CA3AF"
-              />
-              <TextInput
-                value={newsBody}
-                onChangeText={setNewsBody}
-                placeholder={zh ? '內容' : 'Body'}
-                style={[styles.input, styles.textArea]}
-                placeholderTextColor="#9CA3AF"
-                multiline
-              />
-              <TouchableOpacity style={styles.primaryBtn} onPress={submitGroupNews} disabled={newsSubmitting}>
-                <Text style={styles.primaryBtnText}>{newsSubmitting ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post News')}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {eventOpen && (
-            <View style={styles.adminSection}>
-              <Text style={styles.sectionTitle}>{zh ? '建立群組活動' : 'Create Group Event'}</Text>
-              <TextInput value={eventTitle} onChangeText={setEventTitle} placeholder={zh ? '活動名稱' : 'Title'} style={styles.input} placeholderTextColor="#9CA3AF" />
-              <TextInput value={eventLocation} onChangeText={setEventLocation} placeholder={zh ? '地點' : 'Location'} style={styles.input} placeholderTextColor="#9CA3AF" />
-              <TextInput value={eventDescription} onChangeText={setEventDescription} placeholder={zh ? '描述' : 'Description'} style={[styles.input, styles.textArea]} placeholderTextColor="#9CA3AF" multiline />
-              <DateTimeField
-                label={zh ? '開始時間' : 'Start time'}
-                value={eventStartAt}
-                onChange={setEventStartAt}
-                placeholder={zh ? '選擇日期與時間' : 'Select date and time'}
-                locale={zh ? 'zh-TW' : 'en-US'}
-              />
-              <DateTimeField
-                label={zh ? '結束時間（選填）' : 'End time (optional)'}
-                value={eventEndAt}
-                onChange={setEventEndAt}
-                placeholder={zh ? '選擇日期與時間' : 'Select date and time'}
-                locale={zh ? 'zh-TW' : 'en-US'}
-                clearable
-              />
-              <View style={styles.inlineRow}>
-                <TextInput value={eventTimezone} onChangeText={setEventTimezone} placeholder="Asia/Taipei" style={[styles.input, styles.flex2]} placeholderTextColor="#9CA3AF" />
-                <TextInput value={eventFeeAmount} onChangeText={setEventFeeAmount} placeholder={zh ? '費用' : 'Fee'} style={[styles.input, styles.flex1]} placeholderTextColor="#9CA3AF" keyboardType="numeric" />
-                <TextInput value={eventFeeCurrency} onChangeText={setEventFeeCurrency} placeholder="TWD" style={[styles.input, styles.flex1]} placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
-              </View>
-              <TouchableOpacity style={styles.primaryBtn} onPress={submitGroupEvent} disabled={eventSubmitting}>
-                <Text style={styles.primaryBtnText}>{eventSubmitting ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {requestsOpen && (
-            <View style={styles.adminSection}>
-              <Text style={styles.sectionTitle}>{zh ? '加入申請審核' : 'Join Requests'}</Text>
-              {joinRequests.length === 0 ? (
-                <Text style={styles.emptyText}>{zh ? '目前無待審核申請' : 'No pending requests'}</Text>
-              ) : joinRequests.map((req) => (
-                <View key={req.id} style={styles.inlineCard}>
-                  <Text style={styles.inlineTitle}>{req.requester.displayName || req.requester.email}</Text>
-                  <Text style={styles.inlineMeta}>{req.requester.email}</Text>
-                  {req.note ? <Text style={styles.inlineBody}>{req.note}</Text> : null}
-                  <View style={styles.actionsRow}>
-                    <TouchableOpacity style={styles.primaryBtnSmall} onPress={() => reviewJoinRequest(req.id, 'approve')}>
-                      <Text style={styles.primaryBtnTextSmall}>{zh ? '核准' : 'Approve'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.secondaryBtnSmall} onPress={() => reviewJoinRequest(req.id, 'reject')}>
-                      <Text style={styles.secondaryBtnTextSmall}>{zh ? '拒絕' : 'Reject'}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
+      {relationships && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{zh ? '群組層級' : 'Group Hierarchy'}</Text>
+          {relationships.lineage && relationships.lineage.length > 0 && (
+            <View style={styles.inlineRow}>
+              {relationships.lineage.map((node, idx) => (
+                <Text key={node.id} style={styles.inlineMeta}>
+                  {idx > 0 ? ' > ' : ''}
+                  {node.name}
+                </Text>
               ))}
             </View>
           )}
+          <Text style={styles.inlineMeta}>
+            {relationships.parentGroup ? `${zh ? '上層：' : 'Parent: '}${relationships.parentGroup.name}` : (zh ? '上層：無' : 'Parent: none')}
+          </Text>
+          <Text style={styles.inlineMeta}>
+            {relationships.subgroups.length > 0
+              ? `${zh ? '下層：' : 'Children: '}${relationships.subgroups.map((g) => g.name).join(', ')}`
+              : (zh ? '下層：無' : 'Children: none')}
+          </Text>
         </View>
+      )}
+
+      {isGroupAdmin && (
+        <TouchableOpacity
+          style={styles.settingsBtn}
+          onPress={() => router.push(`/groups/${groupId}/settings`)}
+        >
+          <Text style={styles.settingsBtnText}>
+            ⚙️ {zh ? '群組設定' : 'Group Settings'}
+            {joinRequests.length > 0 ? ` (${joinRequests.length})` : ''}
+          </Text>
+        </TouchableOpacity>
       )}
 
       <View style={styles.section}>
@@ -700,47 +424,16 @@ const styles = StyleSheet.create({
   inlineBody: { fontSize: 13, color: '#374151' },
   emptyText: { color: '#9CA3AF', fontSize: 13 },
   adminMemberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  adminPanel: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#C7D2FE',
-    padding: 12,
-    gap: 12,
-  },
-  adminBtnGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  adminActionBtn: {
-    width: '48.5%',
-    minHeight: 96,
-    marginBottom: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#C7D2FE',
+  settingsBtn: {
+    backgroundColor: '#EEF2FF',
     borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
   },
-  adminActionBtnActive: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
-  },
-  adminActionBtnIcon: { fontSize: 18 },
-  adminActionBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA', textAlign: 'center' },
-  adminActionBtnTextActive: { color: '#fff' },
-  adminSection: {
-    gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E7FF',
-    paddingTop: 12,
-  },
+  settingsBtnText: { color: '#4338CA', fontWeight: '700', fontSize: 14 },
   promoteBtnSmall: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EEF2FF' },
   promoteBtnTextSmall: { color: '#4338CA', fontSize: 12, fontWeight: '700' },
   sectionHeaderToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },

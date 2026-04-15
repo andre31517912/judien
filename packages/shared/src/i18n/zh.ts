@@ -91,7 +91,7 @@ const zh: I18nDict = {
   home: {
     title: '主頁',
     noNews: '目前沒有公告，一切都是最新的！',
-    createPost: '發布',
+    createPost: '發布公告',
     deletePost: '刪除公告',
     deleteConfirm: '確定要刪除此公告嗎？此操作無法復原。',
     postCreated: '公告已發布。',

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { CreateEventDto, UpdateEventDto, EventListQuery } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from '../groups/groups.service';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class EventsService {
@@ -58,7 +59,9 @@ export class EventsService {
         take: query.pageSize,
         include: {
           rsvps: { select: { status: true } },
+          guestRsvps: { select: { status: true } },
           group: { select: { name: true } },
+          shareLink: { select: { token: true } },
         },
       }),
       this.prisma.event.count({ where }),
@@ -74,13 +77,15 @@ export class EventsService {
     const myRsvpMap = new Map(myRsvps.map((r) => [r.eventId, r.status]));
 
     const data = events.map((event) => {
-      const counts = { GOING: 0, MAYBE: 0, NO: 0 };
-      for (const r of event.rsvps) counts[r.status]++;
+      const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
       return {
         ...event,
         groupName: event.group?.name ?? null,
         group: undefined,
         rsvps: undefined,
+        guestRsvps: undefined,
+        shareLink: undefined,
+        shareToken: event.shareLink?.token ?? null,
         rsvpCounts: counts,
         myRsvp: myRsvpMap.get(event.id) ?? null,
       };
@@ -94,8 +99,10 @@ export class EventsService {
       where: { id },
       include: {
         rsvps: { select: { status: true } },
+        guestRsvps: { select: { status: true } },
         createdBy: { select: { email: true } },
         group: { select: { name: true } },
+        shareLink: { select: { token: true } },
       },
     });
     if (!event) throw new NotFoundException('Event not found.');
@@ -105,8 +112,7 @@ export class EventsService {
       if (!canAccess) throw new ForbiddenException('You do not have access to this event.');
     }
 
-    const counts = { GOING: 0, MAYBE: 0, NO: 0 };
-    for (const r of event.rsvps) counts[r.status]++;
+    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
 
     let myRsvp: string | null = null;
     if (userId) {
@@ -121,6 +127,73 @@ export class EventsService {
       groupName: event.group?.name ?? null,
       group: undefined,
       rsvps: undefined,
+      guestRsvps: undefined,
+      shareLink: undefined,
+      shareToken: event.shareLink?.token ?? null,
+      rsvpCounts: counts,
+      myRsvp,
+      createdByEmail: event.createdBy?.email ?? null,
+      createdBy: undefined,
+    };
+  }
+
+  async createShareLink(eventId: string, actor: User) {
+    const event = await this.ensureExists(eventId);
+    if (event.groupId) {
+      const canAccess = await this.groupsService.canAccessGroup(event.groupId, actor.id);
+      if (!canAccess) {
+        throw new ForbiddenException('You do not have access to this event.');
+      }
+    }
+
+    const existing = await this.prisma.eventShareLink.findUnique({ where: { eventId } });
+    if (existing) return existing;
+
+    return this.prisma.eventShareLink.create({
+      data: {
+        eventId,
+        token: randomBytes(24).toString('hex'),
+        createdById: actor.id,
+      },
+    });
+  }
+
+  async getByShareToken(token: string, userId?: string) {
+    const link = await this.prisma.eventShareLink.findUnique({
+      where: { token },
+      include: {
+        event: {
+          include: {
+            rsvps: { select: { status: true } },
+            guestRsvps: { select: { status: true } },
+            createdBy: { select: { email: true } },
+            group: { select: { name: true } },
+            shareLink: { select: { token: true } },
+          },
+        },
+      },
+    });
+    if (!link) throw new NotFoundException('Share link not found.');
+
+    const event = link.event;
+    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
+
+    let myRsvp: string | null = null;
+    if (userId) {
+      const rsvp = await this.prisma.rSVP.findUnique({
+        where: { eventId_userId: { eventId: event.id, userId } },
+      });
+      myRsvp = rsvp?.status ?? null;
+    }
+
+    return {
+      ...event,
+      groupName: event.group?.name ?? null,
+      group: undefined,
+      rsvps: undefined,
+      guestRsvps: undefined,
+      shareLink: undefined,
+      shareToken: event.shareLink?.token ?? token,
       rsvpCounts: counts,
       myRsvp,
       createdByEmail: event.createdBy?.email ?? null,
@@ -187,5 +260,15 @@ export class EventsService {
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('Event not found.');
     return event;
+  }
+
+  private mergeRsvpCounts(
+    rsvps: Array<{ status: 'GOING' | 'MAYBE' | 'NO' }>,
+    guestRsvps: Array<{ status: 'GOING' | 'MAYBE' | 'NO' }>,
+  ) {
+    const counts = { GOING: 0, MAYBE: 0, NO: 0 };
+    for (const r of rsvps) counts[r.status]++;
+    for (const r of guestRsvps) counts[r.status]++;
+    return counts;
   }
 }

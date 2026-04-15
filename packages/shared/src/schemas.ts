@@ -76,6 +76,19 @@ export const RsvpSchema = z.object({
 });
 export type RsvpDto = z.infer<typeof RsvpSchema>;
 
+export const GuestRsvpIdentitySchema = z.object({
+  name: z.string().min(1).max(100),
+  phoneE164: phoneSchema,
+  email: z.string().email(),
+});
+export type GuestRsvpIdentityDto = z.infer<typeof GuestRsvpIdentitySchema>;
+
+export const SharedEventRsvpSchema = z.object({
+  status: z.enum(['GOING', 'MAYBE', 'NO']),
+  guest: GuestRsvpIdentitySchema.optional(),
+});
+export type SharedEventRsvpDto = z.infer<typeof SharedEventRsvpSchema>;
+
 // ─── Comment ──────────────────────────────────────────────────────────────────
 
 export const CreateCommentSchema = z.object({

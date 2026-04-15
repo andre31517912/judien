@@ -84,4 +84,24 @@ export class EventsController {
   ) {
     return this.eventsService.remove(id, user);
   }
+
+  // POST /api/events/:id/share-link — generate or fetch a stable share link token
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/share-link')
+  createShareLink(
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.createShareLink(id, user);
+  }
+
+  // GET /api/events/share/:token — public view by share link
+  @UseGuards(new OptionalJwtGuard())
+  @Get('share/:token')
+  findByShareToken(
+    @Param('token') token: string,
+    @CurrentUser() user?: User,
+  ) {
+    return this.eventsService.getByShareToken(token, user?.id);
+  }
 }
