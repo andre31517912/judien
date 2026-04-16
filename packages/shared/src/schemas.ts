@@ -193,7 +193,7 @@ export const InviteGroupMembersSchema = z.object({
       email: z.string().email().optional(),
       phoneE164: z.string().min(5).optional(),
       userId: z.string().min(1).optional(),
-      role: z.enum(['GROUP_ADMIN', 'MEMBER']).optional().default('MEMBER'),
+      role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']).optional().default('GROUP_MEMBER'),
     }).refine((x) => Boolean(x.email || x.phoneE164 || x.userId), {
       message: 'At least one of email, phoneE164, or userId is required.',
     })
@@ -217,13 +217,13 @@ export const ReviewGroupJoinRequestSchema = z.object({
 export type ReviewGroupJoinRequestDto = z.infer<typeof ReviewGroupJoinRequestSchema>;
 
 export const ChangeGroupMemberRoleSchema = z.object({
-  role: z.enum(['GROUP_ADMIN', 'MEMBER']),
+  role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']),
 });
 export type ChangeGroupMemberRoleDto = z.infer<typeof ChangeGroupMemberRoleSchema>;
 
 export const AddMemberDirectlySchema = z.object({
   identifier: z.string().min(1),
-  role: z.enum(['GROUP_ADMIN', 'MEMBER']).default('MEMBER'),
+  role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']).default('GROUP_MEMBER'),
 });
 export type AddMemberDirectlyDto = z.infer<typeof AddMemberDirectlySchema>;
 

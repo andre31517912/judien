@@ -354,7 +354,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
-  const handleRemoveMember
+  const handleRemoveMember = async (memberUserId: string) => {
+    if (!confirm(zh ? '確定要移除此成員嗎？' : 'Remove this member?')) return;
+    setSuccess('');
+    setError('');
     try {
       await apiFetch(`/groups/${params.groupId}/members/${memberUserId}`, { method: 'DELETE' });
       setSuccess(zh ? '成員已移除。' : 'Member removed.');
