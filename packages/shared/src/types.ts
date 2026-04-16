@@ -16,6 +16,7 @@ export interface User {
   email: string;
   phoneE164: string;
   preferredLanguage: PreferredLanguage;
+  colorTheme: 'light' | 'dark';
   role: Role;
   notificationsMuted: boolean;
   createdAt: string; // ISO8601

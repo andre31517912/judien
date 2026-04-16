@@ -70,6 +70,7 @@ model User {
   phoneE164          String        @unique
   displayName        String?
   preferredLanguage  String        @default("en")  // 'en' | 'zh'
+  colorTheme         String        @default("light") // 'light' | 'dark'
   role               Role          @default(USER)
   muteSms            Boolean       @default(false)
   muteEmail          Boolean       @default(false)

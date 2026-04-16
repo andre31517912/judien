@@ -25,6 +25,7 @@ export class UsersService {
     if (dto.phone) data.phoneE164 = dto.phone;
     if (dto.displayName !== undefined) data.displayName = dto.displayName || null;
     if (dto.preferredLanguage) data.preferredLanguage = dto.preferredLanguage;
+    if (dto.colorTheme !== undefined) data.colorTheme = dto.colorTheme;
     if (dto.muteSms !== undefined) data.muteSms = dto.muteSms;
     if (dto.muteEmail !== undefined) data.muteEmail = dto.muteEmail;
     if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 12);

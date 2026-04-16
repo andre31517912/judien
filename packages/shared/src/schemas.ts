@@ -149,6 +149,7 @@ export const UpdateProfileSchema = z.object({
   displayName: z.string().max(100).optional(),
   password: z.string().min(8).max(128).optional(),
   preferredLanguage: z.enum(['en', 'zh']).optional(),
+  colorTheme: z.enum(['light', 'dark']).optional(),
   muteSms: z.boolean().optional(),
   muteEmail: z.boolean().optional(),
 });

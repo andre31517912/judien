@@ -207,6 +207,17 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h3>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          membership.role === 'GROUP_ADMIN'
+                            ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                            : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                        }`}
+                      >
+                        {membership.role === 'GROUP_ADMIN'
+                          ? (zh ? '群組管理員' : 'Group Admin')
+                          : (zh ? '群組成員' : 'Group Member')}
+                      </span>
                     </div>
                     {group.description && (
                       <p className="text-sm text-gray-600 dark:text-gray-400">{group.description}</p>

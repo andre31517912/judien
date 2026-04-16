@@ -444,6 +444,15 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             )}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  isGroupAdmin
+                    ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                    : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                }`}
+              >
+                {isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
+              </span>
             </div>
           </div>
           {isGroupAdmin && (
