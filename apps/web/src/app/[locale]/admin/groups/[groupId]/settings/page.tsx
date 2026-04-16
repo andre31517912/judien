@@ -5,7 +5,6 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
-import type { Event, EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -50,8 +49,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [news, setNews] = useState<News[]>([]);
-  const [events, setEvents] = useState<EventWithCounts[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
@@ -76,6 +73,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const [groupSettings, setGroupSettings] = useState({ discoverableBySearch: false, memberDataPrivate: false });
   const [settingsSaving, setSettingsSaving] = useState(false);
+
+  const [relationships, setRelationships] = useState<{
+    parentGroup: { id: string; name: string } | null;
+    subgroups: { id: string; name: string; description: string }[];
+  } | null>(null);
+  const [parentSearchQuery, setParentSearchQuery] = useState('');
+  const [parentSearchResults, setParentSearchResults] = useState<{ id: string; pid: string; name: string; description: string }[]>([]);
+  const [parentSearchLoading, setParentSearchLoading] = useState(false);
+  const [parentSaving, setParentSaving] = useState(false);
 
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
@@ -162,11 +168,9 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     setPageLoading(true);
     setError('');
     try {
-      const [groups, memberList, groupNews, groupEvents] = await Promise.all([
+      const [groups, memberList] = await Promise.all([
         apiFetch<GroupListItem[]>('/groups/me'),
         apiFetch<GroupMember[]>(`/groups/${params.groupId}/members`),
-        apiFetch<News[]>(`/news?groupId=${params.groupId}`),
-        apiFetch<PaginatedResponse<EventWithCounts>>(`/events?scope=future&groupId=${params.groupId}&page=1&pageSize=20`),
       ]);
       const current = groups.find((item) => item.group.id === params.groupId) ?? null;
       setGroupItem(current);
@@ -177,11 +181,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         });
       }
       setMembers(memberList);
-      setNews(groupNews);
-      setEvents(groupEvents.data);
 
       const reqRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);
       setJoinRequests((reqRes ?? []).filter((r) => r.status === 'PENDING'));
+
+      const rel = await apiFetch<{ parentGroup: { id: string; name: string } | null; subgroups: { id: string; name: string; description: string }[] }>(`/groups/${params.groupId}/relationships`).catch(() => null);
+      setRelationships(rel);
 
       if (!current) setError(zh ? '找不到此群組。' : 'Group not found.');
     } catch (err: unknown) {
@@ -196,9 +201,22 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     loadPage();
   }, [loading, user, params.groupId]);
 
+  const handleParentSearch = async () => {
+    if (!parentSearchQuery.trim()) return;
+    setParentSearchLoading(true);
+    setParentSearchResults([]);
+    try {
+      const res = await apiFetch<{ id: string; pid: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(parentSearchQuery.trim())}`);
+      setParentSearchResults(res.filter((g) => g.id !== params.groupId));
+    } catch {
+      // silently ignore
+    } finally {
+      setParentSearchLoading(false);
+    }
+  };
+
   const handleSaveSettings = async () => {
-    setSettingsSaving(true);
-    setError('');
+    setSettingsSaving(true);    setError('');
     setSuccess('');
     try {
       await apiFetch(`/groups/${params.groupId}/settings`, {
@@ -415,6 +433,120 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </section>
       )}
 
+      {/* Group Hierarchy — platform admin only */}
+      {isPlatformAdmin && (
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組層級' : 'Group Hierarchy'}</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {zh ? '設定此群組的上層群組（父群組），或檢視其子群組。' : 'Set a parent group for this group, or view its subgroups.'}
+          </p>
+
+          {/* Current parent */}
+          <div className="mt-4">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '目前父群組' : 'Current Parent'}</p>
+            {relationships?.parentGroup ? (
+              <div className="mt-2 flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
+                <span className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{relationships.parentGroup.name}</span>
+                <button
+                  onClick={async () => {
+                    if (!confirm(zh ? '確定要移除父群組嗎？' : 'Remove parent group?')) return;
+                    setParentSaving(true);
+                    setError('');
+                    setSuccess('');
+                    try {
+                      await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
+                      setSuccess(zh ? '父群組已移除。' : 'Parent group removed.');
+                      await loadPage();
+                    } catch (err: unknown) {
+                      setError((err as Error).message ?? 'Failed.');
+                    } finally {
+                      setParentSaving(false);
+                    }
+                  }}
+                  disabled={parentSaving}
+                  className="rounded-md border border-red-200 dark:border-red-800 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                >
+                  {zh ? '移除' : 'Remove'}
+                </button>
+              </div>
+            ) : (
+              <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">{zh ? '無（頂層群組）' : 'None (top-level group)'}</p>
+            )}
+          </div>
+
+          {/* Subgroups */}
+          {relationships?.subgroups && relationships.subgroups.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? `子群組 (${relationships.subgroups.length})` : `Subgroups (${relationships.subgroups.length})`}</p>
+              <div className="mt-2 space-y-2">
+                {relationships.subgroups.map((sg) => (
+                  <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm">
+                    <span className="font-medium text-gray-900 dark:text-white">{sg.name}</span>
+                    {sg.description && <span className="text-gray-400 dark:text-gray-500">{sg.description}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Set parent */}
+          <div className="mt-6">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '設定父群組' : 'Set Parent Group'}</p>
+            <div className="mt-2 flex gap-2">
+              <input
+                value={parentSearchQuery}
+                onChange={(e) => setParentSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleParentSearch(); } }}
+                placeholder={zh ? '搜尋群組名稱…' : 'Search group name…'}
+                className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <button
+                onClick={handleParentSearch}
+                disabled={parentSearchLoading || !parentSearchQuery.trim()}
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {parentSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
+              </button>
+            </div>
+            {parentSearchResults.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {parentSearchResults.map((g) => (
+                  <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{g.name}</p>
+                      {g.description && <p className="text-xs text-gray-400 dark:text-gray-500">{g.description}</p>}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (!confirm(zh ? `確定要將「${g.name}」設為此群組的父群組嗎？` : `Set "${g.name}" as parent of this group?`)) return;
+                        setParentSaving(true);
+                        setError('');
+                        setSuccess('');
+                        try {
+                          await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: g.id }) });
+                          setParentSearchQuery('');
+                          setParentSearchResults([]);
+                          setSuccess(zh ? `父群組已設為「${g.name}」。` : `Parent group set to "${g.name}".`);
+                          await loadPage();
+                        } catch (err: unknown) {
+                          setError((err as Error).message ?? 'Failed.');
+                        } finally {
+                          setParentSaving(false);
+                        }
+                      }}
+                      disabled={parentSaving}
+                      className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      {zh ? '設為父群組' : 'Set as Parent'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Group Settings */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組設定' : 'Group Settings'}</h2>
@@ -588,14 +720,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post News')}
             </button>
           </form>
-          <div className="mt-6 space-y-3">
-            {news.length === 0 ? <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無群組公告。' : 'No group news yet.'}</p> : news.map((item) => (
-              <div key={item.id} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 p-4">
-                <h3 className="font-medium text-gray-900 dark:text-white">{zh ? item.title_zh : item.title_en}</h3>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{zh ? item.body_zh : item.body_en}</p>
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* Create Group Event */}
@@ -654,15 +778,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
             </button>
           </form>
-          <div className="mt-6 space-y-3">
-            {events.length === 0 ? <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無群組活動。' : 'No group events yet.'}</p> : events.map((event) => (
-              <Link key={event.id} href={`/${params.locale}/events/${event.id}`} className="block rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 p-4 transition hover:bg-gray-100 dark:hover:bg-gray-700">
-                <h3 className="font-medium text-gray-900 dark:text-white">{zh ? event.title_zh : event.title_en}</h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}</p>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? event.location_zh : event.location_en}</p>
-              </Link>
-            ))}
-          </div>
         </section>
       </div>
     </div>

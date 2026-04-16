@@ -37,7 +37,7 @@ enum MessageStatus {
 
 enum GroupMembershipRole {
   GROUP_ADMIN
-  MEMBER
+  GROUP_MEMBER
 }
 
 enum GroupMembershipStatus {
@@ -70,6 +70,7 @@ model User {
   phoneE164         String   @unique
   displayName       String?
   preferredLanguage String   @default("en") // 'en' | 'zh'
+  colorTheme        String   @default("light") // 'light' | 'dark'
   role              Role     @default(USER)
   muteSms           Boolean  @default(false)
   muteEmail         Boolean  @default(false)
@@ -342,7 +343,7 @@ model GroupMembership {
   id                       String                @id @default(cuid())
   groupId                  String
   userId                   String
-  role                     GroupMembershipRole   @default(MEMBER)
+  role                     GroupMembershipRole   @default(GROUP_MEMBER)
   status                   GroupMembershipStatus @default(PENDING)
   invitedByPlatformAdminId String?
   invitedByPlatformAdmin   User?                 @relation("GroupMembershipInvitedBy", fields: [invitedByPlatformAdminId], references: [id])

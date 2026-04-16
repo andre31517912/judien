@@ -79,7 +79,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
               : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
           }`}
         >
-          {user.role === 'ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '用戶' : 'User')}
+          {user.role === 'ADMIN' ? (zh ? '平台管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
       </div>
         <button

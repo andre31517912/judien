@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
@@ -423,6 +424,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   ];
 
   return (
+    <>
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-0 pt-6 sm:px-6 lg:px-8">
@@ -455,21 +457,40 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </span>
             </div>
           </div>
-          {isGroupAdmin && (
-            <div className="flex items-center gap-2">
-              {joinRequests.length > 0 && (
-                <span className="rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-0.5 text-xs font-semibold text-red-700 dark:text-red-400">
-                  {joinRequests.length} {zh ? '待審核' : 'pending'}
-                </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={async () => {
+                if (!relationships) await loadRelationships();
+                setShowRelationships(true);
+              }}
+              disabled={relationshipsLoading}
+              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
+            >
+              {relationshipsLoading ? (
+                <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-500" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-indigo-500">
+                  <path d="M2 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3ZM2 10a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3ZM9 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V3ZM13 9.5a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H12v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H13V9.5Z" />
+                </svg>
               )}
-              <Link
-                href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
-                className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
-              >
-                ⚙️ {zh ? '群組設定' : 'Settings'}
-              </Link>
-            </div>
-          )}
+              {zh ? '層級圖' : 'Hierarchy'}
+            </button>
+            {isGroupAdmin && (
+              <>
+                {joinRequests.length > 0 && (
+                  <span className="rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-0.5 text-xs font-semibold text-red-700 dark:text-red-400">
+                    {joinRequests.length} {zh ? '待審核' : 'pending'}
+                  </span>
+                )}
+                <Link
+                  href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
+                  className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+                >
+                  ⚙️ {zh ? '群組設定' : 'Settings'}
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
         {error && <p className="mb-3 text-sm text-red-500 dark:text-red-400">{error}</p>}
@@ -688,5 +709,17 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
       </div>
     </div>
+
+    {/* ── Group Hierarchy modal ── */}
+    {showRelationships && relationships && (
+      <GroupHierarchyChart
+        data={relationships}
+        currentGroupId={params.groupId}
+        locale={params.locale}
+        loading={relationshipsLoading}
+        onClose={() => setShowRelationships(false)}
+      />
+    )}
+    </>
   );
 }

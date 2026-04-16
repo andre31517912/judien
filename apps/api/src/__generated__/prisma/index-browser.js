@@ -129,6 +129,7 @@ exports.Prisma.UserScalarFieldEnum = {
   phoneE164: 'phoneE164',
   displayName: 'displayName',
   preferredLanguage: 'preferredLanguage',
+  colorTheme: 'colorTheme',
   role: 'role',
   muteSms: 'muteSms',
   muteEmail: 'muteEmail',
@@ -362,7 +363,7 @@ exports.MessageStatus = exports.$Enums.MessageStatus = {
 
 exports.GroupMembershipRole = exports.$Enums.GroupMembershipRole = {
   GROUP_ADMIN: 'GROUP_ADMIN',
-  MEMBER: 'MEMBER'
+  GROUP_MEMBER: 'GROUP_MEMBER'
 };
 
 exports.GroupMembershipStatus = exports.$Enums.GroupMembershipStatus = {
