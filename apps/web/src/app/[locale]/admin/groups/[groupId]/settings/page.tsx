@@ -345,7 +345,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         const uploaded = await apiUpload(coverFile);
         coverImageUrl = uploaded.url;
       }
-      await apiFetch<EventWithCounts>('/events', {
+      await apiFetch('/events', {
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
