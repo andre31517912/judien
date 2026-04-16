@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body className="bg-white dark:bg-gray-950 transition-colors">
+      <body className="bg-white dark:bg-black transition-colors">
         <ThemeProvider>
           <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>

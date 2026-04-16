@@ -252,7 +252,7 @@ export default function EventDetailPage() {
       className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
         rsvpStatus === status
           ? 'bg-indigo-600 text-white border-indigo-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+          : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400'
       }`}
     >
       {label}
@@ -277,10 +277,10 @@ export default function EventDetailPage() {
       )}
       {/* Admin toolbar */}
       {user?.role === 'ADMIN' ? (
-        <div className="flex gap-3 py-2 border-b border-dashed border-gray-200">
+        <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
           <a
             href={`/${locale}/events`}
-            className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 mr-2"
           >
             ← {zh ? '返回' : 'Back'}
           </a>
@@ -300,7 +300,7 @@ export default function EventDetailPage() {
       ) : (
         <a
           href={`/${locale}/events`}
-          className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 self-start"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 self-start"
         >
           ← Back
         </a>
@@ -314,7 +314,7 @@ export default function EventDetailPage() {
           className="w-full h-60 object-cover rounded-xl"
         />
       ) : (
-        <div className="w-full h-60 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 border border-gray-100 flex flex-col items-center justify-center gap-3 select-none">
+        <div className="w-full h-60 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-3 select-none">
           <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
             <svg className="w-8 h-8 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -325,7 +325,7 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      <h1 className="text-3xl font-bold">{title}</h1>
+      <h1 className="text-3xl font-bold dark:text-white">{title}</h1>
 
       {/* Series badge */}
       {eventSeries && (
@@ -342,32 +342,32 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      <div className="text-sm text-gray-700 space-y-2">
+      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
         {event.groupName && (
           <div className="flex gap-2">
-            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '主辦團體' : 'Hosted by'}</span>
+            <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦團體' : 'Hosted by'}</span>
             <span className="text-indigo-600 font-medium">👥 {event.groupName}</span>
           </div>
         )}
         {(event as any).createdByEmail && (
           <div className="flex gap-2">
-            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '主辦人' : 'Host'}</span>
+            <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦人' : 'Host'}</span>
             <span>{(event as any).createdByEmail}</span>
           </div>
         )}
         <div className="flex gap-2">
-          <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '時間' : 'Time'}</span>
+            <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '時間' : 'Time'}</span>
           <span>{startDate} ({event.timezone})</span>
         </div>
         {location && (
           <div className="flex gap-2">
-            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '地點' : 'Location'}</span>
+            <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '地點' : 'Location'}</span>
             <span>{location}</span>
           </div>
         )}
         {location && <EventMap location={location} title={title} />}
         <div className="flex gap-2">
-          <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '費用' : 'Price'}</span>
+            <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '費用' : 'Price'}</span>
           <span>{fee}</span>
         </div>
         {event.commentsEnabled === false && (
@@ -386,13 +386,13 @@ export default function EventDetailPage() {
 
       {description && (
         <div>
-          <p className="text-sm font-medium text-gray-400 mb-1">{zh ? '活動說明' : 'Description'}</p>
-          <p className="text-gray-800 whitespace-pre-wrap text-sm">{description}</p>
+          <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mb-1">{zh ? '活動說明' : 'Description'}</p>
+          <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap text-sm">{description}</p>
         </div>
       )}
 
       {/* RSVP counts */}
-      <div className="flex items-center gap-4 text-sm text-gray-500">
+      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
         <span>✓ {event.rsvpCounts.GOING} {zh ? '參加' : 'Going'}</span>
         <span>? {event.rsvpCounts.MAYBE} {zh ? '也許' : 'Maybe'}</span>
         <span>✕ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
@@ -413,7 +413,7 @@ export default function EventDetailPage() {
                 loadGuests();
               }
             }}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-indigo-400 transition"
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
@@ -434,7 +434,7 @@ export default function EventDetailPage() {
                   loadInvitees();
                 }
               }}
-              className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-purple-400 transition"
+              className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-purple-400 transition"
             >
               {zh ? '受邀名單' : 'Invitees'}
             </button>
@@ -442,7 +442,7 @@ export default function EventDetailPage() {
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             {zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}
           </p>
           <button
@@ -454,7 +454,7 @@ export default function EventDetailPage() {
                 loadGuests();
               }
             }}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-white text-gray-700 border-gray-300 hover:border-indigo-400 transition"
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
@@ -463,9 +463,9 @@ export default function EventDetailPage() {
 
       {/* Guest list panel */}
       {showGuests && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
             {/* tab header */}
-            <div className="flex border-b border-gray-100">
+            <div className="flex border-b border-gray-100 dark:border-gray-800">
               {(['GOING', 'MAYBE', 'NO'] as const).map((s) => {
                 const labels = {
                   GOING: zh ? '參加' : 'Going',
@@ -478,8 +478,8 @@ export default function EventDetailPage() {
                     onClick={() => setActiveGuestTab(s)}
                     className={`flex-1 py-2.5 text-xs font-medium transition ${
                       activeGuestTab === s
-                        ? 'text-indigo-600 border-b-2 border-indigo-600 -mb-px'
-                        : 'text-gray-400 hover:text-gray-600'
+                        ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 -mb-px'
+                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                   >
                     {labels[s]} ({event.rsvpCounts[s]})
@@ -489,7 +489,7 @@ export default function EventDetailPage() {
             </div>
 
             {/* guest rows */}
-            <div className="divide-y divide-gray-50 max-h-52 overflow-y-auto">
+            <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-52 overflow-y-auto">
               {guestsLoading ? (
                 <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
               ) : (guests?.[activeGuestTab] ?? []).length === 0 ? (
@@ -502,7 +502,7 @@ export default function EventDetailPage() {
                     <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                       {(g.displayName ?? g.handle).charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm text-gray-800">
+                      <span className="text-sm text-gray-800 dark:text-gray-200">
                       {g.displayName ?? g.handle}
                     </span>
                   </div>
@@ -514,11 +514,11 @@ export default function EventDetailPage() {
 
       {/* Invitees panel (admin only) */}
       {showInvitees && user?.role === 'ADMIN' && (
-        <div className="bg-white rounded-xl border border-purple-100 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-purple-50">
-            <h3 className="text-sm font-semibold text-purple-700">{zh ? '受邀名單' : 'Invitees'}</h3>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-100 dark:border-purple-900/50 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-purple-50 dark:border-purple-900/30">
+            <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300">{zh ? '受邀名單' : 'Invitees'}</h3>
           </div>
-          <div className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
+          <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-64 overflow-y-auto">
             {inviteesLoading ? (
               <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
             ) : invitees.length === 0 ? (
@@ -530,8 +530,8 @@ export default function EventDetailPage() {
                     {(inv.guestName ?? inv.displayName ?? '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 truncate">{inv.guestName ?? inv.displayName ?? (zh ? '未知' : 'Unknown')}</p>
-                    {inv.email && <p className="text-xs text-gray-400 truncate">{inv.email}</p>}
+                    <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{inv.guestName ?? inv.displayName ?? (zh ? '未知' : 'Unknown')}</p>
+                    {inv.email && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{inv.email}</p>}
                   </div>
                   {inv.acceptedAt ? (
                     <span className="text-xs text-green-600 shrink-0">{zh ? '已接受' : 'Accepted'}</span>
@@ -547,26 +547,26 @@ export default function EventDetailPage() {
 
       {/* Send Message Blast (admin only) */}
       {user?.role === 'ADMIN' && (
-        <section className="border border-dashed border-indigo-200 rounded-xl p-5 bg-indigo-50/40">
-          <h2 className="text-lg font-semibold mb-1">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
-          <p className="text-sm text-gray-500 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>
+        <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
+          <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700">{zh ? '訊息' : 'Message'}</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{zh ? '訊息' : 'Message'}</label>
               <textarea
                 value={blastMsg}
                 onChange={(e) => setBlastMsg(e.target.value)}
                 rows={3}
                 placeholder={zh ? '您的訊息（中英文相同）…' : 'Your message (used for both English and Chinese)…'}
-                className="w-full border rounded-md px-3 py-2 text-sm"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">{zh ? '發送方式' : 'Send via'}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送方式' : 'Send via'}</p>
               <div className="flex gap-3">
                 {(['EMAIL', 'SMS'] as const).map((ch) => (
                   <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
-                    blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'
+                    blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
                     {ch === 'EMAIL' ? '✉️ Email' : '💬 SMS'}
@@ -575,11 +575,11 @@ export default function EventDetailPage() {
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">{zh ? '發送對象' : 'Send to'}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送對象' : 'Send to'}</p>
               <div className="flex gap-3">
                 {([['rsvped', zh ? '已回覆的用戶' : 'RSVPed only'], ['all', zh ? '全部用戶' : 'All users']] as const).map(([val, label]) => (
                   <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
-                    blastAudience === val ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200 bg-white'
+                    blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="radio" name="blastAudience" className="sr-only" checked={blastAudience === val} onChange={() => setBlastAudience(val)} />
                     {label}
@@ -606,7 +606,7 @@ export default function EventDetailPage() {
 
       {/* Comments */}
       <section>
-        <h2 className="text-lg font-semibold mb-3">{zh ? '留言' : 'Comments'}</h2>
+        <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '留言' : 'Comments'}</h2>
 
         {event.commentsEnabled === false ? (
           <p className="text-sm text-gray-400 italic mb-4">{zh ? '此活動已關閉留言功能。' : 'Comments are disabled for this event.'}</p>
@@ -616,7 +616,7 @@ export default function EventDetailPage() {
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder={zh ? '寫下留言…' : 'Write a comment…'}
-              className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <button
               type="submit"
@@ -628,7 +628,7 @@ export default function EventDetailPage() {
         )}
 
         {comments.length === 0 && (
-          <p className="text-sm text-gray-400">{zh ? '目前沒有留言。' : 'No comments yet.'}</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有留言。' : 'No comments yet.'}</p>
         )}
 
         <div className="flex flex-col gap-3">
@@ -641,9 +641,9 @@ export default function EventDetailPage() {
             return (
               <div key={c.id}>
                 {/* Main comment */}
-                <div className="bg-white rounded-lg p-3 shadow-sm">
+                <div className="bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-800">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-xs text-gray-400 mt-0.5">{c.userHandle}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{c.userHandle}</p>
                     {(canEdit || canDelete) && (
                       <div className="flex items-center gap-1 shrink-0">
                         {canEdit && !isEditing && (
@@ -675,7 +675,7 @@ export default function EventDetailPage() {
                         value={editCommentBody}
                         onChange={(e) => setEditCommentBody(e.target.value)}
                         rows={2}
-                        className="w-full border rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                       <div className="flex gap-2">
                         <button
@@ -693,10 +693,10 @@ export default function EventDetailPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-800 mt-1">{c.body}</p>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 mt-1">{c.body}</p>
                   )}
                   <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
                       {new Date(c.createdAt).toLocaleString()}
                     </p>
                     {user && (
@@ -769,10 +769,10 @@ export default function EventDetailPage() {
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center">{zh ? '活動分享連結' : 'Event Share Link'}</h3>
-            <div className="bg-gray-100 rounded-lg p-4 mb-4 break-all">
-              <p className="text-sm font-mono text-indigo-600">{inviteLink}</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-center dark:text-white">{zh ? '活動分享連結' : 'Event Share Link'}</h3>
+            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4 break-all">
+              <p className="text-sm font-mono text-indigo-600 dark:text-indigo-400">{inviteLink}</p>
             </div>
             <div className="flex gap-3">
               <button

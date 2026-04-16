@@ -227,12 +227,12 @@ export class GroupsService {
               groupId,
               userId: targetUser.id,
               status: 'PENDING',
-              role: item.role ?? 'MEMBER',
+              role: item.role ?? 'GROUP_MEMBER',
               invitedByPlatformAdminId: user.id,
             },
             update: {
               status: 'PENDING',
-              role: item.role ?? 'MEMBER',
+              role: item.role ?? 'GROUP_MEMBER',
               invitedByPlatformAdminId: user.id,
               joinedAt: null,
             },
@@ -348,7 +348,7 @@ export class GroupsService {
           groupId: invite.groupId,
           userId: user.id,
           status: 'ACCEPTED',
-          role: existing?.role ?? 'MEMBER',
+          role: existing?.role ?? 'GROUP_MEMBER',
           joinedAt: new Date(),
         },
         update: {
@@ -444,7 +444,7 @@ export class GroupsService {
         create: {
           groupId: req.groupId,
           userId: req.requesterUserId,
-          role: 'MEMBER',
+          role: 'GROUP_MEMBER',
           status: 'ACCEPTED',
           joinedAt: new Date(),
         },
@@ -458,7 +458,7 @@ export class GroupsService {
     });
   }
 
-  async changeMemberRole(groupId: string, memberUserId: string, role: 'GROUP_ADMIN' | 'MEMBER', user: User) {
+  async changeMemberRole(groupId: string, memberUserId: string, role: 'GROUP_ADMIN' | 'GROUP_MEMBER', user: User) {
     await this.assertCanManageGroupSettings(groupId, user);
     await this.ensureGroupExists(groupId);
 
@@ -495,7 +495,7 @@ export class GroupsService {
         groupId,
         userId: memberUserId,
         status: 'REMOVED',
-        role: 'MEMBER',
+        role: 'GROUP_MEMBER',
       },
       update: {
         status: 'REMOVED',
@@ -775,7 +775,7 @@ export class GroupsService {
       }
       await this.prisma.groupMembership.upsert({
         where: { groupId_userId: { groupId, userId: targetUser.id } },
-        create: { groupId, userId: targetUser.id, status: 'ACCEPTED', role: 'MEMBER', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
+        create: { groupId, userId: targetUser.id, status: 'ACCEPTED', role: 'GROUP_MEMBER', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
         update: { status: 'ACCEPTED', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
       });
       results.push({ identifier: id, status: 'added' });

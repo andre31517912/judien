@@ -29,16 +29,16 @@ export default function ConfirmModal({
 
       {/* dialog */}
       <div
-        className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6 flex flex-col gap-4"
+        className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-sm w-full mx-4 p-6 flex flex-col gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-600">{message}</p>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p>
 
         <div className="flex gap-3 justify-end pt-1">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 transition"
+            className="px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
           >
             {cancelLabel}
           </button>

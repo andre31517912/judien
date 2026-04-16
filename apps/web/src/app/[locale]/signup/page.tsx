@@ -35,20 +35,20 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
 
   const field = (label: string, key: keyof typeof form, type = 'text') => (
     <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
+      <label className="block text-sm font-medium mb-1 dark:text-gray-300">{label}</label>
       <input
         type={type}
         value={form[key] as string}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         required
-        className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       />
     </div>
   );
 
   return (
     <div className="max-w-md mx-auto mt-12">
-      <h1 className="text-2xl font-bold mb-6">{zh ? '註冊' : 'Sign Up'}</h1>
+      <h1 className="text-2xl font-bold mb-6 dark:text-white">{zh ? '註冊' : 'Sign Up'}</h1>
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {field(zh ? '顯示名稱（暱稱）' : 'Display Name (nickname)', 'displayName')}
@@ -63,7 +63,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
           {loading ? '…' : (zh ? '建立帳號' : 'Create Account')}
         </button>
       </form>
-      <p className="mt-4 text-sm text-gray-600">
+      <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         {zh ? '已有帳號？' : 'Already have an account?'}{' '}
         <Link href={`/${params.locale}/login`} className="text-indigo-600 underline">
           {zh ? '登入' : 'Log In'}

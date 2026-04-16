@@ -5,7 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
-import type { Event, EventWithCounts, GroupMessage, News, PaginatedResponse } from '@judien/shared';
+import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -18,7 +18,7 @@ type MyGroupItem = {
     memberDataPrivate: boolean;
   };
   membership: {
-    role: 'GROUP_ADMIN' | 'MEMBER';
+    role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
     status: 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'REMOVED';
     joinedAt: string | null;
   };
@@ -27,7 +27,7 @@ type MyGroupItem = {
 type GroupMember = {
   userId: string;
   displayName: string | null;
-  role: 'GROUP_ADMIN' | 'MEMBER';
+  role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
   joinedAt: string | null;
   email: string | null;
   phoneE164: string | null;
@@ -62,9 +62,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
-  const [messages, setMessages] = useState<GroupMessage[]>([]);
-  const [chatBody, setChatBody] = useState('');
-  const [chatSending, setChatSending] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -74,7 +71,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   // GROUP_ADMIN: invite form
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
+  const [inviteRole, setInviteRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
   const [inviteLoading, setInviteLoading] = useState(false);
 
   // GROUP_ADMIN: news post form
@@ -100,13 +97,17 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   // Active tab for the management area (GROUP_ADMIN only)
   const [adminTab, setAdminTab] = useState<'invite' | 'news' | 'event' | 'requests'>('invite');
 
-  // Main view tabs (Facebook Group style)
-  type ViewTab = 'feed' | 'upcoming' | 'past' | 'chat' | 'members';
+  // Main view tabs
+  type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
   const [viewTab, setViewTab] = useState<ViewTab>('feed');
   const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
   const [pastLoaded, setPastLoaded] = useState(false);
   const [pastLoading, setPastLoading] = useState(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
+
+  // Inline edit state for news
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', body: '' });
+  const [editSaving, setEditSaving] = useState(false);
 
   type SubgroupInfo = { id: string; name: string; description: string };
   type RelationshipsData = {
@@ -147,10 +148,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
-      const messageRes = await apiFetch<PaginatedResponse<GroupMessage>>(
-        `/groups/${params.groupId}/messages?page=1&pageSize=100`,
-      ).catch(() => ({ data: [] as GroupMessage[] } as PaginatedResponse<GroupMessage>));
-      setMessages(messageRes.data);
 
       // GROUP_ADMIN: also load pending invites and join requests
       if (current?.membership.role === 'GROUP_ADMIN') {
@@ -196,16 +193,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewTab]);
 
-  useEffect(() => {
-    if (viewTab === 'chat' && chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, viewTab]);
-
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccess('');
     setError('');
+    if (!inviteEmail.trim() && !invitePhone.trim()) {
+      setError(zh ? '請輸入 email 或電話號碼。' : 'Please provide an email or phone number.');
+      return;
+    }
     setInviteLoading(true);
     try {
       const payload: Record<string, unknown> = { role: inviteRole };
@@ -217,7 +212,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       });
       setInviteEmail('');
       setInvitePhone('');
-      setInviteRole('MEMBER');
+      setInviteRole('GROUP_MEMBER');
       setSuccess(zh ? '邀請已送出。' : 'Invitation sent.');
       await loadPage();
     } catch (err: unknown) {
@@ -231,6 +226,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     e.preventDefault();
     setSuccess('');
     setError('');
+    if (!newsForm.title.trim()) { setError(zh ? '請輸入標題。' : 'Title is required.'); return; }
+    if (!newsForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Body is required.'); return; }
     setNewsLoading(true);
     try {
       await apiFetch('/news', {
@@ -257,6 +254,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     e.preventDefault();
     setSuccess('');
     setError('');
+    if (!eventForm.title.trim()) { setError(zh ? '請輸入活動名稱。' : 'Event title is required.'); return; }
+    if (!eventForm.startAt) { setError(zh ? '請選擇開始時間。' : 'Start time is required.'); return; }
     setEventLoading(true);
     try {
       let coverImageUrl: string | null = null;
@@ -264,7 +263,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         const uploaded = await apiUpload(coverFile);
         coverImageUrl = uploaded.url;
       }
-      await apiFetch<Event>('/events', {
+      await apiFetch<EventWithCounts>('/events', {
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
@@ -322,29 +321,40 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatBody.trim()) return;
-    setChatSending(true);
+  const handleUpdateNews = async (id: string) => {
+    if (!editForm.title.trim()) { setError(zh ? '請輸入標題。' : 'Title is required.'); return; }
+    if (!editForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Body is required.'); return; }
+    setEditSaving(true);
     setError('');
     try {
-      const created = await apiFetch<GroupMessage>(`/groups/${params.groupId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ body: chatBody.trim() }),
+      await apiFetch(`/news/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          title_en: editForm.title, title_zh: editForm.title,
+          body_en: editForm.body, body_zh: editForm.body,
+        }),
       });
-      setMessages((prev) => [...prev, created]);
-      setChatBody('');
+      setEditingId(null);
+      await loadPage();
     } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to send message.');
+      setError((err as Error).message ?? 'Failed to update post.');
     } finally {
-      setChatSending(false);
+      setEditSaving(false);
     }
   };
 
-  const handleRemoveMember = async (memberUserId: string) => {
-    if (!confirm(zh ? '確定要移除此成員嗎？' : 'Remove this member?')) return;
-    setSuccess('');
+  const handleDeleteGroupNews = async (id: string) => {
+    if (!confirm(zh ? '確定要刪除此公告嗎？' : 'Delete this post?')) return;
     setError('');
+    try {
+      await apiFetch(`/news/${id}`, { method: 'DELETE' });
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to delete post.');
+    }
+  };
+
+  const handleRemoveMember
     try {
       await apiFetch(`/groups/${params.groupId}/members/${memberUserId}`, { method: 'DELETE' });
       setSuccess(zh ? '成員已移除。' : 'Member removed.');
@@ -354,8 +364,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
-  const handleChangeRole = async (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'MEMBER') => {
-    const newRole = currentRole === 'GROUP_ADMIN' ? 'MEMBER' : 'GROUP_ADMIN';
+  const handleChangeRole = async (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'GROUP_MEMBER') => {
+    const newRole = currentRole === 'GROUP_ADMIN' ? 'GROUP_MEMBER' : 'GROUP_ADMIN';
     const label = newRole === 'GROUP_ADMIN'
       ? (zh ? '確定要將此成員升為管理員嗎？' : 'Promote this member to Group Admin?')
       : (zh ? '確定要將此管理員降為成員嗎？' : 'Demote this admin to Member?');
@@ -406,49 +416,43 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     { key: 'feed',     label: 'Feed',    labelZh: '動態' },
     { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
     { key: 'past',     label: 'Past',    labelZh: '過去活動' },
-    { key: 'chat',     label: 'Chat',    labelZh: '聊天室' },
     { key: 'members',  label: 'Members', labelZh: '成員' },
   ];
 
   return (
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
-      <div className="border-b border-gray-200 bg-white px-4 pb-0 pt-6 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-0 pt-6 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
-            <Link href={`/${params.locale}/groups`} className="text-xs text-gray-400 hover:text-gray-600">
+            <Link href={`/${params.locale}/groups`} className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               ← {zh ? '所有群組' : 'All Groups'}
             </Link>
-            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">{group.name}</h1>
-            {/* Hierarchy breadcrumb */}
+            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             {relationships?.lineage && relationships.lineage.length > 1 && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
                 {relationships.lineage.map((n, i) => (
                   <span key={n.id}>
-                    {i > 0 && <span className="mx-1 text-gray-300">›</span>}
+                    {i > 0 && <span className="mx-1 text-gray-300 dark:text-gray-600">›</span>}
                     <Link href={`/${params.locale}/groups/${n.id}`} className="hover:text-indigo-600">{n.name}</Link>
                   </span>
                 ))}
               </p>
             )}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isGroupAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}>
-                {isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
-              </span>
-              <span className="text-xs text-gray-400">{members.length} {zh ? '位成員' : 'members'}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
             </div>
           </div>
-          {/* Admin shortcut */}
           {isGroupAdmin && (
             <div className="flex items-center gap-2">
               {joinRequests.length > 0 && (
-                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                <span className="rounded-full bg-red-100 dark:bg-red-900/40 px-2 py-0.5 text-xs font-semibold text-red-700 dark:text-red-400">
                   {joinRequests.length} {zh ? '待審核' : 'pending'}
                 </span>
               )}
               <Link
                 href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
-                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+                className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
               >
                 ⚙️ {zh ? '群組設定' : 'Settings'}
               </Link>
@@ -456,8 +460,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           )}
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
-        {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
+        {error && <p className="mb-3 text-sm text-red-500 dark:text-red-400">{error}</p>}
+        {success && <p className="mb-3 text-sm text-green-600 dark:text-green-400">{success}</p>}
 
         {/* ── Tab bar ── */}
         <div className="flex overflow-x-auto">
@@ -467,8 +471,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               onClick={() => setViewTab(t.key)}
               className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
                 viewTab === t.key
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {zh ? t.labelZh : t.label}
@@ -484,22 +488,79 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {viewTab === 'feed' && (
           <div className="mx-auto max-w-2xl space-y-4">
             {news.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">📢</p>
-                <p className="mt-3 text-sm text-gray-400">{zh ? '目前沒有公告' : 'No announcements yet'}</p>
+                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有公告' : 'No announcements yet'}</p>
               </div>
-            ) : news.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900">{zh ? item.title_zh : item.title_en}</h3>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600">{zh ? item.body_zh : item.body_en}</p>
-                {item.createdAt && (
-                  <p className="mt-3 text-xs text-gray-400">
-                    {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
-                    {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
-                  </p>
-                )}
-              </div>
-            ))}
+            ) : news.map((item) => {
+              const canEdit = item.createdById === user.id || isGroupAdmin || user.role === 'ADMIN';
+              const isEditing = editingId === item.id;
+              return (
+                <div key={item.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
+                  {isEditing ? (
+                    <div className="space-y-3">
+                      <input
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        value={editForm.title}
+                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                        placeholder={zh ? '標題' : 'Title'}
+                      />
+                      <textarea
+                        rows={4}
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                        value={editForm.body}
+                        onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
+                        placeholder={zh ? '內容' : 'Body'}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                        >
+                          {zh ? '取消' : 'Cancel'}
+                        </button>
+                        <button
+                          onClick={() => handleUpdateNews(item.id)}
+                          disabled={editSaving}
+                          className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition"
+                        >
+                          {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? item.title_zh : item.title_en}</h3>
+                        {canEdit && (
+                          <div className="flex shrink-0 items-center gap-2">
+                            <button
+                              onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
+                              className="rounded-md px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                            >
+                              {zh ? '編輯' : 'Edit'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteGroupNews(item.id)}
+                              className="rounded-md px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                            >
+                              {zh ? '刪除' : 'Delete'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{zh ? item.body_zh : item.body_en}</p>
+                      {item.createdAt && (
+                        <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+                          {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
+                          {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -507,29 +568,29 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {viewTab === 'upcoming' && (
           <div className="mx-auto max-w-2xl space-y-3">
             {events.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">📅</p>
-                <p className="mt-3 text-sm text-gray-400">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
+                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
               </div>
             ) : events.map((ev) => (
               <Link
                 key={ev.id}
                 href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-900">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-500">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? ev.title_zh : ev.title_en}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                     {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400">{zh ? ev.location_zh : ev.location_en}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
                     )}
-                    <p className="text-xs text-gray-400">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
                   {ev.feeAmount != null && ev.feeAmount > 0 && (
-                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                    <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                       {ev.feeAmount} {ev.feeCurrency}
                     </span>
                   )}
@@ -543,28 +604,28 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {viewTab === 'past' && (
           <div className="mx-auto max-w-2xl space-y-3">
             {pastLoading ? (
-              <p className="py-16 text-center text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+              <p className="py-16 text-center text-sm text-gray-400 dark:text-gray-500">{zh ? '載入中…' : 'Loading…'}</p>
             ) : pastEvents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">🕐</p>
-                <p className="mt-3 text-sm text-gray-400">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
+                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
               </div>
             ) : pastEvents.map((ev) => (
               <Link
                 key={ev.id}
                 href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 bg-white p-5 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
+                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-600">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-400">
+                    <h3 className="font-semibold text-gray-600 dark:text-gray-300">{zh ? ev.title_zh : ev.title_en}</h3>
+                    <p className="text-sm text-gray-400 dark:text-gray-500">
                       {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                     </p>
                     {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400">{zh ? ev.location_zh : ev.location_en}</p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
                     )}
-                    <p className="text-xs text-gray-400">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
                 </div>
               </Link>
@@ -572,75 +633,36 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           </div>
         )}
 
-        {/* Chat */}
-        {viewTab === 'chat' && (
-          <div className="mx-auto max-w-2xl">
-            <div className="mb-4 max-h-[480px] min-h-[240px] space-y-2 overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-4">
-              {messages.length === 0 ? (
-                <p className="pt-10 text-center text-sm text-gray-400">{zh ? '聊天室目前沒有訊息' : 'No messages yet. Start the conversation!'}</p>
-              ) : messages.map((msg) => {
-                const mine = msg.userId === user.id;
-                return (
-                  <div key={msg.id} className={`max-w-[80%] rounded-2xl px-4 py-2 ${mine ? 'ml-auto bg-indigo-600 text-white' : 'bg-white text-gray-800 shadow-sm'}`}>
-                    <p className={`text-[11px] font-medium ${mine ? 'text-indigo-200' : 'text-gray-400'}`}>{msg.userHandle}</p>
-                    <p className="mt-0.5 whitespace-pre-wrap text-sm">{msg.body}</p>
-                    <p className={`mt-1 text-[10px] ${mine ? 'text-indigo-300' : 'text-gray-400'}`}>
-                      {new Date(msg.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
-                    </p>
-                  </div>
-                );
-              })}
-              <div ref={chatBottomRef} />
-            </div>
-            <form onSubmit={handleSendMessage} className="flex gap-2">
-              <input
-                value={chatBody}
-                onChange={(e) => setChatBody(e.target.value)}
-                placeholder={zh ? '輸入訊息…' : 'Type a message...'}
-                className="flex-1 rounded-full border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              />
-              <button
-                type="submit"
-                disabled={chatSending || !chatBody.trim()}
-                className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-              >
-                {chatSending ? '…' : (zh ? '送出' : 'Send')}
-              </button>
-            </form>
-          </div>
-        )}
-
         {/* Members */}
         {viewTab === 'members' && (
           <div className="mx-auto max-w-2xl space-y-2">
             {group.memberDataPrivate && !isGroupAdmin ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">🔒</p>
-                <p className="mt-3 text-sm text-gray-400">{zh ? '此群組成員資料為私人' : 'Member directory is private'}</p>
+                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '此群組成員資料為私人' : 'Member directory is private'}</p>
               </div>
             ) : members.map((member) => (
-              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
-                  <p className="font-medium text-gray-900">{member.displayName || (member.email ?? member.userId)}</p>
-                  <p className="text-xs text-gray-500">
-                    {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
-                    {member.joinedAt ? ` · ${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                  <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
                   </p>
                   {isGroupAdmin && (member.email || member.phoneE164) && (
-                    <p className="text-xs text-gray-400">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
                   )}
                 </div>
                 {isGroupAdmin && member.userId !== user.id && (
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleChangeRole(member.userId, member.role)}
-                      className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
+                      className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
                     >
                       {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
                     </button>
                     <button
                       onClick={() => handleRemoveMember(member.userId)}
-                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition"
+                      className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
                     >
                       {zh ? '移除' : 'Remove'}
                     </button>
@@ -648,7 +670,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 )}
               </div>
             ))}
-            <p className="pt-2 text-center text-xs text-gray-400">{members.length} {zh ? '位成員' : 'members'}</p>
+            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</p>
           </div>
         )}
 

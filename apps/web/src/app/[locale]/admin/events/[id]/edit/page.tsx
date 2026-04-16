@@ -12,12 +12,12 @@ const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'),
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-const inp = 'w-full border rounded-md px-3 py-2 text-sm';
+const inp = 'w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1 text-gray-700">{label}</label>
+      <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{label}</label>
       {children}
     </div>
   );
@@ -197,10 +197,10 @@ export default function EditEventPage({ params }: { params: { locale: string; id
       )}
 
       {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
         <a
           href={`/${params.locale}/events/${params.id}`}
-          className="text-sm text-gray-500 hover:text-gray-800 flex items-center gap-1 mr-2"
+          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 mr-2"
         >
           ← {zh ? '返回' : 'Back'}
         </a>
@@ -224,7 +224,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
       {/* ── Edit form ───────────────────────────────────────────────────────── */}
       <section>
-        <h1 className="text-2xl font-bold mb-3">{zh ? '編輯活動' : 'Edit Event'}</h1>
+        <h1 className="text-2xl font-bold mb-3 dark:text-white">{zh ? '編輯活動' : 'Edit Event'}</h1>
         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         {saved && <p className="text-green-600 text-sm mb-4">✓ Changes saved.</p>}
 
@@ -261,23 +261,23 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
               <input
                 type="checkbox"
                 checked={commentsEnabled}
                 onChange={(e) => setCommentsEnabled(e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
-              <span className="text-sm font-medium text-gray-700">{zh ? '開放留言' : 'Comments enabled'}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '開放留言' : 'Comments enabled'}</span>
             </label>
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+            <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
               <input
                 type="checkbox"
                 checked={messagingEnabled}
                 onChange={(e) => setMessagingEnabled(e.target.checked)}
                 className="w-4 h-4 text-indigo-600 rounded"
               />
-              <span className="text-sm font-medium text-gray-700">{zh ? '開放訊息' : 'Messaging enabled'}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '開放訊息' : 'Messaging enabled'}</span>
             </label>
           </div>
           <Field label="Cover Photo">
@@ -306,7 +306,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             )}
             <div
               onClick={() => coverFileRef.current?.click()}
-              className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer flex items-center justify-center gap-2 text-gray-400 text-sm transition"
+              className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 text-sm transition"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -321,8 +321,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
       {/* ── Automatic reminders ─────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-xl font-semibold mb-1">Automatic Reminders</h2>
-        <p className="text-sm text-gray-500 mb-4">Sent automatically to RSVPed users before the event.</p>
+        <h2 className="text-xl font-semibold mb-1 dark:text-white">Automatic Reminders</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Sent automatically to RSVPed users before the event.</p>
 
         {/* Preset buttons */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -332,7 +332,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <button
                 key={p.minutes}
                 onClick={() => active ? removeReminder(reminders.findIndex((r) => r.offsetMinutes === p.minutes)) : addPresetReminder(p.minutes)}
-                className={`text-sm px-3 py-1.5 rounded-full border transition ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-300 hover:border-indigo-400'}`}
+                className={`text-sm px-3 py-1.5 rounded-full border transition ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400'}`}
               >
                 {active ? '✓ ' : '+ '}{p.label}
               </button>
@@ -341,11 +341,11 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         </div>
 
         {reminders.length === 0 && (
-          <p className="text-sm text-gray-400 mb-4">No reminders set. Click a preset above to add one.</p>
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">No reminders set. Click a preset above to add one.</p>
         )}
 
         {reminders.map((r, i) => (
-          <div key={i} className="flex items-center gap-4 bg-gray-50 rounded-lg px-4 py-3 mb-2">
+          <div key={i} className="flex items-center gap-4 bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 mb-2">
             <span className="text-sm font-medium w-36">{minutesToLabel(r.offsetMinutes)}</span>
             <label className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={r.channels.includes('EMAIL')}

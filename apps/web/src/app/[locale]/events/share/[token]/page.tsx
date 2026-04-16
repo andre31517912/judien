@@ -147,7 +147,7 @@ export default function SharedEventPage() {
       className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
         event.myRsvp === status
           ? 'bg-indigo-600 text-white border-indigo-600'
-          : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+          : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400'
       } disabled:opacity-50`}
     >
       {label}
@@ -157,10 +157,10 @@ export default function SharedEventPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <Link href={`/${locale}/events`} className="text-sm text-gray-500 hover:text-gray-800">
+        <Link href={`/${locale}/events`} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
           ← {zh ? '返回活動' : 'Back to Events'}
         </Link>
-        <button onClick={copyLink} className="text-sm rounded-md border px-3 py-1.5 hover:bg-gray-50">
+        <button onClick={copyLink} className="text-sm rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
           {copied ? (zh ? '已複製' : 'Copied') : (zh ? '複製分享連結' : 'Copy Share Link')}
         </button>
       </div>
@@ -171,19 +171,19 @@ export default function SharedEventPage() {
       ) : null}
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-        {event.groupName ? <p className="mt-1 text-sm text-indigo-700">{event.groupName}</p> : null}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
+        {event.groupName ? <p className="mt-1 text-sm text-indigo-700 dark:text-indigo-400">{event.groupName}</p> : null}
       </div>
 
-      <div className="text-sm text-gray-700 space-y-1">
+      <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
         <p>{new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US')}</p>
         {location ? <p>{location}</p> : null}
       </div>
 
-      {description ? <p className="text-sm text-gray-700 whitespace-pre-wrap">{description}</p> : null}
+      {description ? <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{description}</p> : null}
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-        <div className="flex items-center gap-4 text-sm text-gray-600">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-3">
+        <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <span>✓ {event.rsvpCounts.GOING} {zh ? '參加' : 'Going'}</span>
           <span>? {event.rsvpCounts.MAYBE} {zh ? '也許' : 'Maybe'}</span>
           <span>✕ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
@@ -195,19 +195,19 @@ export default function SharedEventPage() {
               value={guest.name}
               onChange={(e) => setGuest((prev) => ({ ...prev, name: e.target.value }))}
               placeholder={zh ? '姓名' : 'Name'}
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <input
               value={guest.phoneE164}
               onChange={(e) => setGuest((prev) => ({ ...prev, phoneE164: e.target.value }))}
               placeholder={zh ? '電話 (+886...)' : 'Phone (+886...)'}
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <input
               value={guest.email}
               onChange={(e) => setGuest((prev) => ({ ...prev, email: e.target.value }))}
               placeholder={zh ? '電子郵件' : 'Email'}
-              className="rounded-md border px-3 py-2 text-sm"
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
         )}
@@ -222,20 +222,20 @@ export default function SharedEventPage() {
       </div>
 
       {guests && (
-        <div className="rounded-xl border border-gray-100 bg-white p-4">
-          <h2 className="text-sm font-semibold text-gray-800 mb-3">{zh ? '出席名單' : 'Attendance'}</h2>
+        <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
+          <h2 className="text-sm font-semibold text-gray-800 dark:text-white mb-3">{zh ? '出席名單' : 'Attendance'}</h2>
           <div className="grid gap-3 md:grid-cols-3">
             {(['GOING', 'MAYBE', 'NO'] as const).map((status) => (
-              <div key={status} className="rounded-lg border border-gray-100 p-3">
-                <p className="text-xs font-semibold text-gray-500 mb-2">
+              <div key={status} className="rounded-lg border border-gray-100 dark:border-gray-800 p-3">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
                   {status === 'GOING' ? (zh ? '參加' : 'Going') : status === 'MAYBE' ? (zh ? '也許' : 'Maybe') : (zh ? '不參加' : 'Not Going')}
                 </p>
                 {(guests[status] ?? []).length === 0 ? (
-                  <p className="text-xs text-gray-400">{zh ? '尚無' : 'None yet'}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '尚無' : 'None yet'}</p>
                 ) : (
                   <div className="space-y-1">
                     {guests[status].map((g, idx) => (
-                      <p key={`${status}-${idx}`} className="text-xs text-gray-700 truncate">
+                      <p key={`${status}-${idx}`} className="text-xs text-gray-700 dark:text-gray-300 truncate">
                         {g.displayName ?? g.handle}
                       </p>
                     ))}

@@ -22,7 +22,7 @@ type GroupListItem = {
     description: string;
   };
   membership: {
-    role: 'GROUP_ADMIN' | 'MEMBER';
+    role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
     status: 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'REMOVED';
     joinedAt: string | null;
   };
@@ -180,7 +180,6 @@ export default function GroupsTab() {
             <View style={styles.cardTopRow}>
               <Text style={styles.cardTitle}>{item.group.name}</Text>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{item.membership.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}</Text>
               </View>
             </View>
             <Text style={styles.pidText}>{item.group.pid}</Text>

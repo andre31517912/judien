@@ -17,18 +17,25 @@ export default function HomeTab() {
 
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [composing, setComposing] = useState(false);
   const [form, setForm] = useState({ title: '', body: '' });
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
-    apiFetch<News[]>('/news').then(setNews).finally(() => setLoading(false));
+    setLoadError('');
+    apiFetch<News[]>('/news')
+      .then(setNews)
+      .catch((err: unknown) => setLoadError((err as Error).message ?? 'Failed to load feed.'))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const handleCreate = async () => {
+    if (!form.title.trim()) { Alert.alert(zh ? '請輸入標題' : 'Title required', zh ? '標題不能為空。' : 'Please enter a title.'); return; }
+    if (!form.body.trim()) { Alert.alert(zh ? '請輸入內容' : 'Body required', zh ? '內容不能為空。' : 'Please enter some content.'); return; }
     setSaving(true);
     try {
       await apiFetch('/news', { method: 'POST', body: JSON.stringify({
@@ -51,8 +58,12 @@ export default function HomeTab() {
       {
         text: t('common.delete'), style: 'destructive',
         onPress: async () => {
-          await apiFetch(`/news/${id}`, { method: 'DELETE' });
-          load();
+          try {
+            await apiFetch(`/news/${id}`, { method: 'DELETE' });
+            load();
+          } catch (err: unknown) {
+            Alert.alert('Error', (err as Error).message ?? 'Failed to delete.');
+          }
         },
       },
     ]);
@@ -94,6 +105,13 @@ export default function HomeTab() {
       {!composing && (
         loading ? (
           <ActivityIndicator style={{ marginTop: 40 }} />
+        ) : loadError ? (
+          <View style={styles.empty}>
+            <Text style={[styles.emptyText, { color: '#EF4444' }]}>{loadError}</Text>
+            <TouchableOpacity onPress={load} style={{ marginTop: 12 }}>
+              <Text style={{ color: '#4F46E5', fontSize: 14 }}>{zh ? '重試' : 'Retry'}</Text>
+            </TouchableOpacity>
+          </View>
         ) : news.length === 0 ? (
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>🎉</Text>

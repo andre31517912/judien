@@ -86,7 +86,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
 
   return (
     <div className="max-w-xl mx-auto mt-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Create Event</h1>
+      <h1 className="text-2xl font-bold mb-6 dark:text-white">Create Event</h1>
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Field label="Title">
@@ -128,23 +128,23 @@ export default function NewEventPage({ params }: { params: { locale: string } })
 
         {/* Settings toggles */}
         <div className="grid grid-cols-2 gap-4">
-          <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
             <input
               type="checkbox"
               checked={form.commentsEnabled}
               onChange={(e) => setForm((f) => ({ ...f, commentsEnabled: e.target.checked }))}
               className="w-4 h-4 text-indigo-600 rounded"
             />
-            <span className="text-sm font-medium text-gray-700">Comments enabled</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Comments enabled</span>
           </label>
-          <label className="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 cursor-pointer hover:bg-gray-50">
+          <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
             <input
               type="checkbox"
               checked={form.messagingEnabled}
               onChange={(e) => setForm((f) => ({ ...f, messagingEnabled: e.target.checked }))}
               className="w-4 h-4 text-indigo-600 rounded"
             />
-            <span className="text-sm font-medium text-gray-700">Messaging enabled</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Messaging enabled</span>
           </label>
         </div>
 
@@ -152,7 +152,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         <Field label="Cover Photo (optional)">
           <div
             onClick={() => fileRef.current?.click()}
-            className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer overflow-hidden flex items-center justify-center transition"
+          className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
           >
             {coverPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -189,12 +189,12 @@ export default function NewEventPage({ params }: { params: { locale: string } })
   );
 }
 
-const inp = 'w-full border rounded-md px-3 py-2 text-sm';
+const inp = 'w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white';
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-1 text-gray-700">{label}</label>
+      <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{label}</label>
       {children}
     </div>
   );

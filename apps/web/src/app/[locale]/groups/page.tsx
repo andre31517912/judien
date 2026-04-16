@@ -13,7 +13,7 @@ type GroupListItem = {
     description: string;
   };
   membership: {
-    role: 'GROUP_ADMIN' | 'MEMBER';
+    role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
     status: 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'REMOVED';
     joinedAt: string | null;
   };
@@ -53,6 +53,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [joinMsg, setJoinMsg] = useState('');
+  const [joinSuccess, setJoinSuccess] = useState(false);
 
   const [respondingId, setRespondingId] = useState<string | null>(null);
 
@@ -109,10 +110,13 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
   const handleRequestJoin = async (groupId: string) => {
     setJoinMsg('');
+    setJoinSuccess(false);
     try {
       await apiFetch(`/groups/${groupId}/join-requests`, { method: 'POST', body: JSON.stringify({ message: '' }) });
+      setJoinSuccess(true);
       setJoinMsg(zh ? '加入申請已送出，等待管理員審核。' : 'Join request sent. Awaiting approval.');
     } catch (err: Error | unknown) {
+      setJoinSuccess(false);
       setJoinMsg((err as Error).message ?? 'Request failed.');
     }
   };
@@ -135,8 +139,8 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{zh ? '我的群組' : 'My Groups'}</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '我的群組' : 'My Groups'}</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {zh ? '查看您所屬的 Rotary 分組、回應邀請、申請加入新群組。' : 'View your Rotary groups, respond to invitations, and request to join new ones.'}
         </p>
       </div>
@@ -145,19 +149,19 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
       {/* Pending invitations */}
       {pendingInvites.length > 0 && (
-        <section className="rounded-2xl border border-amber-100 bg-amber-50 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-amber-900">
+        <section className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-amber-900 dark:text-amber-300">
             {zh ? `待處理邀請 (${pendingInvites.length})` : `Pending Invitations (${pendingInvites.length})`}
           </h2>
           <div className="space-y-3">
             {pendingInvites.map((inv) => (
-              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 bg-white px-4 py-3">
+              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-900 px-4 py-3">
                 <div>
-                  <p className="font-medium text-gray-900">{inv.group.name}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{inv.group.name}</p>
                   {inv.group.description && (
-                    <p className="mt-0.5 text-sm text-gray-500">{inv.group.description}</p>
+                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{inv.group.description}</p>
                   )}
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                     {zh ? '到期：' : 'Expires: '}
                     {new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
                   </p>
@@ -173,7 +177,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                   <button
                     onClick={() => handleRespondInvite(inv.token, false)}
                     disabled={respondingId === inv.token}
-                    className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
                   >
                     {zh ? '拒絕' : 'Decline'}
                   </button>
@@ -186,10 +190,10 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
       {/* My groups */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">{zh ? '我加入的群組' : 'Groups I Belong To'}</h2>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{zh ? '我加入的群組' : 'Groups I Belong To'}</h2>
         {memberGroups.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center">
-            <p className="text-sm text-gray-500">{zh ? '您尚未加入任何群組。' : "You haven't joined any groups yet."}</p>
+          <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '您尚未加入任何群組。' : "You haven't joined any groups yet."}</p>
           </div>
         ) : (
           <div className="grid gap-4">
@@ -197,23 +201,20 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
               <Link
                 key={group.id}
                 href={`/${params.locale}/groups/${group.id}`}
-                className="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h3>
                     </div>
                     {group.description && (
-                      <p className="text-sm text-gray-600">{group.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{group.description}</p>
                     )}
                   </div>
                   <div className="flex flex-col items-end gap-1 text-xs">
-                    <span className={`rounded-full px-2 py-0.5 font-medium ${membership.role === 'GROUP_ADMIN' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}>
-                      {membership.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
-                    </span>
                     {membership.joinedAt && (
-                      <span className="text-gray-400">
+                      <span className="text-gray-400 dark:text-gray-500">
                         {zh ? '加入於 ' : 'Joined '}
                         {new Date(membership.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
                       </span>
@@ -227,9 +228,9 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
       </section>
 
       {/* Search & request to join */}
-      <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900">{zh ? '搜尋並申請加入群組' : 'Search & Request to Join'}</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '搜尋並申請加入群組' : 'Search & Request to Join'}</h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {zh ? '搜尋可加入的公開群組，並送出加入申請。' : 'Find a public group and send a join request.'}
         </p>
         <form onSubmit={handleSearch} className="mt-4 flex gap-3">
@@ -237,7 +238,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={zh ? '輸入群組名稱…' : 'Search by group name…'}
-            className="flex-1 rounded-md border px-3 py-2 text-sm"
+            className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
           <button
             type="submit"
@@ -249,7 +250,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
         </form>
 
         {joinMsg && (
-          <p className={`mt-3 text-sm ${joinMsg.includes('sent') || joinMsg.includes('送出') ? 'text-green-600' : 'text-red-500'}`}>
+          <p className={`mt-3 text-sm ${joinSuccess ? 'text-green-600' : 'text-red-500'}`}>
             {joinMsg}
           </p>
         )}
@@ -259,10 +260,10 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
             {searchResults.map((result) => {
               const alreadyMember = groups.some((g) => g.group.id === result.id);
               return (
-                <div key={result.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                <div key={result.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
                   <div>
-                    <p className="font-medium text-gray-900">{result.name}</p>
-                    {result.description && <p className="mt-0.5 text-sm text-gray-500">{result.description}</p>}
+                    <p className="font-medium text-gray-900 dark:text-white">{result.name}</p>
+                    {result.description && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{result.description}</p>}
                   </div>
                   {alreadyMember ? (
                     <span className="text-xs text-green-600">{zh ? '已加入' : 'Already a member'}</span>
@@ -281,7 +282,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
         )}
 
         {searchResults.length === 0 && searchQuery && !searchLoading && (
-          <p className="mt-4 text-sm text-gray-400">{zh ? '未找到符合的群組。' : 'No groups found.'}</p>
+          <p className="mt-4 text-sm text-gray-400 dark:text-gray-500">{zh ? '未找到符合的群組。' : 'No groups found.'}</p>
         )}
       </section>
     </div>

@@ -114,7 +114,7 @@ export class AuthService {
       });
       await tx.groupMembership.upsert({
         where: { groupId_userId: { groupId: invite.groupId, userId: user!.id } },
-        create: { groupId: invite.groupId, userId: user!.id, status: 'ACCEPTED', role: 'MEMBER', joinedAt: new Date() },
+        create: { groupId: invite.groupId, userId: user!.id, status: 'ACCEPTED', role: 'GROUP_MEMBER', joinedAt: new Date() },
         update: { status: 'ACCEPTED', joinedAt: new Date() },
       });
     });

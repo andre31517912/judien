@@ -24,7 +24,7 @@ type GroupListItem = {
     memberDataPrivate: boolean;
   };
   membership: {
-    role: 'GROUP_ADMIN' | 'MEMBER';
+    role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
     status: 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'REMOVED';
     joinedAt: string | null;
   };
@@ -33,7 +33,7 @@ type GroupListItem = {
 type GroupMember = {
   userId: string;
   displayName: string | null;
-  role: 'GROUP_ADMIN' | 'MEMBER';
+  role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
   joinedAt: string | null;
   email: string | null;
   phoneE164: string | null;
@@ -170,9 +170,9 @@ export default function GroupDetailScreen() {
     );
   };
 
-  const changeMemberRole = (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'MEMBER') => {
+  const changeMemberRole = (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'GROUP_MEMBER') => {
     if (!groupId) return;
-    const newRole = currentRole === 'GROUP_ADMIN' ? 'MEMBER' : 'GROUP_ADMIN';
+    const newRole = currentRole === 'GROUP_ADMIN' ? 'GROUP_MEMBER' : 'GROUP_ADMIN';
     const title = newRole === 'GROUP_ADMIN'
       ? (zh ? '升為管理員' : 'Promote to Admin')
       : (zh ? '降為成員' : 'Demote to Member');
@@ -257,9 +257,6 @@ export default function GroupDetailScreen() {
               </Text>
             )}
             <View style={styles.roleBadge}>
-              <Text style={styles.roleBadgeText}>
-                {isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
-              </Text>
             </View>
           </View>
           {isGroupAdmin && (
@@ -425,8 +422,7 @@ export default function GroupDetailScreen() {
               <View style={styles.memberInfo}>
                 <Text style={styles.memberName}>{m.displayName || m.email || m.userId}</Text>
                 <Text style={styles.memberRole}>
-                  {m.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}
-                  {m.joinedAt ? ` · ${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                  {m.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
                 </Text>
                 {isGroupAdmin && (m.email || m.phoneE164) ? (
                   <Text style={styles.memberContact}>{[m.email, m.phoneE164].filter(Boolean).join(' · ')}</Text>
@@ -574,7 +570,6 @@ const styles = StyleSheet.create({
         <Text style={styles.groupPid}>PID: {groupItem.group.pid}</Text>
         {groupItem.group.description ? <Text style={styles.groupDesc}>{groupItem.group.description}</Text> : null}
         <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>{isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Member')}</Text>
         </View>
       </View>
 
@@ -695,7 +690,7 @@ const styles = StyleSheet.create({
             ) : members.map((m) => (
               <View key={m.userId} style={styles.inlineCard}>
                 <Text style={styles.inlineTitle}>{m.displayName || m.email || m.userId}</Text>
-                <Text style={styles.inlineMeta}>{m.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '成員' : 'Member')}</Text>
+                <Text style={styles.inlineMeta}>{m.joinedAt ? new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}</Text>
                 {isGroupAdmin && (
                   <View style={styles.adminMemberRow}>
                     <Text style={styles.inlineMeta}>{m.email || ''} {m.phoneE164 || ''}</Text>

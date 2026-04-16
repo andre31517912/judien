@@ -36,7 +36,7 @@ export default function GroupSettingsScreen() {
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'MEMBER' | 'GROUP_ADMIN'>('MEMBER');
+  const [inviteRole, setInviteRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
   const [inviteSubmitting, setInviteSubmitting] = useState(false);
   const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
 
@@ -96,7 +96,7 @@ export default function GroupSettingsScreen() {
       });
       setInviteEmail('');
       setInvitePhone('');
-      setInviteRole('MEMBER');
+      setInviteRole('GROUP_MEMBER');
       await loadData();
       Alert.alert('✓', zh ? '邀請已送出' : 'Invitation sent.');
     } catch (err: any) {
@@ -276,8 +276,8 @@ export default function GroupSettingsScreen() {
             placeholderTextColor="#9CA3AF"
           />
           <View style={styles.roleRow}>
-            <TouchableOpacity style={[styles.roleBtn, inviteRole === 'MEMBER' && styles.roleBtnActive]} onPress={() => setInviteRole('MEMBER')}>
-              <Text style={[styles.roleBtnText, inviteRole === 'MEMBER' && styles.roleBtnTextActive]}>{zh ? '一般成員' : 'Member'}</Text>
+            <TouchableOpacity style={[styles.roleBtn, inviteRole === 'GROUP_MEMBER' && styles.roleBtnActive]} onPress={() => setInviteRole('GROUP_MEMBER')}>
+              <Text style={[styles.roleBtnText, inviteRole === 'GROUP_MEMBER' && styles.roleBtnTextActive]}>{zh ? '一般成員' : 'Member'}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.roleBtn, inviteRole === 'GROUP_ADMIN' && styles.roleBtnActive]} onPress={() => setInviteRole('GROUP_ADMIN')}>
               <Text style={[styles.roleBtnText, inviteRole === 'GROUP_ADMIN' && styles.roleBtnTextActive]}>{zh ? '群組管理員' : 'Group Admin'}</Text>

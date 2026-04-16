@@ -109,7 +109,7 @@ export default function InviteAcceptPage() {
 
   if (inviteType === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 dark:bg-black dark:from-black dark:to-black">
         <p className="text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
       </div>
     );
@@ -117,8 +117,8 @@ export default function InviteAcceptPage() {
 
   if (inviteType === 'unknown') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 dark:bg-black p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
           <p className="text-red-500 font-medium">{zh ? '邀請連結無效或已過期。' : 'Invalid or expired invite link.'}</p>
           <button
             onClick={() => router.push(`/${params.locale}/events`)}
@@ -135,19 +135,19 @@ export default function InviteAcceptPage() {
   const handleSubmit = isGroup ? handleGuestGroupJoin : handleEventAccept;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 dark:bg-black p-4">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 max-w-md w-full">
         <div className="text-center mb-6">
           <div className="text-3xl mb-2">{isGroup ? '👥' : '🎉'}</div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             {isGroup
               ? (zh ? '您收到群組邀請！' : "You're invited to join a group!")
               : (zh ? '您收到活動邀請！' : "You're invited!")}
           </h1>
           {isGroup && groupInfo && (
-            <p className="text-indigo-600 font-medium mt-1">{groupInfo.groupName}</p>
+            <p className="text-indigo-600 dark:text-indigo-400 font-medium mt-1">{groupInfo.groupName}</p>
           )}
-          <p className="text-gray-500 text-sm mt-2">
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
             {zh ? '填寫資料以繼續' : 'Fill in your details to continue'}
           </p>
         </div>
@@ -160,7 +160,7 @@ export default function InviteAcceptPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {zh ? '顯示名稱' : 'Display Name'} *
             </label>
             <input
@@ -169,12 +169,12 @@ export default function InviteAcceptPage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder={zh ? '您的名字' : 'What should we call you?'}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {zh ? '手機號碼' : 'Phone Number'} *
             </label>
             <input
@@ -183,12 +183,12 @@ export default function InviteAcceptPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+886 900 000 123"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               {zh ? '電子郵件（選填）' : 'Email (optional)'}
             </label>
             <input
@@ -196,7 +196,7 @@ export default function InviteAcceptPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
 
@@ -213,7 +213,7 @@ export default function InviteAcceptPage() {
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-500 mt-4">
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
           {isGroup
             ? (zh ? '加入後您將以訪客帳號加入此群組。' : "You'll join as a guest member of this group.")
             : (zh ? '確認後您將被標記為出席。' : "You'll be marked as attending this event.")}

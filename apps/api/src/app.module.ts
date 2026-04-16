@@ -13,7 +13,6 @@ import { QueueModule } from './queue/queue.module';
 import { UploadModule } from './upload/upload.module';
 import { NewsModule } from './news/news.module';
 import { GroupsModule } from './groups/groups.module';
-import { GroupMessagesModule } from './group-messages/group-messages.module';
 import { EventInvitesModule } from './event-invites/event-invites.module';
 import { EventSeriesModule } from './event-series/event-series.module';
 import { HealthController } from './health/health.controller';
@@ -40,7 +39,6 @@ import { HealthController } from './health/health.controller';
     UploadModule,
     NewsModule,
     GroupsModule,
-    GroupMessagesModule,
     EventInvitesModule,
     EventSeriesModule,
   ],

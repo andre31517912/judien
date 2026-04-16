@@ -15,7 +15,7 @@ export default async function LocaleLayout({
 }) {
   if (!locales.includes(params.locale)) notFound();
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
+    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors">
       <HtmlLang locale={params.locale} />
       <NavBar locale={params.locale} />
       <main className="max-w-3xl mx-auto px-4 py-6">

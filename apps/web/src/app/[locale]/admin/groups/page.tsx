@@ -17,7 +17,7 @@ type GroupListItem = {
     updatedAt: string;
   };
   membership: {
-    role: 'GROUP_ADMIN' | 'MEMBER';
+    role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
     status: 'ACCEPTED' | 'PENDING' | 'DECLINED' | 'REMOVED';
     joinedAt: string | null;
   };
@@ -57,8 +57,8 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{zh ? '群組管理' : 'Groups'}</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組管理' : 'Groups'}</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {zh ? '建立、查看與管理 Rotary 分組。' : 'Create, view, and manage Rotary groups.'}
           </p>
         </div>
@@ -73,8 +73,8 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       {groups.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center">
-          <p className="text-sm text-gray-500">{zh ? '尚未建立任何群組。' : 'No groups created yet.'}</p>
+          <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '尚未建立任何群組。' : 'No groups created yet.'}</p>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -82,25 +82,24 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
             <Link
               key={group.id}
               href={`/${params.locale}/admin/groups/${group.id}`}
-              className="block rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold text-gray-900">{group.name}</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h2>
                   </div>
-                  {group.description && <p className="text-sm text-gray-600">{group.description}</p>}
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-500">
-                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-indigo-700">{membership.role}</span>
-                    <span className="rounded-full bg-gray-50 px-2 py-0.5">
+                  {group.description && <p className="text-sm text-gray-600 dark:text-gray-300">{group.description}</p>}
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span className="rounded-full bg-gray-50 dark:bg-gray-800 px-2 py-0.5">
                       {group.discoverableBySearch ? (zh ? '可搜尋' : 'Searchable') : (zh ? '私人' : 'Private')}
                     </span>
-                    <span className="rounded-full bg-gray-50 px-2 py-0.5">
+                    <span className="rounded-full bg-gray-50 dark:bg-gray-800 px-2 py-0.5">
                       {group.memberDataPrivate ? (zh ? '成員資料隱私開啟' : 'Member privacy on') : (zh ? '成員資料公開' : 'Member privacy off')}
                     </span>
                   </div>
                 </div>
-                <span className="text-sm text-indigo-600">{zh ? '進入群組 →' : 'Open group →'}</span>
+                <span className="text-sm text-indigo-600 dark:text-indigo-400">{zh ? '進入群組 →' : 'Open group →'}</span>
               </div>
             </Link>
           ))}

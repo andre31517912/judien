@@ -71,15 +71,15 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     <div className="max-w-md mx-auto mt-8">
       <div className="flex items-center justify-between mb-6">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold">{zh ? '個人資料' : 'Profile'}</h1>
+        <h1 className="text-2xl font-bold dark:text-white">{zh ? '個人資料' : 'Profile'}</h1>
         <span
           className={`text-xs font-medium px-2.5 py-1 rounded-full ${
             user.role === 'ADMIN'
-              ? 'bg-indigo-100 text-indigo-700'
-              : 'bg-green-100 text-green-700'
+              ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+              : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
           }`}
         >
-          {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+          {user.role === 'ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '用戶' : 'User')}
         </span>
       </div>
         <button
@@ -100,7 +100,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       <form onSubmit={handleSave} className="flex flex-col gap-4">
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '顯示名稱' : 'Display Name'}
           </label>
           <input
@@ -108,12 +108,12 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
             value={displayName}
             placeholder={(user as any)?.displayName || (zh ? '輸入顯示名稱' : 'Enter a display name')}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '顯示語言' : 'Display Language'}
           </label>
           <div className="flex gap-2">
@@ -125,7 +125,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
                 className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors ${
                   lang === l
                     ? 'bg-indigo-600 border-indigo-600 text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-indigo-400'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'
                 }`}
               >
                 {l === 'en' ? 'English' : '中文'}
@@ -135,7 +135,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '主題' : 'Theme'}
           </label>
           <div className="flex gap-2">
@@ -147,7 +147,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
                 className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   theme === t
                     ? 'bg-indigo-600 border-indigo-600 text-white'
-                    : 'border-gray-300 text-gray-600 hover:border-indigo-400'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'
                 }`}
               >
                 {t === 'light' ? '☀️ ' : '🌙 '}
@@ -160,7 +160,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         <div className="flex items-center gap-3">
           <input type="checkbox" id="muteSms" checked={muteSms}
             onChange={(e) => setMuteSms(e.target.checked)} className="w-4 h-4" />
-          <label htmlFor="muteSms" className="text-sm">
+          <label htmlFor="muteSms" className="text-sm dark:text-gray-300">
             {zh ? '靜音簡訊通知' : 'Mute SMS notifications'}
           </label>
         </div>
@@ -168,13 +168,13 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         <div className="flex items-center gap-3">
           <input type="checkbox" id="muteEmail" checked={muteEmail}
             onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
-          <label htmlFor="muteEmail" className="text-sm">
+          <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">
             {zh ? '靜音電子郵件通知' : 'Mute email notifications'}
           </label>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '電話號碼' : 'Phone'}
           </label>
           <input
@@ -182,12 +182,12 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
             value={phone}
             placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '電子郵件' : 'Email'}
           </label>
           <input
@@ -195,12 +195,12 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
             value={email}
             placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '新密碼' : 'Password'}
           </label>
           <input
@@ -208,7 +208,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
             value={password}
             placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded-md px-3 py-2"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
 
