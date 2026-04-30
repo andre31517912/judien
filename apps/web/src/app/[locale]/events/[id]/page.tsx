@@ -25,6 +25,8 @@ export default function EventDetailPage() {
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [replyBody, setReplyBody] = useState('');
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null);
+  const [showNoReason, setShowNoReason] = useState(false);
+  const [noReason, setNoReason] = useState('');
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -119,6 +121,13 @@ export default function EventDetailPage() {
 
   const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
     if (!user) return;
+    // Clicking NO when not already NO → show the reason prompt instead of submitting
+    if (status === 'NO' && rsvpStatus !== 'NO') {
+      setShowNoReason(true);
+      setNoReason('');
+      return;
+    }
+    setShowNoReason(false);
     if (rsvpStatus === status) {
       await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
       setRsvpStatus(null);
@@ -132,12 +141,30 @@ export default function EventDetailPage() {
     // Refresh counts + guest list
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
     setEvent(ev);
-    // Refresh guest list if currently shown
     if (showGuests) {
       const data = await apiFetch<{ GOING: { handle: string; displayName: string | null }[]; MAYBE: { handle: string; displayName: string | null }[]; NO: { handle: string; displayName: string | null }[] }>(`/events/${params.id}/rsvp/guests`);
       setGuests(data);
     } else {
-      setGuests(null); // invalidate so next open refetches
+      setGuests(null);
+    }
+  };
+
+  const handleConfirmNo = async () => {
+    if (!user) return;
+    setShowNoReason(false);
+    await apiFetch(`/events/${params.id}/rsvp`, {
+      method: 'POST',
+      body: JSON.stringify({ status: 'NO', ...(noReason.trim() ? { declineReason: noReason.trim() } : {}) }),
+    });
+    setRsvpStatus('NO');
+    setNoReason('');
+    const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
+    setEvent(ev);
+    if (showGuests) {
+      const data = await apiFetch<{ GOING: { handle: string; displayName: string | null }[]; MAYBE: { handle: string; displayName: string | null }[]; NO: { handle: string; displayName: string | null }[] }>(`/events/${params.id}/rsvp/guests`);
+      setGuests(data);
+    } else {
+      setGuests(null);
     }
   };
 
@@ -198,6 +225,51 @@ export default function EventDetailPage() {
   const handleDeleteEvent = async () => {
     await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
     router.push(`/${locale}/events`);
+  };
+
+  const handleExportRsvps = async (format: 'csv' | 'txt') => {
+    type ExportRow = { name: string; email: string; type: string; status: string; declineReason: string };
+    const data = await apiFetch<{ eventTitle: string; rows: ExportRow[] }>(`/events/${params.id}/rsvp/export`);
+    const { eventTitle, rows } = data;
+    let content: string;
+    let mime: string;
+    let ext: string;
+    if (format === 'csv') {
+      const csvEscape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const header = ['Name', 'Email', 'Type', 'Status', 'Decline Reason'].map(csvEscape).join(',');
+      const lines = rows.map((r) =>
+        [r.name, r.email, r.type, r.status, r.declineReason].map(csvEscape).join(',')
+      );
+      content = [header, ...lines].join('\r\n');
+      mime = 'text/csv';
+      ext = 'csv';
+    } else {
+      const sections: Record<string, ExportRow[]> = { GOING: [], MAYBE: [], NO: [] };
+      for (const r of rows) sections[r.status]?.push(r);
+      const lines: string[] = [`RSVP List — ${eventTitle}`, ''];
+      for (const [status, label] of [['GOING', 'Going'], ['MAYBE', 'Maybe'], ['NO', 'Not Going']] as const) {
+        lines.push(`── ${label} (${sections[status].length}) ──`);
+        if (sections[status].length === 0) {
+          lines.push('  (none)');
+        } else {
+          for (const r of sections[status]) {
+            const reason = r.declineReason ? ` — Reason: ${r.declineReason}` : '';
+            lines.push(`  ${r.name || r.email} <${r.email}>${reason}`);
+          }
+        }
+        lines.push('');
+      }
+      content = lines.join('\n');
+      mime = 'text/plain';
+      ext = 'txt';
+    }
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rsvp-${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // ── blast (admin only) ────────────────────────────────────────────────────────
@@ -295,6 +367,18 @@ export default function EventDetailPage() {
             className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
           >
             🗑 {zh ? '刪除活動' : 'Delete Event'}
+          </button>
+          <button
+            onClick={() => handleExportRsvps('csv')}
+            className="text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700"
+          >
+            ⬇️ {zh ? '匯出 CSV' : 'Export CSV'}
+          </button>
+          <button
+            onClick={() => handleExportRsvps('txt')}
+            className="text-sm bg-gray-600 text-white px-3 py-1.5 rounded-md hover:bg-gray-700"
+          >
+            ⬇️ {zh ? '匯出 TXT' : 'Export TXT'}
           </button>
         </div>
       ) : (
@@ -400,10 +484,44 @@ export default function EventDetailPage() {
 
       {/* RSVP buttons (requires login) */}
       {user ? (
+        <div className="flex flex-col gap-3">
         <div className="flex gap-3 items-center flex-wrap">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
           {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
+        </div>
+        {showNoReason && (
+          <div className="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {zh ? '原因（選填）' : 'Reason (optional)'}
+            </label>
+            <input
+              type="text"
+              value={noReason}
+              onChange={(e) => setNoReason(e.target.value)}
+              placeholder={zh ? '為什麼無法參加？' : "Why can't you make it?"}
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              maxLength={500}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') handleConfirmNo(); if (e.key === 'Escape') setShowNoReason(false); }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setShowNoReason(false)}
+                className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              >
+                {zh ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleConfirmNo}
+                className="rounded-lg bg-red-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-600 transition"
+              >
+                {zh ? '確認不參加' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="flex gap-3 items-center flex-wrap">
           <button
             onClick={() => {
               if (showGuests) {
@@ -439,6 +557,7 @@ export default function EventDetailPage() {
               {zh ? '受邀名單' : 'Invitees'}
             </button>
           )}
+        </div>
         </div>
       ) : (
         <div className="flex items-center gap-3">

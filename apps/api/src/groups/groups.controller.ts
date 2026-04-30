@@ -264,4 +264,48 @@ export class GroupsController {
     });
     res.end(buffer);
   }
+
+  // ─── Donations ───────────────────────────────────────────────────────────────
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/donations')
+  createDonation(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+    @Body() body: { forUserId: string; amount: number; currency: string; date: string; note?: string },
+  ) {
+    return this.groupsService.createDonation(groupId, user, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/donations')
+  listDonations(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.listDonations(groupId, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':groupId/donations/:donationId')
+  deleteDonation(
+    @Param('groupId') groupId: string,
+    @Param('donationId') donationId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.deleteDonation(groupId, donationId, user);
+  }
+
+  // ─── Group Report ─────────────────────────────────────────────────────────────
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/report')
+  getGroupReport(
+    @Param('groupId') groupId: string,
+    @Query('year') year: string,
+    @CurrentUser() user: User,
+  ) {
+    const y = parseInt(year, 10) || new Date().getFullYear();
+    return this.groupsService.getGroupReport(groupId, y, user);
+  }
 }

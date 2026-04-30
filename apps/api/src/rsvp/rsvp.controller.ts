@@ -15,6 +15,16 @@ class OptionalJwtGuard extends AuthGuard('jwt') {
 export class RsvpController {
   constructor(private readonly rsvpService: RsvpService) {}
 
+  // GET /api/events/:eventId/rsvp/export — admin or event creator only
+  @UseGuards(AuthGuard('jwt'))
+  @Get('events/:eventId/rsvp/export')
+  exportRsvps(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.exportRsvps(eventId, user.id);
+  }
+
   // GET /api/events/:eventId/rsvp/guests — visible to any logged-in user
   @UseGuards(new OptionalJwtGuard())
   @Get('events/:eventId/rsvp/guests')

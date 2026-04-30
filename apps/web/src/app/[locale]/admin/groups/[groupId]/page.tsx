@@ -58,6 +58,14 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [pastLoaded, setPastLoaded] = useState(false);
   const [pastLoading, setPastLoading] = useState(false);
 
+  // Create post / event inline
+  const [composingNews, setComposingNews] = useState(false);
+  const [newsForm, setNewsForm] = useState({ title: '', body: '' });
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [composingEvent, setComposingEvent] = useState(false);
+  const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+  const [eventLoading, setEventLoading] = useState(false);
+
   const loadPage = async () => {
     setPageLoading(true);
     setError('');
@@ -139,6 +147,42 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
     }
   };
 
+  const handleCreateNews = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsForm.title.trim() || !newsForm.body.trim()) return;
+    setNewsLoading(true);
+    setError('');
+    try {
+      await apiFetch('/news', {
+        method: 'POST',
+        body: JSON.stringify({ groupId: params.groupId, title_en: newsForm.title, title_zh: newsForm.title, body_en: newsForm.body, body_zh: newsForm.body }),
+      });
+      setNewsForm({ title: '', body: '' });
+      setComposingNews(false);
+      setSuccess(zh ? '公告已發布。' : 'Post published.');
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+    finally { setNewsLoading(false); }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventForm.title.trim() || !eventForm.startAt) return;
+    setEventLoading(true);
+    setError('');
+    try {
+      await apiFetch('/events', {
+        method: 'POST',
+        body: JSON.stringify({ groupId: params.groupId, title_en: eventForm.title, title_zh: eventForm.title, description_en: eventForm.description, description_zh: eventForm.description, location_en: eventForm.location, location_zh: eventForm.location, startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined, endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : undefined, timezone: eventForm.timezone, feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : undefined, feeCurrency: eventForm.feeCurrency }),
+      });
+      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+      setComposingEvent(false);
+      setSuccess(zh ? '活動已建立。' : 'Event created.');
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+    finally { setEventLoading(false); }
+  };
+
   if (loading || pageLoading) return <p className="py-16 text-center text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>;
 
   const isPlatformAdmin = user?.role === 'ADMIN';
@@ -173,18 +217,17 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
             <Link href={`/${params.locale}/admin/groups`} className="text-xs text-gray-400 hover:text-gray-600">
-              ← {zh ? '管理：所有群組' : 'Admin: All Groups'}
+              ← {zh ? '所有群組' : 'All Groups'}
             </Link>
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              {isPlatformAdmin && (
-                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
-                  {zh ? '平台管理員' : 'Platform Admin'}
-                </span>
-              )}
-              {!isPlatformAdmin && isGroupAdmin && (
+              {isGroupAdmin ? (
                 <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
                   {zh ? '群組管理員' : 'Group Admin'}
+                </span>
+              ) : (
+                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+                  {zh ? '群組成員' : 'Group Member'}
                 </span>
               )}
               <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
@@ -231,11 +274,34 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
         {/* Feed */}
         {viewTab === 'feed' && (
-          <div className="mx-auto max-w-2xl space-y-4">
+          <div className="space-y-4">
+            {(isGroupAdmin || isPlatformAdmin) && (
+              <div>
+                {!composingNews ? (
+                  <button onClick={() => setComposingNews(true)} className="rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">
+                    + {zh ? '發布公告' : 'Create Post'}
+                  </button>
+                ) : (
+                  <form onSubmit={handleCreateNews} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '發布公告' : 'Create Post'}</h3>
+                    <input required value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <textarea required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <div className="flex gap-2">
+                      <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                        {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
+                      </button>
+                      <button type="button" onClick={() => { setComposingNews(false); setNewsForm({ title: '', body: '' }); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
             {news.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">📢</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有公告' : 'No announcements yet'}</p>
+              <div className="text-center py-16">
+                <p className="text-4xl mb-3">🎉</p>
+                <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有公告，一切都是最新的！' : "No news yet — you're all caught up!"}</p>
               </div>
             ) : news.map((item) => (
               <div key={item.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
@@ -254,11 +320,59 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
-          <div className="mx-auto max-w-2xl space-y-3">
+          <div className="space-y-3">
+            {(isGroupAdmin || isPlatformAdmin) && (
+              <div>
+                {!composingEvent ? (
+                  <button onClick={() => setComposingEvent(true)} className="rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">
+                    + {zh ? '建立活動' : 'Create Event'}
+                  </button>
+                ) : (
+                  <form onSubmit={handleCreateEvent} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
+                    <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
+                        <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
+                        <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
+                        <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
+                        <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
+                        <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                        {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
+                      </button>
+                      <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
             {events.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">📅</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
+              <div className="text-center py-16">
+                <p className="text-4xl mb-3">📅</p>
+                <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
               </div>
             ) : events.map((ev) => (
               <Link
@@ -290,13 +404,13 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
         {/* Past events */}
         {viewTab === 'past' && (
-          <div className="mx-auto max-w-2xl space-y-3">
+          <div className="space-y-3">
             {pastLoading ? (
               <p className="py-16 text-center text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
             ) : pastEvents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">🕐</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
+              <div className="text-center py-16">
+                <p className="text-4xl mb-3">🕐</p>
+                <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有過去的活動記錄，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
               </div>
             ) : pastEvents.map((ev) => (
               <Link
@@ -323,7 +437,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
         {/* Members */}
         {viewTab === 'members' && (
-          <div className="mx-auto max-w-2xl space-y-2">
+          <div className="space-y-2">
             {members.map((member) => (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>

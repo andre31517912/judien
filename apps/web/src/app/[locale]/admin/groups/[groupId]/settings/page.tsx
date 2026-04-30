@@ -83,6 +83,16 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [parentSearchLoading, setParentSearchLoading] = useState(false);
   const [parentSaving, setParentSaving] = useState(false);
 
+  const [newParentForm, setNewParentForm] = useState({ pid: '', name: '', description: '' });
+  const [parentCreating, setParentCreating] = useState(false);
+
+  const [childSearchQuery, setChildSearchQuery] = useState('');
+  const [childSearchResults, setChildSearchResults] = useState<{ id: string; pid: string; name: string; description: string }[]>([]);
+  const [childSearchLoading, setChildSearchLoading] = useState(false);
+  const [childLinking, setChildLinking] = useState(false);
+  const [newChildForm, setNewChildForm] = useState({ pid: '', name: '', description: '' });
+  const [childCreating, setChildCreating] = useState(false);
+
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
 
@@ -100,6 +110,72 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
+
+  // ── Donations state ──────────────────────────────────────────────────────
+  type DonationRecord = { id: string; forUserId: string; amount: string; currency: string; date: string; note: string | null; forUser: { id: string; displayName: string | null; email: string } };
+  const [donations, setDonations] = useState<DonationRecord[]>([]);
+  const [donationsLoading, setDonationsLoading] = useState(false);
+  const [donationForm, setDonationForm] = useState({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
+  const [donationSaving, setDonationSaving] = useState(false);
+  const [donationsLoaded, setDonationsLoaded] = useState(false);
+
+  const loadDonations = async () => {
+    setDonationsLoading(true);
+    try {
+      const data = await apiFetch<DonationRecord[]>(`/groups/${params.groupId}/donations`);
+      setDonations(data);
+      setDonationsLoaded(true);
+    } catch { /* ignore */ } finally { setDonationsLoading(false); }
+  };
+
+  const handleCreateDonation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!donationForm.forUserId || !donationForm.amount || !donationForm.date) return;
+    setDonationSaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/donations`, {
+        method: 'POST',
+        body: JSON.stringify({ forUserId: donationForm.forUserId, amount: parseFloat(donationForm.amount), currency: donationForm.currency, date: donationForm.date, note: donationForm.note || undefined }),
+      });
+      setDonationForm({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
+      setSuccess(zh ? '捐款記錄已新增。' : 'Donation recorded.');
+      await loadDonations();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed.');
+    } finally { setDonationSaving(false); }
+  };
+
+  const handleDeleteDonation = async (id: string) => {
+    if (!confirm(zh ? '確定要刪除此捐款記錄嗎？' : 'Delete this donation record?')) return;
+    setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/donations/${id}`, { method: 'DELETE' });
+      setDonations((prev) => prev.filter((d) => d.id !== id));
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+  };
+
+  // ── Report state ─────────────────────────────────────────────────────────
+  type ReportData = {
+    groupName: string; year: number; totalEvents: number; totalMembers: number;
+    events: { id: string; title: string; startAt: string; memberRsvps: { userId: string; displayName: string | null; email: string; status: 'GOING' | 'MAYBE' | 'NO' | null }[] }[];
+    members: { userId: string; displayName: string | null; email: string; totalEvents: number; going: number; maybe: number; no: number; noResponse: number; attendanceRate: number; totalDonatedUSD: number; totalDonatedNTD: number }[];
+  };
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportExpanded, setReportExpanded] = useState<Record<string, boolean>>({});
+
+  const loadReport = async (year: number) => {
+    setReportLoading(true);
+    setReportData(null);
+    try {
+      const data = await apiFetch<ReportData>(`/groups/${params.groupId}/report?year=${year}`);
+      setReportData(data);
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+    finally { setReportLoading(false); }
+  };
 
   const handleImportMembers = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,6 +288,92 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       // silently ignore
     } finally {
       setParentSearchLoading(false);
+    }
+  };
+
+  const handleChildSearch = async () => {
+    if (!childSearchQuery.trim()) return;
+    setChildSearchLoading(true);
+    setChildSearchResults([]);
+    try {
+      const res = await apiFetch<{ id: string; pid: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(childSearchQuery.trim())}`);
+      setChildSearchResults(res.filter((g) => g.id !== params.groupId));
+    } catch {
+      // silently ignore
+    } finally {
+      setChildSearchLoading(false);
+    }
+  };
+
+  const handleLinkChildGroup = async (childId: string, childName: string) => {
+    if (!confirm(zh ? `確定要將「${childName}」設為此群組的子群組嗎？` : `Set "${childName}" as a subgroup of this group?`)) return;
+    setChildLinking(true);
+    setError('');
+    setSuccess('');
+    try {
+      await apiFetch(`/groups/${childId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: params.groupId }) });
+      setChildSearchQuery('');
+      setChildSearchResults([]);
+      setSuccess(zh ? `「${childName}」已設為子群組。` : `"${childName}" is now a subgroup.`);
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed.');
+    } finally {
+      setChildLinking(false);
+    }
+  };
+
+  const handleCreateParentGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newParentForm.pid.trim() || !newParentForm.name.trim()) return;
+    setParentCreating(true);
+    setError('');
+    setSuccess('');
+    try {
+      const created = await apiFetch<{ id: string; name: string }>('/groups', {
+        method: 'POST',
+        body: JSON.stringify({
+          pid: newParentForm.pid.trim(),
+          name: newParentForm.name.trim(),
+          description: newParentForm.description.trim() || undefined,
+        }),
+      });
+      await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: created.id }) });
+      const createdName = newParentForm.name.trim();
+      setNewParentForm({ pid: '', name: '', description: '' });
+      setSuccess(zh ? `父群組「${createdName}」已建立並設定。` : `Parent group "${createdName}" created and set.`);
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to create parent group.');
+    } finally {
+      setParentCreating(false);
+    }
+  };
+
+  const handleCreateChildGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChildForm.pid.trim() || !newChildForm.name.trim()) return;
+    setChildCreating(true);
+    setError('');
+    setSuccess('');
+    try {
+      await apiFetch('/groups', {
+        method: 'POST',
+        body: JSON.stringify({
+          pid: newChildForm.pid.trim(),
+          name: newChildForm.name.trim(),
+          description: newChildForm.description.trim() || undefined,
+          parentGroupId: params.groupId,
+        }),
+      });
+      const createdName = newChildForm.name.trim();
+      setNewChildForm({ pid: '', name: '', description: '' });
+      setSuccess(zh ? `子群組「${createdName}」已建立。` : `Child group "${createdName}" created.`);
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to create child group.');
+    } finally {
+      setChildCreating(false);
     }
   };
 
@@ -438,111 +600,243 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組層級' : 'Group Hierarchy'}</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {zh ? '設定此群組的上層群組（父群組），或檢視其子群組。' : 'Set a parent group for this group, or view its subgroups.'}
+            {zh ? '管理此群組的父群組與子群組。' : 'Manage this group\'s parent and child groups.'}
           </p>
 
-          {/* Current parent */}
-          <div className="mt-4">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '目前父群組' : 'Current Parent'}</p>
-            {relationships?.parentGroup ? (
-              <div className="mt-2 flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
-                <span className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{relationships.parentGroup.name}</span>
-                <button
-                  onClick={async () => {
-                    if (!confirm(zh ? '確定要移除父群組嗎？' : 'Remove parent group?')) return;
-                    setParentSaving(true);
-                    setError('');
-                    setSuccess('');
-                    try {
-                      await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
-                      setSuccess(zh ? '父群組已移除。' : 'Parent group removed.');
-                      await loadPage();
-                    } catch (err: unknown) {
-                      setError((err as Error).message ?? 'Failed.');
-                    } finally {
-                      setParentSaving(false);
-                    }
-                  }}
-                  disabled={parentSaving}
-                  className="rounded-md border border-red-200 dark:border-red-800 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-                >
-                  {zh ? '移除' : 'Remove'}
-                </button>
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            {/* ── Parent Group Column ── */}
+            <div className="space-y-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{zh ? '父群組' : 'Parent Group'}</p>
+                <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{zh ? '此群組的上層群組。' : 'The group this one is nested under.'}</p>
               </div>
-            ) : (
-              <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">{zh ? '無（頂層群組）' : 'None (top-level group)'}</p>
-            )}
-          </div>
 
-          {/* Subgroups */}
-          {relationships?.subgroups && relationships.subgroups.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? `子群組 (${relationships.subgroups.length})` : `Subgroups (${relationships.subgroups.length})`}</p>
-              <div className="mt-2 space-y-2">
-                {relationships.subgroups.map((sg) => (
-                  <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-sm">
-                    <span className="font-medium text-gray-900 dark:text-white">{sg.name}</span>
-                    {sg.description && <span className="text-gray-400 dark:text-gray-500">{sg.description}</span>}
+              {/* Current parent status */}
+              {relationships?.parentGroup ? (
+                <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
+                  <Link href={`/${params.locale}/admin/groups/${relationships.parentGroup.id}`} className="flex-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                    {relationships.parentGroup.name}
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(zh ? '確定要移除父群組嗎？' : 'Remove parent group?')) return;
+                      setParentSaving(true);
+                      setError('');
+                      setSuccess('');
+                      try {
+                        await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
+                        setSuccess(zh ? '父群組已移除。' : 'Parent group removed.');
+                        await loadPage();
+                      } catch (err: unknown) {
+                        setError((err as Error).message ?? 'Failed.');
+                      } finally {
+                        setParentSaving(false);
+                      }
+                    }}
+                    disabled={parentSaving}
+                    className="rounded-md border border-red-200 dark:border-red-800 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                  >
+                    {zh ? '移除' : 'Remove'}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '無（頂層群組）' : 'None — this is a top-level group'}</p>
+              )}
+
+              {/* Search to set parent */}
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '搜尋並設為父群組' : 'Search to set parent'}</p>
+                <div className="flex gap-2">
+                  <input
+                    value={parentSearchQuery}
+                    onChange={(e) => setParentSearchQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleParentSearch(); } }}
+                    placeholder={zh ? '群組名稱…' : 'Group name…'}
+                    className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <button
+                    onClick={handleParentSearch}
+                    disabled={parentSearchLoading || !parentSearchQuery.trim()}
+                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {parentSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
+                  </button>
+                </div>
+                {parentSearchResults.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {parentSearchResults.map((g) => (
+                      <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.name}</p>
+                          {g.description && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{g.description}</p>}
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (!confirm(zh ? `確定要將「${g.name}」設為父群組嗎？` : `Set "${g.name}" as parent?`)) return;
+                            setParentSaving(true);
+                            setError('');
+                            setSuccess('');
+                            try {
+                              await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: g.id }) });
+                              setParentSearchQuery('');
+                              setParentSearchResults([]);
+                              setSuccess(zh ? `父群組已設為「${g.name}」。` : `Parent set to "${g.name}".`);
+                              await loadPage();
+                            } catch (err: unknown) {
+                              setError((err as Error).message ?? 'Failed.');
+                            } finally {
+                              setParentSaving(false);
+                            }
+                          }}
+                          disabled={parentSaving}
+                          className="shrink-0 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                          {zh ? '設為父群組' : 'Set as Parent'}
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </div>
+
+              {/* Create new parent group */}
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '建立新父群組' : 'Create new parent group'}</p>
+                <form onSubmit={handleCreateParentGroup} className="space-y-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <input
+                      value={newParentForm.pid}
+                      onChange={(e) => setNewParentForm((f) => ({ ...f, pid: e.target.value }))}
+                      placeholder={zh ? 'ID (例如 org-main)' : 'ID (e.g. org-main)'}
+                      minLength={3}
+                      maxLength={40}
+                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      required
+                    />
+                    <input
+                      value={newParentForm.name}
+                      onChange={(e) => setNewParentForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder={zh ? '群組名稱' : 'Group name'}
+                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <input
+                    value={newParentForm.description}
+                    onChange={(e) => setNewParentForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={parentCreating || !newParentForm.pid.trim() || !newParentForm.name.trim()}
+                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {parentCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立父群組' : '+ Create Parent Group')}
+                  </button>
+                </form>
               </div>
             </div>
-          )}
 
-          {/* Set parent */}
-          <div className="mt-6">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '設定父群組' : 'Set Parent Group'}</p>
-            <div className="mt-2 flex gap-2">
-              <input
-                value={parentSearchQuery}
-                onChange={(e) => setParentSearchQuery(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleParentSearch(); } }}
-                placeholder={zh ? '搜尋群組名稱…' : 'Search group name…'}
-                className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-              <button
-                onClick={handleParentSearch}
-                disabled={parentSearchLoading || !parentSearchQuery.trim()}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {parentSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
-              </button>
-            </div>
-            {parentSearchResults.length > 0 && (
-              <div className="mt-2 space-y-2">
-                {parentSearchResults.map((g) => (
-                  <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{g.name}</p>
-                      {g.description && <p className="text-xs text-gray-400 dark:text-gray-500">{g.description}</p>}
+            {/* ── Child Groups Column ── */}
+            <div className="space-y-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 p-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{zh ? `子群組 (${relationships?.subgroups?.length ?? 0})` : `Child Groups (${relationships?.subgroups?.length ?? 0})`}</p>
+                <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{zh ? '直接隸屬於此群組的子群組。' : 'Groups nested directly under this one.'}</p>
+              </div>
+
+              {/* Current subgroups list */}
+              {relationships?.subgroups && relationships.subgroups.length > 0 ? (
+                <div className="space-y-2">
+                  {relationships.subgroups.map((sg) => (
+                    <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm">
+                      <Link href={`/${params.locale}/admin/groups/${sg.id}`} className="flex-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate">{sg.name}</Link>
+                      {sg.description && <span className="text-gray-400 dark:text-gray-500 truncate max-w-[160px] hidden sm:block">{sg.description}</span>}
                     </div>
-                    <button
-                      onClick={async () => {
-                        if (!confirm(zh ? `確定要將「${g.name}」設為此群組的父群組嗎？` : `Set "${g.name}" as parent of this group?`)) return;
-                        setParentSaving(true);
-                        setError('');
-                        setSuccess('');
-                        try {
-                          await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: g.id }) });
-                          setParentSearchQuery('');
-                          setParentSearchResults([]);
-                          setSuccess(zh ? `父群組已設為「${g.name}」。` : `Parent group set to "${g.name}".`);
-                          await loadPage();
-                        } catch (err: unknown) {
-                          setError((err as Error).message ?? 'Failed.');
-                        } finally {
-                          setParentSaving(false);
-                        }
-                      }}
-                      disabled={parentSaving}
-                      className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                    >
-                      {zh ? '設為父群組' : 'Set as Parent'}
-                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '目前無子群組。' : 'No child groups yet.'}</p>
+              )}
+
+              {/* Search to set child */}
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '搜尋並設為子群組' : 'Search to set child'}</p>
+                <div className="flex gap-2">
+                  <input
+                    value={childSearchQuery}
+                    onChange={(e) => setChildSearchQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleChildSearch(); } }}
+                    placeholder={zh ? '群組名稱…' : 'Group name…'}
+                    className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <button
+                    onClick={handleChildSearch}
+                    disabled={childSearchLoading || !childSearchQuery.trim()}
+                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {childSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
+                  </button>
+                </div>
+                {childSearchResults.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {childSearchResults.map((g) => (
+                      <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.name}</p>
+                          {g.description && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{g.description}</p>}
+                        </div>
+                        <button
+                          onClick={() => handleLinkChildGroup(g.id, g.name)}
+                          disabled={childLinking}
+                          className="shrink-0 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {zh ? '設為子群組' : 'Set as Child'}
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
-            )}
+
+              {/* Create new child group */}
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '建立新子群組' : 'Create new child group'}</p>
+                <form onSubmit={handleCreateChildGroup} className="space-y-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <input
+                      value={newChildForm.pid}
+                      onChange={(e) => setNewChildForm((f) => ({ ...f, pid: e.target.value }))}
+                      placeholder={zh ? 'ID (例如 team-alpha)' : 'ID (e.g. team-alpha)'}
+                      minLength={3}
+                      maxLength={40}
+                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      required
+                    />
+                    <input
+                      value={newChildForm.name}
+                      onChange={(e) => setNewChildForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder={zh ? '群組名稱' : 'Group name'}
+                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
+                  <input
+                    value={newChildForm.description}
+                    onChange={(e) => setNewChildForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="submit"
+                    disabled={childCreating || !newChildForm.pid.trim() || !newChildForm.name.trim()}
+                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {childCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立子群組' : '+ Create Child Group')}
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </section>
       )}
@@ -703,81 +997,247 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Post Group News */}
-        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-gray-900 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '發布群組公告' : 'Post Group News'}</h2>
-          <form onSubmit={handleCreateNews} className="mt-4 space-y-4">
+      <div className="space-y-6">
+        {/* ─── Donations ────────────────────────────────────────────────────── */}
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '標題' : 'Title'}</label>
-              <input value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '捐款記錄' : 'Donation Records'}</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '記錄成員捐款金額（USD 或 NTD）。' : 'Record member donations in USD or NTD.'}</p>
+            </div>
+            {!donationsLoaded && (
+              <button onClick={loadDonations} disabled={donationsLoading} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+                {donationsLoading ? (zh ? '載入中…' : 'Loading…') : (zh ? '載入捐款記錄' : 'Load Records')}
+              </button>
+            )}
+          </div>
+
+          {/* Add donation form */}
+          <form onSubmit={handleCreateDonation} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '成員' : 'Member'}</label>
+              <select
+                required
+                value={donationForm.forUserId}
+                onChange={(e) => setDonationForm((f) => ({ ...f, forUserId: e.target.value }))}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="">{zh ? '選擇成員…' : 'Select member…'}</option>
+                {members.map((m) => (
+                  <option key={m.userId} value={m.userId}>{m.displayName ?? m.email ?? m.userId}</option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '內容' : 'Body'}</label>
-              <textarea value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} rows={4} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '金額' : 'Amount'}</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                required
+                value={donationForm.amount}
+                onChange={(e) => setDonationForm((f) => ({ ...f, amount: e.target.value }))}
+                placeholder="0.00"
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
             </div>
-            <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布公告' : 'Post News')}
-            </button>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
+              <select
+                value={donationForm.currency}
+                onChange={(e) => setDonationForm((f) => ({ ...f, currency: e.target.value }))}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="NTD">NTD (新台幣)</option>
+                <option value="USD">USD (美金)</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '日期' : 'Date'}</label>
+              <input
+                type="date"
+                required
+                value={donationForm.date}
+                onChange={(e) => setDonationForm((f) => ({ ...f, date: e.target.value }))}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div className="sm:col-span-2 lg:col-span-2">
+              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '備註（選填）' : 'Note (optional)'}</label>
+              <input
+                value={donationForm.note}
+                onChange={(e) => setDonationForm((f) => ({ ...f, note: e.target.value }))}
+                placeholder={zh ? '例：巾要天特款捐' : 'e.g. Monthly tithe'}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div className="flex items-end">
+              <button type="submit" disabled={donationSaving || !donationForm.forUserId || !donationForm.amount} className="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                {donationSaving ? (zh ? '新增中…' : 'Saving…') : (zh ? '+ 新增捐款' : '+ Add Donation')}
+              </button>
+            </div>
           </form>
+
+          {/* Donation list */}
+          {donationsLoaded && (
+            <div className="mt-6 space-y-2">
+              {donationsLoading ? (
+                <p className="text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+              ) : donations.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無捐款記錄。' : 'No donation records yet.'}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '金額' : 'Amount'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '日期' : 'Date'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '備註' : 'Note'}</th>
+                        <th className="pb-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                      {donations.map((d) => (
+                        <tr key={d.id}>
+                          <td className="py-2 pr-4 text-gray-900 dark:text-white">{d.forUser.displayName ?? d.forUser.email}</td>
+                          <td className="py-2 pr-4 font-mono text-gray-900 dark:text-white">{Number(d.amount).toLocaleString()} {d.currency}</td>
+                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{new Date(d.date).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}</td>
+                          <td className="py-2 pr-4 text-gray-400 dark:text-gray-500">{d.note ?? '—'}</td>
+                          <td className="py-2">
+                            <button onClick={() => handleDeleteDonation(d.id)} className="text-xs text-red-400 hover:text-red-600">{zh ? '刪除' : 'Delete'}</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
-        {/* Create Group Event */}
-        <section className="rounded-2xl border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-gray-900 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '建立群組活動' : 'Create Group Event'}</h2>
-          <form onSubmit={handleCreateEvent} className="mt-4 space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '名稱' : 'Title'}</label>
-              <input value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '地點' : 'Location'}</label>
-              <LocationPicker value={eventForm.location} onChange={(value) => setEventForm((f) => ({ ...f, location: value }))} showMapPreview={false} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '描述' : 'Description'}</label>
-              <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '開始' : 'Start'}</label>
-                <input type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '結束' : 'End'}</label>
-                <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '時區' : 'Timezone'}</label>
-                <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '費用' : 'Fee'}</label>
-                <input type="number" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '幣別' : 'Currency'}</label>
-                <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '封面照片' : 'Cover photo'}</label>
-              <div onClick={() => coverFileRef.current?.click()} className="relative flex h-28 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 transition hover:bg-gray-100 dark:hover:bg-gray-700">
-                {coverPreview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={coverPreview} alt="preview" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-sm text-gray-400 dark:text-gray-500">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
-                )}
-              </div>
-              <input ref={coverFileRef} type="file" accept="image/*" onChange={handleEventFileChange} className="hidden" />
-            </div>
-            <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.location.trim() || !eventForm.startAt} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
+        {/* ─── Annual Report ─────────────────────────────────────────────── */}
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '年度報告' : 'Annual Report'}</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '查看每年活動出席率與捐款統計。' : 'View per-year attendance and donation stats for each member.'}</p>
+
+          <div className="mt-4 flex items-center gap-3 flex-wrap">
+            <input
+              type="number"
+              value={reportYear}
+              min={2020}
+              max={new Date().getFullYear() + 1}
+              onChange={(e) => setReportYear(parseInt(e.target.value) || new Date().getFullYear())}
+              className="w-28 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+            <button onClick={() => loadReport(reportYear)} disabled={reportLoading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+              {reportLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '生成報告' : 'Generate Report')}
             </button>
-          </form>
+          </div>
+
+          {reportData && (
+            <div className="mt-6 space-y-6">
+              {/* Summary row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {[{label: zh ? '總活動數' : 'Total Events', value: reportData.totalEvents}, {label: zh ? '總成員數' : 'Members', value: reportData.totalMembers}].map((s) => (
+                  <div key={s.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 text-center">
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Member summary table */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '成員統計' : 'Member Summary'}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✓ {zh ? '參加' : 'Going'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">? {zh ? '也許' : 'Maybe'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✗ {zh ? '不參加' : 'No'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">– {zh ? '未回應' : 'No resp.'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">{zh ? '出席率' : 'Attendance'}</th>
+                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-right">USD</th>
+                        <th className="pb-2 font-medium text-gray-500 dark:text-gray-400 text-right">NTD</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                      {reportData.members.map((m) => (
+                        <tr key={m.userId}>
+                          <td className="py-2 pr-4 text-gray-900 dark:text-white">{m.displayName ?? m.email}</td>
+                          <td className="py-2 pr-4 text-center text-green-600">{m.going}</td>
+                          <td className="py-2 pr-4 text-center text-yellow-600">{m.maybe}</td>
+                          <td className="py-2 pr-4 text-center text-red-500">{m.no}</td>
+                          <td className="py-2 pr-4 text-center text-gray-400">{m.noResponse}</td>
+                          <td className="py-2 pr-4 text-center">
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              m.attendanceRate >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : m.attendanceRate >= 50 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                              : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>{m.attendanceRate}%</span>
+                          </td>
+                          <td className="py-2 pr-4 text-right font-mono text-gray-700 dark:text-gray-300">{m.totalDonatedUSD > 0 ? m.totalDonatedUSD.toLocaleString() : '—'}</td>
+                          <td className="py-2 text-right font-mono text-gray-700 dark:text-gray-300">{m.totalDonatedNTD > 0 ? m.totalDonatedNTD.toLocaleString() : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Per-event breakdown */}
+              {reportData.events.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '活動明細' : 'Event Breakdown'}</h3>
+                  <div className="space-y-2">
+                    {reportData.events.map((ev) => (
+                      <div key={ev.id} className="rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+                        <button
+                          onClick={() => setReportExpanded((p) => ({ ...p, [ev.id]: !p[ev.id] }))}
+                          className="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                        >
+                          <div>
+                            <span className="text-sm font-medium text-gray-900 dark:text-white">{ev.title}</span>
+                            <span className="ml-3 text-xs text-gray-400 dark:text-gray-500">{new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}</span>
+                          </div>
+                          <span className="text-xs text-gray-400">{reportExpanded[ev.id] ? '▲' : '▼'}</span>
+                        </button>
+                        {reportExpanded[ev.id] && (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
+                                  <th className="px-4 py-2 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
+                                  <th className="px-4 py-2 font-medium text-gray-500 dark:text-gray-400">{zh ? '多婆證' : 'RSVP'}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                                {ev.memberRsvps.map((r) => (
+                                  <tr key={r.userId}>
+                                    <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName ?? r.email}</td>
+                                    <td className="px-4 py-2">
+                                      {r.status === 'GOING' ? <span className="text-green-600 font-medium">✓ {zh ? '參加' : 'Going'}</span>
+                                      : r.status === 'MAYBE' ? <span className="text-yellow-600">? {zh ? '也許' : 'Maybe'}</span>
+                                      : r.status === 'NO' ? <span className="text-red-500">✗ {zh ? '不參加' : 'No'}</span>
+                                      : <span className="text-gray-300 dark:text-gray-600">– {zh ? '未回應' : 'No response'}</span>}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </div>

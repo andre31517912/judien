@@ -73,6 +73,7 @@ export type UpdateEventDto = z.infer<typeof UpdateEventSchema>;
 
 export const RsvpSchema = z.object({
   status: z.enum(['GOING', 'MAYBE', 'NO']),
+  declineReason: z.string().max(500).optional(),
 });
 export type RsvpDto = z.infer<typeof RsvpSchema>;
 
@@ -179,6 +180,7 @@ export const CreateGroupSchema = z.object({
   discoverableBySearch: z.boolean().optional().default(false),
   memberDataPrivate: z.boolean().optional().default(false),
   adminUserIds: z.array(z.string().min(1)).optional().default([]),
+  parentGroupId: z.string().optional(),
 });
 export type CreateGroupDto = z.infer<typeof CreateGroupSchema>;
 

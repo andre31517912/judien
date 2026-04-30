@@ -24,8 +24,8 @@ export class RsvpService {
 
     return this.prisma.rSVP.upsert({
       where: { eventId_userId: { eventId, userId } },
-      create: { eventId, userId, status: dto.status },
-      update: { status: dto.status },
+      create: { eventId, userId, status: dto.status, declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null },
+      update: { status: dto.status, declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null },
     });
   }
 
@@ -170,5 +170,53 @@ export class RsvpService {
       return `${visible}${'*'.repeat(Math.max(1, name.length - 2))}@${domain}`;
     }
     return `${value.slice(0, 3)}***`;
+  }
+
+  async exportRsvps(eventId: string, requestingUserId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+
+    const requestingUser = await this.prisma.user.findUnique({ where: { id: requestingUserId } });
+    const isAdmin = requestingUser?.role === 'ADMIN';
+    const isCreator = event.createdById === requestingUserId;
+    if (!isAdmin && !isCreator) {
+      throw new ForbiddenException('Only admins or the event creator can export RSVP data.');
+    }
+
+    const [rsvps, guestRsvps] = await Promise.all([
+      this.prisma.rSVP.findMany({
+        where: { eventId },
+        include: { user: { select: { email: true, displayName: true } } },
+        orderBy: [{ status: 'asc' }, { updatedAt: 'asc' }],
+      }),
+      this.prisma.guestRSVP.findMany({
+        where: { eventId },
+        orderBy: [{ status: 'asc' }, { updatedAt: 'asc' }],
+      }),
+    ]);
+
+    const rows: { name: string; email: string; type: string; status: string; declineReason: string }[] = [];
+
+    for (const r of rsvps) {
+      rows.push({
+        name: (r.user as any).displayName ?? '',
+        email: r.user.email,
+        type: 'member',
+        status: r.status,
+        declineReason: r.status === 'NO' ? ((r as any).declineReason ?? '') : '',
+      });
+    }
+
+    for (const r of guestRsvps) {
+      rows.push({
+        name: r.guestName,
+        email: r.guestEmail,
+        type: 'guest',
+        status: r.status,
+        declineReason: '',
+      });
+    }
+
+    return { eventTitle: event.title_en || event.title_zh, rows };
   }
 }

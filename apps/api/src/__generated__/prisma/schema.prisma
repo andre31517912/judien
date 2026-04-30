@@ -95,6 +95,9 @@ model User {
   eventSeriesCreated     EventSeries[]      @relation("EventSeriesCreatedBy")
   eventShareLinks        EventShareLink[]
 
+  donationRecordsFor     DonationRecord[] @relation("DonationForUser")
+  donationRecordsCreated DonationRecord[] @relation("DonationCreatedBy")
+
   @@index([email])
   @@index([role])
 }
@@ -215,11 +218,12 @@ model EventInvite {
 }
 
 model RSVP {
-  id        String     @id @default(cuid())
-  eventId   String
-  userId    String
-  status    RSVPStatus
-  updatedAt DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  eventId       String
+  userId        String
+  status        RSVPStatus
+  declineReason String?
+  updatedAt     DateTime   @updatedAt
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -334,6 +338,8 @@ model Group {
   news         News[]
   eventSeries  EventSeries[]
 
+  donationRecords DonationRecord[]
+
   @@index([name])
   @@index([discoverableBySearch])
   @@index([parentGroupId])
@@ -399,4 +405,23 @@ model GroupJoinRequest {
   @@unique([groupId, requesterUserId])
   @@index([groupId, status])
   @@index([requesterUserId, status])
+}
+
+model DonationRecord {
+  id          String   @id @default(cuid())
+  groupId     String
+  forUserId   String
+  amount      Decimal  @db.Decimal(10, 2)
+  currency    String // 'USD' or 'NTD'
+  date        DateTime
+  note        String?
+  createdById String
+  createdAt   DateTime @default(now())
+
+  group     Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  forUser   User  @relation("DonationForUser", fields: [forUserId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("DonationCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([forUserId])
 }

@@ -395,7 +395,10 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           {eventLoading ? (
             <p className="text-gray-500 dark:text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
           ) : events.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動。' : 'No events yet.'}</p>
+            <div className="text-center py-16">
+              <p className="text-4xl mb-3">📅</p>
+              <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-4">
               {events.map((event) => (

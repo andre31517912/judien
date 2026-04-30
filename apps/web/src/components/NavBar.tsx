@@ -19,7 +19,7 @@ export default function NavBar({ locale }: NavBarProps) {
   const zh = locale === 'zh';
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center justify-between transition-colors">
+    <nav className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shadow-sm px-4 py-3 flex items-center justify-between transition-colors">
       <Link href={`/${locale}/events`} className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
         {zh ? '聚點' : 'Judien'}
       </Link>

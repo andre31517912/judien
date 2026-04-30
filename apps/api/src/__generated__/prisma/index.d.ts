@@ -93,6 +93,11 @@ export type GroupInvite = $Result.DefaultSelection<Prisma.$GroupInvitePayload>
  * 
  */
 export type GroupJoinRequest = $Result.DefaultSelection<Prisma.$GroupJoinRequestPayload>
+/**
+ * Model DonationRecord
+ * 
+ */
+export type DonationRecord = $Result.DefaultSelection<Prisma.$DonationRecordPayload>
 
 /**
  * Enums
@@ -485,6 +490,16 @@ export class PrismaClient<
     * ```
     */
   get groupJoinRequest(): Prisma.GroupJoinRequestDelegate<ExtArgs>;
+
+  /**
+   * `prisma.donationRecord`: Exposes CRUD operations for the **DonationRecord** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DonationRecords
+    * const donationRecords = await prisma.donationRecord.findMany()
+    * ```
+    */
+  get donationRecord(): Prisma.DonationRecordDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -941,7 +956,8 @@ export namespace Prisma {
     Group: 'Group',
     GroupMembership: 'GroupMembership',
     GroupInvite: 'GroupInvite',
-    GroupJoinRequest: 'GroupJoinRequest'
+    GroupJoinRequest: 'GroupJoinRequest',
+    DonationRecord: 'DonationRecord'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -957,7 +973,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest"
+      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "donationRecord"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2081,6 +2097,76 @@ export namespace Prisma {
           }
         }
       }
+      DonationRecord: {
+        payload: Prisma.$DonationRecordPayload<ExtArgs>
+        fields: Prisma.DonationRecordFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DonationRecordFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DonationRecordFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          findFirst: {
+            args: Prisma.DonationRecordFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DonationRecordFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          findMany: {
+            args: Prisma.DonationRecordFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>[]
+          }
+          create: {
+            args: Prisma.DonationRecordCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          createMany: {
+            args: Prisma.DonationRecordCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DonationRecordCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>[]
+          }
+          delete: {
+            args: Prisma.DonationRecordDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          update: {
+            args: Prisma.DonationRecordUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          deleteMany: {
+            args: Prisma.DonationRecordDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DonationRecordUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DonationRecordUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DonationRecordPayload>
+          }
+          aggregate: {
+            args: Prisma.DonationRecordAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDonationRecord>
+          }
+          groupBy: {
+            args: Prisma.DonationRecordGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DonationRecordGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DonationRecordCountArgs<ExtArgs>
+            result: $Utils.Optional<DonationRecordCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2259,6 +2345,8 @@ export namespace Prisma {
     eventInvitesAccepted: number
     eventSeriesCreated: number
     eventShareLinks: number
+    donationRecordsFor: number
+    donationRecordsCreated: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2279,6 +2367,8 @@ export namespace Prisma {
     eventInvitesAccepted?: boolean | UserCountOutputTypeCountEventInvitesAcceptedArgs
     eventSeriesCreated?: boolean | UserCountOutputTypeCountEventSeriesCreatedArgs
     eventShareLinks?: boolean | UserCountOutputTypeCountEventShareLinksArgs
+    donationRecordsFor?: boolean | UserCountOutputTypeCountDonationRecordsForArgs
+    donationRecordsCreated?: boolean | UserCountOutputTypeCountDonationRecordsCreatedArgs
   }
 
   // Custom InputTypes
@@ -2409,6 +2499,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountEventShareLinksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventShareLinkWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountDonationRecordsForArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DonationRecordWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountDonationRecordsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DonationRecordWhereInput
   }
 
 
@@ -2563,6 +2667,7 @@ export namespace Prisma {
     events: number
     news: number
     eventSeries: number
+    donationRecords: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2574,6 +2679,7 @@ export namespace Prisma {
     events?: boolean | GroupCountOutputTypeCountEventsArgs
     news?: boolean | GroupCountOutputTypeCountNewsArgs
     eventSeries?: boolean | GroupCountOutputTypeCountEventSeriesArgs
+    donationRecords?: boolean | GroupCountOutputTypeCountDonationRecordsArgs
   }
 
   // Custom InputTypes
@@ -2641,6 +2747,13 @@ export namespace Prisma {
    */
   export type GroupCountOutputTypeCountEventSeriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EventSeriesWhereInput
+  }
+
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountDonationRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DonationRecordWhereInput
   }
 
 
@@ -2885,6 +2998,8 @@ export namespace Prisma {
     eventInvitesAccepted?: boolean | User$eventInvitesAcceptedArgs<ExtArgs>
     eventSeriesCreated?: boolean | User$eventSeriesCreatedArgs<ExtArgs>
     eventShareLinks?: boolean | User$eventShareLinksArgs<ExtArgs>
+    donationRecordsFor?: boolean | User$donationRecordsForArgs<ExtArgs>
+    donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2936,6 +3051,8 @@ export namespace Prisma {
     eventInvitesAccepted?: boolean | User$eventInvitesAcceptedArgs<ExtArgs>
     eventSeriesCreated?: boolean | User$eventSeriesCreatedArgs<ExtArgs>
     eventShareLinks?: boolean | User$eventShareLinksArgs<ExtArgs>
+    donationRecordsFor?: boolean | User$donationRecordsForArgs<ExtArgs>
+    donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2960,6 +3077,8 @@ export namespace Prisma {
       eventInvitesAccepted: Prisma.$EventInvitePayload<ExtArgs>[]
       eventSeriesCreated: Prisma.$EventSeriesPayload<ExtArgs>[]
       eventShareLinks: Prisma.$EventShareLinkPayload<ExtArgs>[]
+      donationRecordsFor: Prisma.$DonationRecordPayload<ExtArgs>[]
+      donationRecordsCreated: Prisma.$DonationRecordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3355,6 +3474,8 @@ export namespace Prisma {
     eventInvitesAccepted<T extends User$eventInvitesAcceptedArgs<ExtArgs> = {}>(args?: Subset<T, User$eventInvitesAcceptedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventInvitePayload<ExtArgs>, T, "findMany"> | Null>
     eventSeriesCreated<T extends User$eventSeriesCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$eventSeriesCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany"> | Null>
     eventShareLinks<T extends User$eventShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$eventShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventShareLinkPayload<ExtArgs>, T, "findMany"> | Null>
+    donationRecordsFor<T extends User$donationRecordsForArgs<ExtArgs> = {}>(args?: Subset<T, User$donationRecordsForArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
+    donationRecordsCreated<T extends User$donationRecordsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$donationRecordsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4047,6 +4168,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventShareLinkScalarFieldEnum | EventShareLinkScalarFieldEnum[]
+  }
+
+  /**
+   * User.donationRecordsFor
+   */
+  export type User$donationRecordsForArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    where?: DonationRecordWhereInput
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    cursor?: DonationRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * User.donationRecordsCreated
+   */
+  export type User$donationRecordsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    where?: DonationRecordWhereInput
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    cursor?: DonationRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
   }
 
   /**
@@ -9405,6 +9566,7 @@ export namespace Prisma {
     eventId: string | null
     userId: string | null
     status: $Enums.RSVPStatus | null
+    declineReason: string | null
     updatedAt: Date | null
   }
 
@@ -9413,6 +9575,7 @@ export namespace Prisma {
     eventId: string | null
     userId: string | null
     status: $Enums.RSVPStatus | null
+    declineReason: string | null
     updatedAt: Date | null
   }
 
@@ -9421,6 +9584,7 @@ export namespace Prisma {
     eventId: number
     userId: number
     status: number
+    declineReason: number
     updatedAt: number
     _all: number
   }
@@ -9431,6 +9595,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     status?: true
+    declineReason?: true
     updatedAt?: true
   }
 
@@ -9439,6 +9604,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     status?: true
+    declineReason?: true
     updatedAt?: true
   }
 
@@ -9447,6 +9613,7 @@ export namespace Prisma {
     eventId?: true
     userId?: true
     status?: true
+    declineReason?: true
     updatedAt?: true
     _all?: true
   }
@@ -9528,6 +9695,7 @@ export namespace Prisma {
     eventId: string
     userId: string
     status: $Enums.RSVPStatus
+    declineReason: string | null
     updatedAt: Date
     _count: RSVPCountAggregateOutputType | null
     _min: RSVPMinAggregateOutputType | null
@@ -9553,6 +9721,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     status?: boolean
+    declineReason?: boolean
     updatedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -9563,6 +9732,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     status?: boolean
+    declineReason?: boolean
     updatedAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -9573,6 +9743,7 @@ export namespace Prisma {
     eventId?: boolean
     userId?: boolean
     status?: boolean
+    declineReason?: boolean
     updatedAt?: boolean
   }
 
@@ -9596,6 +9767,7 @@ export namespace Prisma {
       eventId: string
       userId: string
       status: $Enums.RSVPStatus
+      declineReason: string | null
       updatedAt: Date
     }, ExtArgs["result"]["rSVP"]>
     composites: {}
@@ -9996,6 +10168,7 @@ export namespace Prisma {
     readonly eventId: FieldRef<"RSVP", 'String'>
     readonly userId: FieldRef<"RSVP", 'String'>
     readonly status: FieldRef<"RSVP", 'RSVPStatus'>
+    readonly declineReason: FieldRef<"RSVP", 'String'>
     readonly updatedAt: FieldRef<"RSVP", 'DateTime'>
   }
     
@@ -15467,6 +15640,7 @@ export namespace Prisma {
     events?: boolean | Group$eventsArgs<ExtArgs>
     news?: boolean | Group$newsArgs<ExtArgs>
     eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
+    donationRecords?: boolean | Group$donationRecordsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -15509,6 +15683,7 @@ export namespace Prisma {
     events?: boolean | Group$eventsArgs<ExtArgs>
     news?: boolean | Group$newsArgs<ExtArgs>
     eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
+    donationRecords?: boolean | Group$donationRecordsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15529,6 +15704,7 @@ export namespace Prisma {
       events: Prisma.$EventPayload<ExtArgs>[]
       news: Prisma.$NewsPayload<ExtArgs>[]
       eventSeries: Prisma.$EventSeriesPayload<ExtArgs>[]
+      donationRecords: Prisma.$DonationRecordPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -15915,6 +16091,7 @@ export namespace Prisma {
     events<T extends Group$eventsArgs<ExtArgs> = {}>(args?: Subset<T, Group$eventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findMany"> | Null>
     news<T extends Group$newsArgs<ExtArgs> = {}>(args?: Subset<T, Group$newsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsPayload<ExtArgs>, T, "findMany"> | Null>
     eventSeries<T extends Group$eventSeriesArgs<ExtArgs> = {}>(args?: Subset<T, Group$eventSeriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany"> | Null>
+    donationRecords<T extends Group$donationRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Group$donationRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16444,6 +16621,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EventSeriesScalarFieldEnum | EventSeriesScalarFieldEnum[]
+  }
+
+  /**
+   * Group.donationRecords
+   */
+  export type Group$donationRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    where?: DonationRecordWhereInput
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    cursor?: DonationRecordWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
   }
 
   /**
@@ -19510,6 +19707,1033 @@ export namespace Prisma {
 
 
   /**
+   * Model DonationRecord
+   */
+
+  export type AggregateDonationRecord = {
+    _count: DonationRecordCountAggregateOutputType | null
+    _avg: DonationRecordAvgAggregateOutputType | null
+    _sum: DonationRecordSumAggregateOutputType | null
+    _min: DonationRecordMinAggregateOutputType | null
+    _max: DonationRecordMaxAggregateOutputType | null
+  }
+
+  export type DonationRecordAvgAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type DonationRecordSumAggregateOutputType = {
+    amount: Decimal | null
+  }
+
+  export type DonationRecordMinAggregateOutputType = {
+    id: string | null
+    groupId: string | null
+    forUserId: string | null
+    amount: Decimal | null
+    currency: string | null
+    date: Date | null
+    note: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type DonationRecordMaxAggregateOutputType = {
+    id: string | null
+    groupId: string | null
+    forUserId: string | null
+    amount: Decimal | null
+    currency: string | null
+    date: Date | null
+    note: string | null
+    createdById: string | null
+    createdAt: Date | null
+  }
+
+  export type DonationRecordCountAggregateOutputType = {
+    id: number
+    groupId: number
+    forUserId: number
+    amount: number
+    currency: number
+    date: number
+    note: number
+    createdById: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type DonationRecordAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type DonationRecordSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type DonationRecordMinAggregateInputType = {
+    id?: true
+    groupId?: true
+    forUserId?: true
+    amount?: true
+    currency?: true
+    date?: true
+    note?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type DonationRecordMaxAggregateInputType = {
+    id?: true
+    groupId?: true
+    forUserId?: true
+    amount?: true
+    currency?: true
+    date?: true
+    note?: true
+    createdById?: true
+    createdAt?: true
+  }
+
+  export type DonationRecordCountAggregateInputType = {
+    id?: true
+    groupId?: true
+    forUserId?: true
+    amount?: true
+    currency?: true
+    date?: true
+    note?: true
+    createdById?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type DonationRecordAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DonationRecord to aggregate.
+     */
+    where?: DonationRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DonationRecords to fetch.
+     */
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DonationRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DonationRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DonationRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DonationRecords
+    **/
+    _count?: true | DonationRecordCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: DonationRecordAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: DonationRecordSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DonationRecordMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DonationRecordMaxAggregateInputType
+  }
+
+  export type GetDonationRecordAggregateType<T extends DonationRecordAggregateArgs> = {
+        [P in keyof T & keyof AggregateDonationRecord]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDonationRecord[P]>
+      : GetScalarType<T[P], AggregateDonationRecord[P]>
+  }
+
+
+
+
+  export type DonationRecordGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DonationRecordWhereInput
+    orderBy?: DonationRecordOrderByWithAggregationInput | DonationRecordOrderByWithAggregationInput[]
+    by: DonationRecordScalarFieldEnum[] | DonationRecordScalarFieldEnum
+    having?: DonationRecordScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DonationRecordCountAggregateInputType | true
+    _avg?: DonationRecordAvgAggregateInputType
+    _sum?: DonationRecordSumAggregateInputType
+    _min?: DonationRecordMinAggregateInputType
+    _max?: DonationRecordMaxAggregateInputType
+  }
+
+  export type DonationRecordGroupByOutputType = {
+    id: string
+    groupId: string
+    forUserId: string
+    amount: Decimal
+    currency: string
+    date: Date
+    note: string | null
+    createdById: string
+    createdAt: Date
+    _count: DonationRecordCountAggregateOutputType | null
+    _avg: DonationRecordAvgAggregateOutputType | null
+    _sum: DonationRecordSumAggregateOutputType | null
+    _min: DonationRecordMinAggregateOutputType | null
+    _max: DonationRecordMaxAggregateOutputType | null
+  }
+
+  type GetDonationRecordGroupByPayload<T extends DonationRecordGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DonationRecordGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DonationRecordGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DonationRecordGroupByOutputType[P]>
+            : GetScalarType<T[P], DonationRecordGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DonationRecordSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    groupId?: boolean
+    forUserId?: boolean
+    amount?: boolean
+    currency?: boolean
+    date?: boolean
+    note?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    forUser?: boolean | UserDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["donationRecord"]>
+
+  export type DonationRecordSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    groupId?: boolean
+    forUserId?: boolean
+    amount?: boolean
+    currency?: boolean
+    date?: boolean
+    note?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    forUser?: boolean | UserDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["donationRecord"]>
+
+  export type DonationRecordSelectScalar = {
+    id?: boolean
+    groupId?: boolean
+    forUserId?: boolean
+    amount?: boolean
+    currency?: boolean
+    date?: boolean
+    note?: boolean
+    createdById?: boolean
+    createdAt?: boolean
+  }
+
+  export type DonationRecordInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    forUser?: boolean | UserDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DonationRecordIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    group?: boolean | GroupDefaultArgs<ExtArgs>
+    forUser?: boolean | UserDefaultArgs<ExtArgs>
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $DonationRecordPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DonationRecord"
+    objects: {
+      group: Prisma.$GroupPayload<ExtArgs>
+      forUser: Prisma.$UserPayload<ExtArgs>
+      createdBy: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      groupId: string
+      forUserId: string
+      amount: Prisma.Decimal
+      currency: string
+      date: Date
+      note: string | null
+      createdById: string
+      createdAt: Date
+    }, ExtArgs["result"]["donationRecord"]>
+    composites: {}
+  }
+
+  type DonationRecordGetPayload<S extends boolean | null | undefined | DonationRecordDefaultArgs> = $Result.GetResult<Prisma.$DonationRecordPayload, S>
+
+  type DonationRecordCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DonationRecordFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DonationRecordCountAggregateInputType | true
+    }
+
+  export interface DonationRecordDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DonationRecord'], meta: { name: 'DonationRecord' } }
+    /**
+     * Find zero or one DonationRecord that matches the filter.
+     * @param {DonationRecordFindUniqueArgs} args - Arguments to find a DonationRecord
+     * @example
+     * // Get one DonationRecord
+     * const donationRecord = await prisma.donationRecord.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DonationRecordFindUniqueArgs>(args: SelectSubset<T, DonationRecordFindUniqueArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DonationRecord that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DonationRecordFindUniqueOrThrowArgs} args - Arguments to find a DonationRecord
+     * @example
+     * // Get one DonationRecord
+     * const donationRecord = await prisma.donationRecord.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DonationRecordFindUniqueOrThrowArgs>(args: SelectSubset<T, DonationRecordFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DonationRecord that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordFindFirstArgs} args - Arguments to find a DonationRecord
+     * @example
+     * // Get one DonationRecord
+     * const donationRecord = await prisma.donationRecord.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DonationRecordFindFirstArgs>(args?: SelectSubset<T, DonationRecordFindFirstArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DonationRecord that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordFindFirstOrThrowArgs} args - Arguments to find a DonationRecord
+     * @example
+     * // Get one DonationRecord
+     * const donationRecord = await prisma.donationRecord.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DonationRecordFindFirstOrThrowArgs>(args?: SelectSubset<T, DonationRecordFindFirstOrThrowArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DonationRecords that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DonationRecords
+     * const donationRecords = await prisma.donationRecord.findMany()
+     * 
+     * // Get first 10 DonationRecords
+     * const donationRecords = await prisma.donationRecord.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const donationRecordWithIdOnly = await prisma.donationRecord.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DonationRecordFindManyArgs>(args?: SelectSubset<T, DonationRecordFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DonationRecord.
+     * @param {DonationRecordCreateArgs} args - Arguments to create a DonationRecord.
+     * @example
+     * // Create one DonationRecord
+     * const DonationRecord = await prisma.donationRecord.create({
+     *   data: {
+     *     // ... data to create a DonationRecord
+     *   }
+     * })
+     * 
+     */
+    create<T extends DonationRecordCreateArgs>(args: SelectSubset<T, DonationRecordCreateArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DonationRecords.
+     * @param {DonationRecordCreateManyArgs} args - Arguments to create many DonationRecords.
+     * @example
+     * // Create many DonationRecords
+     * const donationRecord = await prisma.donationRecord.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DonationRecordCreateManyArgs>(args?: SelectSubset<T, DonationRecordCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DonationRecords and returns the data saved in the database.
+     * @param {DonationRecordCreateManyAndReturnArgs} args - Arguments to create many DonationRecords.
+     * @example
+     * // Create many DonationRecords
+     * const donationRecord = await prisma.donationRecord.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DonationRecords and only return the `id`
+     * const donationRecordWithIdOnly = await prisma.donationRecord.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DonationRecordCreateManyAndReturnArgs>(args?: SelectSubset<T, DonationRecordCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DonationRecord.
+     * @param {DonationRecordDeleteArgs} args - Arguments to delete one DonationRecord.
+     * @example
+     * // Delete one DonationRecord
+     * const DonationRecord = await prisma.donationRecord.delete({
+     *   where: {
+     *     // ... filter to delete one DonationRecord
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DonationRecordDeleteArgs>(args: SelectSubset<T, DonationRecordDeleteArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DonationRecord.
+     * @param {DonationRecordUpdateArgs} args - Arguments to update one DonationRecord.
+     * @example
+     * // Update one DonationRecord
+     * const donationRecord = await prisma.donationRecord.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DonationRecordUpdateArgs>(args: SelectSubset<T, DonationRecordUpdateArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DonationRecords.
+     * @param {DonationRecordDeleteManyArgs} args - Arguments to filter DonationRecords to delete.
+     * @example
+     * // Delete a few DonationRecords
+     * const { count } = await prisma.donationRecord.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DonationRecordDeleteManyArgs>(args?: SelectSubset<T, DonationRecordDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DonationRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DonationRecords
+     * const donationRecord = await prisma.donationRecord.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DonationRecordUpdateManyArgs>(args: SelectSubset<T, DonationRecordUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DonationRecord.
+     * @param {DonationRecordUpsertArgs} args - Arguments to update or create a DonationRecord.
+     * @example
+     * // Update or create a DonationRecord
+     * const donationRecord = await prisma.donationRecord.upsert({
+     *   create: {
+     *     // ... data to create a DonationRecord
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DonationRecord we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DonationRecordUpsertArgs>(args: SelectSubset<T, DonationRecordUpsertArgs<ExtArgs>>): Prisma__DonationRecordClient<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DonationRecords.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordCountArgs} args - Arguments to filter DonationRecords to count.
+     * @example
+     * // Count the number of DonationRecords
+     * const count = await prisma.donationRecord.count({
+     *   where: {
+     *     // ... the filter for the DonationRecords we want to count
+     *   }
+     * })
+    **/
+    count<T extends DonationRecordCountArgs>(
+      args?: Subset<T, DonationRecordCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DonationRecordCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DonationRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DonationRecordAggregateArgs>(args: Subset<T, DonationRecordAggregateArgs>): Prisma.PrismaPromise<GetDonationRecordAggregateType<T>>
+
+    /**
+     * Group by DonationRecord.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DonationRecordGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DonationRecordGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DonationRecordGroupByArgs['orderBy'] }
+        : { orderBy?: DonationRecordGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DonationRecordGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDonationRecordGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DonationRecord model
+   */
+  readonly fields: DonationRecordFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DonationRecord.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DonationRecordClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    group<T extends GroupDefaultArgs<ExtArgs> = {}>(args?: Subset<T, GroupDefaultArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    forUser<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DonationRecord model
+   */ 
+  interface DonationRecordFieldRefs {
+    readonly id: FieldRef<"DonationRecord", 'String'>
+    readonly groupId: FieldRef<"DonationRecord", 'String'>
+    readonly forUserId: FieldRef<"DonationRecord", 'String'>
+    readonly amount: FieldRef<"DonationRecord", 'Decimal'>
+    readonly currency: FieldRef<"DonationRecord", 'String'>
+    readonly date: FieldRef<"DonationRecord", 'DateTime'>
+    readonly note: FieldRef<"DonationRecord", 'String'>
+    readonly createdById: FieldRef<"DonationRecord", 'String'>
+    readonly createdAt: FieldRef<"DonationRecord", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DonationRecord findUnique
+   */
+  export type DonationRecordFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which DonationRecord to fetch.
+     */
+    where: DonationRecordWhereUniqueInput
+  }
+
+  /**
+   * DonationRecord findUniqueOrThrow
+   */
+  export type DonationRecordFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which DonationRecord to fetch.
+     */
+    where: DonationRecordWhereUniqueInput
+  }
+
+  /**
+   * DonationRecord findFirst
+   */
+  export type DonationRecordFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which DonationRecord to fetch.
+     */
+    where?: DonationRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DonationRecords to fetch.
+     */
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DonationRecords.
+     */
+    cursor?: DonationRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DonationRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DonationRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DonationRecords.
+     */
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * DonationRecord findFirstOrThrow
+   */
+  export type DonationRecordFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which DonationRecord to fetch.
+     */
+    where?: DonationRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DonationRecords to fetch.
+     */
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DonationRecords.
+     */
+    cursor?: DonationRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DonationRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DonationRecords.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DonationRecords.
+     */
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * DonationRecord findMany
+   */
+  export type DonationRecordFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter, which DonationRecords to fetch.
+     */
+    where?: DonationRecordWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DonationRecords to fetch.
+     */
+    orderBy?: DonationRecordOrderByWithRelationInput | DonationRecordOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DonationRecords.
+     */
+    cursor?: DonationRecordWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DonationRecords from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DonationRecords.
+     */
+    skip?: number
+    distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * DonationRecord create
+   */
+  export type DonationRecordCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DonationRecord.
+     */
+    data: XOR<DonationRecordCreateInput, DonationRecordUncheckedCreateInput>
+  }
+
+  /**
+   * DonationRecord createMany
+   */
+  export type DonationRecordCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DonationRecords.
+     */
+    data: DonationRecordCreateManyInput | DonationRecordCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DonationRecord createManyAndReturn
+   */
+  export type DonationRecordCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DonationRecords.
+     */
+    data: DonationRecordCreateManyInput | DonationRecordCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DonationRecord update
+   */
+  export type DonationRecordUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DonationRecord.
+     */
+    data: XOR<DonationRecordUpdateInput, DonationRecordUncheckedUpdateInput>
+    /**
+     * Choose, which DonationRecord to update.
+     */
+    where: DonationRecordWhereUniqueInput
+  }
+
+  /**
+   * DonationRecord updateMany
+   */
+  export type DonationRecordUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DonationRecords.
+     */
+    data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyInput>
+    /**
+     * Filter which DonationRecords to update
+     */
+    where?: DonationRecordWhereInput
+  }
+
+  /**
+   * DonationRecord upsert
+   */
+  export type DonationRecordUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DonationRecord to update in case it exists.
+     */
+    where: DonationRecordWhereUniqueInput
+    /**
+     * In case the DonationRecord found by the `where` argument doesn't exist, create a new DonationRecord with this data.
+     */
+    create: XOR<DonationRecordCreateInput, DonationRecordUncheckedCreateInput>
+    /**
+     * In case the DonationRecord was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DonationRecordUpdateInput, DonationRecordUncheckedUpdateInput>
+  }
+
+  /**
+   * DonationRecord delete
+   */
+  export type DonationRecordDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+    /**
+     * Filter which DonationRecord to delete.
+     */
+    where: DonationRecordWhereUniqueInput
+  }
+
+  /**
+   * DonationRecord deleteMany
+   */
+  export type DonationRecordDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DonationRecords to delete
+     */
+    where?: DonationRecordWhereInput
+  }
+
+  /**
+   * DonationRecord without action
+   */
+  export type DonationRecordDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DonationRecord
+     */
+    select?: DonationRecordSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DonationRecordInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -19629,6 +20853,7 @@ export namespace Prisma {
     eventId: 'eventId',
     userId: 'userId',
     status: 'status',
+    declineReason: 'declineReason',
     updatedAt: 'updatedAt'
   };
 
@@ -19762,6 +20987,21 @@ export namespace Prisma {
   };
 
   export type GroupJoinRequestScalarFieldEnum = (typeof GroupJoinRequestScalarFieldEnum)[keyof typeof GroupJoinRequestScalarFieldEnum]
+
+
+  export const DonationRecordScalarFieldEnum: {
+    id: 'id',
+    groupId: 'groupId',
+    forUserId: 'forUserId',
+    amount: 'amount',
+    currency: 'currency',
+    date: 'date',
+    note: 'note',
+    createdById: 'createdById',
+    createdAt: 'createdAt'
+  };
+
+  export type DonationRecordScalarFieldEnum = (typeof DonationRecordScalarFieldEnum)[keyof typeof DonationRecordScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -20041,6 +21281,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteListRelationFilter
     eventSeriesCreated?: EventSeriesListRelationFilter
     eventShareLinks?: EventShareLinkListRelationFilter
+    donationRecordsFor?: DonationRecordListRelationFilter
+    donationRecordsCreated?: DonationRecordListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -20073,6 +21315,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteOrderByRelationAggregateInput
     eventSeriesCreated?: EventSeriesOrderByRelationAggregateInput
     eventShareLinks?: EventShareLinkOrderByRelationAggregateInput
+    donationRecordsFor?: DonationRecordOrderByRelationAggregateInput
+    donationRecordsCreated?: DonationRecordOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -20108,6 +21352,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteListRelationFilter
     eventSeriesCreated?: EventSeriesListRelationFilter
     eventShareLinks?: EventShareLinkListRelationFilter
+    donationRecordsFor?: DonationRecordListRelationFilter
+    donationRecordsCreated?: DonationRecordListRelationFilter
   }, "id" | "email" | "phoneE164">
 
   export type UserOrderByWithAggregationInput = {
@@ -20614,6 +21860,7 @@ export namespace Prisma {
     eventId?: StringFilter<"RSVP"> | string
     userId?: StringFilter<"RSVP"> | string
     status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
+    declineReason?: StringNullableFilter<"RSVP"> | string | null
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     event?: XOR<EventRelationFilter, EventWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -20624,6 +21871,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     status?: SortOrder
+    declineReason?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     event?: EventOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -20638,6 +21886,7 @@ export namespace Prisma {
     eventId?: StringFilter<"RSVP"> | string
     userId?: StringFilter<"RSVP"> | string
     status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
+    declineReason?: StringNullableFilter<"RSVP"> | string | null
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
     event?: XOR<EventRelationFilter, EventWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
@@ -20648,6 +21897,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     status?: SortOrder
+    declineReason?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: RSVPCountOrderByAggregateInput
     _max?: RSVPMaxOrderByAggregateInput
@@ -20662,6 +21912,7 @@ export namespace Prisma {
     eventId?: StringWithAggregatesFilter<"RSVP"> | string
     userId?: StringWithAggregatesFilter<"RSVP"> | string
     status?: EnumRSVPStatusWithAggregatesFilter<"RSVP"> | $Enums.RSVPStatus
+    declineReason?: StringNullableWithAggregatesFilter<"RSVP"> | string | null
     updatedAt?: DateTimeWithAggregatesFilter<"RSVP"> | Date | string
   }
 
@@ -21040,6 +22291,7 @@ export namespace Prisma {
     events?: EventListRelationFilter
     news?: NewsListRelationFilter
     eventSeries?: EventSeriesListRelationFilter
+    donationRecords?: DonationRecordListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -21063,6 +22315,7 @@ export namespace Prisma {
     events?: EventOrderByRelationAggregateInput
     news?: NewsOrderByRelationAggregateInput
     eventSeries?: EventSeriesOrderByRelationAggregateInput
+    donationRecords?: DonationRecordOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -21089,6 +22342,7 @@ export namespace Prisma {
     events?: EventListRelationFilter
     news?: NewsListRelationFilter
     eventSeries?: EventSeriesListRelationFilter
+    donationRecords?: DonationRecordListRelationFilter
   }, "id" | "pid">
 
   export type GroupOrderByWithAggregationInput = {
@@ -21378,6 +22632,89 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"GroupJoinRequest"> | Date | string
   }
 
+  export type DonationRecordWhereInput = {
+    AND?: DonationRecordWhereInput | DonationRecordWhereInput[]
+    OR?: DonationRecordWhereInput[]
+    NOT?: DonationRecordWhereInput | DonationRecordWhereInput[]
+    id?: StringFilter<"DonationRecord"> | string
+    groupId?: StringFilter<"DonationRecord"> | string
+    forUserId?: StringFilter<"DonationRecord"> | string
+    amount?: DecimalFilter<"DonationRecord"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"DonationRecord"> | string
+    date?: DateTimeFilter<"DonationRecord"> | Date | string
+    note?: StringNullableFilter<"DonationRecord"> | string | null
+    createdById?: StringFilter<"DonationRecord"> | string
+    createdAt?: DateTimeFilter<"DonationRecord"> | Date | string
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+    forUser?: XOR<UserRelationFilter, UserWhereInput>
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type DonationRecordOrderByWithRelationInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    forUserId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    date?: SortOrder
+    note?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    group?: GroupOrderByWithRelationInput
+    forUser?: UserOrderByWithRelationInput
+    createdBy?: UserOrderByWithRelationInput
+  }
+
+  export type DonationRecordWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DonationRecordWhereInput | DonationRecordWhereInput[]
+    OR?: DonationRecordWhereInput[]
+    NOT?: DonationRecordWhereInput | DonationRecordWhereInput[]
+    groupId?: StringFilter<"DonationRecord"> | string
+    forUserId?: StringFilter<"DonationRecord"> | string
+    amount?: DecimalFilter<"DonationRecord"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"DonationRecord"> | string
+    date?: DateTimeFilter<"DonationRecord"> | Date | string
+    note?: StringNullableFilter<"DonationRecord"> | string | null
+    createdById?: StringFilter<"DonationRecord"> | string
+    createdAt?: DateTimeFilter<"DonationRecord"> | Date | string
+    group?: XOR<GroupRelationFilter, GroupWhereInput>
+    forUser?: XOR<UserRelationFilter, UserWhereInput>
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type DonationRecordOrderByWithAggregationInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    forUserId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    date?: SortOrder
+    note?: SortOrderInput | SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+    _count?: DonationRecordCountOrderByAggregateInput
+    _avg?: DonationRecordAvgOrderByAggregateInput
+    _max?: DonationRecordMaxOrderByAggregateInput
+    _min?: DonationRecordMinOrderByAggregateInput
+    _sum?: DonationRecordSumOrderByAggregateInput
+  }
+
+  export type DonationRecordScalarWhereWithAggregatesInput = {
+    AND?: DonationRecordScalarWhereWithAggregatesInput | DonationRecordScalarWhereWithAggregatesInput[]
+    OR?: DonationRecordScalarWhereWithAggregatesInput[]
+    NOT?: DonationRecordScalarWhereWithAggregatesInput | DonationRecordScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DonationRecord"> | string
+    groupId?: StringWithAggregatesFilter<"DonationRecord"> | string
+    forUserId?: StringWithAggregatesFilter<"DonationRecord"> | string
+    amount?: DecimalWithAggregatesFilter<"DonationRecord"> | Decimal | DecimalJsLike | number | string
+    currency?: StringWithAggregatesFilter<"DonationRecord"> | string
+    date?: DateTimeWithAggregatesFilter<"DonationRecord"> | Date | string
+    note?: StringNullableWithAggregatesFilter<"DonationRecord"> | string | null
+    createdById?: StringWithAggregatesFilter<"DonationRecord"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"DonationRecord"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -21408,6 +22745,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -21440,6 +22779,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUpdateInput = {
@@ -21472,6 +22813,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -21504,6 +22847,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -22051,6 +23396,7 @@ export namespace Prisma {
   export type RSVPCreateInput = {
     id?: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
     event: EventCreateNestedOneWithoutRsvpsInput
     user: UserCreateNestedOneWithoutRsvpsInput
@@ -22061,12 +23407,14 @@ export namespace Prisma {
     eventId: string
     userId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
   export type RSVPUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutRsvpsNestedInput
     user?: UserUpdateOneRequiredWithoutRsvpsNestedInput
@@ -22077,6 +23425,7 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22085,12 +23434,14 @@ export namespace Prisma {
     eventId: string
     userId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
   export type RSVPUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22099,6 +23450,7 @@ export namespace Prisma {
     eventId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -22472,6 +23824,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -22493,6 +23846,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUpdateInput = {
@@ -22514,6 +23868,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -22535,6 +23890,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -22831,6 +24187,87 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DonationRecordCreateInput = {
+    id?: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+    group: GroupCreateNestedOneWithoutDonationRecordsInput
+    forUser: UserCreateNestedOneWithoutDonationRecordsForInput
+    createdBy: UserCreateNestedOneWithoutDonationRecordsCreatedInput
+  }
+
+  export type DonationRecordUncheckedCreateInput = {
+    id?: string
+    groupId: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneRequiredWithoutDonationRecordsNestedInput
+    forUser?: UserUpdateOneRequiredWithoutDonationRecordsForNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutDonationRecordsCreatedNestedInput
+  }
+
+  export type DonationRecordUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordCreateManyInput = {
+    id?: string
+    groupId: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -22962,6 +24399,12 @@ export namespace Prisma {
     none?: EventShareLinkWhereInput
   }
 
+  export type DonationRecordListRelationFilter = {
+    every?: DonationRecordWhereInput
+    some?: DonationRecordWhereInput
+    none?: DonationRecordWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -23016,6 +24459,10 @@ export namespace Prisma {
   }
 
   export type EventShareLinkOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DonationRecordOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -23507,6 +24954,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     status?: SortOrder
+    declineReason?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -23515,6 +24963,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     status?: SortOrder
+    declineReason?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -23523,6 +24972,7 @@ export namespace Prisma {
     eventId?: SortOrder
     userId?: SortOrder
     status?: SortOrder
+    declineReason?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -24042,6 +25492,77 @@ export namespace Prisma {
     _max?: NestedEnumGroupJoinRequestStatusFilter<$PrismaModel>
   }
 
+  export type DecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type DonationRecordCountOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    forUserId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    date?: SortOrder
+    note?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DonationRecordAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type DonationRecordMaxOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    forUserId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    date?: SortOrder
+    note?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DonationRecordMinOrderByAggregateInput = {
+    id?: SortOrder
+    groupId?: SortOrder
+    forUserId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    date?: SortOrder
+    note?: SortOrder
+    createdById?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DonationRecordSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type DecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type EventCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -24161,6 +25682,20 @@ export namespace Prisma {
     connect?: EventShareLinkWhereUniqueInput | EventShareLinkWhereUniqueInput[]
   }
 
+  export type DonationRecordCreateNestedManyWithoutForUserInput = {
+    create?: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput> | DonationRecordCreateWithoutForUserInput[] | DonationRecordUncheckedCreateWithoutForUserInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutForUserInput | DonationRecordCreateOrConnectWithoutForUserInput[]
+    createMany?: DonationRecordCreateManyForUserInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
+  export type DonationRecordCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput> | DonationRecordCreateWithoutCreatedByInput[] | DonationRecordUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutCreatedByInput | DonationRecordCreateOrConnectWithoutCreatedByInput[]
+    createMany?: DonationRecordCreateManyCreatedByInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -24278,6 +25813,20 @@ export namespace Prisma {
     connectOrCreate?: EventShareLinkCreateOrConnectWithoutCreatedByInput | EventShareLinkCreateOrConnectWithoutCreatedByInput[]
     createMany?: EventShareLinkCreateManyCreatedByInputEnvelope
     connect?: EventShareLinkWhereUniqueInput | EventShareLinkWhereUniqueInput[]
+  }
+
+  export type DonationRecordUncheckedCreateNestedManyWithoutForUserInput = {
+    create?: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput> | DonationRecordCreateWithoutForUserInput[] | DonationRecordUncheckedCreateWithoutForUserInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutForUserInput | DonationRecordCreateOrConnectWithoutForUserInput[]
+    createMany?: DonationRecordCreateManyForUserInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
+  export type DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput> | DonationRecordCreateWithoutCreatedByInput[] | DonationRecordUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutCreatedByInput | DonationRecordCreateOrConnectWithoutCreatedByInput[]
+    createMany?: DonationRecordCreateManyCreatedByInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -24538,6 +26087,34 @@ export namespace Prisma {
     deleteMany?: EventShareLinkScalarWhereInput | EventShareLinkScalarWhereInput[]
   }
 
+  export type DonationRecordUpdateManyWithoutForUserNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput> | DonationRecordCreateWithoutForUserInput[] | DonationRecordUncheckedCreateWithoutForUserInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutForUserInput | DonationRecordCreateOrConnectWithoutForUserInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutForUserInput | DonationRecordUpsertWithWhereUniqueWithoutForUserInput[]
+    createMany?: DonationRecordCreateManyForUserInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutForUserInput | DonationRecordUpdateWithWhereUniqueWithoutForUserInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutForUserInput | DonationRecordUpdateManyWithWhereWithoutForUserInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
+  export type DonationRecordUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput> | DonationRecordCreateWithoutCreatedByInput[] | DonationRecordUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutCreatedByInput | DonationRecordCreateOrConnectWithoutCreatedByInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutCreatedByInput | DonationRecordUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: DonationRecordCreateManyCreatedByInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput | DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutCreatedByInput | DonationRecordUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -24774,6 +26351,34 @@ export namespace Prisma {
     update?: EventShareLinkUpdateWithWhereUniqueWithoutCreatedByInput | EventShareLinkUpdateWithWhereUniqueWithoutCreatedByInput[]
     updateMany?: EventShareLinkUpdateManyWithWhereWithoutCreatedByInput | EventShareLinkUpdateManyWithWhereWithoutCreatedByInput[]
     deleteMany?: EventShareLinkScalarWhereInput | EventShareLinkScalarWhereInput[]
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutForUserNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput> | DonationRecordCreateWithoutForUserInput[] | DonationRecordUncheckedCreateWithoutForUserInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutForUserInput | DonationRecordCreateOrConnectWithoutForUserInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutForUserInput | DonationRecordUpsertWithWhereUniqueWithoutForUserInput[]
+    createMany?: DonationRecordCreateManyForUserInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutForUserInput | DonationRecordUpdateWithWhereUniqueWithoutForUserInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutForUserInput | DonationRecordUpdateManyWithWhereWithoutForUserInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput> | DonationRecordCreateWithoutCreatedByInput[] | DonationRecordUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutCreatedByInput | DonationRecordCreateOrConnectWithoutCreatedByInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutCreatedByInput | DonationRecordUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: DonationRecordCreateManyCreatedByInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput | DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutCreatedByInput | DonationRecordUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutEventsInput = {
@@ -25588,6 +27193,13 @@ export namespace Prisma {
     connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
   }
 
+  export type DonationRecordCreateNestedManyWithoutGroupInput = {
+    create?: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput> | DonationRecordCreateWithoutGroupInput[] | DonationRecordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutGroupInput | DonationRecordCreateOrConnectWithoutGroupInput[]
+    createMany?: DonationRecordCreateManyGroupInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
   export type GroupUncheckedCreateNestedManyWithoutParentGroupInput = {
     create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
@@ -25642,6 +27254,13 @@ export namespace Prisma {
     connectOrCreate?: EventSeriesCreateOrConnectWithoutGroupInput | EventSeriesCreateOrConnectWithoutGroupInput[]
     createMany?: EventSeriesCreateManyGroupInputEnvelope
     connect?: EventSeriesWhereUniqueInput | EventSeriesWhereUniqueInput[]
+  }
+
+  export type DonationRecordUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput> | DonationRecordCreateWithoutGroupInput[] | DonationRecordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutGroupInput | DonationRecordCreateOrConnectWithoutGroupInput[]
+    createMany?: DonationRecordCreateManyGroupInputEnvelope
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutCreatedGroupsNestedInput = {
@@ -25774,6 +27393,20 @@ export namespace Prisma {
     deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
   }
 
+  export type DonationRecordUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput> | DonationRecordCreateWithoutGroupInput[] | DonationRecordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutGroupInput | DonationRecordCreateOrConnectWithoutGroupInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutGroupInput | DonationRecordUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: DonationRecordCreateManyGroupInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutGroupInput | DonationRecordUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutGroupInput | DonationRecordUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
   export type GroupUncheckedUpdateManyWithoutParentGroupNestedInput = {
     create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
@@ -25884,6 +27517,20 @@ export namespace Prisma {
     update?: EventSeriesUpdateWithWhereUniqueWithoutGroupInput | EventSeriesUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: EventSeriesUpdateManyWithWhereWithoutGroupInput | EventSeriesUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput> | DonationRecordCreateWithoutGroupInput[] | DonationRecordUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: DonationRecordCreateOrConnectWithoutGroupInput | DonationRecordCreateOrConnectWithoutGroupInput[]
+    upsert?: DonationRecordUpsertWithWhereUniqueWithoutGroupInput | DonationRecordUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: DonationRecordCreateManyGroupInputEnvelope
+    set?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    disconnect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    delete?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+    update?: DonationRecordUpdateWithWhereUniqueWithoutGroupInput | DonationRecordUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: DonationRecordUpdateManyWithWhereWithoutGroupInput | DonationRecordUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutGroupMembershipInvitesInput = {
@@ -26032,6 +27679,56 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReviewedJoinRequestsInput, UserUpdateWithoutReviewedJoinRequestsInput>, UserUncheckedUpdateWithoutReviewedJoinRequestsInput>
+  }
+
+  export type GroupCreateNestedOneWithoutDonationRecordsInput = {
+    create?: XOR<GroupCreateWithoutDonationRecordsInput, GroupUncheckedCreateWithoutDonationRecordsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutDonationRecordsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutDonationRecordsForInput = {
+    create?: XOR<UserCreateWithoutDonationRecordsForInput, UserUncheckedCreateWithoutDonationRecordsForInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDonationRecordsForInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutDonationRecordsCreatedInput = {
+    create?: XOR<UserCreateWithoutDonationRecordsCreatedInput, UserUncheckedCreateWithoutDonationRecordsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDonationRecordsCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DecimalFieldUpdateOperationsInput = {
+    set?: Decimal | DecimalJsLike | number | string
+    increment?: Decimal | DecimalJsLike | number | string
+    decrement?: Decimal | DecimalJsLike | number | string
+    multiply?: Decimal | DecimalJsLike | number | string
+    divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type GroupUpdateOneRequiredWithoutDonationRecordsNestedInput = {
+    create?: XOR<GroupCreateWithoutDonationRecordsInput, GroupUncheckedCreateWithoutDonationRecordsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutDonationRecordsInput
+    upsert?: GroupUpsertWithoutDonationRecordsInput
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutDonationRecordsInput, GroupUpdateWithoutDonationRecordsInput>, GroupUncheckedUpdateWithoutDonationRecordsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutDonationRecordsForNestedInput = {
+    create?: XOR<UserCreateWithoutDonationRecordsForInput, UserUncheckedCreateWithoutDonationRecordsForInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDonationRecordsForInput
+    upsert?: UserUpsertWithoutDonationRecordsForInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDonationRecordsForInput, UserUpdateWithoutDonationRecordsForInput>, UserUncheckedUpdateWithoutDonationRecordsForInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutDonationRecordsCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutDonationRecordsCreatedInput, UserUncheckedCreateWithoutDonationRecordsCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDonationRecordsCreatedInput
+    upsert?: UserUpsertWithoutDonationRecordsCreatedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDonationRecordsCreatedInput, UserUpdateWithoutDonationRecordsCreatedInput>, UserUncheckedUpdateWithoutDonationRecordsCreatedInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -26420,6 +28117,33 @@ export namespace Prisma {
     _max?: NestedEnumGroupJoinRequestStatusFilter<$PrismaModel>
   }
 
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
   export type EventCreateWithoutCreatedByInput = {
     id?: string
     partNumber?: number | null
@@ -26493,6 +28217,7 @@ export namespace Prisma {
   export type RSVPCreateWithoutUserInput = {
     id?: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
     event: EventCreateNestedOneWithoutRsvpsInput
   }
@@ -26501,6 +28226,7 @@ export namespace Prisma {
     id?: string
     eventId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
@@ -26652,6 +28378,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutCreatedByInput = {
@@ -26672,6 +28399,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutCreatedByInput = {
@@ -27008,6 +28736,70 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DonationRecordCreateWithoutForUserInput = {
+    id?: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+    group: GroupCreateNestedOneWithoutDonationRecordsInput
+    createdBy: UserCreateNestedOneWithoutDonationRecordsCreatedInput
+  }
+
+  export type DonationRecordUncheckedCreateWithoutForUserInput = {
+    id?: string
+    groupId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordCreateOrConnectWithoutForUserInput = {
+    where: DonationRecordWhereUniqueInput
+    create: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput>
+  }
+
+  export type DonationRecordCreateManyForUserInputEnvelope = {
+    data: DonationRecordCreateManyForUserInput | DonationRecordCreateManyForUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DonationRecordCreateWithoutCreatedByInput = {
+    id?: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+    group: GroupCreateNestedOneWithoutDonationRecordsInput
+    forUser: UserCreateNestedOneWithoutDonationRecordsForInput
+  }
+
+  export type DonationRecordUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    groupId: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordCreateOrConnectWithoutCreatedByInput = {
+    where: DonationRecordWhereUniqueInput
+    create: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type DonationRecordCreateManyCreatedByInputEnvelope = {
+    data: DonationRecordCreateManyCreatedByInput | DonationRecordCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type EventUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: EventWhereUniqueInput
     update: XOR<EventUpdateWithoutCreatedByInput, EventUncheckedUpdateWithoutCreatedByInput>
@@ -27075,6 +28867,7 @@ export namespace Prisma {
     eventId?: StringFilter<"RSVP"> | string
     userId?: StringFilter<"RSVP"> | string
     status?: EnumRSVPStatusFilter<"RSVP"> | $Enums.RSVPStatus
+    declineReason?: StringNullableFilter<"RSVP"> | string | null
     updatedAt?: DateTimeFilter<"RSVP"> | Date | string
   }
 
@@ -27476,6 +29269,53 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"EventShareLink"> | Date | string
   }
 
+  export type DonationRecordUpsertWithWhereUniqueWithoutForUserInput = {
+    where: DonationRecordWhereUniqueInput
+    update: XOR<DonationRecordUpdateWithoutForUserInput, DonationRecordUncheckedUpdateWithoutForUserInput>
+    create: XOR<DonationRecordCreateWithoutForUserInput, DonationRecordUncheckedCreateWithoutForUserInput>
+  }
+
+  export type DonationRecordUpdateWithWhereUniqueWithoutForUserInput = {
+    where: DonationRecordWhereUniqueInput
+    data: XOR<DonationRecordUpdateWithoutForUserInput, DonationRecordUncheckedUpdateWithoutForUserInput>
+  }
+
+  export type DonationRecordUpdateManyWithWhereWithoutForUserInput = {
+    where: DonationRecordScalarWhereInput
+    data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyWithoutForUserInput>
+  }
+
+  export type DonationRecordScalarWhereInput = {
+    AND?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+    OR?: DonationRecordScalarWhereInput[]
+    NOT?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+    id?: StringFilter<"DonationRecord"> | string
+    groupId?: StringFilter<"DonationRecord"> | string
+    forUserId?: StringFilter<"DonationRecord"> | string
+    amount?: DecimalFilter<"DonationRecord"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"DonationRecord"> | string
+    date?: DateTimeFilter<"DonationRecord"> | Date | string
+    note?: StringNullableFilter<"DonationRecord"> | string | null
+    createdById?: StringFilter<"DonationRecord"> | string
+    createdAt?: DateTimeFilter<"DonationRecord"> | Date | string
+  }
+
+  export type DonationRecordUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: DonationRecordWhereUniqueInput
+    update: XOR<DonationRecordUpdateWithoutCreatedByInput, DonationRecordUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<DonationRecordCreateWithoutCreatedByInput, DonationRecordUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: DonationRecordWhereUniqueInput
+    data: XOR<DonationRecordUpdateWithoutCreatedByInput, DonationRecordUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type DonationRecordUpdateManyWithWhereWithoutCreatedByInput = {
+    where: DonationRecordScalarWhereInput
+    data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
   export type UserCreateWithoutEventsInput = {
     id?: string
     email: string
@@ -27505,6 +29345,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -27536,6 +29378,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -27561,6 +29405,7 @@ export namespace Prisma {
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutEventsInput = {
@@ -27581,6 +29426,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutEventsInput = {
@@ -27614,6 +29460,7 @@ export namespace Prisma {
   export type RSVPCreateWithoutEventInput = {
     id?: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutRsvpsInput
   }
@@ -27622,6 +29469,7 @@ export namespace Prisma {
     id?: string
     userId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
@@ -27850,6 +29698,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -27881,6 +29731,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutEventsInput = {
@@ -27912,6 +29764,7 @@ export namespace Prisma {
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutEventsInput = {
@@ -27932,6 +29785,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type EventSeriesUpsertWithoutEventsInput = {
@@ -28205,6 +30059,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventShareLinksInput = {
@@ -28236,6 +30092,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventShareLinksInput = {
@@ -28354,6 +30212,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventShareLinksInput = {
@@ -28385,6 +30245,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutGuestRsvpsInput = {
@@ -28552,6 +30414,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
@@ -28583,6 +30447,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventSeriesCreatedInput = {
@@ -28608,6 +30474,7 @@ export namespace Prisma {
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutEventSeriesInput = {
@@ -28628,6 +30495,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutEventSeriesInput = {
@@ -28745,6 +30613,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
@@ -28776,6 +30646,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutEventSeriesInput = {
@@ -28807,6 +30679,7 @@ export namespace Prisma {
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutEventSeriesInput = {
@@ -28827,6 +30700,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type EventUpsertWithWhereUniqueWithoutSeriesInput = {
@@ -28939,6 +30813,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
@@ -28970,6 +30846,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesCreatedInput = {
@@ -29006,6 +30884,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
@@ -29037,6 +30917,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesAcceptedInput = {
@@ -29155,6 +31037,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
@@ -29186,6 +31070,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutEventInvitesAcceptedInput = {
@@ -29228,6 +31114,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
@@ -29259,6 +31147,8 @@ export namespace Prisma {
     eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutRsvpsInput = {
@@ -29355,6 +31245,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
@@ -29386,6 +31278,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutRsvpsInput = {
@@ -29504,6 +31398,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
@@ -29535,6 +31431,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
@@ -29631,6 +31529,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -29662,6 +31562,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -29835,6 +31737,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -29866,6 +31770,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type CommentUpsertWithoutRepliesInput = {
@@ -29933,6 +31839,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMessagesInput = {
@@ -29953,6 +31860,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMessagesInput = {
@@ -29989,6 +31897,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
@@ -30020,6 +31930,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMessagesInput = {
@@ -30056,6 +31968,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMessagesInput = {
@@ -30076,6 +31989,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMessagesInput = {
@@ -30118,6 +32032,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
@@ -30149,6 +32065,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateWithoutReminderRulesInput = {
@@ -30381,6 +32299,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
@@ -30412,6 +32332,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutMessageLogsInput = {
@@ -30530,6 +32452,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
@@ -30561,6 +32485,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupCreateWithoutNewsInput = {
@@ -30581,6 +32507,7 @@ export namespace Prisma {
     messages?: GroupMessageCreateNestedManyWithoutGroupInput
     events?: EventCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutNewsInput = {
@@ -30601,6 +32528,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutNewsInput = {
@@ -30637,6 +32565,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutNewsInput = {
@@ -30668,6 +32598,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutNewsInput = {
@@ -30704,6 +32636,7 @@ export namespace Prisma {
     messages?: GroupMessageUpdateManyWithoutGroupNestedInput
     events?: EventUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutNewsInput = {
@@ -30724,6 +32657,7 @@ export namespace Prisma {
     messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutNewsInput = {
@@ -30766,6 +32700,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsInput = {
@@ -30797,6 +32733,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -30828,6 +32766,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -30859,6 +32799,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -30884,6 +32826,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutSubgroupsInput = {
@@ -30904,6 +32847,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutSubgroupsInput = {
@@ -30929,6 +32873,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutParentGroupInput = {
@@ -30949,6 +32894,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutParentGroupInput = {
@@ -31217,6 +33163,38 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DonationRecordCreateWithoutGroupInput = {
+    id?: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+    forUser: UserCreateNestedOneWithoutDonationRecordsForInput
+    createdBy: UserCreateNestedOneWithoutDonationRecordsCreatedInput
+  }
+
+  export type DonationRecordUncheckedCreateWithoutGroupInput = {
+    id?: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordCreateOrConnectWithoutGroupInput = {
+    where: DonationRecordWhereUniqueInput
+    create: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput>
+  }
+
+  export type DonationRecordCreateManyGroupInputEnvelope = {
+    data: DonationRecordCreateManyGroupInput | DonationRecordCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutCreatedGroupsInput = {
     update: XOR<UserUpdateWithoutCreatedGroupsInput, UserUncheckedUpdateWithoutCreatedGroupsInput>
     create: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
@@ -31257,6 +33235,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -31288,6 +33268,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutSubgroupsInput = {
@@ -31319,6 +33301,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutSubgroupsInput = {
@@ -31339,6 +33322,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUpsertWithWhereUniqueWithoutParentGroupInput = {
@@ -31469,6 +33453,22 @@ export namespace Prisma {
     data: XOR<EventSeriesUpdateManyMutationInput, EventSeriesUncheckedUpdateManyWithoutGroupInput>
   }
 
+  export type DonationRecordUpsertWithWhereUniqueWithoutGroupInput = {
+    where: DonationRecordWhereUniqueInput
+    update: XOR<DonationRecordUpdateWithoutGroupInput, DonationRecordUncheckedUpdateWithoutGroupInput>
+    create: XOR<DonationRecordCreateWithoutGroupInput, DonationRecordUncheckedCreateWithoutGroupInput>
+  }
+
+  export type DonationRecordUpdateWithWhereUniqueWithoutGroupInput = {
+    where: DonationRecordWhereUniqueInput
+    data: XOR<DonationRecordUpdateWithoutGroupInput, DonationRecordUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type DonationRecordUpdateManyWithWhereWithoutGroupInput = {
+    where: DonationRecordScalarWhereInput
+    data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyWithoutGroupInput>
+  }
+
   export type UserCreateWithoutGroupMembershipInvitesInput = {
     id?: string
     email: string
@@ -31498,6 +33498,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
@@ -31529,6 +33531,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInvitesInput = {
@@ -31554,6 +33558,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMembershipsInput = {
@@ -31574,6 +33579,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMembershipsInput = {
@@ -31610,6 +33616,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -31641,6 +33649,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -31688,6 +33698,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
@@ -31719,6 +33731,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutMembershipsInput = {
@@ -31750,6 +33764,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMembershipsInput = {
@@ -31770,6 +33785,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMembershipsInput = {
@@ -31812,6 +33828,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -31843,6 +33861,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserCreateWithoutGroupInvitesSentInput = {
@@ -31874,6 +33894,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
@@ -31905,6 +33927,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesSentInput = {
@@ -31941,6 +33965,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
@@ -31972,6 +33998,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesReceivedInput = {
@@ -31997,6 +34025,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutInvitesInput = {
@@ -32017,6 +34046,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutInvitesInput = {
@@ -32064,6 +34094,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
@@ -32095,6 +34127,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutGroupInvitesReceivedInput = {
@@ -32137,6 +34171,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
@@ -32168,6 +34204,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type GroupUpsertWithoutInvitesInput = {
@@ -32199,6 +34237,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutInvitesInput = {
@@ -32219,6 +34258,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateWithoutJoinRequestsInput = {
@@ -32239,6 +34279,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutJoinRequestsInput = {
@@ -32259,6 +34300,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutJoinRequestsInput = {
@@ -32295,6 +34337,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
@@ -32326,6 +34370,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupJoinRequestsInput = {
@@ -32362,6 +34408,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
@@ -32393,6 +34441,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedJoinRequestsInput = {
@@ -32429,6 +34479,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutJoinRequestsInput = {
@@ -32449,6 +34500,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupJoinRequestsInput = {
@@ -32491,6 +34543,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
@@ -32522,6 +34576,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUpsertWithoutReviewedJoinRequestsInput = {
@@ -32564,6 +34620,8 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
@@ -32595,6 +34653,404 @@ export namespace Prisma {
     eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type GroupCreateWithoutDonationRecordsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageCreateNestedManyWithoutGroupInput
+    events?: EventCreateNestedManyWithoutGroupInput
+    news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutDonationRecordsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    discoverableBySearch?: boolean
+    memberDataPrivate?: boolean
+    parentGroupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
+    events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutDonationRecordsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutDonationRecordsInput, GroupUncheckedCreateWithoutDonationRecordsInput>
+  }
+
+  export type UserCreateWithoutDonationRecordsForInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutDonationRecordsForInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutDonationRecordsForInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDonationRecordsForInput, UserUncheckedCreateWithoutDonationRecordsForInput>
+  }
+
+  export type UserCreateWithoutDonationRecordsCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+  }
+
+  export type UserUncheckedCreateWithoutDonationRecordsCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+  }
+
+  export type UserCreateOrConnectWithoutDonationRecordsCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDonationRecordsCreatedInput, UserUncheckedCreateWithoutDonationRecordsCreatedInput>
+  }
+
+  export type GroupUpsertWithoutDonationRecordsInput = {
+    update: XOR<GroupUpdateWithoutDonationRecordsInput, GroupUncheckedUpdateWithoutDonationRecordsInput>
+    create: XOR<GroupCreateWithoutDonationRecordsInput, GroupUncheckedCreateWithoutDonationRecordsInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutDonationRecordsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutDonationRecordsInput, GroupUncheckedUpdateWithoutDonationRecordsInput>
+  }
+
+  export type GroupUpdateWithoutDonationRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUpdateManyWithoutGroupNestedInput
+    events?: EventUpdateManyWithoutGroupNestedInput
+    news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutDonationRecordsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
+    events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+  }
+
+  export type UserUpsertWithoutDonationRecordsForInput = {
+    update: XOR<UserUpdateWithoutDonationRecordsForInput, UserUncheckedUpdateWithoutDonationRecordsForInput>
+    create: XOR<UserCreateWithoutDonationRecordsForInput, UserUncheckedCreateWithoutDonationRecordsForInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutDonationRecordsForInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutDonationRecordsForInput, UserUncheckedUpdateWithoutDonationRecordsForInput>
+  }
+
+  export type UserUpdateWithoutDonationRecordsForInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDonationRecordsForInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUpsertWithoutDonationRecordsCreatedInput = {
+    update: XOR<UserUpdateWithoutDonationRecordsCreatedInput, UserUncheckedUpdateWithoutDonationRecordsCreatedInput>
+    create: XOR<UserCreateWithoutDonationRecordsCreatedInput, UserUncheckedCreateWithoutDonationRecordsCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutDonationRecordsCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutDonationRecordsCreatedInput, UserUncheckedUpdateWithoutDonationRecordsCreatedInput>
+  }
+
+  export type UserUpdateWithoutDonationRecordsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDonationRecordsCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
   }
 
   export type EventCreateManyCreatedByInput = {
@@ -32624,6 +35080,7 @@ export namespace Prisma {
     id?: string
     eventId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
@@ -32789,6 +35246,28 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type DonationRecordCreateManyForUserInput = {
+    id?: string
+    groupId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
+  export type DonationRecordCreateManyCreatedByInput = {
+    id?: string
+    groupId: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdAt?: Date | string
+  }
+
   export type EventUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
@@ -32875,6 +35354,7 @@ export namespace Prisma {
   export type RSVPUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutRsvpsNestedInput
   }
@@ -32883,6 +35363,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -32890,6 +35371,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33030,6 +35512,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutCreatedByInput = {
@@ -33050,6 +35533,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutCreatedByInput = {
@@ -33399,10 +35883,77 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DonationRecordUpdateWithoutForUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneRequiredWithoutDonationRecordsNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutDonationRecordsCreatedNestedInput
+  }
+
+  export type DonationRecordUncheckedUpdateWithoutForUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutForUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneRequiredWithoutDonationRecordsNestedInput
+    forUser?: UserUpdateOneRequiredWithoutDonationRecordsForNestedInput
+  }
+
+  export type DonationRecordUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    groupId?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RSVPCreateManyEventInput = {
     id?: string
     userId: string
     status: $Enums.RSVPStatus
+    declineReason?: string | null
     updatedAt?: Date | string
   }
 
@@ -33461,6 +36012,7 @@ export namespace Prisma {
   export type RSVPUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutRsvpsNestedInput
   }
@@ -33469,6 +36021,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33476,6 +36029,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
+    declineReason?: NullableStringFieldUpdateOperationsInput | string | null
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33878,6 +36432,17 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type DonationRecordCreateManyGroupInput = {
+    id?: string
+    forUserId: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency: string
+    date: Date | string
+    note?: string | null
+    createdById: string
+    createdAt?: Date | string
+  }
+
   export type GroupUpdateWithoutParentGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     pid?: StringFieldUpdateOperationsInput | string
@@ -33896,6 +36461,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutParentGroupInput = {
@@ -33916,6 +36482,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutParentGroupInput = {
@@ -34201,6 +36768,39 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type DonationRecordUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    forUser?: UserUpdateOneRequiredWithoutDonationRecordsForNestedInput
+    createdBy?: UserUpdateOneRequiredWithoutDonationRecordsCreatedNestedInput
+  }
+
+  export type DonationRecordUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DonationRecordUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    forUserId?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -34290,6 +36890,10 @@ export namespace Prisma {
      * @deprecated Use GroupJoinRequestDefaultArgs instead
      */
     export type GroupJoinRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = GroupJoinRequestDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DonationRecordDefaultArgs instead
+     */
+    export type DonationRecordArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DonationRecordDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

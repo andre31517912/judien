@@ -34,6 +34,11 @@ export class GroupsService {
     const adminIds = Array.from(new Set([user.id, ...dto.adminUserIds]));
 
     return this.prisma.$transaction(async (tx) => {
+      if (dto.parentGroupId) {
+        await this.ensureGroupExists(dto.parentGroupId);
+        await this.assertNoHierarchyCycle(dto.pid, dto.parentGroupId);
+      }
+
       const group = await tx.group.create({
         data: {
           pid: dto.pid,
@@ -42,6 +47,7 @@ export class GroupsService {
           discoverableBySearch: dto.discoverableBySearch ?? false,
           memberDataPrivate: dto.memberDataPrivate ?? false,
           createdById: user.id,
+          ...(dto.parentGroupId ? { parentGroupId: dto.parentGroupId } : {}),
         },
       });
 
@@ -64,7 +70,7 @@ export class GroupsService {
   async myGroups(user: User) {
     const memberships = await this.prisma.groupMembership.findMany({
       where: { userId: user.id, status: 'ACCEPTED' },
-      include: { group: true },
+      include: { group: { include: { createdBy: { select: { displayName: true } } } } },
       orderBy: { updatedAt: 'desc' },
     });
 
@@ -819,5 +825,131 @@ export class GroupsService {
       const csv = XLSX.utils.sheet_to_csv(ws);
       return { buffer: Buffer.from(csv, 'utf-8'), filename: `members_${group.pid}.csv` };
     }
+  }
+
+  // ─── Donations ───────────────────────────────────────────────────────────────
+
+  async createDonation(
+    groupId: string,
+    user: User,
+    dto: { forUserId: string; amount: number; currency: string; date: string; note?: string },
+  ) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    await this.ensureGroupExists(groupId);
+    const member = await this.prisma.groupMembership.findUnique({
+      where: { groupId_userId: { groupId, userId: dto.forUserId } },
+    });
+    if (!member) throw new NotFoundException('Member not found in this group.');
+    return this.prisma.donationRecord.create({
+      data: {
+        groupId,
+        forUserId: dto.forUserId,
+        amount: dto.amount,
+        currency: dto.currency.toUpperCase(),
+        date: new Date(dto.date),
+        note: dto.note ?? null,
+        createdById: user.id,
+      },
+      include: { forUser: { select: { id: true, displayName: true, email: true } } },
+    });
+  }
+
+  async listDonations(groupId: string, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    return this.prisma.donationRecord.findMany({
+      where: { groupId },
+      include: { forUser: { select: { id: true, displayName: true, email: true } } },
+      orderBy: { date: 'desc' },
+    });
+  }
+
+  async deleteDonation(groupId: string, donationId: string, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    const record = await this.prisma.donationRecord.findFirst({
+      where: { id: donationId, groupId },
+    });
+    if (!record) throw new NotFoundException('Donation record not found.');
+    await this.prisma.donationRecord.delete({ where: { id: donationId } });
+    return { deleted: true };
+  }
+
+  // ─── Group Report ─────────────────────────────────────────────────────────────
+
+  async getGroupReport(groupId: string, year: number, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    const group = await this.ensureGroupExists(groupId);
+
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear = new Date(year + 1, 0, 1);
+
+    const [events, allMembers, donations] = await Promise.all([
+      this.prisma.event.findMany({
+        where: { groupId, startAt: { gte: startOfYear, lt: endOfYear } },
+        include: {
+          rsvps: { include: { user: { select: { id: true, displayName: true, email: true } } } },
+        },
+        orderBy: { startAt: 'asc' },
+      }),
+      this.prisma.groupMembership.findMany({
+        where: { groupId, status: 'ACCEPTED' },
+        include: { user: { select: { id: true, displayName: true, email: true } } },
+      }),
+      this.prisma.donationRecord.findMany({
+        where: { groupId, date: { gte: startOfYear, lt: endOfYear } },
+      }),
+    ]);
+
+    const memberIds = allMembers.map((m) => m.userId);
+    const memberMap: Record<string, { id: string; displayName: string | null; email: string }> = {};
+    for (const m of allMembers) memberMap[m.userId] = m.user;
+
+    // Per-event breakdown
+    const eventBreakdown = events.map((ev) => {
+      const rsvpMap: Record<string, string> = {};
+      for (const r of ev.rsvps) rsvpMap[r.userId] = r.status;
+      return {
+        id: ev.id,
+        title: ev.title_en || ev.title_zh,
+        startAt: ev.startAt.toISOString(),
+        memberRsvps: memberIds.map((uid) => ({
+          userId: uid,
+          displayName: memberMap[uid]?.displayName ?? null,
+          email: memberMap[uid]?.email ?? '',
+          status: (rsvpMap[uid] as 'GOING' | 'MAYBE' | 'NO') ?? null,
+        })),
+      };
+    });
+
+    // Per-member summary
+    const memberSummary = memberIds.map((uid) => {
+      const totalEvents = events.length;
+      const going = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'GOING')).length;
+      const maybe = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'MAYBE')).length;
+      const no = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'NO')).length;
+      const usd = donations.filter((d) => d.forUserId === uid && d.currency === 'USD').reduce((s, d) => s + Number(d.amount), 0);
+      const ntd = donations.filter((d) => d.forUserId === uid && d.currency === 'NTD').reduce((s, d) => s + Number(d.amount), 0);
+      return {
+        userId: uid,
+        displayName: memberMap[uid]?.displayName ?? null,
+        email: memberMap[uid]?.email ?? '',
+        totalEvents,
+        going,
+        maybe,
+        no,
+        noResponse: totalEvents - going - maybe - no,
+        attendanceRate: totalEvents > 0 ? Math.round((going / totalEvents) * 100) : 0,
+        totalDonatedUSD: usd,
+        totalDonatedNTD: ntd,
+      };
+    });
+
+    return {
+      groupName: group.name,
+      year,
+      totalEvents: events.length,
+      totalMembers: allMembers.length,
+      events: eventBreakdown,
+      members: memberSummary,
+    };
   }
 }

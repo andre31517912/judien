@@ -210,6 +210,7 @@ exports.Prisma.RSVPScalarFieldEnum = {
   eventId: 'eventId',
   userId: 'userId',
   status: 'status',
+  declineReason: 'declineReason',
   updatedAt: 'updatedAt'
 };
 
@@ -315,6 +316,18 @@ exports.Prisma.GroupJoinRequestScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DonationRecordScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  forUserId: 'forUserId',
+  amount: 'amount',
+  currency: 'currency',
+  date: 'date',
+  note: 'note',
+  createdById: 'createdById',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -403,7 +416,8 @@ exports.Prisma.ModelName = {
   Group: 'Group',
   GroupMembership: 'GroupMembership',
   GroupInvite: 'GroupInvite',
-  GroupJoinRequest: 'GroupJoinRequest'
+  GroupJoinRequest: 'GroupJoinRequest',
+  DonationRecord: 'DonationRecord'
 };
 
 /**

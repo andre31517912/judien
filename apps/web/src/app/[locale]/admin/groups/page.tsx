@@ -15,6 +15,7 @@ type GroupListItem = {
     memberDataPrivate: boolean;
     createdAt: string;
     updatedAt: string;
+    createdBy: { displayName: string | null };
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -58,9 +59,7 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組管理' : 'Groups'}</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {zh ? '建立、查看與管理 Rotary 分組。' : 'Create, view, and manage Rotary groups.'}
-          </p>
+
         </div>
         <Link
           href={`/${params.locale}/admin/groups/new`}
@@ -90,16 +89,10 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h2>
                   </div>
                   {group.description && <p className="text-sm text-gray-600 dark:text-gray-300">{group.description}</p>}
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
-                    <span className="rounded-full bg-gray-50 dark:bg-gray-800 px-2 py-0.5">
-                      {group.discoverableBySearch ? (zh ? '可搜尋' : 'Searchable') : (zh ? '私人' : 'Private')}
-                    </span>
-                    <span className="rounded-full bg-gray-50 dark:bg-gray-800 px-2 py-0.5">
-                      {group.memberDataPrivate ? (zh ? '成員資料隱私開啟' : 'Member privacy on') : (zh ? '成員資料公開' : 'Member privacy off')}
-                    </span>
-                  </div>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '建立者：' : 'Created by '}{group.createdBy.displayName ?? (zh ? '未知' : 'Unknown')}</p>
+
                 </div>
-                <span className="text-sm text-indigo-600 dark:text-indigo-400">{zh ? '進入群組 →' : 'Open group →'}</span>
+
               </div>
             </Link>
           ))}
