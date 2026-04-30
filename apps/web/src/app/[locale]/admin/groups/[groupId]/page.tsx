@@ -221,15 +221,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
             </Link>
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              {isGroupAdmin ? (
-                <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">
-                  {zh ? '群組管理員' : 'Group Admin'}
-                </span>
-              ) : (
-                <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                  {zh ? '群組成員' : 'Group Member'}
-                </span>
-              )}
               <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
             </div>
           </div>
@@ -252,20 +243,38 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
 
         {/* ── Tab bar ── */}
-        <div className="flex overflow-x-auto">
-          {VIEW_TABS.map((t) => (
+        <div className="flex items-end overflow-x-auto justify-between">
+          <div className="flex">
+            {VIEW_TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setViewTab(t.key)}
+                className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+                  viewTab === t.key
+                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+                }`}
+              >
+                {zh ? t.labelZh : t.label}
+              </button>
+            ))}
+          </div>
+          {(isGroupAdmin || isPlatformAdmin) && viewTab === 'feed' && (
             <button
-              key={t.key}
-              onClick={() => setViewTab(t.key)}
-              className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
-                viewTab === t.key
-                  ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
-              }`}
+              onClick={() => { setComposingNews((v) => !v); setNewsForm({ title: '', body: '' }); }}
+              className="mb-1 shrink-0 rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
             >
-              {zh ? t.labelZh : t.label}
+              {composingNews ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Create Post'}`}
             </button>
-          ))}
+          )}
+          {(isGroupAdmin || isPlatformAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
+            <button
+              onClick={() => { setComposingEvent((v) => !v); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }}
+              className="mb-1 shrink-0 rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              {composingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
+            </button>
+          )}
         </div>
       </div>
 
@@ -275,14 +284,8 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {/* Feed */}
         {viewTab === 'feed' && (
           <div className="space-y-4">
-            {(isGroupAdmin || isPlatformAdmin) && (
-              <div>
-                {!composingNews ? (
-                  <button onClick={() => setComposingNews(true)} className="rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">
-                    + {zh ? '發布公告' : 'Create Post'}
-                  </button>
-                ) : (
-                  <form onSubmit={handleCreateNews} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+            {composingNews && (isGroupAdmin || isPlatformAdmin) && (
+              <form onSubmit={handleCreateNews} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '發布公告' : 'Create Post'}</h3>
                     <input required value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                     <textarea required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
@@ -294,9 +297,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                         {zh ? '取消' : 'Cancel'}
                       </button>
                     </div>
-                  </form>
-                )}
-              </div>
+              </form>
             )}
             {news.length === 0 ? (
               <div className="text-center py-16">
@@ -321,14 +322,8 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
           <div className="space-y-3">
-            {(isGroupAdmin || isPlatformAdmin) && (
-              <div>
-                {!composingEvent ? (
-                  <button onClick={() => setComposingEvent(true)} className="rounded-lg border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition">
-                    + {zh ? '建立活動' : 'Create Event'}
-                  </button>
-                ) : (
-                  <form onSubmit={handleCreateEvent} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+            {composingEvent && (isGroupAdmin || isPlatformAdmin) && (
+              <form onSubmit={handleCreateEvent} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
                     <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                     <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
@@ -365,9 +360,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                         {zh ? '取消' : 'Cancel'}
                       </button>
                     </div>
-                  </form>
-                )}
-              </div>
+              </form>
             )}
             {events.length === 0 ? (
               <div className="text-center py-16">
@@ -441,7 +434,12 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
             {members.map((member) => (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${member.role === 'GROUP_ADMIN' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+                      {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+                    </span>
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {member.joinedAt ? `${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
                   </p>
