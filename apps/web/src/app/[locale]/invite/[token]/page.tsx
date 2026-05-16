@@ -260,12 +260,6 @@ export default function InviteAcceptPage() {
     </div>
   );
 }
-
-
-export default function InviteAcceptPage() {
-  const params = useParams<{ locale: string; token: string }>();
-  const router = useRouter();
-  const { refresh } = useAuth();
   const zh = params.locale === 'zh';
 
   const [inviteType, setInviteType] = useState<InviteType>('loading');
