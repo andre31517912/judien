@@ -73,6 +73,7 @@ async function processReminder(job: Job<ReminderJobData>) {
     // Log to DB then send — skip per-channel if user has muted that channel
     for (const channel of channels) {
       if (channel === 'SMS' && user.muteSms) continue;
+      if (channel === 'SMS' && !user.phoneE164) continue;
       if (channel === 'EMAIL' && user.muteEmail) continue;
       const toAddress = channel === 'SMS' ? user.phoneE164 : user.email;
       const log = await prisma.messageLog.create({
@@ -89,7 +90,7 @@ async function processReminder(job: Job<ReminderJobData>) {
       let providerId: string | null = null;
       try {
         if (channel === 'SMS') {
-          providerId = await adapter.sendSms({ to: user.phoneE164, body });
+          providerId = await adapter.sendSms({ to: user.phoneE164!, body });
         } else {
           providerId = await adapter.sendEmail({ to: user.email, subject, text: body });
         }
