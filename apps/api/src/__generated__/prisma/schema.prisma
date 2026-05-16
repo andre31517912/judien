@@ -270,11 +270,12 @@ model GroupMessage {
 }
 
 model ReminderRule {
-  id            String  @id @default(cuid())
+  id            String    @id @default(cuid())
   eventId       String
   offsetMinutes Int // e.g. 1440 = 24h before
   channels      Json // string[] e.g. ["SMS","EMAIL"]
-  enabled       Boolean @default(true)
+  enabled       Boolean   @default(true)
+  sentAt        DateTime? // set by cron after successfully sending
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 

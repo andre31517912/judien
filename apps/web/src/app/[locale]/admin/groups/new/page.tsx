@@ -33,7 +33,8 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
     setError('');
     setSaving(true);
     try {
-      const generatedPid = suggestedPid;
+      // Fall back to a short unique ID if the name is all non-Latin (e.g. Chinese)
+      const generatedPid = suggestedPid || `group-${Date.now().toString(36).slice(-6)}`;
       await apiFetch('/groups', {
         method: 'POST',
         body: JSON.stringify({
@@ -139,7 +140,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           </Link>
           <button
             type="submit"
-            disabled={saving || !name.trim() || !suggestedPid}
+            disabled={saving || !name.trim()}
             className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
           >
             {saving ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立群組' : 'Create Group')}

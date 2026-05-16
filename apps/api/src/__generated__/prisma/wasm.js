@@ -238,7 +238,8 @@ exports.Prisma.ReminderRuleScalarFieldEnum = {
   eventId: 'eventId',
   offsetMinutes: 'offsetMinutes',
   channels: 'channels',
-  enabled: 'enabled'
+  enabled: 'enabled',
+  sentAt: 'sentAt'
 };
 
 exports.Prisma.MessageLogScalarFieldEnum = {

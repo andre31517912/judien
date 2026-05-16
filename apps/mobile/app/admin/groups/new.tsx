@@ -29,15 +29,17 @@ export default function NewGroupScreen() {
   const suggestedPid = useMemo(() => slugifyPid(name), [name]);
 
   const handleCreate = async () => {
-    if (!name.trim() || !suggestedPid) return;
+    if (!name.trim()) return;
     setError('');
     setSaving(true);
     try {
+      // Fall back to a short unique ID if the name is all non-Latin (e.g. Chinese)
+      const pid = suggestedPid || `group-${Date.now().toString(36).slice(-6)}`;
       const created = await apiFetch<{ id: string }>('/groups', {
         method: 'POST',
         body: JSON.stringify({
           name: name.trim(),
-          pid: suggestedPid,
+          pid,
           description: description.trim(),
           discoverableBySearch: false,
           memberDataPrivate,
@@ -139,9 +141,9 @@ export default function NewGroupScreen() {
         </View>
 
         <TouchableOpacity
-          style={[styles.createBtn, (saving || !name.trim() || !suggestedPid) && styles.createBtnDisabled]}
+          style={[styles.createBtn, (saving || !name.trim()) && styles.createBtnDisabled]}
           onPress={handleCreate}
-          disabled={saving || !name.trim() || !suggestedPid}
+          disabled={saving || !name.trim()}
         >
           <Text style={styles.createBtnText}>{saving ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立群組' : 'Create Group')}</Text>
         </TouchableOpacity>
