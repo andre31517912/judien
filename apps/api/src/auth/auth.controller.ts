@@ -115,9 +115,9 @@ export class AuthController {
     @Body(new ZodValidationPipe(GuestGroupJoinSchema)) dto: GuestGroupJoinDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, accessToken, refreshToken } = await this.authService.guestGroupJoin(dto);
+    const { user, accessToken, refreshToken, groupId, existingAccount } = await this.authService.guestGroupJoin(dto);
     res.cookie('access_token', accessToken, COOKIE_OPTS);
     res.cookie('refresh_token', refreshToken, COOKIE_OPTS);
-    return { user: safeUser(user), accessToken, refreshToken };
+    return { user: safeUser(user), accessToken, refreshToken, groupId, existingAccount };
   }
 }

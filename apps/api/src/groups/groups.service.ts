@@ -169,7 +169,24 @@ export class GroupsService {
     if (!invite) throw new NotFoundException('Invite not found.');
     if (invite.status !== 'PENDING') throw new BadRequestException('Invite is no longer valid.');
     if (new Date() > invite.expiresAt) throw new BadRequestException('Invite has expired.');
-    return { groupId: invite.group.id, groupName: invite.group.name };
+
+    // Check whether the invitee already has an account so the frontend can skip the name form
+    let hasAccount = false;
+    if (invite.invitedUserId) {
+      hasAccount = true;
+    } else if (invite.email || invite.phoneE164) {
+      const existing = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            ...(invite.email ? [{ email: invite.email }] : []),
+            ...(invite.phoneE164 ? [{ phoneE164: invite.phoneE164 }] : []),
+          ],
+        },
+      });
+      hasAccount = !!existing;
+    }
+
+    return { groupId: invite.group.id, groupName: invite.group.name, hasAccount };
   }
 
   async listInvites(groupId: string, user: User) {
@@ -514,7 +531,7 @@ export class GroupsService {
 
   async addMemberDirectly(groupId: string, dto: AddMemberDirectlyDto, user: User) {
     this.assertPlatformAdmin(user);
-    await this.ensureGroupExists(groupId);
+    const group = await this.ensureGroupExists(groupId);
 
     const id = dto.identifier.trim();
     const targetUser = await this.prisma.user.findFirst({
@@ -527,7 +544,16 @@ export class GroupsService {
       },
     });
 
-    if (!targetUser) throw new NotFoundException('User not found.');
+    if (!targetUser) {
+      // No account yet — fall back to sending an invite link so they can create one
+      const isEmail = id.includes('@');
+      const result = await this.invite(
+        groupId,
+        { invites: [isEmail ? { email: id, role: dto.role } : { phoneE164: id, role: dto.role }] },
+        user,
+      );
+      return { added: false, invited: true, identifier: id, ...result };
+    }
 
     await this.prisma.groupMembership.upsert({
       where: { groupId_userId: { groupId, userId: targetUser.id } },
@@ -546,6 +572,26 @@ export class GroupsService {
         invitedByPlatformAdminId: user.id,
       },
     });
+
+    // Notify the user they have been added
+    const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+    const groupLink = `${webOrigin}/en/groups/${groupId}`;
+    const isPlaceholderEmail = targetUser.email.endsWith('@guest.local') || targetUser.email.endsWith('@invited.local');
+    if (targetUser.email && !isPlaceholderEmail) {
+      await this.messaging.sendEmail({
+        userId: targetUser.id,
+        to: targetUser.email,
+        subject: `You have been added to ${group.name}`,
+        text: `You have been added to the group "${group.name}" on Judien. Click here to view: ${groupLink}`,
+      });
+    }
+    if (targetUser.phoneE164) {
+      await this.messaging.sendSms({
+        userId: targetUser.id,
+        to: targetUser.phoneE164,
+        body: `You've been added to "${group.name}" on Judien: ${groupLink}`,
+      });
+    }
 
     return { added: true, userId: targetUser.id, displayName: targetUser.displayName };
   }

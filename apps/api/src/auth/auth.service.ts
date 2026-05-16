@@ -103,31 +103,56 @@ export class AuthService {
    * Guest join: validate a group invite token, create/find a minimal (isGuest) user,
    * accept the group membership, and return JWT tokens.
    */
-  async guestGroupJoin(dto: GuestGroupJoinDto): Promise<{ user: User; accessToken: string; refreshToken: string }> {
+  async guestGroupJoin(dto: GuestGroupJoinDto): Promise<{ user: User; accessToken: string; refreshToken: string; groupId: string; existingAccount: boolean }> {
     const invite = await this.prisma.groupInvite.findUnique({ where: { token: dto.groupInviteToken } });
     if (!invite) throw new NotFoundException('Invite not found.');
     if (invite.status !== 'PENDING') throw new BadRequestException('Invite is already resolved.');
     if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite has expired.');
 
-    const phone = dto.phoneE164;
-    const email = dto.email ?? invite.email ?? `guest_${randomBytes(6).toString('hex')}@guest.local`;
+    const phone = dto.phoneE164 ?? null;
+    // Use provided email, then invite's email, then a placeholder
+    const email = dto.email ?? invite.email ?? null;
+    const effectiveEmail = email ?? `guest_${randomBytes(6).toString('hex')}@guest.local`;
 
-    let user = await this.prisma.user.findFirst({
-      where: { OR: [{ phoneE164: phone }, ...(dto.email ? [{ email: dto.email }] : [])] },
-    });
+    // Build lookup conditions from whatever identifiers were provided
+    const lookupConditions = [
+      ...(phone ? [{ phoneE164: phone }] : []),
+      ...(email ? [{ email }] : []),
+    ];
+
+    let existingAccount = false;
+    let user = lookupConditions.length > 0
+      ? await this.prisma.user.findFirst({ where: { OR: lookupConditions } })
+      : null;
 
     if (!user) {
       const passwordHash = await bcrypt.hash(randomBytes(16).toString('hex'), 10);
+      const displayName = dto.displayName ?? email?.split('@')[0] ?? 'Guest';
       user = await this.prisma.user.create({
         data: {
-          email,
+          email: effectiveEmail,
           passwordHash,
-          phoneE164: phone,
-          displayName: dto.displayName,
+          ...(phone ? { phoneE164: phone } : {}),
+          displayName,
           isGuest: true,
           role: 'USER',
         },
       });
+    } else {
+      existingAccount = true;
+      if (dto.displayName && dto.displayName !== user.displayName) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { displayName: dto.displayName },
+        });
+      }
+      // Fill in missing phone/email if newly provided
+      if (phone && !user.phoneE164) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: { phoneE164: phone } });
+      }
+      if (email && (user.email.endsWith('@guest.local') || user.email.endsWith('@invited.local'))) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: { email } });
+      }
     }
 
     // Accept the group membership
@@ -144,6 +169,6 @@ export class AuthService {
     });
 
     const tokens = this.issueTokens(user);
-    return { user, ...tokens };
+    return { user, ...tokens, groupId: invite.groupId, existingAccount };
   }
 }

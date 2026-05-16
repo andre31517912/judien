@@ -67,7 +67,7 @@ model User {
   id                 String        @id @default(cuid())
   email              String        @unique
   passwordHash       String
-  phoneE164          String        @unique
+  phoneE164          String?       @unique
   displayName        String?
   preferredLanguage  String        @default("en")  // 'en' | 'zh'
   colorTheme         String        @default("light") // 'light' | 'dark'

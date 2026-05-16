@@ -290,9 +290,11 @@ export type SetParentGroupDto = z.infer<typeof SetParentGroupSchema>;
 
 export const GuestGroupJoinSchema = z.object({
   groupInviteToken: z.string().min(1),
-  displayName: z.string().min(1).max(100),
-  phoneE164: phoneSchema,
+  displayName: z.string().min(1).max(100).optional(),
+  phoneE164: phoneSchema.optional(),
   email: z.string().email().optional(),
+}).refine((x) => Boolean(x.phoneE164 || x.email), {
+  message: 'At least one of phoneE164 or email is required.',
 });
 export type GuestGroupJoinDto = z.infer<typeof GuestGroupJoinSchema>;
 
