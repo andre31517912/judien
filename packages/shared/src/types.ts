@@ -154,6 +154,20 @@ export interface PaginatedResponse<T> {
   pageSize: number;
 }
 
+// ─── InviteToken ──────────────────────────────────────────────────────────────
+
+export interface InviteToken {
+  id: string;
+  token: string;
+  role: Role;
+  createdById: string;
+  usedById: string | null;
+  usedBy?: { id: string; displayName: string | null; email: string } | null;
+  expiresAt: string;
+  usedAt: string | null;
+  createdAt: string;
+}
+
 export interface ApiError {
   statusCode: number;
   message: string;

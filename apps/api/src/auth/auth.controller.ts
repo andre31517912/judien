@@ -5,6 +5,7 @@ import {
   Body,
   Req,
   Res,
+  Param,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -99,6 +100,12 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: User) {
     return safeUser(user);
+  }
+
+  // GET /api/auth/invite/:token — public endpoint to validate an invite token before signup
+  @Get('invite/:token')
+  validateInvite(@Param('token') token: string) {
+    return this.authService.validateInvite(token);
   }
 
   // POST /api/auth/guest-join — join a group via invite token without creating a full account

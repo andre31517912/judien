@@ -25,6 +25,15 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignupDto): Promise<User> {
+    // Require a valid invite token — signup is not open to the public
+    if (!dto.inviteToken) {
+      throw new BadRequestException('An invite token is required to sign up.');
+    }
+    const invite = await this.prisma.inviteToken.findUnique({ where: { token: dto.inviteToken } });
+    if (!invite) throw new BadRequestException('Invalid invite token.');
+    if (invite.usedAt) throw new BadRequestException('Invite token has already been used.');
+    if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite token has expired.');
+
     const existing = await this.prisma.user.findFirst({
       where: { OR: [{ email: dto.email }, { phoneE164: dto.phone }] },
     });
@@ -33,15 +42,22 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
-    return this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash,
-        phoneE164: dto.phone,
-        displayName: dto.displayName?.trim() || null,
-        preferredLanguage: dto.preferredLanguage,
-        role: 'USER',
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: dto.email,
+          passwordHash,
+          phoneE164: dto.phone,
+          displayName: dto.displayName?.trim() || null,
+          preferredLanguage: dto.preferredLanguage,
+          role: invite.role,
+        },
+      });
+      await tx.inviteToken.update({
+        where: { id: invite.id },
+        data: { usedById: user.id, usedAt: new Date() },
+      });
+      return user;
     });
   }
 
@@ -73,6 +89,14 @@ export class AuthService {
     }
     if (payload.type !== 'refresh') throw new UnauthorizedException();
     return payload;
+  }
+
+  async validateInvite(token: string): Promise<{ valid: boolean; role?: string; expiresAt?: Date }> {
+    const invite = await this.prisma.inviteToken.findUnique({ where: { token } });
+    if (!invite || invite.usedAt || invite.expiresAt <= new Date()) {
+      return { valid: false };
+    }
+    return { valid: true, role: invite.role, expiresAt: invite.expiresAt };
   }
 
   /**

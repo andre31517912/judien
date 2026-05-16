@@ -15,6 +15,7 @@ import { NewsModule } from './news/news.module';
 import { GroupsModule } from './groups/groups.module';
 import { EventInvitesModule } from './event-invites/event-invites.module';
 import { EventSeriesModule } from './event-series/event-series.module';
+import { InvitesModule } from './invites/invites.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -41,6 +42,7 @@ import { HealthController } from './health/health.controller';
     GroupsModule,
     EventInvitesModule,
     EventSeriesModule,
+    InvitesModule,
   ],
   controllers: [HealthController],
 })

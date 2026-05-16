@@ -2,6 +2,12 @@ node_modules
 dist
 .next
 .expo
+
+# Compiled artifacts accidentally output into src/ (shared package)
+packages/shared/src/**/*.js
+packages/shared/src/**/*.js.map
+packages/shared/src/**/*.d.ts
+packages/shared/src/**/*.d.ts.map
 *.env
 !*.env.example
 

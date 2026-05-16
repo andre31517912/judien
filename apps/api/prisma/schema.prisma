@@ -98,6 +98,9 @@ model User {
   donationRecordsFor     DonationRecord[] @relation("DonationForUser")
   donationRecordsCreated DonationRecord[] @relation("DonationCreatedBy")
 
+  inviteTokensCreated InviteToken[] @relation("InviteTokenCreatedBy")
+  inviteTokensUsed    InviteToken[] @relation("InviteTokenUsedBy")
+
   @@index([email])
   @@index([role])
 }
@@ -424,4 +427,20 @@ model DonationRecord {
 
   @@index([groupId])
   @@index([forUserId])
+}
+
+model InviteToken {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  role        Role      @default(USER)
+  createdById String
+  createdBy   User      @relation("InviteTokenCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  usedById    String?
+  usedBy      User?     @relation("InviteTokenUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([token])
+  @@index([createdById])
 }

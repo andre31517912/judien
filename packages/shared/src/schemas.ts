@@ -34,6 +34,7 @@ export const SignupSchema = z.object({
   phone: phoneSchema,
   displayName: z.string().max(100).optional(),
   preferredLanguage: z.enum(['en', 'zh']).default('en'),
+  inviteToken: z.string().optional(),
 });
 export type SignupDto = z.infer<typeof SignupSchema>;
 
@@ -294,3 +295,11 @@ export const GuestGroupJoinSchema = z.object({
   email: z.string().email().optional(),
 });
 export type GuestGroupJoinDto = z.infer<typeof GuestGroupJoinSchema>;
+
+// ─── Platform Invites ─────────────────────────────────────────────────────────
+
+export const CreateInviteSchema = z.object({
+  role: z.enum(['USER', 'ADMIN']).default('USER'),
+  expiresInHours: z.number().int().positive().max(8760).default(48),
+});
+export type CreateInviteDto = z.infer<typeof CreateInviteSchema>;

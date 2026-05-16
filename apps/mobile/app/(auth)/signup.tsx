@@ -12,10 +12,15 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [inviteToken, setInviteToken] = useState('');
 
   const handleSignup = async () => {
+    if (!inviteToken.trim()) {
+      Alert.alert('Error', t('auth.inviteTokenRequired'));
+      return;
+    }
     try {
-      await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: 'en' });
+      await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: 'en', inviteToken: inviteToken.trim() });
       router.replace('/(tabs)/events');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Sign-up failed.');
@@ -33,6 +38,8 @@ export default function SignupScreen() {
         onChangeText={setPassword} secureTextEntry />
       <TextInput style={styles.input} placeholder="+886912345678" value={phone}
         onChangeText={setPhone} keyboardType="phone-pad" />
+      <TextInput style={styles.input} placeholder={t('auth.inviteTokenPlaceholder') || 'Invite Code'} value={inviteToken}
+        onChangeText={setInviteToken} autoCapitalize="none" autoCorrect={false} />
       <TouchableOpacity style={styles.btn} onPress={handleSignup}>
         <Text style={styles.btnText}>{t('auth.signup')}</Text>
       </TouchableOpacity>

@@ -328,6 +328,17 @@ exports.Prisma.DonationRecordScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.InviteTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  role: 'role',
+  createdById: 'createdById',
+  usedById: 'usedById',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -417,7 +428,8 @@ exports.Prisma.ModelName = {
   GroupMembership: 'GroupMembership',
   GroupInvite: 'GroupInvite',
   GroupJoinRequest: 'GroupJoinRequest',
-  DonationRecord: 'DonationRecord'
+  DonationRecord: 'DonationRecord',
+  InviteToken: 'InviteToken'
 };
 
 /**

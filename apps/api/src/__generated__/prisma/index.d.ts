@@ -98,6 +98,11 @@ export type GroupJoinRequest = $Result.DefaultSelection<Prisma.$GroupJoinRequest
  * 
  */
 export type DonationRecord = $Result.DefaultSelection<Prisma.$DonationRecordPayload>
+/**
+ * Model InviteToken
+ * 
+ */
+export type InviteToken = $Result.DefaultSelection<Prisma.$InviteTokenPayload>
 
 /**
  * Enums
@@ -500,6 +505,16 @@ export class PrismaClient<
     * ```
     */
   get donationRecord(): Prisma.DonationRecordDelegate<ExtArgs>;
+
+  /**
+   * `prisma.inviteToken`: Exposes CRUD operations for the **InviteToken** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more InviteTokens
+    * const inviteTokens = await prisma.inviteToken.findMany()
+    * ```
+    */
+  get inviteToken(): Prisma.InviteTokenDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -957,7 +972,8 @@ export namespace Prisma {
     GroupMembership: 'GroupMembership',
     GroupInvite: 'GroupInvite',
     GroupJoinRequest: 'GroupJoinRequest',
-    DonationRecord: 'DonationRecord'
+    DonationRecord: 'DonationRecord',
+    InviteToken: 'InviteToken'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -973,7 +989,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "donationRecord"
+      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "donationRecord" | "inviteToken"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2167,6 +2183,76 @@ export namespace Prisma {
           }
         }
       }
+      InviteToken: {
+        payload: Prisma.$InviteTokenPayload<ExtArgs>
+        fields: Prisma.InviteTokenFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InviteTokenFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InviteTokenFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          findFirst: {
+            args: Prisma.InviteTokenFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InviteTokenFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          findMany: {
+            args: Prisma.InviteTokenFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>[]
+          }
+          create: {
+            args: Prisma.InviteTokenCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          createMany: {
+            args: Prisma.InviteTokenCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.InviteTokenCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>[]
+          }
+          delete: {
+            args: Prisma.InviteTokenDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          update: {
+            args: Prisma.InviteTokenUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          deleteMany: {
+            args: Prisma.InviteTokenDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InviteTokenUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.InviteTokenUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InviteTokenPayload>
+          }
+          aggregate: {
+            args: Prisma.InviteTokenAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInviteToken>
+          }
+          groupBy: {
+            args: Prisma.InviteTokenGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InviteTokenGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InviteTokenCountArgs<ExtArgs>
+            result: $Utils.Optional<InviteTokenCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2347,6 +2433,8 @@ export namespace Prisma {
     eventShareLinks: number
     donationRecordsFor: number
     donationRecordsCreated: number
+    inviteTokensCreated: number
+    inviteTokensUsed: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2369,6 +2457,8 @@ export namespace Prisma {
     eventShareLinks?: boolean | UserCountOutputTypeCountEventShareLinksArgs
     donationRecordsFor?: boolean | UserCountOutputTypeCountDonationRecordsForArgs
     donationRecordsCreated?: boolean | UserCountOutputTypeCountDonationRecordsCreatedArgs
+    inviteTokensCreated?: boolean | UserCountOutputTypeCountInviteTokensCreatedArgs
+    inviteTokensUsed?: boolean | UserCountOutputTypeCountInviteTokensUsedArgs
   }
 
   // Custom InputTypes
@@ -2513,6 +2603,20 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountDonationRecordsCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DonationRecordWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInviteTokensCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InviteTokenWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountInviteTokensUsedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InviteTokenWhereInput
   }
 
 
@@ -3000,6 +3104,8 @@ export namespace Prisma {
     eventShareLinks?: boolean | User$eventShareLinksArgs<ExtArgs>
     donationRecordsFor?: boolean | User$donationRecordsForArgs<ExtArgs>
     donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
+    inviteTokensCreated?: boolean | User$inviteTokensCreatedArgs<ExtArgs>
+    inviteTokensUsed?: boolean | User$inviteTokensUsedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3053,6 +3159,8 @@ export namespace Prisma {
     eventShareLinks?: boolean | User$eventShareLinksArgs<ExtArgs>
     donationRecordsFor?: boolean | User$donationRecordsForArgs<ExtArgs>
     donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
+    inviteTokensCreated?: boolean | User$inviteTokensCreatedArgs<ExtArgs>
+    inviteTokensUsed?: boolean | User$inviteTokensUsedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3079,6 +3187,8 @@ export namespace Prisma {
       eventShareLinks: Prisma.$EventShareLinkPayload<ExtArgs>[]
       donationRecordsFor: Prisma.$DonationRecordPayload<ExtArgs>[]
       donationRecordsCreated: Prisma.$DonationRecordPayload<ExtArgs>[]
+      inviteTokensCreated: Prisma.$InviteTokenPayload<ExtArgs>[]
+      inviteTokensUsed: Prisma.$InviteTokenPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3476,6 +3586,8 @@ export namespace Prisma {
     eventShareLinks<T extends User$eventShareLinksArgs<ExtArgs> = {}>(args?: Subset<T, User$eventShareLinksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventShareLinkPayload<ExtArgs>, T, "findMany"> | Null>
     donationRecordsFor<T extends User$donationRecordsForArgs<ExtArgs> = {}>(args?: Subset<T, User$donationRecordsForArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
     donationRecordsCreated<T extends User$donationRecordsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$donationRecordsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
+    inviteTokensCreated<T extends User$inviteTokensCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$inviteTokensCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany"> | Null>
+    inviteTokensUsed<T extends User$inviteTokensUsedArgs<ExtArgs> = {}>(args?: Subset<T, User$inviteTokensUsedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4208,6 +4320,46 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * User.inviteTokensCreated
+   */
+  export type User$inviteTokensCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    where?: InviteTokenWhereInput
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    cursor?: InviteTokenWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
+  }
+
+  /**
+   * User.inviteTokensUsed
+   */
+  export type User$inviteTokensUsedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    where?: InviteTokenWhereInput
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    cursor?: InviteTokenWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
   }
 
   /**
@@ -20734,6 +20886,996 @@ export namespace Prisma {
 
 
   /**
+   * Model InviteToken
+   */
+
+  export type AggregateInviteToken = {
+    _count: InviteTokenCountAggregateOutputType | null
+    _min: InviteTokenMinAggregateOutputType | null
+    _max: InviteTokenMaxAggregateOutputType | null
+  }
+
+  export type InviteTokenMinAggregateOutputType = {
+    id: string | null
+    token: string | null
+    role: $Enums.Role | null
+    createdById: string | null
+    usedById: string | null
+    expiresAt: Date | null
+    usedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type InviteTokenMaxAggregateOutputType = {
+    id: string | null
+    token: string | null
+    role: $Enums.Role | null
+    createdById: string | null
+    usedById: string | null
+    expiresAt: Date | null
+    usedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type InviteTokenCountAggregateOutputType = {
+    id: number
+    token: number
+    role: number
+    createdById: number
+    usedById: number
+    expiresAt: number
+    usedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type InviteTokenMinAggregateInputType = {
+    id?: true
+    token?: true
+    role?: true
+    createdById?: true
+    usedById?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+  }
+
+  export type InviteTokenMaxAggregateInputType = {
+    id?: true
+    token?: true
+    role?: true
+    createdById?: true
+    usedById?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+  }
+
+  export type InviteTokenCountAggregateInputType = {
+    id?: true
+    token?: true
+    role?: true
+    createdById?: true
+    usedById?: true
+    expiresAt?: true
+    usedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type InviteTokenAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InviteToken to aggregate.
+     */
+    where?: InviteTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InviteTokens to fetch.
+     */
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InviteTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InviteTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InviteTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned InviteTokens
+    **/
+    _count?: true | InviteTokenCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InviteTokenMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InviteTokenMaxAggregateInputType
+  }
+
+  export type GetInviteTokenAggregateType<T extends InviteTokenAggregateArgs> = {
+        [P in keyof T & keyof AggregateInviteToken]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInviteToken[P]>
+      : GetScalarType<T[P], AggregateInviteToken[P]>
+  }
+
+
+
+
+  export type InviteTokenGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InviteTokenWhereInput
+    orderBy?: InviteTokenOrderByWithAggregationInput | InviteTokenOrderByWithAggregationInput[]
+    by: InviteTokenScalarFieldEnum[] | InviteTokenScalarFieldEnum
+    having?: InviteTokenScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InviteTokenCountAggregateInputType | true
+    _min?: InviteTokenMinAggregateInputType
+    _max?: InviteTokenMaxAggregateInputType
+  }
+
+  export type InviteTokenGroupByOutputType = {
+    id: string
+    token: string
+    role: $Enums.Role
+    createdById: string
+    usedById: string | null
+    expiresAt: Date
+    usedAt: Date | null
+    createdAt: Date
+    _count: InviteTokenCountAggregateOutputType | null
+    _min: InviteTokenMinAggregateOutputType | null
+    _max: InviteTokenMaxAggregateOutputType | null
+  }
+
+  type GetInviteTokenGroupByPayload<T extends InviteTokenGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InviteTokenGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InviteTokenGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InviteTokenGroupByOutputType[P]>
+            : GetScalarType<T[P], InviteTokenGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InviteTokenSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    role?: boolean
+    createdById?: boolean
+    usedById?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    usedBy?: boolean | InviteToken$usedByArgs<ExtArgs>
+  }, ExtArgs["result"]["inviteToken"]>
+
+  export type InviteTokenSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    token?: boolean
+    role?: boolean
+    createdById?: boolean
+    usedById?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    usedBy?: boolean | InviteToken$usedByArgs<ExtArgs>
+  }, ExtArgs["result"]["inviteToken"]>
+
+  export type InviteTokenSelectScalar = {
+    id?: boolean
+    token?: boolean
+    role?: boolean
+    createdById?: boolean
+    usedById?: boolean
+    expiresAt?: boolean
+    usedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type InviteTokenInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    usedBy?: boolean | InviteToken$usedByArgs<ExtArgs>
+  }
+  export type InviteTokenIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    createdBy?: boolean | UserDefaultArgs<ExtArgs>
+    usedBy?: boolean | InviteToken$usedByArgs<ExtArgs>
+  }
+
+  export type $InviteTokenPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "InviteToken"
+    objects: {
+      createdBy: Prisma.$UserPayload<ExtArgs>
+      usedBy: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      token: string
+      role: $Enums.Role
+      createdById: string
+      usedById: string | null
+      expiresAt: Date
+      usedAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["inviteToken"]>
+    composites: {}
+  }
+
+  type InviteTokenGetPayload<S extends boolean | null | undefined | InviteTokenDefaultArgs> = $Result.GetResult<Prisma.$InviteTokenPayload, S>
+
+  type InviteTokenCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<InviteTokenFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: InviteTokenCountAggregateInputType | true
+    }
+
+  export interface InviteTokenDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['InviteToken'], meta: { name: 'InviteToken' } }
+    /**
+     * Find zero or one InviteToken that matches the filter.
+     * @param {InviteTokenFindUniqueArgs} args - Arguments to find a InviteToken
+     * @example
+     * // Get one InviteToken
+     * const inviteToken = await prisma.inviteToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InviteTokenFindUniqueArgs>(args: SelectSubset<T, InviteTokenFindUniqueArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one InviteToken that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {InviteTokenFindUniqueOrThrowArgs} args - Arguments to find a InviteToken
+     * @example
+     * // Get one InviteToken
+     * const inviteToken = await prisma.inviteToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InviteTokenFindUniqueOrThrowArgs>(args: SelectSubset<T, InviteTokenFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first InviteToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenFindFirstArgs} args - Arguments to find a InviteToken
+     * @example
+     * // Get one InviteToken
+     * const inviteToken = await prisma.inviteToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InviteTokenFindFirstArgs>(args?: SelectSubset<T, InviteTokenFindFirstArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first InviteToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenFindFirstOrThrowArgs} args - Arguments to find a InviteToken
+     * @example
+     * // Get one InviteToken
+     * const inviteToken = await prisma.inviteToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InviteTokenFindFirstOrThrowArgs>(args?: SelectSubset<T, InviteTokenFindFirstOrThrowArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more InviteTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all InviteTokens
+     * const inviteTokens = await prisma.inviteToken.findMany()
+     * 
+     * // Get first 10 InviteTokens
+     * const inviteTokens = await prisma.inviteToken.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const inviteTokenWithIdOnly = await prisma.inviteToken.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InviteTokenFindManyArgs>(args?: SelectSubset<T, InviteTokenFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a InviteToken.
+     * @param {InviteTokenCreateArgs} args - Arguments to create a InviteToken.
+     * @example
+     * // Create one InviteToken
+     * const InviteToken = await prisma.inviteToken.create({
+     *   data: {
+     *     // ... data to create a InviteToken
+     *   }
+     * })
+     * 
+     */
+    create<T extends InviteTokenCreateArgs>(args: SelectSubset<T, InviteTokenCreateArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many InviteTokens.
+     * @param {InviteTokenCreateManyArgs} args - Arguments to create many InviteTokens.
+     * @example
+     * // Create many InviteTokens
+     * const inviteToken = await prisma.inviteToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InviteTokenCreateManyArgs>(args?: SelectSubset<T, InviteTokenCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many InviteTokens and returns the data saved in the database.
+     * @param {InviteTokenCreateManyAndReturnArgs} args - Arguments to create many InviteTokens.
+     * @example
+     * // Create many InviteTokens
+     * const inviteToken = await prisma.inviteToken.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many InviteTokens and only return the `id`
+     * const inviteTokenWithIdOnly = await prisma.inviteToken.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends InviteTokenCreateManyAndReturnArgs>(args?: SelectSubset<T, InviteTokenCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a InviteToken.
+     * @param {InviteTokenDeleteArgs} args - Arguments to delete one InviteToken.
+     * @example
+     * // Delete one InviteToken
+     * const InviteToken = await prisma.inviteToken.delete({
+     *   where: {
+     *     // ... filter to delete one InviteToken
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InviteTokenDeleteArgs>(args: SelectSubset<T, InviteTokenDeleteArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one InviteToken.
+     * @param {InviteTokenUpdateArgs} args - Arguments to update one InviteToken.
+     * @example
+     * // Update one InviteToken
+     * const inviteToken = await prisma.inviteToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InviteTokenUpdateArgs>(args: SelectSubset<T, InviteTokenUpdateArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more InviteTokens.
+     * @param {InviteTokenDeleteManyArgs} args - Arguments to filter InviteTokens to delete.
+     * @example
+     * // Delete a few InviteTokens
+     * const { count } = await prisma.inviteToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InviteTokenDeleteManyArgs>(args?: SelectSubset<T, InviteTokenDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more InviteTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many InviteTokens
+     * const inviteToken = await prisma.inviteToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InviteTokenUpdateManyArgs>(args: SelectSubset<T, InviteTokenUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one InviteToken.
+     * @param {InviteTokenUpsertArgs} args - Arguments to update or create a InviteToken.
+     * @example
+     * // Update or create a InviteToken
+     * const inviteToken = await prisma.inviteToken.upsert({
+     *   create: {
+     *     // ... data to create a InviteToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the InviteToken we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InviteTokenUpsertArgs>(args: SelectSubset<T, InviteTokenUpsertArgs<ExtArgs>>): Prisma__InviteTokenClient<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of InviteTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenCountArgs} args - Arguments to filter InviteTokens to count.
+     * @example
+     * // Count the number of InviteTokens
+     * const count = await prisma.inviteToken.count({
+     *   where: {
+     *     // ... the filter for the InviteTokens we want to count
+     *   }
+     * })
+    **/
+    count<T extends InviteTokenCountArgs>(
+      args?: Subset<T, InviteTokenCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InviteTokenCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a InviteToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InviteTokenAggregateArgs>(args: Subset<T, InviteTokenAggregateArgs>): Prisma.PrismaPromise<GetInviteTokenAggregateType<T>>
+
+    /**
+     * Group by InviteToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InviteTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InviteTokenGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InviteTokenGroupByArgs['orderBy'] }
+        : { orderBy?: InviteTokenGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InviteTokenGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInviteTokenGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the InviteToken model
+   */
+  readonly fields: InviteTokenFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for InviteToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InviteTokenClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    createdBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    usedBy<T extends InviteToken$usedByArgs<ExtArgs> = {}>(args?: Subset<T, InviteToken$usedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the InviteToken model
+   */ 
+  interface InviteTokenFieldRefs {
+    readonly id: FieldRef<"InviteToken", 'String'>
+    readonly token: FieldRef<"InviteToken", 'String'>
+    readonly role: FieldRef<"InviteToken", 'Role'>
+    readonly createdById: FieldRef<"InviteToken", 'String'>
+    readonly usedById: FieldRef<"InviteToken", 'String'>
+    readonly expiresAt: FieldRef<"InviteToken", 'DateTime'>
+    readonly usedAt: FieldRef<"InviteToken", 'DateTime'>
+    readonly createdAt: FieldRef<"InviteToken", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * InviteToken findUnique
+   */
+  export type InviteTokenFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which InviteToken to fetch.
+     */
+    where: InviteTokenWhereUniqueInput
+  }
+
+  /**
+   * InviteToken findUniqueOrThrow
+   */
+  export type InviteTokenFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which InviteToken to fetch.
+     */
+    where: InviteTokenWhereUniqueInput
+  }
+
+  /**
+   * InviteToken findFirst
+   */
+  export type InviteTokenFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which InviteToken to fetch.
+     */
+    where?: InviteTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InviteTokens to fetch.
+     */
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InviteTokens.
+     */
+    cursor?: InviteTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InviteTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InviteTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InviteTokens.
+     */
+    distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
+  }
+
+  /**
+   * InviteToken findFirstOrThrow
+   */
+  export type InviteTokenFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which InviteToken to fetch.
+     */
+    where?: InviteTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InviteTokens to fetch.
+     */
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for InviteTokens.
+     */
+    cursor?: InviteTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InviteTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InviteTokens.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of InviteTokens.
+     */
+    distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
+  }
+
+  /**
+   * InviteToken findMany
+   */
+  export type InviteTokenFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter, which InviteTokens to fetch.
+     */
+    where?: InviteTokenWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of InviteTokens to fetch.
+     */
+    orderBy?: InviteTokenOrderByWithRelationInput | InviteTokenOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing InviteTokens.
+     */
+    cursor?: InviteTokenWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` InviteTokens from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` InviteTokens.
+     */
+    skip?: number
+    distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
+  }
+
+  /**
+   * InviteToken create
+   */
+  export type InviteTokenCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to create a InviteToken.
+     */
+    data: XOR<InviteTokenCreateInput, InviteTokenUncheckedCreateInput>
+  }
+
+  /**
+   * InviteToken createMany
+   */
+  export type InviteTokenCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many InviteTokens.
+     */
+    data: InviteTokenCreateManyInput | InviteTokenCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * InviteToken createManyAndReturn
+   */
+  export type InviteTokenCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many InviteTokens.
+     */
+    data: InviteTokenCreateManyInput | InviteTokenCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * InviteToken update
+   */
+  export type InviteTokenUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * The data needed to update a InviteToken.
+     */
+    data: XOR<InviteTokenUpdateInput, InviteTokenUncheckedUpdateInput>
+    /**
+     * Choose, which InviteToken to update.
+     */
+    where: InviteTokenWhereUniqueInput
+  }
+
+  /**
+   * InviteToken updateMany
+   */
+  export type InviteTokenUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update InviteTokens.
+     */
+    data: XOR<InviteTokenUpdateManyMutationInput, InviteTokenUncheckedUpdateManyInput>
+    /**
+     * Filter which InviteTokens to update
+     */
+    where?: InviteTokenWhereInput
+  }
+
+  /**
+   * InviteToken upsert
+   */
+  export type InviteTokenUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * The filter to search for the InviteToken to update in case it exists.
+     */
+    where: InviteTokenWhereUniqueInput
+    /**
+     * In case the InviteToken found by the `where` argument doesn't exist, create a new InviteToken with this data.
+     */
+    create: XOR<InviteTokenCreateInput, InviteTokenUncheckedCreateInput>
+    /**
+     * In case the InviteToken was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InviteTokenUpdateInput, InviteTokenUncheckedUpdateInput>
+  }
+
+  /**
+   * InviteToken delete
+   */
+  export type InviteTokenDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+    /**
+     * Filter which InviteToken to delete.
+     */
+    where: InviteTokenWhereUniqueInput
+  }
+
+  /**
+   * InviteToken deleteMany
+   */
+  export type InviteTokenDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which InviteTokens to delete
+     */
+    where?: InviteTokenWhereInput
+  }
+
+  /**
+   * InviteToken.usedBy
+   */
+  export type InviteToken$usedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * InviteToken without action
+   */
+  export type InviteTokenDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InviteToken
+     */
+    select?: InviteTokenSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InviteTokenInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -21002,6 +22144,20 @@ export namespace Prisma {
   };
 
   export type DonationRecordScalarFieldEnum = (typeof DonationRecordScalarFieldEnum)[keyof typeof DonationRecordScalarFieldEnum]
+
+
+  export const InviteTokenScalarFieldEnum: {
+    id: 'id',
+    token: 'token',
+    role: 'role',
+    createdById: 'createdById',
+    usedById: 'usedById',
+    expiresAt: 'expiresAt',
+    usedAt: 'usedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -21283,6 +22439,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkListRelationFilter
     donationRecordsFor?: DonationRecordListRelationFilter
     donationRecordsCreated?: DonationRecordListRelationFilter
+    inviteTokensCreated?: InviteTokenListRelationFilter
+    inviteTokensUsed?: InviteTokenListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -21317,6 +22475,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkOrderByRelationAggregateInput
     donationRecordsFor?: DonationRecordOrderByRelationAggregateInput
     donationRecordsCreated?: DonationRecordOrderByRelationAggregateInput
+    inviteTokensCreated?: InviteTokenOrderByRelationAggregateInput
+    inviteTokensUsed?: InviteTokenOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -21354,6 +22514,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkListRelationFilter
     donationRecordsFor?: DonationRecordListRelationFilter
     donationRecordsCreated?: DonationRecordListRelationFilter
+    inviteTokensCreated?: InviteTokenListRelationFilter
+    inviteTokensUsed?: InviteTokenListRelationFilter
   }, "id" | "email" | "phoneE164">
 
   export type UserOrderByWithAggregationInput = {
@@ -22715,6 +23877,79 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"DonationRecord"> | Date | string
   }
 
+  export type InviteTokenWhereInput = {
+    AND?: InviteTokenWhereInput | InviteTokenWhereInput[]
+    OR?: InviteTokenWhereInput[]
+    NOT?: InviteTokenWhereInput | InviteTokenWhereInput[]
+    id?: StringFilter<"InviteToken"> | string
+    token?: StringFilter<"InviteToken"> | string
+    role?: EnumRoleFilter<"InviteToken"> | $Enums.Role
+    createdById?: StringFilter<"InviteToken"> | string
+    usedById?: StringNullableFilter<"InviteToken"> | string | null
+    expiresAt?: DateTimeFilter<"InviteToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"InviteToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"InviteToken"> | Date | string
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    usedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }
+
+  export type InviteTokenOrderByWithRelationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    usedById?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    createdBy?: UserOrderByWithRelationInput
+    usedBy?: UserOrderByWithRelationInput
+  }
+
+  export type InviteTokenWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: InviteTokenWhereInput | InviteTokenWhereInput[]
+    OR?: InviteTokenWhereInput[]
+    NOT?: InviteTokenWhereInput | InviteTokenWhereInput[]
+    role?: EnumRoleFilter<"InviteToken"> | $Enums.Role
+    createdById?: StringFilter<"InviteToken"> | string
+    usedById?: StringNullableFilter<"InviteToken"> | string | null
+    expiresAt?: DateTimeFilter<"InviteToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"InviteToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"InviteToken"> | Date | string
+    createdBy?: XOR<UserRelationFilter, UserWhereInput>
+    usedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+  }, "id" | "token">
+
+  export type InviteTokenOrderByWithAggregationInput = {
+    id?: SortOrder
+    token?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    usedById?: SortOrderInput | SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: InviteTokenCountOrderByAggregateInput
+    _max?: InviteTokenMaxOrderByAggregateInput
+    _min?: InviteTokenMinOrderByAggregateInput
+  }
+
+  export type InviteTokenScalarWhereWithAggregatesInput = {
+    AND?: InviteTokenScalarWhereWithAggregatesInput | InviteTokenScalarWhereWithAggregatesInput[]
+    OR?: InviteTokenScalarWhereWithAggregatesInput[]
+    NOT?: InviteTokenScalarWhereWithAggregatesInput | InviteTokenScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"InviteToken"> | string
+    token?: StringWithAggregatesFilter<"InviteToken"> | string
+    role?: EnumRoleWithAggregatesFilter<"InviteToken"> | $Enums.Role
+    createdById?: StringWithAggregatesFilter<"InviteToken"> | string
+    usedById?: StringNullableWithAggregatesFilter<"InviteToken"> | string | null
+    expiresAt?: DateTimeWithAggregatesFilter<"InviteToken"> | Date | string
+    usedAt?: DateTimeNullableWithAggregatesFilter<"InviteToken"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"InviteToken"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -22747,6 +23982,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -22781,6 +24018,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUpdateInput = {
@@ -22815,6 +24054,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -22849,6 +24090,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -24268,6 +25511,81 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type InviteTokenCreateInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutInviteTokensCreatedInput
+    usedBy?: UserCreateNestedOneWithoutInviteTokensUsedInput
+  }
+
+  export type InviteTokenUncheckedCreateInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    createdById: string
+    usedById?: string | null
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutInviteTokensCreatedNestedInput
+    usedBy?: UserUpdateOneWithoutInviteTokensUsedNestedInput
+  }
+
+  export type InviteTokenUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdById?: StringFieldUpdateOperationsInput | string
+    usedById?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenCreateManyInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    createdById: string
+    usedById?: string | null
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdById?: StringFieldUpdateOperationsInput | string
+    usedById?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -24405,6 +25723,12 @@ export namespace Prisma {
     none?: DonationRecordWhereInput
   }
 
+  export type InviteTokenListRelationFilter = {
+    every?: InviteTokenWhereInput
+    some?: InviteTokenWhereInput
+    none?: InviteTokenWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -24463,6 +25787,10 @@ export namespace Prisma {
   }
 
   export type DonationRecordOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type InviteTokenOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -25563,6 +26891,39 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type InviteTokenCountOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    usedById?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type InviteTokenMaxOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    usedById?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type InviteTokenMinOrderByAggregateInput = {
+    id?: SortOrder
+    token?: SortOrder
+    role?: SortOrder
+    createdById?: SortOrder
+    usedById?: SortOrder
+    expiresAt?: SortOrder
+    usedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type EventCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -25696,6 +27057,20 @@ export namespace Prisma {
     connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
   }
 
+  export type InviteTokenCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput> | InviteTokenCreateWithoutCreatedByInput[] | InviteTokenUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutCreatedByInput | InviteTokenCreateOrConnectWithoutCreatedByInput[]
+    createMany?: InviteTokenCreateManyCreatedByInputEnvelope
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+  }
+
+  export type InviteTokenCreateNestedManyWithoutUsedByInput = {
+    create?: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput> | InviteTokenCreateWithoutUsedByInput[] | InviteTokenUncheckedCreateWithoutUsedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutUsedByInput | InviteTokenCreateOrConnectWithoutUsedByInput[]
+    createMany?: InviteTokenCreateManyUsedByInputEnvelope
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -25827,6 +27202,20 @@ export namespace Prisma {
     connectOrCreate?: DonationRecordCreateOrConnectWithoutCreatedByInput | DonationRecordCreateOrConnectWithoutCreatedByInput[]
     createMany?: DonationRecordCreateManyCreatedByInputEnvelope
     connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
+  export type InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput = {
+    create?: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput> | InviteTokenCreateWithoutCreatedByInput[] | InviteTokenUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutCreatedByInput | InviteTokenCreateOrConnectWithoutCreatedByInput[]
+    createMany?: InviteTokenCreateManyCreatedByInputEnvelope
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+  }
+
+  export type InviteTokenUncheckedCreateNestedManyWithoutUsedByInput = {
+    create?: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput> | InviteTokenCreateWithoutUsedByInput[] | InviteTokenUncheckedCreateWithoutUsedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutUsedByInput | InviteTokenCreateOrConnectWithoutUsedByInput[]
+    createMany?: InviteTokenCreateManyUsedByInputEnvelope
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -26115,6 +27504,34 @@ export namespace Prisma {
     deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
   }
 
+  export type InviteTokenUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput> | InviteTokenCreateWithoutCreatedByInput[] | InviteTokenUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutCreatedByInput | InviteTokenCreateOrConnectWithoutCreatedByInput[]
+    upsert?: InviteTokenUpsertWithWhereUniqueWithoutCreatedByInput | InviteTokenUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: InviteTokenCreateManyCreatedByInputEnvelope
+    set?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    disconnect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    delete?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    update?: InviteTokenUpdateWithWhereUniqueWithoutCreatedByInput | InviteTokenUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: InviteTokenUpdateManyWithWhereWithoutCreatedByInput | InviteTokenUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+  }
+
+  export type InviteTokenUpdateManyWithoutUsedByNestedInput = {
+    create?: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput> | InviteTokenCreateWithoutUsedByInput[] | InviteTokenUncheckedCreateWithoutUsedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutUsedByInput | InviteTokenCreateOrConnectWithoutUsedByInput[]
+    upsert?: InviteTokenUpsertWithWhereUniqueWithoutUsedByInput | InviteTokenUpsertWithWhereUniqueWithoutUsedByInput[]
+    createMany?: InviteTokenCreateManyUsedByInputEnvelope
+    set?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    disconnect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    delete?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    update?: InviteTokenUpdateWithWhereUniqueWithoutUsedByInput | InviteTokenUpdateWithWhereUniqueWithoutUsedByInput[]
+    updateMany?: InviteTokenUpdateManyWithWhereWithoutUsedByInput | InviteTokenUpdateManyWithWhereWithoutUsedByInput[]
+    deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -26379,6 +27796,34 @@ export namespace Prisma {
     update?: DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput | DonationRecordUpdateWithWhereUniqueWithoutCreatedByInput[]
     updateMany?: DonationRecordUpdateManyWithWhereWithoutCreatedByInput | DonationRecordUpdateManyWithWhereWithoutCreatedByInput[]
     deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
+  export type InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput = {
+    create?: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput> | InviteTokenCreateWithoutCreatedByInput[] | InviteTokenUncheckedCreateWithoutCreatedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutCreatedByInput | InviteTokenCreateOrConnectWithoutCreatedByInput[]
+    upsert?: InviteTokenUpsertWithWhereUniqueWithoutCreatedByInput | InviteTokenUpsertWithWhereUniqueWithoutCreatedByInput[]
+    createMany?: InviteTokenCreateManyCreatedByInputEnvelope
+    set?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    disconnect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    delete?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    update?: InviteTokenUpdateWithWhereUniqueWithoutCreatedByInput | InviteTokenUpdateWithWhereUniqueWithoutCreatedByInput[]
+    updateMany?: InviteTokenUpdateManyWithWhereWithoutCreatedByInput | InviteTokenUpdateManyWithWhereWithoutCreatedByInput[]
+    deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+  }
+
+  export type InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput = {
+    create?: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput> | InviteTokenCreateWithoutUsedByInput[] | InviteTokenUncheckedCreateWithoutUsedByInput[]
+    connectOrCreate?: InviteTokenCreateOrConnectWithoutUsedByInput | InviteTokenCreateOrConnectWithoutUsedByInput[]
+    upsert?: InviteTokenUpsertWithWhereUniqueWithoutUsedByInput | InviteTokenUpsertWithWhereUniqueWithoutUsedByInput[]
+    createMany?: InviteTokenCreateManyUsedByInputEnvelope
+    set?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    disconnect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    delete?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+    update?: InviteTokenUpdateWithWhereUniqueWithoutUsedByInput | InviteTokenUpdateWithWhereUniqueWithoutUsedByInput[]
+    updateMany?: InviteTokenUpdateManyWithWhereWithoutUsedByInput | InviteTokenUpdateManyWithWhereWithoutUsedByInput[]
+    deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutEventsInput = {
@@ -27731,6 +29176,36 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDonationRecordsCreatedInput, UserUpdateWithoutDonationRecordsCreatedInput>, UserUncheckedUpdateWithoutDonationRecordsCreatedInput>
   }
 
+  export type UserCreateNestedOneWithoutInviteTokensCreatedInput = {
+    create?: XOR<UserCreateWithoutInviteTokensCreatedInput, UserUncheckedCreateWithoutInviteTokensCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInviteTokensCreatedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutInviteTokensUsedInput = {
+    create?: XOR<UserCreateWithoutInviteTokensUsedInput, UserUncheckedCreateWithoutInviteTokensUsedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInviteTokensUsedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutInviteTokensCreatedNestedInput = {
+    create?: XOR<UserCreateWithoutInviteTokensCreatedInput, UserUncheckedCreateWithoutInviteTokensCreatedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInviteTokensCreatedInput
+    upsert?: UserUpsertWithoutInviteTokensCreatedInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInviteTokensCreatedInput, UserUpdateWithoutInviteTokensCreatedInput>, UserUncheckedUpdateWithoutInviteTokensCreatedInput>
+  }
+
+  export type UserUpdateOneWithoutInviteTokensUsedNestedInput = {
+    create?: XOR<UserCreateWithoutInviteTokensUsedInput, UserUncheckedCreateWithoutInviteTokensUsedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutInviteTokensUsedInput
+    upsert?: UserUpsertWithoutInviteTokensUsedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInviteTokensUsedInput, UserUpdateWithoutInviteTokensUsedInput>, UserUncheckedUpdateWithoutInviteTokensUsedInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -28800,6 +30275,66 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type InviteTokenCreateWithoutCreatedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+    usedBy?: UserCreateNestedOneWithoutInviteTokensUsedInput
+  }
+
+  export type InviteTokenUncheckedCreateWithoutCreatedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    usedById?: string | null
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenCreateOrConnectWithoutCreatedByInput = {
+    where: InviteTokenWhereUniqueInput
+    create: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type InviteTokenCreateManyCreatedByInputEnvelope = {
+    data: InviteTokenCreateManyCreatedByInput | InviteTokenCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type InviteTokenCreateWithoutUsedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutInviteTokensCreatedInput
+  }
+
+  export type InviteTokenUncheckedCreateWithoutUsedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    createdById: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenCreateOrConnectWithoutUsedByInput = {
+    where: InviteTokenWhereUniqueInput
+    create: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput>
+  }
+
+  export type InviteTokenCreateManyUsedByInputEnvelope = {
+    data: InviteTokenCreateManyUsedByInput | InviteTokenCreateManyUsedByInput[]
+    skipDuplicates?: boolean
+  }
+
   export type EventUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: EventWhereUniqueInput
     update: XOR<EventUpdateWithoutCreatedByInput, EventUncheckedUpdateWithoutCreatedByInput>
@@ -29316,6 +30851,52 @@ export namespace Prisma {
     data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyWithoutCreatedByInput>
   }
 
+  export type InviteTokenUpsertWithWhereUniqueWithoutCreatedByInput = {
+    where: InviteTokenWhereUniqueInput
+    update: XOR<InviteTokenUpdateWithoutCreatedByInput, InviteTokenUncheckedUpdateWithoutCreatedByInput>
+    create: XOR<InviteTokenCreateWithoutCreatedByInput, InviteTokenUncheckedCreateWithoutCreatedByInput>
+  }
+
+  export type InviteTokenUpdateWithWhereUniqueWithoutCreatedByInput = {
+    where: InviteTokenWhereUniqueInput
+    data: XOR<InviteTokenUpdateWithoutCreatedByInput, InviteTokenUncheckedUpdateWithoutCreatedByInput>
+  }
+
+  export type InviteTokenUpdateManyWithWhereWithoutCreatedByInput = {
+    where: InviteTokenScalarWhereInput
+    data: XOR<InviteTokenUpdateManyMutationInput, InviteTokenUncheckedUpdateManyWithoutCreatedByInput>
+  }
+
+  export type InviteTokenScalarWhereInput = {
+    AND?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+    OR?: InviteTokenScalarWhereInput[]
+    NOT?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+    id?: StringFilter<"InviteToken"> | string
+    token?: StringFilter<"InviteToken"> | string
+    role?: EnumRoleFilter<"InviteToken"> | $Enums.Role
+    createdById?: StringFilter<"InviteToken"> | string
+    usedById?: StringNullableFilter<"InviteToken"> | string | null
+    expiresAt?: DateTimeFilter<"InviteToken"> | Date | string
+    usedAt?: DateTimeNullableFilter<"InviteToken"> | Date | string | null
+    createdAt?: DateTimeFilter<"InviteToken"> | Date | string
+  }
+
+  export type InviteTokenUpsertWithWhereUniqueWithoutUsedByInput = {
+    where: InviteTokenWhereUniqueInput
+    update: XOR<InviteTokenUpdateWithoutUsedByInput, InviteTokenUncheckedUpdateWithoutUsedByInput>
+    create: XOR<InviteTokenCreateWithoutUsedByInput, InviteTokenUncheckedCreateWithoutUsedByInput>
+  }
+
+  export type InviteTokenUpdateWithWhereUniqueWithoutUsedByInput = {
+    where: InviteTokenWhereUniqueInput
+    data: XOR<InviteTokenUpdateWithoutUsedByInput, InviteTokenUncheckedUpdateWithoutUsedByInput>
+  }
+
+  export type InviteTokenUpdateManyWithWhereWithoutUsedByInput = {
+    where: InviteTokenScalarWhereInput
+    data: XOR<InviteTokenUpdateManyMutationInput, InviteTokenUncheckedUpdateManyWithoutUsedByInput>
+  }
+
   export type UserCreateWithoutEventsInput = {
     id?: string
     email: string
@@ -29347,6 +30928,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -29380,6 +30963,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -29700,6 +31285,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -29733,6 +31320,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupUpsertWithoutEventsInput = {
@@ -30061,6 +31650,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutEventShareLinksInput = {
@@ -30094,6 +31685,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutEventShareLinksInput = {
@@ -30214,6 +31807,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventShareLinksInput = {
@@ -30247,6 +31842,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type EventCreateWithoutGuestRsvpsInput = {
@@ -30416,6 +32013,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
@@ -30449,6 +32048,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutEventSeriesCreatedInput = {
@@ -30615,6 +32216,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
@@ -30648,6 +32251,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupUpsertWithoutEventSeriesInput = {
@@ -30815,6 +32420,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
@@ -30848,6 +32455,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesCreatedInput = {
@@ -30886,6 +32495,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
@@ -30919,6 +32530,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesAcceptedInput = {
@@ -31039,6 +32652,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
@@ -31072,6 +32687,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUpsertWithoutEventInvitesAcceptedInput = {
@@ -31116,6 +32733,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
@@ -31149,6 +32768,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type EventCreateWithoutRsvpsInput = {
@@ -31247,6 +32868,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
@@ -31280,6 +32903,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutRsvpsInput = {
@@ -31400,6 +33025,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
@@ -31433,6 +33060,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
@@ -31531,6 +33160,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -31564,6 +33195,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -31739,6 +33372,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -31772,6 +33407,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type CommentUpsertWithoutRepliesInput = {
@@ -31899,6 +33536,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
@@ -31932,6 +33571,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMessagesInput = {
@@ -32034,6 +33675,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
@@ -32067,6 +33710,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type EventCreateWithoutReminderRulesInput = {
@@ -32301,6 +33946,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
@@ -32334,6 +33981,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutMessageLogsInput = {
@@ -32454,6 +34103,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
@@ -32487,6 +34138,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupCreateWithoutNewsInput = {
@@ -32567,6 +34220,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutNewsInput = {
@@ -32600,6 +34255,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutNewsInput = {
@@ -32702,6 +34359,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsInput = {
@@ -32735,6 +34394,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -32768,6 +34429,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -32801,6 +34464,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -33237,6 +34902,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -33270,6 +34937,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupUpsertWithoutSubgroupsInput = {
@@ -33500,6 +35169,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
@@ -33533,6 +35204,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInvitesInput = {
@@ -33618,6 +35291,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -33651,6 +35326,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -33700,6 +35377,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
@@ -33733,6 +35412,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupUpsertWithoutMembershipsInput = {
@@ -33830,6 +35511,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -33863,6 +35546,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserCreateWithoutGroupInvitesSentInput = {
@@ -33896,6 +35581,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
@@ -33929,6 +35616,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesSentInput = {
@@ -33967,6 +35656,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
@@ -34000,6 +35691,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesReceivedInput = {
@@ -34096,6 +35789,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
@@ -34129,6 +35824,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUpsertWithoutGroupInvitesReceivedInput = {
@@ -34173,6 +35870,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
@@ -34206,6 +35905,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupUpsertWithoutInvitesInput = {
@@ -34339,6 +36040,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
@@ -34372,6 +36075,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutGroupJoinRequestsInput = {
@@ -34410,6 +36115,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
@@ -34443,6 +36150,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutReviewedJoinRequestsInput = {
@@ -34545,6 +36254,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
@@ -34578,6 +36289,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUpsertWithoutReviewedJoinRequestsInput = {
@@ -34622,6 +36335,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
@@ -34655,6 +36370,8 @@ export namespace Prisma {
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type GroupCreateWithoutDonationRecordsInput = {
@@ -34735,6 +36452,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsForInput = {
@@ -34768,6 +36487,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsForInput = {
@@ -34806,6 +36527,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsCreatedInput = {
@@ -34839,6 +36562,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
     eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsCreatedInput = {
@@ -34941,6 +36666,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsForInput = {
@@ -34974,6 +36701,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUpsertWithoutDonationRecordsCreatedInput = {
@@ -35018,6 +36747,8 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsCreatedInput = {
@@ -35051,6 +36782,320 @@ export namespace Prisma {
     eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
     eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+  }
+
+  export type UserCreateWithoutInviteTokensCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+  }
+
+  export type UserUncheckedCreateWithoutInviteTokensCreatedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+  }
+
+  export type UserCreateOrConnectWithoutInviteTokensCreatedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInviteTokensCreatedInput, UserUncheckedCreateWithoutInviteTokensCreatedInput>
+  }
+
+  export type UserCreateWithoutInviteTokensUsedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutInviteTokensUsedInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    phoneE164: string
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    isGuest?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutInviteTokensUsedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInviteTokensUsedInput, UserUncheckedCreateWithoutInviteTokensUsedInput>
+  }
+
+  export type UserUpsertWithoutInviteTokensCreatedInput = {
+    update: XOR<UserUpdateWithoutInviteTokensCreatedInput, UserUncheckedUpdateWithoutInviteTokensCreatedInput>
+    create: XOR<UserCreateWithoutInviteTokensCreatedInput, UserUncheckedCreateWithoutInviteTokensCreatedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInviteTokensCreatedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInviteTokensCreatedInput, UserUncheckedUpdateWithoutInviteTokensCreatedInput>
+  }
+
+  export type UserUpdateWithoutInviteTokensCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInviteTokensCreatedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+  }
+
+  export type UserUpsertWithoutInviteTokensUsedInput = {
+    update: XOR<UserUpdateWithoutInviteTokensUsedInput, UserUncheckedUpdateWithoutInviteTokensUsedInput>
+    create: XOR<UserCreateWithoutInviteTokensUsedInput, UserUncheckedCreateWithoutInviteTokensUsedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutInviteTokensUsedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutInviteTokensUsedInput, UserUncheckedUpdateWithoutInviteTokensUsedInput>
+  }
+
+  export type UserUpdateWithoutInviteTokensUsedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInviteTokensUsedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: StringFieldUpdateOperationsInput | string
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
   export type EventCreateManyCreatedByInput = {
@@ -35265,6 +37310,26 @@ export namespace Prisma {
     currency: string
     date: Date | string
     note?: string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenCreateManyCreatedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    usedById?: string | null
+    expiresAt: Date | string
+    usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type InviteTokenCreateManyUsedByInput = {
+    id?: string
+    token: string
+    role?: $Enums.Role
+    createdById: string
+    expiresAt: Date | string
+    usedAt?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -35946,6 +38011,66 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     note?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedBy?: UserUpdateOneWithoutInviteTokensUsedNestedInput
+  }
+
+  export type InviteTokenUncheckedUpdateWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    usedById?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenUncheckedUpdateManyWithoutCreatedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    usedById?: NullableStringFieldUpdateOperationsInput | string | null
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenUpdateWithoutUsedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutInviteTokensCreatedNestedInput
+  }
+
+  export type InviteTokenUncheckedUpdateWithoutUsedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdById?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InviteTokenUncheckedUpdateManyWithoutUsedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    token?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    createdById?: StringFieldUpdateOperationsInput | string
+    expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -36894,6 +39019,10 @@ export namespace Prisma {
      * @deprecated Use DonationRecordDefaultArgs instead
      */
     export type DonationRecordArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DonationRecordDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use InviteTokenDefaultArgs instead
+     */
+    export type InviteTokenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = InviteTokenDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany
