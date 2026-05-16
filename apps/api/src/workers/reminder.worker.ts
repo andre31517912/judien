@@ -75,7 +75,7 @@ async function processReminder(job: Job<ReminderJobData>) {
       if (channel === 'SMS' && user.muteSms) continue;
       if (channel === 'SMS' && !user.phoneE164) continue;
       if (channel === 'EMAIL' && user.muteEmail) continue;
-      const toAddress = channel === 'SMS' ? user.phoneE164 : user.email;
+      const toAddress = channel === 'SMS' ? user.phoneE164! : user.email;
       const log = await prisma.messageLog.create({
         data: {
           userId: user.id,
