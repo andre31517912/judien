@@ -246,19 +246,12 @@ export class GroupsController {
   @Get(':groupId/members/export')
   async exportMembers(
     @Param('groupId') groupId: string,
-    @Query('format') format: 'xlsx' | 'csv' | 'txt' = 'xlsx',
     @CurrentUser() user: User,
     @Res() res: Response,
   ) {
-    const { buffer, filename } = await this.groupsService.exportMembers(groupId, format, user);
-    const mime =
-      format === 'xlsx'
-        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        : format === 'txt'
-        ? 'text/plain'
-        : 'text/csv';
+    const { buffer, filename } = await this.groupsService.exportMembers(groupId, user);
     res.set({
-      'Content-Type': mime,
+      'Content-Type': 'text/csv',
       'Content-Disposition': `attachment; filename="${filename}"`,
       'Content-Length': buffer.length,
     });

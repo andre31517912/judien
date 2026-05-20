@@ -3044,7 +3044,7 @@ export namespace Prisma {
     id: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164: string | null
     displayName: string | null
     preferredLanguage: string
     colorTheme: string
@@ -3194,7 +3194,7 @@ export namespace Prisma {
       id: string
       email: string
       passwordHash: string
-      phoneE164: string
+      phoneE164: string | null
       displayName: string | null
       preferredLanguage: string
       colorTheme: string
@@ -12640,7 +12640,6 @@ export namespace Prisma {
     eventId: string | null
     offsetMinutes: number | null
     enabled: boolean | null
-    sentAt: Date | null
   }
 
   export type ReminderRuleMaxAggregateOutputType = {
@@ -12648,7 +12647,6 @@ export namespace Prisma {
     eventId: string | null
     offsetMinutes: number | null
     enabled: boolean | null
-    sentAt: Date | null
   }
 
   export type ReminderRuleCountAggregateOutputType = {
@@ -12657,7 +12655,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: number
     enabled: number
-    sentAt: number
     _all: number
   }
 
@@ -12675,7 +12672,6 @@ export namespace Prisma {
     eventId?: true
     offsetMinutes?: true
     enabled?: true
-    sentAt?: true
   }
 
   export type ReminderRuleMaxAggregateInputType = {
@@ -12683,7 +12679,6 @@ export namespace Prisma {
     eventId?: true
     offsetMinutes?: true
     enabled?: true
-    sentAt?: true
   }
 
   export type ReminderRuleCountAggregateInputType = {
@@ -12692,7 +12687,6 @@ export namespace Prisma {
     offsetMinutes?: true
     channels?: true
     enabled?: true
-    sentAt?: true
     _all?: true
   }
 
@@ -12788,7 +12782,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonValue
     enabled: boolean
-    sentAt: Date | null
     _count: ReminderRuleCountAggregateOutputType | null
     _avg: ReminderRuleAvgAggregateOutputType | null
     _sum: ReminderRuleSumAggregateOutputType | null
@@ -12816,7 +12809,6 @@ export namespace Prisma {
     offsetMinutes?: boolean
     channels?: boolean
     enabled?: boolean
-    sentAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["reminderRule"]>
 
@@ -12826,7 +12818,6 @@ export namespace Prisma {
     offsetMinutes?: boolean
     channels?: boolean
     enabled?: boolean
-    sentAt?: boolean
     event?: boolean | EventDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["reminderRule"]>
 
@@ -12836,7 +12827,6 @@ export namespace Prisma {
     offsetMinutes?: boolean
     channels?: boolean
     enabled?: boolean
-    sentAt?: boolean
   }
 
   export type ReminderRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12857,7 +12847,6 @@ export namespace Prisma {
       offsetMinutes: number
       channels: Prisma.JsonValue
       enabled: boolean
-      sentAt: Date | null
     }, ExtArgs["result"]["reminderRule"]>
     composites: {}
   }
@@ -13257,7 +13246,6 @@ export namespace Prisma {
     readonly offsetMinutes: FieldRef<"ReminderRule", 'Int'>
     readonly channels: FieldRef<"ReminderRule", 'Json'>
     readonly enabled: FieldRef<"ReminderRule", 'Boolean'>
-    readonly sentAt: FieldRef<"ReminderRule", 'DateTime'>
   }
     
 
@@ -22044,8 +22032,7 @@ export namespace Prisma {
     eventId: 'eventId',
     offsetMinutes: 'offsetMinutes',
     channels: 'channels',
-    enabled: 'enabled',
-    sentAt: 'sentAt'
+    enabled: 'enabled'
   };
 
   export type ReminderRuleScalarFieldEnum = (typeof ReminderRuleScalarFieldEnum)[keyof typeof ReminderRuleScalarFieldEnum]
@@ -22424,7 +22411,7 @@ export namespace Prisma {
     id?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
-    phoneE164?: StringFilter<"User"> | string
+    phoneE164?: StringNullableFilter<"User"> | string | null
     displayName?: StringNullableFilter<"User"> | string | null
     preferredLanguage?: StringFilter<"User"> | string
     colorTheme?: StringFilter<"User"> | string
@@ -22460,7 +22447,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
-    phoneE164?: SortOrder
+    phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
@@ -22535,7 +22522,7 @@ export namespace Prisma {
     id?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
-    phoneE164?: SortOrder
+    phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
@@ -22556,7 +22543,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     passwordHash?: StringWithAggregatesFilter<"User"> | string
-    phoneE164?: StringWithAggregatesFilter<"User"> | string
+    phoneE164?: StringNullableWithAggregatesFilter<"User"> | string | null
     displayName?: StringNullableWithAggregatesFilter<"User"> | string | null
     preferredLanguage?: StringWithAggregatesFilter<"User"> | string
     colorTheme?: StringWithAggregatesFilter<"User"> | string
@@ -23237,7 +23224,6 @@ export namespace Prisma {
     offsetMinutes?: IntFilter<"ReminderRule"> | number
     channels?: JsonFilter<"ReminderRule">
     enabled?: BoolFilter<"ReminderRule"> | boolean
-    sentAt?: DateTimeNullableFilter<"ReminderRule"> | Date | string | null
     event?: XOR<EventRelationFilter, EventWhereInput>
   }
 
@@ -23247,7 +23233,6 @@ export namespace Prisma {
     offsetMinutes?: SortOrder
     channels?: SortOrder
     enabled?: SortOrder
-    sentAt?: SortOrderInput | SortOrder
     event?: EventOrderByWithRelationInput
   }
 
@@ -23261,7 +23246,6 @@ export namespace Prisma {
     offsetMinutes?: IntFilter<"ReminderRule"> | number
     channels?: JsonFilter<"ReminderRule">
     enabled?: BoolFilter<"ReminderRule"> | boolean
-    sentAt?: DateTimeNullableFilter<"ReminderRule"> | Date | string | null
     event?: XOR<EventRelationFilter, EventWhereInput>
   }, "id" | "eventId_offsetMinutes">
 
@@ -23271,7 +23255,6 @@ export namespace Prisma {
     offsetMinutes?: SortOrder
     channels?: SortOrder
     enabled?: SortOrder
-    sentAt?: SortOrderInput | SortOrder
     _count?: ReminderRuleCountOrderByAggregateInput
     _avg?: ReminderRuleAvgOrderByAggregateInput
     _max?: ReminderRuleMaxOrderByAggregateInput
@@ -23288,7 +23271,6 @@ export namespace Prisma {
     offsetMinutes?: IntWithAggregatesFilter<"ReminderRule"> | number
     channels?: JsonWithAggregatesFilter<"ReminderRule">
     enabled?: BoolWithAggregatesFilter<"ReminderRule"> | boolean
-    sentAt?: DateTimeNullableWithAggregatesFilter<"ReminderRule"> | Date | string | null
   }
 
   export type MessageLogWhereInput = {
@@ -23972,7 +23954,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -24008,7 +23990,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -24044,7 +24026,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -24080,7 +24062,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -24116,7 +24098,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -24131,7 +24113,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -24146,7 +24128,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -24852,7 +24834,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
     event: EventCreateNestedOneWithoutReminderRulesInput
   }
 
@@ -24862,7 +24843,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
   }
 
   export type ReminderRuleUpdateInput = {
@@ -24870,7 +24850,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     event?: EventUpdateOneRequiredWithoutReminderRulesNestedInput
   }
 
@@ -24880,7 +24859,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ReminderRuleCreateManyInput = {
@@ -24889,7 +24867,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
   }
 
   export type ReminderRuleUpdateManyMutationInput = {
@@ -24897,7 +24874,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ReminderRuleUncheckedUpdateManyInput = {
@@ -24906,7 +24882,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MessageLogCreateInput = {
@@ -26440,7 +26415,6 @@ export namespace Prisma {
     offsetMinutes?: SortOrder
     channels?: SortOrder
     enabled?: SortOrder
-    sentAt?: SortOrder
   }
 
   export type ReminderRuleAvgOrderByAggregateInput = {
@@ -26452,7 +26426,6 @@ export namespace Prisma {
     eventId?: SortOrder
     offsetMinutes?: SortOrder
     enabled?: SortOrder
-    sentAt?: SortOrder
   }
 
   export type ReminderRuleMinOrderByAggregateInput = {
@@ -26460,7 +26433,6 @@ export namespace Prisma {
     eventId?: SortOrder
     offsetMinutes?: SortOrder
     enabled?: SortOrder
-    sentAt?: SortOrder
   }
 
   export type ReminderRuleSumOrderByAggregateInput = {
@@ -30929,7 +30901,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -30964,7 +30936,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -31165,7 +31137,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
   }
 
   export type ReminderRuleUncheckedCreateWithoutEventInput = {
@@ -31173,7 +31144,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
   }
 
   export type ReminderRuleCreateOrConnectWithoutEventInput = {
@@ -31288,7 +31258,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -31323,7 +31293,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -31525,7 +31495,6 @@ export namespace Prisma {
     offsetMinutes?: IntFilter<"ReminderRule"> | number
     channels?: JsonFilter<"ReminderRule">
     enabled?: BoolFilter<"ReminderRule"> | boolean
-    sentAt?: DateTimeNullableFilter<"ReminderRule"> | Date | string | null
   }
 
   export type MessageLogUpsertWithWhereUniqueWithoutEventInput = {
@@ -31654,7 +31623,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -31689,7 +31658,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -31811,7 +31780,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -31846,7 +31815,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32017,7 +31986,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32052,7 +32021,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32220,7 +32189,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32255,7 +32224,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32424,7 +32393,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32459,7 +32428,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32499,7 +32468,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32534,7 +32503,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32656,7 +32625,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32691,7 +32660,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32737,7 +32706,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32772,7 +32741,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -32872,7 +32841,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -32907,7 +32876,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33029,7 +32998,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33064,7 +33033,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33164,7 +33133,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33199,7 +33168,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33376,7 +33345,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33411,7 +33380,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33540,7 +33509,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33575,7 +33544,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33679,7 +33648,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33714,7 +33683,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -33950,7 +33919,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -33985,7 +33954,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -34107,7 +34076,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -34142,7 +34111,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -34224,7 +34193,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -34259,7 +34228,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -34363,7 +34332,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -34398,7 +34367,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -34433,7 +34402,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -34468,7 +34437,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -34906,7 +34875,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -34941,7 +34910,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35173,7 +35142,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35208,7 +35177,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35295,7 +35264,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35330,7 +35299,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35381,7 +35350,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35416,7 +35385,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35515,7 +35484,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35550,7 +35519,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35585,7 +35554,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35620,7 +35589,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35660,7 +35629,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35695,7 +35664,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -35793,7 +35762,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35828,7 +35797,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35874,7 +35843,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -35909,7 +35878,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36044,7 +36013,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36079,7 +36048,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36119,7 +36088,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36154,7 +36123,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36258,7 +36227,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36293,7 +36262,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36339,7 +36308,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36374,7 +36343,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36456,7 +36425,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36491,7 +36460,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36531,7 +36500,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36566,7 +36535,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36670,7 +36639,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36705,7 +36674,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36751,7 +36720,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36786,7 +36755,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -36821,7 +36790,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36856,7 +36825,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36896,7 +36865,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36931,7 +36900,7 @@ export namespace Prisma {
     id?: string
     email: string
     passwordHash: string
-    phoneE164: string
+    phoneE164?: string | null
     displayName?: string | null
     preferredLanguage?: string
     colorTheme?: string
@@ -36982,7 +36951,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -37017,7 +36986,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -37063,7 +37032,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -37098,7 +37067,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
-    phoneE164?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
@@ -38139,7 +38108,6 @@ export namespace Prisma {
     offsetMinutes: number
     channels: JsonNullValueInput | InputJsonValue
     enabled?: boolean
-    sentAt?: Date | string | null
   }
 
   export type MessageLogCreateManyEventInput = {
@@ -38260,7 +38228,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ReminderRuleUncheckedUpdateWithoutEventInput = {
@@ -38268,7 +38235,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ReminderRuleUncheckedUpdateManyWithoutEventInput = {
@@ -38276,7 +38242,6 @@ export namespace Prisma {
     offsetMinutes?: IntFieldUpdateOperationsInput | number
     channels?: JsonNullValueInput | InputJsonValue
     enabled?: BoolFieldUpdateOperationsInput | boolean
-    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MessageLogUpdateWithoutEventInput = {

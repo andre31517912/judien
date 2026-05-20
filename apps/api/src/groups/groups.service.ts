@@ -1,12 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
-import * as XLSX from 'xlsx';
 import type {
   AddMemberDirectlyDto,
   CreateGroupDto,
@@ -30,6 +30,13 @@ export class GroupsService {
 
   async create(dto: CreateGroupDto, user: User) {
     this.assertPlatformAdmin(user);
+
+    const duplicate = await this.prisma.group.findFirst({
+      where: { name: dto.name.trim(), createdById: user.id },
+    });
+    if (duplicate) {
+      throw new ConflictException(`You already have a group named "${dto.name}".`);
+    }
 
     const adminIds = Array.from(new Set([user.id, ...dto.adminUserIds]));
 
@@ -95,20 +102,23 @@ export class GroupsService {
         })).map((m) => m.groupId)
       : [];
 
+    const isPlatformAdmin = user?.role === 'ADMIN';
+
     return this.prisma.group.findMany({
-      where: {
-        AND: [
-          {
-            name: { contains: q, mode: 'insensitive' },
-          },
-          {
-            OR: [
-              { discoverableBySearch: true },
-              ...(memberGroupIds.length > 0 ? [{ id: { in: memberGroupIds } }] : []),
+      where: isPlatformAdmin
+        ? { name: { contains: q, mode: 'insensitive' } }
+        : {
+            AND: [
+              { name: { contains: q, mode: 'insensitive' } },
+              {
+                OR: [
+                  { discoverableBySearch: true },
+                  ...(memberGroupIds.length > 0 ? [{ id: { in: memberGroupIds } }] : []),
+                ],
+              },
             ],
           },
-        ],
-      },
+      include: { createdBy: { select: { id: true, displayName: true } } },
       orderBy: { name: 'asc' },
       take: 25,
     });
@@ -791,22 +801,13 @@ export class GroupsService {
     this.assertPlatformAdmin(user);
     await this.ensureGroupExists(groupId);
 
-    const ext = filePath.split('.').pop()?.toLowerCase();
-    let identifiers: string[] = [];
-
-    if (ext === 'xlsx' || ext === 'xls') {
-      const workbook = XLSX.readFile(filePath);
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as unknown[][];
-      for (const row of rows) {
-        const cell = row[0];
-        if (cell && String(cell).trim()) identifiers.push(String(cell).trim());
-      }
-    } else {
-      const fs = await import('fs/promises');
-      const text = await fs.readFile(filePath, 'utf-8');
-      identifiers = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    }
+    const fs = await import('fs/promises');
+    const text = await fs.readFile(filePath, 'utf-8');
+    // Skip header row if it looks like a header (non-email/id first cell)
+    const allLines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const identifiers = allLines
+      .map((line) => line.split(',')[0].replace(/^"|"$/g, '').trim())
+      .filter(Boolean);
 
     const results: Array<{ identifier: string; status: 'added' | 'not_found' | 'already_member' }> = [];
 
@@ -836,7 +837,7 @@ export class GroupsService {
     return { total: identifiers.length, results };
   }
 
-  async exportMembers(groupId: string, format: 'xlsx' | 'csv' | 'txt', user: User): Promise<{ buffer: Buffer; filename: string }> {
+  async exportMembers(groupId: string, user: User): Promise<{ buffer: Buffer; filename: string }> {
     this.assertPlatformAdmin(user);
     const group = await this.ensureGroupExists(groupId);
 
@@ -846,31 +847,13 @@ export class GroupsService {
       orderBy: { joinedAt: 'asc' },
     });
 
-    const data = rows.map((m) => ({
-      ID: m.user.id,
-      Name: m.user.displayName ?? '',
-      Email: m.user.email,
-      Phone: m.user.phoneE164,
-      Role: m.role,
-      JoinedAt: m.joinedAt ? m.joinedAt.toISOString() : '',
-    }));
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Members');
-
-    if (format === 'xlsx') {
-      const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
-      return { buffer: buf, filename: `members_${group.pid}.xlsx` };
-    } else if (format === 'txt') {
-      const lines = rows.map((m) =>
-        [m.user.displayName ?? '', m.user.email ?? '', m.user.phoneE164 ?? ''].filter(Boolean).join('\t')
-      );
-      return { buffer: Buffer.from(lines.join('\n'), 'utf-8'), filename: `members_${group.pid}.txt` };
-    } else {
-      const csv = XLSX.utils.sheet_to_csv(ws);
-      return { buffer: Buffer.from(csv, 'utf-8'), filename: `members_${group.pid}.csv` };
-    }
+    const csvEscape = (v: string | null | undefined) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['ID', 'Name', 'Email', 'Phone', 'Role', 'JoinedAt'].map(csvEscape).join(',');
+    const lines = rows.map((m) =>
+      [m.user.id, m.user.displayName ?? '', m.user.email ?? '', m.user.phoneE164 ?? '', m.role, m.joinedAt ? m.joinedAt.toISOString() : ''].map(csvEscape).join(',')
+    );
+    const csv = [header, ...lines].join('\r\n');
+    return { buffer: Buffer.from(csv, 'utf-8'), filename: `members_${group.pid}.csv` };
   }
 
   // ─── Donations ───────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.0.0",
   "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"pnpm dev:api\" \"pnpm dev:web\"",
     "dev:api": "npx kill-port 4000 && pnpm --filter @judien/api dev",
     "dev:web": "pnpm --filter @judien/web dev",
     "dev:mobile": "pnpm --filter @judien/mobile start",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
+    "concurrently": "^9.1.2",
     "kill-port": "^2.0.1",
     "next": "^14.2.4",
     "typescript": "^5.4.5"

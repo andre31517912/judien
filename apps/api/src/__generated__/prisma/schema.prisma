@@ -67,7 +67,7 @@ model User {
   id                String   @id @default(cuid())
   email             String   @unique
   passwordHash      String
-  phoneE164         String   @unique
+  phoneE164         String?  @unique
   displayName       String?
   preferredLanguage String   @default("en") // 'en' | 'zh'
   colorTheme        String   @default("light") // 'light' | 'dark'
@@ -270,12 +270,11 @@ model GroupMessage {
 }
 
 model ReminderRule {
-  id            String    @id @default(cuid())
+  id            String  @id @default(cuid())
   eventId       String
   offsetMinutes Int // e.g. 1440 = 24h before
   channels      Json // string[] e.g. ["SMS","EMAIL"]
-  enabled       Boolean   @default(true)
-  sentAt        DateTime? // set by cron after successfully sending
+  enabled       Boolean @default(true)
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 

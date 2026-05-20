@@ -91,19 +91,6 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組 PID' : 'Group PID'}</label>
-          <input
-            value={suggestedPid}
-            readOnly
-            className="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-600 dark:text-gray-400"
-            placeholder={zh ? '將根據群組名稱自動產生' : 'Will be auto-generated from the group name'}
-          />
-          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-            {zh ? 'PID 會根據群組名稱自動產生，預設不會被搜尋到。' : 'PID is auto-generated from the group name and is private by default.'}
-          </p>
-        </div>
-
-        <div>
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '描述' : 'Description'}</label>
           <textarea
             value={description}

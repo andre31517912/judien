@@ -227,47 +227,21 @@ export default function EventDetailPage() {
     router.push(`/${locale}/events`);
   };
 
-  const handleExportRsvps = async (format: 'csv' | 'txt') => {
+  const handleExportRsvps = async () => {
     type ExportRow = { name: string; email: string; type: string; status: string; declineReason: string };
     const data = await apiFetch<{ eventTitle: string; rows: ExportRow[] }>(`/events/${params.id}/rsvp/export`);
     const { eventTitle, rows } = data;
-    let content: string;
-    let mime: string;
-    let ext: string;
-    if (format === 'csv') {
-      const csvEscape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-      const header = ['Name', 'Email', 'Type', 'Status', 'Decline Reason'].map(csvEscape).join(',');
-      const lines = rows.map((r) =>
-        [r.name, r.email, r.type, r.status, r.declineReason].map(csvEscape).join(',')
-      );
-      content = [header, ...lines].join('\r\n');
-      mime = 'text/csv';
-      ext = 'csv';
-    } else {
-      const sections: Record<string, ExportRow[]> = { GOING: [], MAYBE: [], NO: [] };
-      for (const r of rows) sections[r.status]?.push(r);
-      const lines: string[] = [`RSVP List — ${eventTitle}`, ''];
-      for (const [status, label] of [['GOING', 'Going'], ['MAYBE', 'Maybe'], ['NO', 'Not Going']] as const) {
-        lines.push(`── ${label} (${sections[status].length}) ──`);
-        if (sections[status].length === 0) {
-          lines.push('  (none)');
-        } else {
-          for (const r of sections[status]) {
-            const reason = r.declineReason ? ` — Reason: ${r.declineReason}` : '';
-            lines.push(`  ${r.name || r.email} <${r.email}>${reason}`);
-          }
-        }
-        lines.push('');
-      }
-      content = lines.join('\n');
-      mime = 'text/plain';
-      ext = 'txt';
-    }
-    const blob = new Blob([content], { type: mime });
+    const csvEscape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const header = ['Name', 'Email', 'Type', 'Status', 'Decline Reason'].map(csvEscape).join(',');
+    const lines = rows.map((r) =>
+      [r.name, r.email, r.type, r.status, r.declineReason].map(csvEscape).join(',')
+    );
+    const content = [header, ...lines].join('\r\n');
+    const blob = new Blob([content], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `rsvp-${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
+    a.download = `rsvp-${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -369,16 +343,10 @@ export default function EventDetailPage() {
             🗑 {zh ? '刪除活動' : 'Delete Event'}
           </button>
           <button
-            onClick={() => handleExportRsvps('csv')}
+            onClick={() => handleExportRsvps()}
             className="text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700"
           >
             ⬇️ {zh ? '匯出 CSV' : 'Export CSV'}
-          </button>
-          <button
-            onClick={() => handleExportRsvps('txt')}
-            className="text-sm bg-gray-600 text-white px-3 py-1.5 rounded-md hover:bg-gray-700"
-          >
-            ⬇️ {zh ? '匯出 TXT' : 'Export TXT'}
           </button>
         </div>
       ) : (

@@ -8,6 +8,17 @@ import { apiFetch, apiUpload } from '@/lib/api';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
+function slugifyPid(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
+type GroupSearchResult = { id: string; pid: string; name: string; description: string; createdBy: { id: string; displayName: string | null } | null };
+
 type GroupListItem = {
   group: {
     id: string;
@@ -69,7 +80,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [exportLoading, setExportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [pendingImportType, setPendingImportType] = useState<'xlsx' | 'txt' | null>(null);
+  const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
   const [groupSettings, setGroupSettings] = useState({ discoverableBySearch: false, memberDataPrivate: false });
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -79,18 +90,18 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     subgroups: { id: string; name: string; description: string }[];
   } | null>(null);
   const [parentSearchQuery, setParentSearchQuery] = useState('');
-  const [parentSearchResults, setParentSearchResults] = useState<{ id: string; pid: string; name: string; description: string }[]>([]);
+  const [parentSearchResults, setParentSearchResults] = useState<GroupSearchResult[]>([]);
   const [parentSearchLoading, setParentSearchLoading] = useState(false);
   const [parentSaving, setParentSaving] = useState(false);
 
-  const [newParentForm, setNewParentForm] = useState({ pid: '', name: '', description: '' });
+  const [newParentForm, setNewParentForm] = useState({ name: '', description: '' });
   const [parentCreating, setParentCreating] = useState(false);
 
   const [childSearchQuery, setChildSearchQuery] = useState('');
-  const [childSearchResults, setChildSearchResults] = useState<{ id: string; pid: string; name: string; description: string }[]>([]);
+  const [childSearchResults, setChildSearchResults] = useState<GroupSearchResult[]>([]);
   const [childSearchLoading, setChildSearchLoading] = useState(false);
   const [childLinking, setChildLinking] = useState(false);
-  const [newChildForm, setNewChildForm] = useState({ pid: '', name: '', description: '' });
+  const [newChildForm, setNewChildForm] = useState({ name: '', description: '' });
   const [childCreating, setChildCreating] = useState(false);
 
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
@@ -177,6 +188,45 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     finally { setReportLoading(false); }
   };
 
+  const exportReportToCsv = (data: ReportData) => {
+    const csvEscape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+    const row = (...cols: (string | number)[]) => cols.map(csvEscape).join(',');
+
+    const lines: string[] = [];
+
+    // Summary section
+    lines.push(row('Group', data.groupName));
+    lines.push(row('Year', data.year));
+    lines.push(row('Total Events', data.totalEvents));
+    lines.push(row('Total Members', data.totalMembers));
+    lines.push('');
+
+    // Member stats section
+    lines.push(row('Member', 'Email', 'Going', 'Maybe', 'No', 'No Response', 'Attendance %', 'Donated USD', 'Donated NTD'));
+    for (const m of data.members) {
+      lines.push(row(m.displayName ?? m.email, m.email, m.going, m.maybe, m.no, m.noResponse, m.attendanceRate, m.totalDonatedUSD, m.totalDonatedNTD));
+    }
+    lines.push('');
+
+    // Per-event breakdown
+    for (const ev of data.events) {
+      lines.push(row('Event', ev.title, new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })));
+      lines.push(row('Member', 'Email', 'RSVP'));
+      for (const r of ev.memberRsvps) {
+        lines.push(row(r.displayName ?? r.email, r.email, r.status ?? 'No Response'));
+      }
+      lines.push('');
+    }
+
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${data.groupName}_report_${data.year}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleImportMembers = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -209,20 +259,20 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
   };
 
-  const triggerImport = (type: 'xlsx' | 'txt') => {
-    setPendingImportType(type);
+  const triggerImport = () => {
+    setPendingImportType('csv');
     setShowImportModal(false);
     setTimeout(() => importFileRef.current?.click(), 50);
   };
 
-  const handleExportMembers = async (format: 'xlsx' | 'txt') => {
+  const handleExportMembers = async () => {
     setShowExportModal(false);
     setExportLoading(true);
     setError('');
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
       const res = await fetch(
-        `${apiBase}/groups/${params.groupId}/members/export?format=${format}`,
+        `${apiBase}/groups/${params.groupId}/members/export?format=csv`,
         { credentials: 'include' }
       );
       if (!res.ok) throw new Error('Export failed');
@@ -230,7 +280,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `members-${params.groupId}.${format === 'xlsx' ? 'xlsx' : 'txt'}`;
+      a.download = `members-${params.groupId}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: unknown) {
@@ -282,7 +332,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     setParentSearchLoading(true);
     setParentSearchResults([]);
     try {
-      const res = await apiFetch<{ id: string; pid: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(parentSearchQuery.trim())}`);
+      const res = await apiFetch<GroupSearchResult[]>(`/groups/search?q=${encodeURIComponent(parentSearchQuery.trim())}`);
       setParentSearchResults(res.filter((g) => g.id !== params.groupId));
     } catch {
       // silently ignore
@@ -296,7 +346,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     setChildSearchLoading(true);
     setChildSearchResults([]);
     try {
-      const res = await apiFetch<{ id: string; pid: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(childSearchQuery.trim())}`);
+      const res = await apiFetch<GroupSearchResult[]>(`/groups/search?q=${encodeURIComponent(childSearchQuery.trim())}`);
       setChildSearchResults(res.filter((g) => g.id !== params.groupId));
     } catch {
       // silently ignore
@@ -325,22 +375,23 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const handleCreateParentGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newParentForm.pid.trim() || !newParentForm.name.trim()) return;
+    if (!newParentForm.name.trim()) return;
     setParentCreating(true);
     setError('');
     setSuccess('');
     try {
+      const generatedPid = slugifyPid(newParentForm.name) || `group-${Date.now().toString(36).slice(-6)}`;
       const created = await apiFetch<{ id: string; name: string }>('/groups', {
         method: 'POST',
         body: JSON.stringify({
-          pid: newParentForm.pid.trim(),
+          pid: generatedPid,
           name: newParentForm.name.trim(),
           description: newParentForm.description.trim() || undefined,
         }),
       });
       await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: created.id }) });
       const createdName = newParentForm.name.trim();
-      setNewParentForm({ pid: '', name: '', description: '' });
+      setNewParentForm({ name: '', description: '' });
       setSuccess(zh ? `父群組「${createdName}」已建立並設定。` : `Parent group "${createdName}" created and set.`);
       await loadPage();
     } catch (err: unknown) {
@@ -352,22 +403,23 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const handleCreateChildGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newChildForm.pid.trim() || !newChildForm.name.trim()) return;
+    if (!newChildForm.name.trim()) return;
     setChildCreating(true);
     setError('');
     setSuccess('');
     try {
+      const generatedPid = slugifyPid(newChildForm.name) || `group-${Date.now().toString(36).slice(-6)}`;
       await apiFetch('/groups', {
         method: 'POST',
         body: JSON.stringify({
-          pid: newChildForm.pid.trim(),
+          pid: generatedPid,
           name: newChildForm.name.trim(),
           description: newChildForm.description.trim() || undefined,
           parentGroupId: params.groupId,
         }),
       });
       const createdName = newChildForm.name.trim();
-      setNewChildForm({ pid: '', name: '', description: '' });
+      setNewChildForm({ name: '', description: '' });
       setSuccess(zh ? `子群組「${createdName}」已建立。` : `Child group "${createdName}" created.`);
       await loadPage();
     } catch (err: unknown) {
@@ -668,6 +720,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                       <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.name}</p>
+                          {g.createdBy && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{zh ? '建立者：' : 'By: '}{g.createdBy.displayName ?? 'Unknown'}</p>}
                           {g.description && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{g.description}</p>}
                         </div>
                         <button
@@ -703,24 +756,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               <div>
                 <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '建立新父群組' : 'Create new parent group'}</p>
                 <form onSubmit={handleCreateParentGroup} className="space-y-2">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <input
-                      value={newParentForm.pid}
-                      onChange={(e) => setNewParentForm((f) => ({ ...f, pid: e.target.value }))}
-                      placeholder={zh ? 'ID (例如 org-main)' : 'ID (e.g. org-main)'}
-                      minLength={3}
-                      maxLength={40}
-                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      required
-                    />
-                    <input
-                      value={newParentForm.name}
-                      onChange={(e) => setNewParentForm((f) => ({ ...f, name: e.target.value }))}
-                      placeholder={zh ? '群組名稱' : 'Group name'}
-                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      required
-                    />
-                  </div>
+                  <input
+                    value={newParentForm.name}
+                    onChange={(e) => setNewParentForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder={zh ? '群組名稱' : 'Group name'}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    required
+                  />
                   <input
                     value={newParentForm.description}
                     onChange={(e) => setNewParentForm((f) => ({ ...f, description: e.target.value }))}
@@ -729,7 +771,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   />
                   <button
                     type="submit"
-                    disabled={parentCreating || !newParentForm.pid.trim() || !newParentForm.name.trim()}
+                    disabled={parentCreating || !newParentForm.name.trim()}
                     className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {parentCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立父群組' : '+ Create Parent Group')}
@@ -784,6 +826,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                       <div key={g.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2">
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{g.name}</p>
+                          {g.createdBy && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{zh ? '建立者：' : 'By: '}{g.createdBy.displayName ?? 'Unknown'}</p>}
                           {g.description && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{g.description}</p>}
                         </div>
                         <button
@@ -803,24 +846,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               <div>
                 <p className="mb-1.5 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '建立新子群組' : 'Create new child group'}</p>
                 <form onSubmit={handleCreateChildGroup} className="space-y-2">
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    <input
-                      value={newChildForm.pid}
-                      onChange={(e) => setNewChildForm((f) => ({ ...f, pid: e.target.value }))}
-                      placeholder={zh ? 'ID (例如 team-alpha)' : 'ID (e.g. team-alpha)'}
-                      minLength={3}
-                      maxLength={40}
-                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      required
-                    />
-                    <input
-                      value={newChildForm.name}
-                      onChange={(e) => setNewChildForm((f) => ({ ...f, name: e.target.value }))}
-                      placeholder={zh ? '群組名稱' : 'Group name'}
-                      className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      required
-                    />
-                  </div>
+                  <input
+                    value={newChildForm.name}
+                    onChange={(e) => setNewChildForm((f) => ({ ...f, name: e.target.value }))}
+                    placeholder={zh ? '群組名稱' : 'Group name'}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    required
+                  />
                   <input
                     value={newChildForm.description}
                     onChange={(e) => setNewChildForm((f) => ({ ...f, description: e.target.value }))}
@@ -829,7 +861,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   />
                   <button
                     type="submit"
-                    disabled={childCreating || !newChildForm.pid.trim() || !newChildForm.name.trim()}
+                    disabled={childCreating || !newChildForm.name.trim()}
                     className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {childCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立子群組' : '+ Create Child Group')}
@@ -942,32 +974,14 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             {isPlatformAdmin && (
               <>
                 <div className="relative">
-                  <button onClick={() => setShowImportModal(true)} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-                    {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入' : '📥 Import')}
+                  <button onClick={() => triggerImport()} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                    {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入 CSV' : '📥 Import CSV')}
                   </button>
-                  {showImportModal && (
-                    <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
-                      <p className="border-b border-gray-100 dark:border-gray-800 px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{zh ? '選擇格式' : 'Choose format'}</p>
-                      <button onClick={() => triggerImport('xlsx')} className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">📊 Excel (.xlsx)</button>
-                      <button onClick={() => triggerImport('txt')} className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">📄 Text (.txt)</button>
-                      <button onClick={() => setShowImportModal(false)} className="w-full border-t border-gray-100 dark:border-gray-800 px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">{zh ? '取消' : 'Cancel'}</button>
-                    </div>
-                  )}
-                  <input ref={importFileRef} type="file" accept={pendingImportType === 'txt' ? '.txt' : '.xlsx,.xls'} onChange={handleImportMembers} className="hidden" />
+                  <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
                 </div>
-                <div className="relative">
-                  <button onClick={() => setShowExportModal(true)} disabled={exportLoading} className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                    {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出' : '📤 Export')}
+                <button onClick={() => handleExportMembers()} disabled={exportLoading} className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                    {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出 CSV' : '📤 Export CSV')}
                   </button>
-                  {showExportModal && (
-                    <div className="absolute right-0 top-8 z-10 w-44 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
-                      <p className="border-b border-gray-100 dark:border-gray-800 px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{zh ? '選擇格式' : 'Choose format'}</p>
-                      <button onClick={() => handleExportMembers('xlsx')} className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">📊 Excel (.xlsx)</button>
-                      <button onClick={() => handleExportMembers('txt')} className="w-full px-3 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">📄 Text (.txt)</button>
-                      <button onClick={() => setShowExportModal(false)} className="w-full border-t border-gray-100 dark:border-gray-800 px-3 py-2 text-left text-xs text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">{zh ? '取消' : 'Cancel'}</button>
-                    </div>
-                  )}
-                </div>
               </>
             )}
           </div>
@@ -1134,10 +1148,19 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             <button onClick={() => loadReport(reportYear)} disabled={reportLoading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {reportLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '生成報告' : 'Generate Report')}
             </button>
+            {reportData && (
+              <button
+                onClick={() => exportReportToCsv(reportData)}
+                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {zh ? '匯出 CSV' : 'Export CSV'}
+              </button>
+            )}
           </div>
 
           {reportData && (
             <div className="mt-6 space-y-6">
+
               {/* Summary row */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[{label: zh ? '總活動數' : 'Total Events', value: reportData.totalEvents}, {label: zh ? '總成員數' : 'Members', value: reportData.totalMembers}].map((s) => (
