@@ -323,6 +323,7 @@ model Group {
   pid                String            @unique
   name               String
   description        String            @default("")
+  photoUrl           String?
   discoverableBySearch Boolean         @default(false)
   memberDataPrivate  Boolean           @default(false)
   parentGroupId      String?

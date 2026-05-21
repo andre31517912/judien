@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
@@ -29,6 +30,7 @@ type GroupListItem = {
     memberDataPrivate: boolean;
     createdAt: string;
     updatedAt: string;
+    createdById: string;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -57,6 +59,7 @@ type JoinRequest = {
 export default function GroupSettingsPage({ params }: { params: { locale: string; groupId: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
+  const router = useRouter();
 
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -82,8 +85,17 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [showExportModal, setShowExportModal] = useState(false);
   const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
-  const [groupSettings, setGroupSettings] = useState({ discoverableBySearch: false, memberDataPrivate: false });
+  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: false, memberDataPrivate: false });
   const [settingsSaving, setSettingsSaving] = useState(false);
+
+  const groupPhotoFileRef = useRef<HTMLInputElement>(null);
+  const [groupPhotoFile, setGroupPhotoFile] = useState<File | null>(null);
+  const [groupPhotoPreview, setGroupPhotoPreview] = useState<string | null>(null);
+  const [currentGroupPhotoUrl, setCurrentGroupPhotoUrl] = useState<string | null>(null);
+
+  const [childInitialMemberIds, setChildInitialMemberIds] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteGroupLoading, setDeleteGroupLoading] = useState(false);
 
   const [relationships, setRelationships] = useState<{
     parentGroup: { id: string; name: string } | null;
@@ -290,6 +302,20 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!groupItem) return;
+    setDeleteGroupLoading(true);
+    try {
+      await apiFetch(`/groups/${params.groupId}`, { method: 'DELETE' });
+      router.push(`/${params.locale}/admin/groups`);
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to delete group.');
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleteGroupLoading(false);
+    }
+  };
+
   const loadPage = async () => {
     setPageLoading(true);
     setError('');
@@ -302,9 +328,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setGroupItem(current);
       if (current) {
         setGroupSettings({
+          name: current.group.name,
+          description: current.group.description ?? '',
           discoverableBySearch: current.group.discoverableBySearch,
           memberDataPrivate: current.group.memberDataPrivate,
         });
+        const photoUrl = (current.group as { photoUrl?: string | null }).photoUrl ?? null;
+        setCurrentGroupPhotoUrl(photoUrl);
+        setGroupPhotoPreview(null);
+        setGroupPhotoFile(null);
       }
       setMembers(memberList);
 
@@ -416,10 +448,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           name: newChildForm.name.trim(),
           description: newChildForm.description.trim() || undefined,
           parentGroupId: params.groupId,
+          initialMemberIds: childInitialMemberIds,
         }),
       });
       const createdName = newChildForm.name.trim();
       setNewChildForm({ name: '', description: '' });
+      setChildInitialMemberIds([]);
       setSuccess(zh ? `子群組「${createdName}」已建立。` : `Child group "${createdName}" created.`);
       await loadPage();
     } catch (err: unknown) {
@@ -430,14 +464,28 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   };
 
   const handleSaveSettings = async () => {
-    setSettingsSaving(true);    setError('');
+    setSettingsSaving(true);
+    setError('');
     setSuccess('');
     try {
+      let photoUrl: string | null | undefined = undefined;
+      if (groupPhotoFile) {
+        const uploaded = await apiUpload(groupPhotoFile);
+        photoUrl = uploaded.url;
+      }
+      const payload: Record<string, unknown> = {
+        name: groupSettings.name,
+        description: groupSettings.description,
+        discoverableBySearch: groupSettings.discoverableBySearch,
+        memberDataPrivate: groupSettings.memberDataPrivate,
+      };
+      if (photoUrl !== undefined) payload.photoUrl = photoUrl;
       await apiFetch(`/groups/${params.groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify(groupSettings),
+        body: JSON.stringify(payload),
       });
       setSuccess(zh ? '群組設定已儲存。' : 'Group settings saved.');
+      setGroupPhotoFile(null);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to save settings.');
@@ -859,6 +907,33 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                     placeholder={zh ? '描述（選填）' : 'Description (optional)'}
                     className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   />
+                  {/* Member checklist from parent group */}
+                  {members.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '選擇初始成員（從現有成員）' : 'Select initial members (from existing members)'}</p>
+                      <div className="max-h-40 overflow-y-auto rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                        {members.map((m) => (
+                          <label key={m.userId} className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={childInitialMemberIds.includes(m.userId)}
+                              onChange={(e) => setChildInitialMemberIds((prev) =>
+                                e.target.checked ? [...prev, m.userId] : prev.filter((id) => id !== m.userId)
+                              )}
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600"
+                            />
+                            <span className="text-sm text-gray-900 dark:text-white">{m.displayName || m.email || m.userId}</span>
+                            {m.role === 'GROUP_ADMIN' && (
+                              <span className="ml-auto text-xs text-indigo-500 dark:text-indigo-400">{zh ? '管理員' : 'Admin'}</span>
+                            )}
+                          </label>
+                        ))}
+                      </div>
+                      {childInitialMemberIds.length > 0 && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{childInitialMemberIds.length} {zh ? '人已選' : 'selected'}</p>
+                      )}
+                    </div>
+                  )}
                   <button
                     type="submit"
                     disabled={childCreating || !newChildForm.name.trim()}
@@ -877,7 +952,61 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組設定' : 'Group Settings'}</h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性與成員資料隱私。' : 'Control discoverability and member data privacy.'}</p>
+
+        {/* Group photo */}
+        <div className="mt-4">
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片' : 'Group Photo'}</label>
+          {(groupPhotoPreview ?? currentGroupPhotoUrl) && (
+            <div className="relative mb-2 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={groupPhotoPreview ?? (currentGroupPhotoUrl ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}${currentGroupPhotoUrl}` : '')}
+                alt="group"
+                className="h-24 w-24 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+              />
+              <button
+                type="button"
+                onClick={() => { setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
+                className="absolute -top-1 -right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+              >✕</button>
+            </div>
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={() => groupPhotoFileRef.current?.click()}
+              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+            >
+              {(groupPhotoPreview ?? currentGroupPhotoUrl) ? (zh ? '更換照片' : 'Change Photo') : (zh ? '上傳群組照片' : 'Upload Group Photo')}
+            </button>
+            <input ref={groupPhotoFileRef} type="file" accept="image/*" onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setGroupPhotoFile(file);
+              setGroupPhotoPreview(URL.createObjectURL(file));
+            }} className="hidden" />
+          </div>
+        </div>
+
+        {/* Name & description edit */}
         <div className="mt-4 space-y-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組名稱' : 'Group Name'}</label>
+            <input
+              value={groupSettings.name}
+              onChange={(e) => setGroupSettings((s) => ({ ...s, name: e.target.value }))}
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '描述' : 'Description'}</label>
+            <textarea
+              value={groupSettings.description}
+              onChange={(e) => setGroupSettings((s) => ({ ...s, description: e.target.value }))}
+              rows={3}
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
           <label className="flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
@@ -936,9 +1065,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </form>
       </section>
 
-      {/* Add Member Directly — platform admin only */}
-      {isPlatformAdmin && (
-        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+      {/* Add Member Directly — platform admin or group admin */}
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
           <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
@@ -960,7 +1088,30 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             </div>
           </form>
         </section>
-      )}
+
+      {/* Add Member Directly — platform admin or group admin */}
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
+          <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件 / 手機 / 用戶 ID' : 'Email / Phone / User ID'}</label>
+              <input value={addIdentifier} onChange={(e) => setAddIdentifier(e.target.value)} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder={zh ? 'member@example.com 或 +886…' : 'member@example.com or +886…'} />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
+              <select value={addRole} onChange={(e) => setAddRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
+                <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
+              </select>
+            </div>
+            <div className="flex items-end md:col-span-3">
+              <button type="submit" disabled={addLoading || !addIdentifier.trim()} className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
+                {addLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '直接新增' : 'Add Directly')}
+              </button>
+            </div>
+          </form>
+        </section>
 
       {/* Members list */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
@@ -1262,7 +1413,57 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             </div>
           )}
         </section>
+
+        {/* ─── Danger Zone ───────────────────────────────────────────────── */}
+        {user && groupItem && user.id === groupItem.group.createdById && (
+          <section className="rounded-2xl border border-red-200 dark:border-red-900/40 bg-white dark:bg-gray-900 p-6">
+            <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">{zh ? '危險區域' : 'Danger Zone'}</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {zh
+                ? '刪除此群組將永久移除所有成員、訊息及相關資料，且無法復原。'
+                : 'Deleting this group permanently removes all members, messages, and related data. This cannot be undone.'}
+            </p>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+              {zh ? '刪除群組' : 'Delete Group'}
+            </button>
+          </section>
+        )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {zh ? '確認刪除群組' : 'Confirm Delete Group'}
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              {zh
+                ? `您確定要刪除「${groupItem?.group.name}」嗎？此操作無法復原。`
+                : `Are you sure you want to delete "${groupItem?.group.name}"? This action cannot be undone.`}
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleteGroupLoading}
+                className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+              >
+                {zh ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={handleDeleteGroup}
+                disabled={deleteGroupLoading}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleteGroupLoading ? (zh ? '刪除中…' : 'Deleting…') : (zh ? '確認刪除' : 'Yes, Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

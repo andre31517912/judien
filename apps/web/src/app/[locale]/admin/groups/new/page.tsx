@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 
 function slugifyPid(input: string) {
   return input
@@ -26,6 +26,17 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const photoFileRef = useRef<HTMLInputElement>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
   const suggestedPid = useMemo(() => slugifyPid(name), [name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +46,11 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
     try {
       // Fall back to a short unique ID if the name is all non-Latin (e.g. Chinese)
       const generatedPid = suggestedPid || `group-${Date.now().toString(36).slice(-6)}`;
+      let photoUrl: string | null = null;
+      if (photoFile) {
+        const uploaded = await apiUpload(photoFile);
+        photoUrl = uploaded.url;
+      }
       await apiFetch('/groups', {
         method: 'POST',
         body: JSON.stringify({
@@ -44,6 +60,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           discoverableBySearch: false,
           memberDataPrivate,
           adminUserIds: [],
+          ...(photoUrl ? { photoUrl } : {}),
         }),
       });
       router.push(`/${params.locale}/admin/groups`);
@@ -99,6 +116,30 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
             rows={4}
             placeholder={zh ? '介紹這個群組的用途、地區或成員特色。' : 'Describe this group, its chapter, region, or purpose.'}
           />
+        </div>
+
+        {/* Group photo upload */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片（選填）' : 'Group Photo (optional)'}</label>
+          {photoPreview && (
+            <div className="relative mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photoPreview} alt="preview" className="h-32 w-32 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              <button
+                type="button"
+                onClick={() => { setPhotoFile(null); setPhotoPreview(null); if (photoFileRef.current) photoFileRef.current.value = ''; }}
+                className="absolute -top-1 -right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+              >✕</button>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => photoFileRef.current?.click()}
+            className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          >
+            {photoPreview ? (zh ? '更換照片' : 'Change Photo') : (zh ? '上傳群組照片' : 'Upload Group Photo')}
+          </button>
+          <input ref={photoFileRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </div>
 
         <div className="space-y-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-4">

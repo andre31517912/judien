@@ -5,7 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch, apiUpload } from '@/lib/api';
+import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
@@ -16,6 +16,7 @@ type MyGroupItem = {
     pid: string;
     name: string;
     description: string;
+    photoUrl: string | null;
     memberDataPrivate: boolean;
   };
   membership: {
@@ -32,6 +33,8 @@ type GroupMember = {
   joinedAt: string | null;
   email: string | null;
   phoneE164: string | null;
+  childGroupId: string | null;
+  childGroupName: string | null;
 };
 
 type PendingInvite = {
@@ -39,8 +42,10 @@ type PendingInvite = {
   token: string;
   status: string;
   expiresAt: string;
+  createdAt: string;
   email: string | null;
   phoneE164: string | null;
+  invitedUserId: string | null;
 };
 
 type JoinRequest = {
@@ -99,7 +104,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [adminTab, setAdminTab] = useState<'invite' | 'news' | 'event' | 'requests'>('invite');
 
   // Main view tabs
-  type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
+  type ViewTab = 'feed' | 'upcoming' | 'past' | 'members' | 'invite';
   const [viewTab, setViewTab] = useState<ViewTab>('feed');
   const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
   const [pastLoaded, setPastLoaded] = useState(false);
@@ -137,7 +142,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     try {
       const [myGroups, memberList, groupNews, groupEvents] = await Promise.all([
         apiFetch<MyGroupItem[]>('/groups/me'),
-        apiFetch<GroupMember[]>(`/groups/${params.groupId}/members`),
+        apiFetch<GroupMember[]>(`/groups/${params.groupId}/members?includeChildGroups=true`),
         apiFetch<News[]>(`/news?groupId=${params.groupId}`),
         apiFetch<PaginatedResponse<EventWithCounts>>(
           `/events?scope=future&groupId=${params.groupId}&page=1&pageSize=20`,
@@ -150,14 +155,20 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       setNews(groupNews);
       setEvents(groupEvents.data);
 
-      // GROUP_ADMIN: also load pending invites and join requests
-      if (current?.membership.role === 'GROUP_ADMIN') {
-        const [invitesRes, requestsRes] = await Promise.all([
-          apiFetch<PendingInvite[]>(`/groups/${params.groupId}/invites`).catch(() => [] as PendingInvite[]),
-          apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]),
-        ]);
-        setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
-        setJoinRequests((requestsRes ?? []).filter((r) => r.status === 'PENDING'));
+      // Load invites and join requests for any accepted member (invite) and admin (requests)
+      if (current?.membership.status === 'ACCEPTED') {
+        const invitesPromise = apiFetch<PendingInvite[]>(`/groups/${params.groupId}/invites`).catch(() => [] as PendingInvite[]);
+        if (current?.membership.role === 'GROUP_ADMIN') {
+          const [invitesRes, requestsRes] = await Promise.all([
+            invitesPromise,
+            apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]),
+          ]);
+          setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
+          setJoinRequests((requestsRes ?? []).filter((r) => r.status === 'PENDING'));
+        } else {
+          const invitesRes = await invitesPromise;
+          setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
+        }
       }
 
       if (!current) setError(zh ? '找不到此群組或您尚未是成員。' : 'Group not found or you are not a member.');
@@ -421,6 +432,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
     { key: 'past',     label: 'Past',    labelZh: '過去活動' },
     { key: 'members',  label: 'Members', labelZh: '成員' },
+    { key: 'invite',   label: 'Invite',  labelZh: '邀請' },
   ];
 
   return (
@@ -433,6 +445,15 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             <Link href={`/${params.locale}/groups`} className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
               ← {zh ? '所有群組' : 'All Groups'}
             </Link>
+            {/* Group photo */}
+            {group.photoUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={resolveImageUrl(group.photoUrl) ?? ''}
+                alt={group.name}
+                className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-700 mb-2"
+              />
+            )}
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             {relationships?.lineage && relationships.lineage.length > 1 && (
               <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -677,7 +698,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             ) : members.map((member) => (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                    {member.childGroupName && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                        {member.childGroupName}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
                   </p>
@@ -707,7 +735,75 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           </div>
         )}
 
-      </div>
+        {/* Invite */}
+        {viewTab === 'invite' && (
+          <div className="mx-auto max-w-2xl space-y-6">
+            {/* Send invite form */}
+            <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{zh ? '邀請新成員' : 'Invite a Member'}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '透過電子郵件或手機號碼傳送邀請。' : 'Send an invite via email or phone number.'}</p>
+              <form onSubmit={handleInvite} className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件' : 'Email'}</label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="member@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '手機號碼' : 'Phone'}</label>
+                  <input
+                    type="tel"
+                    value={invitePhone}
+                    onChange={(e) => setInvitePhone(e.target.value)}
+                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    placeholder="+886…"
+                  />
+                </div>
+                {isGroupAdmin && (
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
+                    <select
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
+                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    >
+                      <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
+                      <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
+                    </select>
+                  </div>
+                )}
+                <div className="flex items-end sm:col-span-2">
+                  <button
+                    type="submit"
+                    disabled={inviteLoading || (!inviteEmail.trim() && !invitePhone.trim())}
+                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                  >
+                    {inviteLoading ? (zh ? '傳送中…' : 'Sending…') : (zh ? '傳送邀請' : 'Send Invite')}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Pending invites list */}
+            {pendingInvites.length > 0 && (
+              <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{zh ? '待回覆邀請' : 'Pending Invites'} ({pendingInvites.length})</h3>
+                <ul className="space-y-2">
+                  {pendingInvites.map((inv) => (
+                    <li key={inv.id} className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300 py-1 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                      <span>{inv.email ?? inv.phoneE164 ?? (zh ? '已邀請用戶' : 'Invited user')}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
     </div>
 
     {/* ── Group Hierarchy modal ── */}

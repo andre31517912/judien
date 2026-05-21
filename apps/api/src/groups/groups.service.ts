@@ -51,6 +51,7 @@ export class GroupsService {
           pid: dto.pid,
           name: dto.name,
           description: dto.description ?? '',
+          photoUrl: dto.photoUrl ?? null,
           discoverableBySearch: dto.discoverableBySearch ?? false,
           memberDataPrivate: dto.memberDataPrivate ?? false,
           createdById: user.id,
@@ -69,6 +70,24 @@ export class GroupsService {
         })),
         skipDuplicates: true,
       });
+
+      // Add any initial members (e.g. selected from parent group member list)
+      if (dto.initialMemberIds && dto.initialMemberIds.length > 0) {
+        const memberIds = dto.initialMemberIds.filter((id) => !adminIds.includes(id));
+        if (memberIds.length > 0) {
+          await tx.groupMembership.createMany({
+            data: memberIds.map((memberId) => ({
+              groupId: group.id,
+              userId: memberId,
+              role: 'GROUP_MEMBER' as const,
+              status: 'ACCEPTED' as const,
+              joinedAt: new Date(),
+              invitedByPlatformAdminId: user.id,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
 
       return group;
     });
@@ -127,10 +146,33 @@ export class GroupsService {
   async updateSettings(groupId: string, dto: UpdateGroupSettingsDto, user: User) {
     await this.assertCanManageGroupSettings(groupId, user);
     await this.ensureGroupExists(groupId);
-    return this.prisma.group.update({ where: { id: groupId }, data: dto });
+    // Only pass fields that are present in dto to avoid overwriting with undefined
+    const data: Record<string, unknown> = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.photoUrl !== undefined) data.photoUrl = dto.photoUrl;
+    if (dto.discoverableBySearch !== undefined) data.discoverableBySearch = dto.discoverableBySearch;
+    if (dto.memberDataPrivate !== undefined) data.memberDataPrivate = dto.memberDataPrivate;
+    return this.prisma.group.update({ where: { id: groupId }, data });
   }
 
-  async members(groupId: string, user: User) {
+  async deleteGroup(groupId: string, user: User) {
+    const group = await this.ensureGroupExists(groupId);
+    if (group.createdById !== user.id) {
+      throw new ForbiddenException('Only the group creator can delete this group.');
+    }
+    // Null out optional FK references that lack cascade on delete, then delete
+    await this.prisma.$transaction([
+      this.prisma.news.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.eventSeries.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.event.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.group.updateMany({ where: { parentGroupId: groupId }, data: { parentGroupId: null } }),
+      this.prisma.group.delete({ where: { id: groupId } }),
+    ]);
+    return { deleted: true };
+  }
+
+  async members(groupId: string, user: User, includeChildGroups = false) {
     const group = await this.ensureGroupExists(groupId);
     const requesterMembership = await this.prisma.groupMembership.findUnique({
       where: { groupId_userId: { groupId, userId: user.id } },
@@ -161,14 +203,53 @@ export class GroupsService {
 
     const includeEmailForMembers = !group.memberDataPrivate;
 
-    return rows.map((m) => ({
+    const directMembers = rows.map((m) => ({
       userId: m.user.id,
       displayName: m.user.displayName,
       role: m.role,
       joinedAt: m.joinedAt,
       email: isPlatformAdmin || isGroupAdmin || includeEmailForMembers ? m.user.email : null,
       phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
+      childGroupId: null as string | null,
+      childGroupName: null as string | null,
     }));
+
+    if (!includeChildGroups) return directMembers;
+
+    // Fetch child groups and their members
+    const childGroups = await this.prisma.group.findMany({
+      where: { parentGroupId: groupId },
+      select: { id: true, name: true },
+    });
+
+    const directMemberIds = new Set(directMembers.map((m) => m.userId));
+    const childMembers: typeof directMembers = [];
+
+    for (const child of childGroups) {
+      const childRows = await this.prisma.groupMembership.findMany({
+        where: { groupId: child.id, status: 'ACCEPTED' },
+        include: {
+          user: { select: { id: true, email: true, phoneE164: true, displayName: true } },
+        },
+        orderBy: { joinedAt: 'asc' },
+      });
+      for (const m of childRows) {
+        if (!directMemberIds.has(m.user.id)) {
+          childMembers.push({
+            userId: m.user.id,
+            displayName: m.user.displayName,
+            role: m.role,
+            joinedAt: m.joinedAt,
+            email: isPlatformAdmin || isGroupAdmin || includeEmailForMembers ? m.user.email : null,
+            phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
+            childGroupId: child.id,
+            childGroupName: child.name,
+          });
+        }
+      }
+    }
+
+    return [...directMembers, ...childMembers];
   }
 
   async getGroupInviteInfo(token: string) {
@@ -200,6 +281,7 @@ export class GroupsService {
   }
 
   async listInvites(groupId: string, user: User) {
+    await this.assertCanSendInvites(groupId, user);
     return this.prisma.groupInvite.findMany({
       where: { groupId, status: 'PENDING' },
       select: {
@@ -216,7 +298,7 @@ export class GroupsService {
   }
 
   async invite(groupId: string, dto: InviteGroupMembersDto, user: User) {
-    await this.assertCanManageGroupSettings(groupId, user);
+    await this.assertCanSendInvites(groupId, user);
     await this.ensureGroupExists(groupId);
 
     const expiresAt = DateTime.now().plus({ days: 30 }).toJSDate();
@@ -540,7 +622,8 @@ export class GroupsService {
   }
 
   async addMemberDirectly(groupId: string, dto: AddMemberDirectlyDto, user: User) {
-    this.assertPlatformAdmin(user);
+    // Allow platform admin OR group admin to force-add members
+    await this.assertCanManageGroupSettings(groupId, user);
     const group = await this.ensureGroupExists(groupId);
 
     const id = dto.identifier.trim();
@@ -573,13 +656,13 @@ export class GroupsService {
         status: 'ACCEPTED',
         role: dto.role,
         joinedAt: new Date(),
-        invitedByPlatformAdminId: user.id,
+        ...(user.role === 'ADMIN' ? { invitedByPlatformAdminId: user.id } : {}),
       },
       update: {
         status: 'ACCEPTED',
         role: dto.role,
         joinedAt: new Date(),
-        invitedByPlatformAdminId: user.id,
+        ...(user.role === 'ADMIN' ? { invitedByPlatformAdminId: user.id } : {}),
       },
     });
 
@@ -630,6 +713,16 @@ export class GroupsService {
     });
     const can = membership?.status === 'ACCEPTED' && membership.role === 'GROUP_ADMIN';
     if (!can) throw new ForbiddenException('You do not have permission to update group settings.');
+  }
+
+  /** Any accepted group member (or platform admin) can send invites. */
+  private async assertCanSendInvites(groupId: string, user: User) {
+    if (user.role === 'ADMIN') return;
+    const membership = await this.prisma.groupMembership.findUnique({
+      where: { groupId_userId: { groupId, userId: user.id } },
+    });
+    const can = membership?.status === 'ACCEPTED';
+    if (!can) throw new ForbiddenException('You must be a group member to send invitations.');
   }
 
   private async assertCanReviewJoinRequests(groupId: string, user: User) {

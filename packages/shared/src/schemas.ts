@@ -178,14 +178,19 @@ export const CreateGroupSchema = z.object({
   pid: z.string().min(3).max(40),
   name: z.string().min(1).max(160),
   description: z.string().max(1000).optional(),
+  photoUrl: z.string().url().nullable().optional(),
   discoverableBySearch: z.boolean().optional().default(false),
   memberDataPrivate: z.boolean().optional().default(false),
   adminUserIds: z.array(z.string().min(1)).optional().default([]),
   parentGroupId: z.string().optional(),
+  initialMemberIds: z.array(z.string().min(1)).optional().default([]),
 });
 export type CreateGroupDto = z.infer<typeof CreateGroupSchema>;
 
 export const UpdateGroupSettingsSchema = z.object({
+  name: z.string().min(1).max(160).optional(),
+  description: z.string().max(1000).optional(),
+  photoUrl: z.string().url().nullable().optional(),
   discoverableBySearch: z.boolean().optional(),
   memberDataPrivate: z.boolean().optional(),
 });

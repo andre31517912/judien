@@ -15593,6 +15593,7 @@ export namespace Prisma {
     pid: string | null
     name: string | null
     description: string | null
+    photoUrl: string | null
     discoverableBySearch: boolean | null
     memberDataPrivate: boolean | null
     parentGroupId: string | null
@@ -15606,6 +15607,7 @@ export namespace Prisma {
     pid: string | null
     name: string | null
     description: string | null
+    photoUrl: string | null
     discoverableBySearch: boolean | null
     memberDataPrivate: boolean | null
     parentGroupId: string | null
@@ -15619,6 +15621,7 @@ export namespace Prisma {
     pid: number
     name: number
     description: number
+    photoUrl: number
     discoverableBySearch: number
     memberDataPrivate: number
     parentGroupId: number
@@ -15634,6 +15637,7 @@ export namespace Prisma {
     pid?: true
     name?: true
     description?: true
+    photoUrl?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
     parentGroupId?: true
@@ -15647,6 +15651,7 @@ export namespace Prisma {
     pid?: true
     name?: true
     description?: true
+    photoUrl?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
     parentGroupId?: true
@@ -15660,6 +15665,7 @@ export namespace Prisma {
     pid?: true
     name?: true
     description?: true
+    photoUrl?: true
     discoverableBySearch?: true
     memberDataPrivate?: true
     parentGroupId?: true
@@ -15746,6 +15752,7 @@ export namespace Prisma {
     pid: string
     name: string
     description: string
+    photoUrl: string | null
     discoverableBySearch: boolean
     memberDataPrivate: boolean
     parentGroupId: string | null
@@ -15776,6 +15783,7 @@ export namespace Prisma {
     pid?: boolean
     name?: boolean
     description?: boolean
+    photoUrl?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: boolean
@@ -15801,6 +15809,7 @@ export namespace Prisma {
     pid?: boolean
     name?: boolean
     description?: boolean
+    photoUrl?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: boolean
@@ -15816,6 +15825,7 @@ export namespace Prisma {
     pid?: boolean
     name?: boolean
     description?: boolean
+    photoUrl?: boolean
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: boolean
@@ -15863,6 +15873,7 @@ export namespace Prisma {
       pid: string
       name: string
       description: string
+      photoUrl: string | null
       discoverableBySearch: boolean
       memberDataPrivate: boolean
       parentGroupId: string | null
@@ -16277,6 +16288,7 @@ export namespace Prisma {
     readonly pid: FieldRef<"Group", 'String'>
     readonly name: FieldRef<"Group", 'String'>
     readonly description: FieldRef<"Group", 'String'>
+    readonly photoUrl: FieldRef<"Group", 'String'>
     readonly discoverableBySearch: FieldRef<"Group", 'Boolean'>
     readonly memberDataPrivate: FieldRef<"Group", 'Boolean'>
     readonly parentGroupId: FieldRef<"Group", 'String'>
@@ -22073,6 +22085,7 @@ export namespace Prisma {
     pid: 'pid',
     name: 'name',
     description: 'description',
+    photoUrl: 'photoUrl',
     discoverableBySearch: 'discoverableBySearch',
     memberDataPrivate: 'memberDataPrivate',
     parentGroupId: 'parentGroupId',
@@ -23437,6 +23450,7 @@ export namespace Prisma {
     pid?: StringFilter<"Group"> | string
     name?: StringFilter<"Group"> | string
     description?: StringFilter<"Group"> | string
+    photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
@@ -23461,6 +23475,7 @@ export namespace Prisma {
     pid?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    photoUrl?: SortOrderInput | SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
     parentGroupId?: SortOrderInput | SortOrder
@@ -23488,6 +23503,7 @@ export namespace Prisma {
     NOT?: GroupWhereInput | GroupWhereInput[]
     name?: StringFilter<"Group"> | string
     description?: StringFilter<"Group"> | string
+    photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
@@ -23512,6 +23528,7 @@ export namespace Prisma {
     pid?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    photoUrl?: SortOrderInput | SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
     parentGroupId?: SortOrderInput | SortOrder
@@ -23531,6 +23548,7 @@ export namespace Prisma {
     pid?: StringWithAggregatesFilter<"Group"> | string
     name?: StringWithAggregatesFilter<"Group"> | string
     description?: StringWithAggregatesFilter<"Group"> | string
+    photoUrl?: StringNullableWithAggregatesFilter<"Group"> | string | null
     discoverableBySearch?: BoolWithAggregatesFilter<"Group"> | boolean
     memberDataPrivate?: BoolWithAggregatesFilter<"Group"> | boolean
     parentGroupId?: StringNullableWithAggregatesFilter<"Group"> | string | null
@@ -25053,6 +25071,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -25075,6 +25094,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -25097,6 +25117,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25119,6 +25140,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25141,6 +25163,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -25154,6 +25177,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25165,6 +25189,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26594,6 +26619,7 @@ export namespace Prisma {
     pid?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
@@ -26607,6 +26633,7 @@ export namespace Prisma {
     pid?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
@@ -26620,6 +26647,7 @@ export namespace Prisma {
     pid?: SortOrder
     name?: SortOrder
     description?: SortOrder
+    photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
     memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
@@ -29840,6 +29868,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -29861,6 +29890,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -30549,6 +30579,7 @@ export namespace Prisma {
     pid?: StringFilter<"Group"> | string
     name?: StringFilter<"Group"> | string
     description?: StringFilter<"Group"> | string
+    photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
     memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
@@ -30977,6 +31008,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -30998,6 +31030,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -31340,6 +31373,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31361,6 +31395,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32062,6 +32097,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -32083,6 +32119,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -32271,6 +32308,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32292,6 +32330,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33463,6 +33502,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -33484,6 +33524,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -33596,6 +33637,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33617,6 +33659,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34147,6 +34190,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -34168,6 +34212,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -34280,6 +34325,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34301,6 +34347,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34478,6 +34525,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -34499,6 +34547,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -34525,6 +34574,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -34546,6 +34596,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdById: string
@@ -34957,6 +35008,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34978,6 +35030,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35218,6 +35271,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -35239,6 +35293,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -35432,6 +35487,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35453,6 +35509,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35705,6 +35762,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -35726,6 +35784,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -35925,6 +35984,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35946,6 +36006,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35967,6 +36028,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -35988,6 +36050,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -36175,6 +36238,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36196,6 +36260,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36379,6 +36444,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdAt?: Date | string
@@ -36400,6 +36466,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -36587,6 +36654,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36608,6 +36676,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37173,6 +37242,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     parentGroupId?: string | null
@@ -37564,6 +37634,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37585,6 +37656,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37606,6 +37678,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38465,6 +38538,7 @@ export namespace Prisma {
     pid: string
     name: string
     description?: string
+    photoUrl?: string | null
     discoverableBySearch?: boolean
     memberDataPrivate?: boolean
     createdById: string
@@ -38573,6 +38647,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38594,6 +38669,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdById?: StringFieldUpdateOperationsInput | string
@@ -38615,6 +38691,7 @@ export namespace Prisma {
     pid?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
     memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdById?: StringFieldUpdateOperationsInput | string

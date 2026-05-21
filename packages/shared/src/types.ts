@@ -181,6 +181,7 @@ export interface Group {
   pid: string;
   name: string;
   description: string;
+  photoUrl: string | null;
   discoverableBySearch: boolean;
   memberDataPrivate: boolean;
   parentGroupId: string | null;

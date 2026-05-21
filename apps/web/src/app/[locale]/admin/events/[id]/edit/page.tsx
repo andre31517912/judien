@@ -47,6 +47,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [event, setEvent] = useState<Event | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
+  const [customReminderHours, setCustomReminderHours] = useState('');
   const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [messagingEnabled, setMessagingEnabled] = useState(true);
 
@@ -338,6 +339,33 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               </button>
             );
           })}
+        </div>
+
+        {/* Custom hours input */}
+        <div className="flex items-center gap-2 mb-4">
+          <input
+            type="number"
+            min="1"
+            max="8760"
+            value={customReminderHours}
+            onChange={(e) => setCustomReminderHours(e.target.value)}
+            placeholder={zh ? '自訂時數' : 'Custom hours'}
+            className="w-32 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          />
+          <span className="text-sm text-gray-500 dark:text-gray-400">{zh ? '小時前' : 'hours before'}</span>
+          <button
+            type="button"
+            onClick={() => {
+              const h = parseInt(customReminderHours, 10);
+              if (!h || h < 1) return;
+              addPresetReminder(h * 60);
+              setCustomReminderHours('');
+            }}
+            disabled={!customReminderHours || parseInt(customReminderHours, 10) < 1}
+            className="rounded-md bg-indigo-600 text-white px-3 py-1.5 text-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+          >
+            + {zh ? '新增' : 'Add'}
+          </button>
         </div>
 
         {reminders.length === 0 && (

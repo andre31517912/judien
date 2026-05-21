@@ -270,6 +270,7 @@ exports.Prisma.GroupScalarFieldEnum = {
   pid: 'pid',
   name: 'name',
   description: 'description',
+  photoUrl: 'photoUrl',
   discoverableBySearch: 'discoverableBySearch',
   memberDataPrivate: 'memberDataPrivate',
   parentGroupId: 'parentGroupId',

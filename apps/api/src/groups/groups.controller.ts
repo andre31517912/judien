@@ -84,9 +84,10 @@ export class GroupsController {
   @Get(':groupId/members')
   members(
     @Param('groupId') groupId: string,
+    @Query('includeChildGroups') includeChildGroups: string,
     @CurrentUser() user: User,
   ) {
-    return this.groupsService.members(groupId, user);
+    return this.groupsService.members(groupId, user, includeChildGroups === 'true');
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -287,6 +288,17 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.deleteDonation(groupId, donationId, user);
+  }
+
+  // ─── Delete Group ─────────────────────────────────────────────────────────────
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':groupId')
+  deleteGroup(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.deleteGroup(groupId, user);
   }
 
   // ─── Group Report ─────────────────────────────────────────────────────────────
