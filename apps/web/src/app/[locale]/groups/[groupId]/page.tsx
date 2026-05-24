@@ -804,6 +804,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             )}
           </div>
         )}
+      </div>
     </div>
 
     {/* ── Group Hierarchy modal ── */}
