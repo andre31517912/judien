@@ -16,7 +16,7 @@ export class BlastService {
     if (!event) throw new NotFoundException('Event not found.');
 
     // Resolve audience
-    let users: { id: string; email: string; phoneE164: string | null; preferredLanguage: string; muteSms: boolean; muteEmail: boolean }[] = [];
+    let users: { id: string; email: string | null; phoneE164: string | null; lineUserId: string | null; preferredLanguage: string; muteSms: boolean; muteEmail: boolean; muteLinePush: boolean }[] = [];
 
     if (dto.audience === 'rsvped') {
       const rsvps = await this.prisma.rSVP.findMany({
@@ -37,7 +37,7 @@ export class BlastService {
         title: lang === 'zh' ? event.title_zh : event.title_en,
       });
 
-      if (dto.channels.includes('EMAIL') && !user.muteEmail) {
+      if (dto.channels.includes('EMAIL') && !user.muteEmail && user.email) {
         await this.messaging.sendEmail({
           userId: user.id,
           eventId,
@@ -53,6 +53,15 @@ export class BlastService {
           eventId,
           to: user.phoneE164,
           body: message,
+        });
+      }
+
+      if (dto.channels.includes('LINE') && !user.muteLinePush && user.lineUserId) {
+        await this.messaging.sendLine({
+          userId: user.id,
+          eventId,
+          to: user.lineUserId,
+          text: message,
         });
       }
 

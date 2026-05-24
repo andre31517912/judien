@@ -31,7 +31,7 @@ const adapter = isMock ? new MockMessagingAdapter() : new ProductionMessagingAda
 interface ReminderJobData {
   eventId: string;
   offsetMinutes: number;
-  channels: ('SMS' | 'EMAIL')[];
+  channels: ('SMS' | 'EMAIL' | 'LINE')[];
 }
 
 async function processReminder(job: Job<ReminderJobData>) {
@@ -45,7 +45,6 @@ async function processReminder(job: Job<ReminderJobData>) {
     return;
   }
 
-  // Fetch RSVP'd users
   const rsvps = await prisma.rSVP.findMany({
     where: { eventId },
     include: { user: true },
@@ -75,7 +74,8 @@ async function processReminder(job: Job<ReminderJobData>) {
       if (channel === 'SMS' && user.muteSms) continue;
       if (channel === 'SMS' && !user.phoneE164) continue;
       if (channel === 'EMAIL' && user.muteEmail) continue;
-      const toAddress = channel === 'SMS' ? user.phoneE164! : user.email;
+      if (channel === 'EMAIL' && !user.email) continue;
+      const toAddress = channel === 'SMS' ? user.phoneE164! : user.email!;
       const log = await prisma.messageLog.create({
         data: {
           userId: user.id,
@@ -91,8 +91,12 @@ async function processReminder(job: Job<ReminderJobData>) {
       try {
         if (channel === 'SMS') {
           providerId = await adapter.sendSms({ to: user.phoneE164!, body });
+        } else if (channel === 'LINE') {
+          if (user.lineUserId && !user.muteLinePush) {
+            providerId = await adapter.sendLine?.({ to: user.lineUserId, text: body }) ?? null;
+          }
         } else {
-          providerId = await adapter.sendEmail({ to: user.email, subject, text: body });
+          providerId = await adapter.sendEmail({ to: user.email!, subject, text: body });
         }
       } catch (err) {
         console.error(`[worker] Send failed user=${user.id} channel=${channel}`, err);

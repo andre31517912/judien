@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { MessagingAdapter } from './messaging.interface';
+import type { MessagingAdapter, SendLineOptions } from './messaging.interface';
 import type { MessageChannel } from '@judien/shared';
 
 export const MESSAGING_ADAPTER = 'MESSAGING_ADAPTER';
@@ -67,6 +67,34 @@ export class MessagingService {
       text: opts.text,
       html: opts.html,
     });
+
+    await this.prisma.messageLog.update({
+      where: { id: log.id },
+      data: {
+        status: providerId ? 'SENT' : 'FAILED',
+        providerMessageId: providerId ?? null,
+      },
+    });
+  }
+
+  async sendLine(opts: {
+    userId: string;
+    eventId?: string;
+    to: string;
+    text: string;
+  }): Promise<void> {
+    const log = await this.prisma.messageLog.create({
+      data: {
+        userId: opts.userId,
+        eventId: opts.eventId ?? null,
+        channel: 'LINE' satisfies MessageChannel,
+        toAddress: opts.to,
+        payload: { text: opts.text },
+        status: 'PENDING',
+      },
+    });
+
+    const providerId = await this.adapter.sendLine?.({ to: opts.to, text: opts.text }) ?? null;
 
     await this.prisma.messageLog.update({
       where: { id: log.id },

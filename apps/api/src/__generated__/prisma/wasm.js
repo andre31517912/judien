@@ -133,6 +133,8 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   muteSms: 'muteSms',
   muteEmail: 'muteEmail',
+  muteLinePush: 'muteLinePush',
+  lineUserId: 'lineUserId',
   isGuest: 'isGuest',
   createdAt: 'createdAt'
 };
@@ -377,7 +379,8 @@ exports.RSVPStatus = exports.$Enums.RSVPStatus = {
 
 exports.MessageChannel = exports.$Enums.MessageChannel = {
   SMS: 'SMS',
-  EMAIL: 'EMAIL'
+  EMAIL: 'EMAIL',
+  LINE: 'LINE'
 };
 
 exports.MessageStatus = exports.$Enums.MessageStatus = {

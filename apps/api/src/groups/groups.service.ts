@@ -669,7 +669,7 @@ export class GroupsService {
     // Notify the user they have been added
     const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
     const groupLink = `${webOrigin}/en/groups/${groupId}`;
-    const isPlaceholderEmail = targetUser.email.endsWith('@guest.local') || targetUser.email.endsWith('@invited.local');
+    const isPlaceholderEmail = !!(targetUser.email?.endsWith('@guest.local') || targetUser.email?.endsWith('@invited.local'));
     if (targetUser.email && !isPlaceholderEmail) {
       await this.messaging.sendEmail({
         userId: targetUser.id,
@@ -1022,7 +1022,7 @@ export class GroupsService {
     ]);
 
     const memberIds = allMembers.map((m) => m.userId);
-    const memberMap: Record<string, { id: string; displayName: string | null; email: string }> = {};
+    const memberMap: Record<string, { id: string; displayName: string | null; email: string | null }> = {};
     for (const m of allMembers) memberMap[m.userId] = m.user;
 
     // Per-event breakdown

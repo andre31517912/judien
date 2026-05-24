@@ -10,7 +10,13 @@ export interface SendEmailOptions {
   html?: string;
 }
 
+export interface SendLineOptions {
+  to: string;  // LINE userId
+  text: string;
+}
+
 export interface MessagingAdapter {
-  sendSms(opts: SendSmsOptions): Promise<string | null>; // returns providerMessageId
+  sendSms(opts: SendSmsOptions): Promise<string | null>;
   sendEmail(opts: SendEmailOptions): Promise<string | null>;
+  sendLine?(opts: SendLineOptions): Promise<string | null>;
 }

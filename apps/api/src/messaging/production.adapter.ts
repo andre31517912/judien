@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Twilio from 'twilio';
 import { Resend } from 'resend';
-import type { MessagingAdapter, SendSmsOptions, SendEmailOptions } from './messaging.interface';
+import type { MessagingAdapter, SendSmsOptions, SendEmailOptions, SendLineOptions } from './messaging.interface';
 
 /**
  * Production adapter.
@@ -106,6 +106,39 @@ export class ProductionMessagingAdapter implements MessagingAdapter {
       return data?.id ?? null;
     } catch (err) {
       this.logger.error(`[Resend] Email failed to=${opts.to}`, err);
+      return null;
+    }
+  }
+
+  // ── LINE Messaging API ──────────────────────────────────────────────────────
+  async sendLine(opts: SendLineOptions): Promise<string | null> {
+    const token = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
+    if (!token) {
+      this.logger.warn(`[LINE] LINE_MESSAGING_CHANNEL_ACCESS_TOKEN not set — skipping LINE push to ${opts.to}`);
+      return null;
+    }
+    try {
+      const res = await fetch('https://api.line.me/v2/bot/message/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          to: opts.to,
+          messages: [{ type: 'text', text: opts.text }],
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        this.logger.error(`[LINE] Push failed to=${opts.to} status=${res.status} body=${body}`);
+        return null;
+      }
+      this.logger.log(`[LINE] Push sent to=${opts.to}`);
+      // LINE push doesn't return a message ID in the response body, use timestamp
+      return `line_${Date.now()}`;
+    } catch (err) {
+      this.logger.error(`[LINE] Push failed to=${opts.to}`, err);
       return null;
     }
   }

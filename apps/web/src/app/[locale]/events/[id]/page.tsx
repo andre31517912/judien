@@ -650,13 +650,13 @@ export default function EventDetailPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送方式' : 'Send via'}</p>
-              <div className="flex gap-3">
-                {(['EMAIL', 'SMS'] as const).map((ch) => (
+              <div className="flex gap-3 flex-wrap">
+                {(['EMAIL', 'SMS', 'LINE'] as const).map((ch) => (
                   <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
-                    {ch === 'EMAIL' ? '✉️ Email' : '💬 SMS'}
+                    {ch === 'EMAIL' ? '✉️ Email' : ch === 'SMS' ? '💬 SMS' : '🟩 LINE'}
                   </label>
                 ))}
               </div>

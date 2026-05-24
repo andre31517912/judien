@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import type { GuestGroupJoinDto, SignupDto } from '@judien/shared';
+import { normalizePhone } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { JwtPayload } from './jwt.strategy';
 
@@ -34,9 +35,11 @@ export class AuthService {
     if (invite.usedAt) throw new BadRequestException('Invite token has already been used.');
     if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite token has expired.');
 
-    const existing = await this.prisma.user.findFirst({
-      where: { OR: [{ email: dto.email }, { phoneE164: dto.phone }] },
-    });
+    const orConditions = [
+      { phoneE164: dto.phone },
+      ...(dto.email ? [{ email: dto.email }] : []),
+    ];
+    const existing = await this.prisma.user.findFirst({ where: { OR: orConditions } });
     if (existing) {
       throw new ConflictException('Email or phone already registered.');
     }
@@ -45,7 +48,7 @@ export class AuthService {
     return this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({
         data: {
-          email: dto.email,
+          email: dto.email ?? null,
           passwordHash,
           phoneE164: dto.phone,
           displayName: dto.displayName?.trim() || null,
@@ -61,8 +64,14 @@ export class AuthService {
     });
   }
 
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async validateUser(identifier: string, password: string): Promise<User | null> {
+    const trimmed = identifier.trim();
+    // Determine if the identifier looks like an email or a phone number
+    const isEmail = trimmed.includes('@');
+    const user = isEmail
+      ? await this.prisma.user.findUnique({ where: { email: trimmed } })
+      : await this.prisma.user.findUnique({ where: { phoneE164: trimmed } }) ??
+        await this.prisma.user.findUnique({ where: { phoneE164: normalizePhone(trimmed) ?? trimmed } });
     if (!user) return null;
     const ok = await bcrypt.compare(password, user.passwordHash);
     return ok ? user : null;
@@ -150,7 +159,7 @@ export class AuthService {
       if (phone && !user.phoneE164) {
         user = await this.prisma.user.update({ where: { id: user.id }, data: { phoneE164: phone } });
       }
-      if (email && (user.email.endsWith('@guest.local') || user.email.endsWith('@invited.local'))) {
+      if (email && (!user.email || user.email.endsWith('@guest.local') || user.email.endsWith('@invited.local'))) {
         user = await this.prisma.user.update({ where: { id: user.id }, data: { email } });
       }
     }

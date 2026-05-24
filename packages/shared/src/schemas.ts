@@ -29,7 +29,7 @@ export const phoneSchema = z
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export const SignupSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
   password: z.string().min(8).max(128),
   phone: phoneSchema,
   displayName: z.string().max(100).optional(),
@@ -39,7 +39,7 @@ export const SignupSchema = z.object({
 export type SignupDto = z.infer<typeof SignupSchema>;
 
 export const LoginSchema = z.object({
-  email: z.string().email(),
+  identifier: z.string().min(1), // email or phone number
   password: z.string().min(1),
 });
 export type LoginDto = z.infer<typeof LoginSchema>;
@@ -108,7 +108,7 @@ export type UpdateCommentDto = z.infer<typeof UpdateCommentSchema>;
 
 export const ReminderRuleSchema = z.object({
   offsetMinutes: z.number().int().positive(),
-  channels: z.array(z.enum(['SMS', 'EMAIL'])).min(1),
+  channels: z.array(z.enum(['SMS', 'EMAIL', 'LINE'])).min(1),
   enabled: z.boolean().default(true),
 });
 export type ReminderRuleDto = z.infer<typeof ReminderRuleSchema>;
@@ -121,7 +121,7 @@ export type SetRemindersDto = z.infer<typeof SetRemindersSchema>;
 // ─── Blast ────────────────────────────────────────────────────────────────────
 
 export const BlastSchema = z.object({
-  channels: z.array(z.enum(['SMS', 'EMAIL'])).min(1),
+  channels: z.array(z.enum(['SMS', 'EMAIL', 'LINE'])).min(1),
   /** Default 'rsvped' = all users who RSVPed any status; 'all' = all registered users */
   audience: z.enum(['rsvped', 'all']).default('rsvped'),
   messageEn: z.string().min(1).max(1600),
@@ -154,6 +154,7 @@ export const UpdateProfileSchema = z.object({
   colorTheme: z.enum(['light', 'dark']).optional(),
   muteSms: z.boolean().optional(),
   muteEmail: z.boolean().optional(),
+  muteLinePush: z.boolean().optional(),
 });
 export type UpdateProfileDto = z.infer<typeof UpdateProfileSchema>;
 

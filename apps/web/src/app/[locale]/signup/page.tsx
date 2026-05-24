@@ -64,14 +64,14 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
     }
   };
 
-  const field = (label: string, key: keyof typeof form, type = 'text') => (
+  const field = (label: string, key: keyof typeof form, type = 'text', isRequired = true) => (
     <div>
       <label className="block text-sm font-medium mb-1 dark:text-gray-300">{label}</label>
       <input
         type={type}
         value={form[key] as string}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-        required
+        required={isRequired}
         className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       />
     </div>
@@ -105,9 +105,9 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {field(zh ? '顯示名稱（暱稱）' : 'Display Name (nickname)', 'displayName')}
-        {field(zh ? '電子郵件' : 'Email', 'email', 'email')}
+        {field(zh ? '電話號碼（必填，如 +886912345678）' : 'Phone (required, e.g. +886912345678)', 'phone', 'tel')}
         {field(zh ? '密碼（至少 8 字元）' : 'Password (min 8 chars)', 'password', 'password')}
-        {field(zh ? '電話號碼（含國碼，如 +886912345678）' : 'Phone (e.g. +886912345678)', 'phone', 'tel')}
+        {field(zh ? '電子郵件（可不填）' : 'Email (optional)', 'email', 'email', false)}
         <button
           type="submit"
           disabled={loading}

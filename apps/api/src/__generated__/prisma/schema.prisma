@@ -27,6 +27,7 @@ enum RSVPStatus {
 enum MessageChannel {
   SMS
   EMAIL
+  LINE
 }
 
 enum MessageStatus {
@@ -65,7 +66,7 @@ enum GroupJoinRequestStatus {
 
 model User {
   id                String   @id @default(cuid())
-  email             String   @unique
+  email             String?  @unique
   passwordHash      String
   phoneE164         String?  @unique
   displayName       String?
@@ -74,6 +75,8 @@ model User {
   role              Role     @default(USER)
   muteSms           Boolean  @default(false)
   muteEmail         Boolean  @default(false)
+  muteLinePush      Boolean  @default(false)
+  lineUserId        String?  @unique
   isGuest           Boolean  @default(false)
   createdAt         DateTime @default(now())
 

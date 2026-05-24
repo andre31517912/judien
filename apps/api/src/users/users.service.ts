@@ -28,6 +28,7 @@ export class UsersService {
     if (dto.colorTheme !== undefined) data.colorTheme = dto.colorTheme;
     if (dto.muteSms !== undefined) data.muteSms = dto.muteSms;
     if (dto.muteEmail !== undefined) data.muteEmail = dto.muteEmail;
+    if (dto.muteLinePush !== undefined) data.muteLinePush = dto.muteLinePush;
     if (dto.password) data.passwordHash = await bcrypt.hash(dto.password, 12);
 
     const updated = await this.prisma.user.update({ where: { id: userId }, data });

@@ -383,6 +383,10 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <input type="checkbox" checked={r.channels.includes('SMS')}
                 onChange={(e) => toggleReminderChannel(i, 'SMS', e.target.checked)} /> SMS
             </label>
+            <label className="flex items-center gap-1 text-sm">
+              <input type="checkbox" checked={r.channels.includes('LINE')}
+                onChange={(e) => toggleReminderChannel(i, 'LINE', e.target.checked)} /> LINE
+            </label>
             <label className="flex items-center gap-1 text-sm ml-2">
               <input type="checkbox" checked={r.enabled}
                 onChange={(e) => setReminders((prev) => prev.map((x, j) => j !== i ? x : { ...x, enabled: e.target.checked }))} />

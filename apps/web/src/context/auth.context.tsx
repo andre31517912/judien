@@ -7,8 +7,8 @@ import type { User } from '@judien/shared';
 interface AuthContextValue {
   user: Omit<User, 'passwordHash'> | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (data: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<void>;
+  signup: (data: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -32,16 +32,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (identifier: string, password: string) => {
     const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     setTokens(data.accessToken, data.refreshToken ?? null);
     setUser(data.user);
   };
 
-  const signup = async (body: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => {
+  const signup = async (body: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => {
     const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(body),

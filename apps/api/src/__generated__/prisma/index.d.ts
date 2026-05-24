@@ -127,7 +127,8 @@ export type RSVPStatus = (typeof RSVPStatus)[keyof typeof RSVPStatus]
 
 export const MessageChannel: {
   SMS: 'SMS',
-  EMAIL: 'EMAIL'
+  EMAIL: 'EMAIL',
+  LINE: 'LINE'
 };
 
 export type MessageChannel = (typeof MessageChannel)[keyof typeof MessageChannel]
@@ -2886,6 +2887,8 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteSms: boolean | null
     muteEmail: boolean | null
+    muteLinePush: boolean | null
+    lineUserId: string | null
     isGuest: boolean | null
     createdAt: Date | null
   }
@@ -2901,6 +2904,8 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteSms: boolean | null
     muteEmail: boolean | null
+    muteLinePush: boolean | null
+    lineUserId: string | null
     isGuest: boolean | null
     createdAt: Date | null
   }
@@ -2916,6 +2921,8 @@ export namespace Prisma {
     role: number
     muteSms: number
     muteEmail: number
+    muteLinePush: number
+    lineUserId: number
     isGuest: number
     createdAt: number
     _all: number
@@ -2933,6 +2940,8 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    muteLinePush?: true
+    lineUserId?: true
     isGuest?: true
     createdAt?: true
   }
@@ -2948,6 +2957,8 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    muteLinePush?: true
+    lineUserId?: true
     isGuest?: true
     createdAt?: true
   }
@@ -2963,6 +2974,8 @@ export namespace Prisma {
     role?: true
     muteSms?: true
     muteEmail?: true
+    muteLinePush?: true
+    lineUserId?: true
     isGuest?: true
     createdAt?: true
     _all?: true
@@ -3042,7 +3055,7 @@ export namespace Prisma {
 
   export type UserGroupByOutputType = {
     id: string
-    email: string
+    email: string | null
     passwordHash: string
     phoneE164: string | null
     displayName: string | null
@@ -3051,6 +3064,8 @@ export namespace Prisma {
     role: $Enums.Role
     muteSms: boolean
     muteEmail: boolean
+    muteLinePush: boolean
+    lineUserId: string | null
     isGuest: boolean
     createdAt: Date
     _count: UserCountAggregateOutputType | null
@@ -3083,6 +3098,8 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: boolean
     isGuest?: boolean
     createdAt?: boolean
     events?: boolean | User$eventsArgs<ExtArgs>
@@ -3120,6 +3137,8 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: boolean
     isGuest?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -3135,6 +3154,8 @@ export namespace Prisma {
     role?: boolean
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: boolean
     isGuest?: boolean
     createdAt?: boolean
   }
@@ -3192,7 +3213,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      email: string
+      email: string | null
       passwordHash: string
       phoneE164: string | null
       displayName: string | null
@@ -3201,6 +3222,8 @@ export namespace Prisma {
       role: $Enums.Role
       muteSms: boolean
       muteEmail: boolean
+      muteLinePush: boolean
+      lineUserId: string | null
       isGuest: boolean
       createdAt: Date
     }, ExtArgs["result"]["user"]>
@@ -3627,6 +3650,8 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'Role'>
     readonly muteSms: FieldRef<"User", 'Boolean'>
     readonly muteEmail: FieldRef<"User", 'Boolean'>
+    readonly muteLinePush: FieldRef<"User", 'Boolean'>
+    readonly lineUserId: FieldRef<"User", 'String'>
     readonly isGuest: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
@@ -21912,6 +21937,8 @@ export namespace Prisma {
     role: 'role',
     muteSms: 'muteSms',
     muteEmail: 'muteEmail',
+    muteLinePush: 'muteLinePush',
+    lineUserId: 'lineUserId',
     isGuest: 'isGuest',
     createdAt: 'createdAt'
   };
@@ -22422,7 +22449,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
-    email?: StringFilter<"User"> | string
+    email?: StringNullableFilter<"User"> | string | null
     passwordHash?: StringFilter<"User"> | string
     phoneE164?: StringNullableFilter<"User"> | string | null
     displayName?: StringNullableFilter<"User"> | string | null
@@ -22431,6 +22458,8 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
+    muteLinePush?: BoolFilter<"User"> | boolean
+    lineUserId?: StringNullableFilter<"User"> | string | null
     isGuest?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
@@ -22458,7 +22487,7 @@ export namespace Prisma {
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     passwordHash?: SortOrder
     phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
@@ -22467,6 +22496,8 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    muteLinePush?: SortOrder
+    lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     createdAt?: SortOrder
     events?: EventOrderByRelationAggregateInput
@@ -22496,6 +22527,7 @@ export namespace Prisma {
     id?: string
     email?: string
     phoneE164?: string
+    lineUserId?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -22506,6 +22538,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
+    muteLinePush?: BoolFilter<"User"> | boolean
     isGuest?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
@@ -22529,11 +22562,11 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordListRelationFilter
     inviteTokensCreated?: InviteTokenListRelationFilter
     inviteTokensUsed?: InviteTokenListRelationFilter
-  }, "id" | "email" | "phoneE164">
+  }, "id" | "email" | "phoneE164" | "lineUserId">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
-    email?: SortOrder
+    email?: SortOrderInput | SortOrder
     passwordHash?: SortOrder
     phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
@@ -22542,6 +22575,8 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    muteLinePush?: SortOrder
+    lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -22554,7 +22589,7 @@ export namespace Prisma {
     OR?: UserScalarWhereWithAggregatesInput[]
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
-    email?: StringWithAggregatesFilter<"User"> | string
+    email?: StringNullableWithAggregatesFilter<"User"> | string | null
     passwordHash?: StringWithAggregatesFilter<"User"> | string
     phoneE164?: StringNullableWithAggregatesFilter<"User"> | string | null
     displayName?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -22563,6 +22598,8 @@ export namespace Prisma {
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     muteSms?: BoolWithAggregatesFilter<"User"> | boolean
     muteEmail?: BoolWithAggregatesFilter<"User"> | boolean
+    muteLinePush?: BoolWithAggregatesFilter<"User"> | boolean
+    lineUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
     isGuest?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -23970,7 +24007,7 @@ export namespace Prisma {
 
   export type UserCreateInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -23979,6 +24016,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -24006,7 +24045,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -24015,6 +24054,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -24042,7 +24083,7 @@ export namespace Prisma {
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24051,6 +24092,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -24078,7 +24121,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24087,6 +24130,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -24114,7 +24159,7 @@ export namespace Prisma {
 
   export type UserCreateManyInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -24123,13 +24168,15 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24138,13 +24185,15 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24153,6 +24202,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25830,6 +25881,8 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    muteLinePush?: SortOrder
+    lineUserId?: SortOrder
     isGuest?: SortOrder
     createdAt?: SortOrder
   }
@@ -25845,6 +25898,8 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    muteLinePush?: SortOrder
+    lineUserId?: SortOrder
     isGuest?: SortOrder
     createdAt?: SortOrder
   }
@@ -25860,6 +25915,8 @@ export namespace Prisma {
     role?: SortOrder
     muteSms?: SortOrder
     muteEmail?: SortOrder
+    muteLinePush?: SortOrder
+    lineUserId?: SortOrder
     isGuest?: SortOrder
     createdAt?: SortOrder
   }
@@ -30930,7 +30987,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutEventsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -30939,6 +30996,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -30965,7 +31024,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutEventsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -30974,6 +31033,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -31289,7 +31350,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31298,6 +31359,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -31324,7 +31387,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31333,6 +31396,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -31656,7 +31721,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutEventShareLinksInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -31665,6 +31730,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -31691,7 +31758,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutEventShareLinksInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -31700,6 +31767,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -31813,7 +31882,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutEventShareLinksInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31822,6 +31891,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -31848,7 +31919,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutEventShareLinksInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31857,6 +31928,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -32019,7 +32092,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutEventSeriesCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32028,6 +32101,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -32054,7 +32129,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32063,6 +32138,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -32224,7 +32301,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutEventSeriesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32233,6 +32310,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -32259,7 +32338,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32268,6 +32347,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -32430,7 +32511,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutEventInvitesCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32439,6 +32520,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -32465,7 +32548,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32474,6 +32557,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -32505,7 +32590,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutEventInvitesAcceptedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32514,6 +32599,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -32540,7 +32627,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32549,6 +32636,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -32662,7 +32751,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutEventInvitesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32671,6 +32760,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -32697,7 +32788,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32706,6 +32797,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -32743,7 +32836,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutEventInvitesAcceptedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32752,6 +32845,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -32778,7 +32873,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32787,6 +32882,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -32878,7 +32975,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutRsvpsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32887,6 +32984,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -32913,7 +33012,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -32922,6 +33021,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -33035,7 +33136,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutRsvpsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33044,6 +33145,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -33070,7 +33173,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33079,6 +33182,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -33170,7 +33275,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutCommentsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -33179,6 +33284,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -33205,7 +33312,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutCommentsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -33214,6 +33321,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -33382,7 +33491,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33391,6 +33500,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -33417,7 +33528,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33426,6 +33537,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -33548,7 +33661,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupMessagesInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -33557,6 +33670,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -33583,7 +33698,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -33592,6 +33707,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -33689,7 +33806,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33698,6 +33815,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -33724,7 +33843,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33733,6 +33852,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -33960,7 +34081,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutMessageLogsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -33969,6 +34090,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -33995,7 +34118,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -34004,6 +34127,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -34117,7 +34242,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutMessageLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34126,6 +34251,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -34152,7 +34279,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34161,6 +34288,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -34236,7 +34365,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutNewsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -34245,6 +34374,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -34271,7 +34402,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutNewsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -34280,6 +34411,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -34377,7 +34510,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutNewsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34386,6 +34519,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -34412,7 +34547,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutNewsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34421,6 +34556,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -34447,7 +34584,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutCreatedGroupsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -34456,6 +34593,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -34482,7 +34621,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -34491,6 +34630,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -34924,7 +35065,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutCreatedGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34933,6 +35074,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -34959,7 +35102,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34968,6 +35111,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -35193,7 +35338,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupMembershipInvitesInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35202,6 +35347,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -35228,7 +35375,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35237,6 +35384,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -35317,7 +35466,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupMembershipsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35326,6 +35475,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -35352,7 +35503,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35361,6 +35512,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -35403,7 +35556,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupMembershipInvitesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35412,6 +35565,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -35438,7 +35593,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35447,6 +35602,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -35539,7 +35696,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupMembershipsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35548,6 +35705,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -35574,7 +35733,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35583,6 +35742,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -35609,7 +35770,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupInvitesSentInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35618,6 +35779,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -35644,7 +35807,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35653,6 +35816,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -35684,7 +35849,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupInvitesReceivedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35693,6 +35858,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -35719,7 +35886,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -35728,6 +35895,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -35819,7 +35988,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupInvitesSentInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35828,6 +35997,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -35854,7 +36025,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35863,6 +36034,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -35900,7 +36073,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupInvitesReceivedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35909,6 +36082,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -35935,7 +36110,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35944,6 +36119,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36074,7 +36251,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutGroupJoinRequestsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36083,6 +36260,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36109,7 +36288,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36118,6 +36297,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36149,7 +36330,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutReviewedJoinRequestsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36158,6 +36339,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36184,7 +36367,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36193,6 +36376,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36290,7 +36475,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutGroupJoinRequestsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36299,6 +36484,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -36325,7 +36512,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36334,6 +36521,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36371,7 +36560,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutReviewedJoinRequestsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36380,6 +36569,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -36406,7 +36597,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36415,6 +36606,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36490,7 +36683,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutDonationRecordsForInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36499,6 +36692,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36525,7 +36720,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutDonationRecordsForInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36534,6 +36729,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36565,7 +36762,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutDonationRecordsCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36574,6 +36771,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36600,7 +36799,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutDonationRecordsCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36609,6 +36808,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36706,7 +36907,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutDonationRecordsForInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36715,6 +36916,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -36741,7 +36944,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutDonationRecordsForInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36750,6 +36953,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36787,7 +36992,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutDonationRecordsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36796,6 +37001,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -36822,7 +37029,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutDonationRecordsCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36831,6 +37038,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -36857,7 +37066,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutInviteTokensCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36866,6 +37075,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36892,7 +37103,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutInviteTokensCreatedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36901,6 +37112,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -36932,7 +37145,7 @@ export namespace Prisma {
 
   export type UserCreateWithoutInviteTokensUsedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36941,6 +37154,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
@@ -36967,7 +37182,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutInviteTokensUsedInput = {
     id?: string
-    email: string
+    email?: string | null
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
@@ -36976,6 +37191,8 @@ export namespace Prisma {
     role?: $Enums.Role
     muteSms?: boolean
     muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
     isGuest?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
@@ -37018,7 +37235,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutInviteTokensCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37027,6 +37244,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -37053,7 +37272,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutInviteTokensCreatedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37062,6 +37281,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -37099,7 +37320,7 @@ export namespace Prisma {
 
   export type UserUpdateWithoutInviteTokensUsedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37108,6 +37329,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
@@ -37134,7 +37357,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutInviteTokensUsedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37143,6 +37366,8 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput

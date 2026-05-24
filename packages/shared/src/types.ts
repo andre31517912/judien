@@ -1,7 +1,7 @@
 // Core domain enums
 export type Role = 'USER' | 'ADMIN';
 export type RSVPStatus = 'GOING' | 'MAYBE' | 'NO';
-export type MessageChannel = 'SMS' | 'EMAIL';
+export type MessageChannel = 'SMS' | 'EMAIL' | 'LINE';
 export type MessageStatus = 'PENDING' | 'SENT' | 'FAILED';
 export type PreferredLanguage = 'en' | 'zh';
 export type GroupMembershipRole = 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -13,12 +13,14 @@ export type GroupJoinRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface User {
   id: string;
-  email: string;
-  phoneE164: string;
+  email: string | null;
+  phoneE164: string | null;
+  lineUserId: string | null;
   preferredLanguage: PreferredLanguage;
   colorTheme: 'light' | 'dark';
   role: Role;
   notificationsMuted: boolean;
+  muteLinePush: boolean;
   createdAt: string; // ISO8601
 }
 

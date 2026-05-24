@@ -77,7 +77,7 @@ export class RsvpService {
       const status = r.status as 'GOING' | 'MAYBE' | 'NO';
       if (groups[status]) {
         groups[status].push({
-          handle: this.maskIdentifier(r.user.email),
+          handle: this.maskIdentifier(r.user.email ?? ''),
           displayName: (r.user as any).displayName ?? null,
           source: 'user',
         });
@@ -195,7 +195,7 @@ export class RsvpService {
       }),
     ]);
 
-    const rows: { name: string; email: string; type: string; status: string; declineReason: string }[] = [];
+    const rows: { name: string; email: string | null; type: string; status: string; declineReason: string }[] = [];
 
     for (const r of rsvps) {
       rows.push({
