@@ -16,9 +16,12 @@ export interface User {
   email: string | null;
   phoneE164: string | null;
   lineUserId: string | null;
+  displayName: string | null;
   preferredLanguage: PreferredLanguage;
   colorTheme: 'light' | 'dark';
   role: Role;
+  isGuest: boolean;
+  hasPassword: boolean;
   notificationsMuted: boolean;
   muteLinePush: boolean;
   createdAt: string; // ISO8601
@@ -185,7 +188,6 @@ export interface Group {
   description: string;
   photoUrl: string | null;
   discoverableBySearch: boolean;
-  memberDataPrivate: boolean;
   parentGroupId: string | null;
   createdById: string;
   createdAt: string;

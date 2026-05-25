@@ -31,11 +31,11 @@ export class GroupsService {
   async create(dto: CreateGroupDto, user: User) {
     this.assertPlatformAdmin(user);
 
-    const duplicate = await this.prisma.group.findFirst({
-      where: { name: dto.name.trim(), createdById: user.id },
+    const duplicate = await this.prisma.group.findUnique({
+      where: { name: dto.name.trim() },
     });
     if (duplicate) {
-      throw new ConflictException(`You already have a group named "${dto.name}".`);
+      throw new ConflictException(`A group named "${dto.name}" already exists.`);
     }
 
     const adminIds = Array.from(new Set([user.id, ...dto.adminUserIds]));
@@ -53,7 +53,6 @@ export class GroupsService {
           description: dto.description ?? '',
           photoUrl: dto.photoUrl ?? null,
           discoverableBySearch: dto.discoverableBySearch ?? false,
-          memberDataPrivate: dto.memberDataPrivate ?? false,
           createdById: user.id,
           ...(dto.parentGroupId ? { parentGroupId: dto.parentGroupId } : {}),
         },
@@ -152,7 +151,6 @@ export class GroupsService {
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.photoUrl !== undefined) data.photoUrl = dto.photoUrl;
     if (dto.discoverableBySearch !== undefined) data.discoverableBySearch = dto.discoverableBySearch;
-    if (dto.memberDataPrivate !== undefined) data.memberDataPrivate = dto.memberDataPrivate;
     return this.prisma.group.update({ where: { id: groupId }, data });
   }
 
@@ -201,14 +199,12 @@ export class GroupsService {
       orderBy: { joinedAt: 'asc' },
     });
 
-    const includeEmailForMembers = !group.memberDataPrivate;
-
     const directMembers = rows.map((m) => ({
       userId: m.user.id,
       displayName: m.user.displayName,
       role: m.role,
       joinedAt: m.joinedAt,
-      email: isPlatformAdmin || isGroupAdmin || includeEmailForMembers ? m.user.email : null,
+      email: isPlatformAdmin || isGroupAdmin ? m.user.email : null,
       phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
       childGroupId: null as string | null,
       childGroupName: null as string | null,
@@ -240,7 +236,7 @@ export class GroupsService {
             displayName: m.user.displayName,
             role: m.role,
             joinedAt: m.joinedAt,
-            email: isPlatformAdmin || isGroupAdmin || includeEmailForMembers ? m.user.email : null,
+            email: isPlatformAdmin || isGroupAdmin ? m.user.email : null,
             phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
             childGroupId: child.id,
             childGroupName: child.name,

@@ -2890,6 +2890,7 @@ export namespace Prisma {
     muteLinePush: boolean | null
     lineUserId: string | null
     isGuest: boolean | null
+    hasPassword: boolean | null
     createdAt: Date | null
   }
 
@@ -2907,6 +2908,7 @@ export namespace Prisma {
     muteLinePush: boolean | null
     lineUserId: string | null
     isGuest: boolean | null
+    hasPassword: boolean | null
     createdAt: Date | null
   }
 
@@ -2924,6 +2926,7 @@ export namespace Prisma {
     muteLinePush: number
     lineUserId: number
     isGuest: number
+    hasPassword: number
     createdAt: number
     _all: number
   }
@@ -2943,6 +2946,7 @@ export namespace Prisma {
     muteLinePush?: true
     lineUserId?: true
     isGuest?: true
+    hasPassword?: true
     createdAt?: true
   }
 
@@ -2960,6 +2964,7 @@ export namespace Prisma {
     muteLinePush?: true
     lineUserId?: true
     isGuest?: true
+    hasPassword?: true
     createdAt?: true
   }
 
@@ -2977,6 +2982,7 @@ export namespace Prisma {
     muteLinePush?: true
     lineUserId?: true
     isGuest?: true
+    hasPassword?: true
     createdAt?: true
     _all?: true
   }
@@ -3067,6 +3073,7 @@ export namespace Prisma {
     muteLinePush: boolean
     lineUserId: string | null
     isGuest: boolean
+    hasPassword: boolean
     createdAt: Date
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
@@ -3101,6 +3108,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: boolean
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: boolean
     events?: boolean | User$eventsArgs<ExtArgs>
     rsvps?: boolean | User$rsvpsArgs<ExtArgs>
@@ -3140,6 +3148,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: boolean
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["user"]>
 
@@ -3157,6 +3166,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: boolean
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: boolean
   }
 
@@ -3225,6 +3235,7 @@ export namespace Prisma {
       muteLinePush: boolean
       lineUserId: string | null
       isGuest: boolean
+      hasPassword: boolean
       createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -3653,6 +3664,7 @@ export namespace Prisma {
     readonly muteLinePush: FieldRef<"User", 'Boolean'>
     readonly lineUserId: FieldRef<"User", 'String'>
     readonly isGuest: FieldRef<"User", 'Boolean'>
+    readonly hasPassword: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
@@ -15620,7 +15632,6 @@ export namespace Prisma {
     description: string | null
     photoUrl: string | null
     discoverableBySearch: boolean | null
-    memberDataPrivate: boolean | null
     parentGroupId: string | null
     createdById: string | null
     createdAt: Date | null
@@ -15634,7 +15645,6 @@ export namespace Prisma {
     description: string | null
     photoUrl: string | null
     discoverableBySearch: boolean | null
-    memberDataPrivate: boolean | null
     parentGroupId: string | null
     createdById: string | null
     createdAt: Date | null
@@ -15648,7 +15658,6 @@ export namespace Prisma {
     description: number
     photoUrl: number
     discoverableBySearch: number
-    memberDataPrivate: number
     parentGroupId: number
     createdById: number
     createdAt: number
@@ -15664,7 +15673,6 @@ export namespace Prisma {
     description?: true
     photoUrl?: true
     discoverableBySearch?: true
-    memberDataPrivate?: true
     parentGroupId?: true
     createdById?: true
     createdAt?: true
@@ -15678,7 +15686,6 @@ export namespace Prisma {
     description?: true
     photoUrl?: true
     discoverableBySearch?: true
-    memberDataPrivate?: true
     parentGroupId?: true
     createdById?: true
     createdAt?: true
@@ -15692,7 +15699,6 @@ export namespace Prisma {
     description?: true
     photoUrl?: true
     discoverableBySearch?: true
-    memberDataPrivate?: true
     parentGroupId?: true
     createdById?: true
     createdAt?: true
@@ -15779,7 +15785,6 @@ export namespace Prisma {
     description: string
     photoUrl: string | null
     discoverableBySearch: boolean
-    memberDataPrivate: boolean
     parentGroupId: string | null
     createdById: string
     createdAt: Date
@@ -15810,7 +15815,6 @@ export namespace Prisma {
     description?: boolean
     photoUrl?: boolean
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -15836,7 +15840,6 @@ export namespace Prisma {
     description?: boolean
     photoUrl?: boolean
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -15852,7 +15855,6 @@ export namespace Prisma {
     description?: boolean
     photoUrl?: boolean
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -15900,7 +15902,6 @@ export namespace Prisma {
       description: string
       photoUrl: string | null
       discoverableBySearch: boolean
-      memberDataPrivate: boolean
       parentGroupId: string | null
       createdById: string
       createdAt: Date
@@ -16315,7 +16316,6 @@ export namespace Prisma {
     readonly description: FieldRef<"Group", 'String'>
     readonly photoUrl: FieldRef<"Group", 'String'>
     readonly discoverableBySearch: FieldRef<"Group", 'Boolean'>
-    readonly memberDataPrivate: FieldRef<"Group", 'Boolean'>
     readonly parentGroupId: FieldRef<"Group", 'String'>
     readonly createdById: FieldRef<"Group", 'String'>
     readonly createdAt: FieldRef<"Group", 'DateTime'>
@@ -21940,6 +21940,7 @@ export namespace Prisma {
     muteLinePush: 'muteLinePush',
     lineUserId: 'lineUserId',
     isGuest: 'isGuest',
+    hasPassword: 'hasPassword',
     createdAt: 'createdAt'
   };
 
@@ -22114,7 +22115,6 @@ export namespace Prisma {
     description: 'description',
     photoUrl: 'photoUrl',
     discoverableBySearch: 'discoverableBySearch',
-    memberDataPrivate: 'memberDataPrivate',
     parentGroupId: 'parentGroupId',
     createdById: 'createdById',
     createdAt: 'createdAt',
@@ -22461,6 +22461,7 @@ export namespace Prisma {
     muteLinePush?: BoolFilter<"User"> | boolean
     lineUserId?: StringNullableFilter<"User"> | string | null
     isGuest?: BoolFilter<"User"> | boolean
+    hasPassword?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -22499,6 +22500,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
+    hasPassword?: SortOrder
     createdAt?: SortOrder
     events?: EventOrderByRelationAggregateInput
     rsvps?: RSVPOrderByRelationAggregateInput
@@ -22540,6 +22542,7 @@ export namespace Prisma {
     muteEmail?: BoolFilter<"User"> | boolean
     muteLinePush?: BoolFilter<"User"> | boolean
     isGuest?: BoolFilter<"User"> | boolean
+    hasPassword?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
     events?: EventListRelationFilter
     rsvps?: RSVPListRelationFilter
@@ -22578,6 +22581,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
+    hasPassword?: SortOrder
     createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -22601,6 +22605,7 @@ export namespace Prisma {
     muteLinePush?: BoolWithAggregatesFilter<"User"> | boolean
     lineUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
     isGuest?: BoolWithAggregatesFilter<"User"> | boolean
+    hasPassword?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
 
@@ -23489,7 +23494,6 @@ export namespace Prisma {
     description?: StringFilter<"Group"> | string
     photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
-    memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -23514,7 +23518,6 @@ export namespace Prisma {
     description?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     discoverableBySearch?: SortOrder
-    memberDataPrivate?: SortOrder
     parentGroupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -23535,14 +23538,13 @@ export namespace Prisma {
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     pid?: string
+    name?: string
     AND?: GroupWhereInput | GroupWhereInput[]
     OR?: GroupWhereInput[]
     NOT?: GroupWhereInput | GroupWhereInput[]
-    name?: StringFilter<"Group"> | string
     description?: StringFilter<"Group"> | string
     photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
-    memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -23558,7 +23560,7 @@ export namespace Prisma {
     news?: NewsListRelationFilter
     eventSeries?: EventSeriesListRelationFilter
     donationRecords?: DonationRecordListRelationFilter
-  }, "id" | "pid">
+  }, "id" | "pid" | "name">
 
   export type GroupOrderByWithAggregationInput = {
     id?: SortOrder
@@ -23567,7 +23569,6 @@ export namespace Prisma {
     description?: SortOrder
     photoUrl?: SortOrderInput | SortOrder
     discoverableBySearch?: SortOrder
-    memberDataPrivate?: SortOrder
     parentGroupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -23587,7 +23588,6 @@ export namespace Prisma {
     description?: StringWithAggregatesFilter<"Group"> | string
     photoUrl?: StringNullableWithAggregatesFilter<"Group"> | string | null
     discoverableBySearch?: BoolWithAggregatesFilter<"Group"> | boolean
-    memberDataPrivate?: BoolWithAggregatesFilter<"Group"> | boolean
     parentGroupId?: StringNullableWithAggregatesFilter<"Group"> | string | null
     createdById?: StringWithAggregatesFilter<"Group"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
@@ -24019,6 +24019,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -24057,6 +24058,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -24095,6 +24097,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -24133,6 +24136,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -24171,6 +24175,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
   }
 
@@ -24188,6 +24193,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24205,6 +24211,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -25124,7 +25131,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -25147,7 +25153,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -25170,7 +25175,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -25193,7 +25197,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25216,7 +25219,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -25230,7 +25232,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25242,7 +25243,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -25884,6 +25884,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
+    hasPassword?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25901,6 +25902,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
+    hasPassword?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -25918,6 +25920,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
+    hasPassword?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -26678,7 +26681,6 @@ export namespace Prisma {
     description?: SortOrder
     photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
-    memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -26692,7 +26694,6 @@ export namespace Prisma {
     description?: SortOrder
     photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
-    memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -26706,7 +26707,6 @@ export namespace Prisma {
     description?: SortOrder
     photoUrl?: SortOrder
     discoverableBySearch?: SortOrder
-    memberDataPrivate?: SortOrder
     parentGroupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -29927,7 +29927,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
@@ -29949,7 +29948,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30638,7 +30636,6 @@ export namespace Prisma {
     description?: StringFilter<"Group"> | string
     photoUrl?: StringNullableFilter<"Group"> | string | null
     discoverableBySearch?: BoolFilter<"Group"> | boolean
-    memberDataPrivate?: BoolFilter<"Group"> | boolean
     parentGroupId?: StringNullableFilter<"Group"> | string | null
     createdById?: StringFilter<"Group"> | string
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -30999,6 +30996,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     rsvps?: RSVPCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -31036,6 +31034,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -31071,7 +31070,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -31093,7 +31091,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -31362,6 +31359,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -31399,6 +31397,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -31440,7 +31439,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -31462,7 +31460,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31733,6 +31730,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -31770,6 +31768,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -31894,6 +31893,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -31931,6 +31931,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -32104,6 +32105,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -32141,6 +32143,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -32176,7 +32179,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -32198,7 +32200,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -32313,6 +32314,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -32350,6 +32352,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -32391,7 +32394,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -32413,7 +32415,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32523,6 +32524,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -32560,6 +32562,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -32602,6 +32605,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -32639,6 +32643,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -32763,6 +32768,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -32800,6 +32806,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -32848,6 +32855,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -32885,6 +32893,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -32987,6 +32996,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     comments?: CommentCreateNestedManyWithoutUserInput
@@ -33024,6 +33034,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
@@ -33148,6 +33159,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
@@ -33185,6 +33197,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
@@ -33287,6 +33300,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -33324,6 +33338,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -33503,6 +33518,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -33540,6 +33556,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -33617,7 +33634,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -33639,7 +33655,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -33673,6 +33688,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -33710,6 +33726,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -33756,7 +33773,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -33778,7 +33794,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33818,6 +33833,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -33855,6 +33871,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -34093,6 +34110,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -34130,6 +34148,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -34254,6 +34273,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -34291,6 +34311,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -34321,7 +34342,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -34343,7 +34363,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -34377,6 +34396,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -34414,6 +34434,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -34460,7 +34481,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -34482,7 +34502,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34522,6 +34541,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -34559,6 +34579,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -34596,6 +34617,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -34633,6 +34655,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -34668,7 +34691,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -34690,7 +34712,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -34717,7 +34738,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -34739,7 +34759,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35077,6 +35096,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -35114,6 +35134,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -35155,7 +35176,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -35177,7 +35197,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35350,6 +35369,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -35387,6 +35407,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -35422,7 +35443,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -35444,7 +35464,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -35478,6 +35497,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -35515,6 +35535,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -35568,6 +35589,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -35605,6 +35627,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -35646,7 +35669,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -35668,7 +35690,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35708,6 +35729,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -35745,6 +35767,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -35782,6 +35805,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -35819,6 +35843,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -35861,6 +35886,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -35898,6 +35924,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -35933,7 +35960,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -35955,7 +35981,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -36000,6 +36025,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -36037,6 +36063,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -36085,6 +36112,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -36122,6 +36150,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -36163,7 +36192,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -36185,7 +36213,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36207,7 +36234,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -36229,7 +36255,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -36263,6 +36288,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -36300,6 +36326,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -36342,6 +36369,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -36379,6 +36407,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -36425,7 +36454,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -36447,7 +36475,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36487,6 +36514,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -36524,6 +36552,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -36572,6 +36601,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -36609,6 +36639,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -36639,7 +36670,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
@@ -36661,7 +36691,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -36695,6 +36724,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -36732,6 +36762,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -36774,6 +36805,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -36811,6 +36843,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -36857,7 +36890,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -36879,7 +36911,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36919,6 +36950,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -36956,6 +36988,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -37004,6 +37037,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -37041,6 +37075,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -37078,6 +37113,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -37115,6 +37151,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -37157,6 +37194,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPCreateNestedManyWithoutUserInput
@@ -37194,6 +37232,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     lineUserId?: string | null
     isGuest?: boolean
+    hasPassword?: boolean
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
     rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
@@ -37247,6 +37286,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -37284,6 +37324,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -37332,6 +37373,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUpdateManyWithoutUserNestedInput
@@ -37369,6 +37411,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
     rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
@@ -37469,7 +37512,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     parentGroupId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -37861,7 +37903,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
@@ -37883,7 +37924,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37905,7 +37945,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38765,7 +38804,6 @@ export namespace Prisma {
     description?: string
     photoUrl?: string | null
     discoverableBySearch?: boolean
-    memberDataPrivate?: boolean
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38874,7 +38912,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
@@ -38896,7 +38933,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38918,7 +38954,6 @@ export namespace Prisma {
     description?: StringFieldUpdateOperationsInput | string
     photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
-    memberDataPrivate?: BoolFieldUpdateOperationsInput | boolean
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

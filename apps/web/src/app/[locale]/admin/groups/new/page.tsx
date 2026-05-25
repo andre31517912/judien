@@ -22,7 +22,6 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [memberDataPrivate, setMemberDataPrivate] = useState(false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -58,7 +57,6 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           pid: generatedPid,
           description,
           discoverableBySearch: false,
-          memberDataPrivate,
           adminUserIds: [],
           ...(photoUrl ? { photoUrl } : {}),
         }),
@@ -142,25 +140,9 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           <input ref={photoFileRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </div>
 
-        <div className="space-y-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-4">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
             {zh ? '此群組建立後預設為私人，之後可於群組設定中開啟搜尋。' : 'This group starts private by default. Search discoverability can be enabled later in group settings.'}
           </div>
-          <label className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
-            <input
-              type="checkbox"
-              checked={memberDataPrivate}
-              onChange={(e) => setMemberDataPrivate(e.target.checked)}
-              className="mt-1"
-            />
-            <span>
-              <span className="block font-medium dark:text-white">{zh ? '成員資料隱私模式' : 'Member data privacy mode'}</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">
-                {zh ? '開啟後，普通成員僅可看見 display name、角色與加入日期。' : 'When on, regular members only see display name, role, and join date.'}
-              </span>
-            </span>
-          </label>
-        </div>
 
         <div className="flex items-center justify-end gap-3">
           <Link href={`/${params.locale}/admin/groups`} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">

@@ -27,7 +27,6 @@ type GroupListItem = {
     name: string;
     description: string;
     discoverableBySearch: boolean;
-    memberDataPrivate: boolean;
     createdAt: string;
     updatedAt: string;
     createdById: string;
@@ -85,7 +84,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [showExportModal, setShowExportModal] = useState(false);
   const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
-  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: false, memberDataPrivate: false });
+  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: false });
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   const groupPhotoFileRef = useRef<HTMLInputElement>(null);
@@ -331,7 +330,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           name: current.group.name,
           description: current.group.description ?? '',
           discoverableBySearch: current.group.discoverableBySearch,
-          memberDataPrivate: current.group.memberDataPrivate,
         });
         const photoUrl = (current.group as { photoUrl?: string | null }).photoUrl ?? null;
         setCurrentGroupPhotoUrl(photoUrl);
@@ -477,7 +475,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         name: groupSettings.name,
         description: groupSettings.description,
         discoverableBySearch: groupSettings.discoverableBySearch,
-        memberDataPrivate: groupSettings.memberDataPrivate,
       };
       if (photoUrl !== undefined) payload.photoUrl = photoUrl;
       await apiFetch(`/groups/${params.groupId}/settings`, {
@@ -951,7 +948,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {/* Group Settings */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組設定' : 'Group Settings'}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性與成員資料隱私。' : 'Control discoverability and member data privacy.'}</p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性。' : 'Control group discoverability.'}</p>
 
         {/* Group photo */}
         <div className="mt-4">
@@ -1017,18 +1014,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             <span>
               <span className="block text-sm font-medium text-gray-900 dark:text-white">{zh ? '允許搜尋及申請加入' : 'Discoverable by search'}</span>
               <span className="block text-xs text-gray-500 dark:text-gray-400">{zh ? '開啟後，使用者可搜尋此群組並送出加入申請。' : 'Users can find this group via search and send join requests.'}</span>
-            </span>
-          </label>
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={groupSettings.memberDataPrivate}
-              onChange={(e) => setGroupSettings((s) => ({ ...s, memberDataPrivate: e.target.checked }))}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
-            />
-            <span>
-              <span className="block text-sm font-medium text-gray-900 dark:text-white">{zh ? '成員資料隱私模式' : 'Member data privacy'}</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">{zh ? '開啟後，一般成員只能看到顯示名稱、角色與加入日期。' : 'Regular members only see display name, role, and join date.'}</span>
             </span>
           </label>
         </div>

@@ -12,7 +12,6 @@ type GroupListItem = {
     name: string;
     description: string;
     discoverableBySearch: boolean;
-    memberDataPrivate: boolean;
     createdAt: string;
     updatedAt: string;
     createdBy: { displayName: string | null };

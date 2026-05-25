@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   Param,
+  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -119,5 +120,35 @@ export class AuthController {
     res.cookie('access_token', accessToken, COOKIE_OPTS);
     res.cookie('refresh_token', refreshToken, COOKIE_OPTS);
     return { user: safeUser(user), accessToken, refreshToken, groupId, existingAccount };
+  }
+
+  // POST /api/auth/forgot-password — send a magic sign-in link via email or SMS
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() body: { email?: string; phone?: string }) {
+    if (typeof body.email === 'string' && body.email.trim()) {
+      await this.authService.requestMagicLink(body.email.trim());
+    } else if (typeof body.phone === 'string' && body.phone.trim()) {
+      await this.authService.requestMagicLinkSms(body.phone.trim());
+    }
+    return { sent: true };
+  }
+
+  // GET /api/auth/magic-link?token=xxx — verify magic token, set cookies, redirect to app
+  @Get('magic-link')
+  async magicLink(@Query('token') token: string, @Res() res: Response) {
+    const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+    if (!token) return res.redirect(`${webOrigin}/en/login?error=invalid_link`);
+    try {
+      const user = await this.authService.verifyMagicLink(token);
+      const tokens = this.authService.issueTokens(user);
+      res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
+      res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
+      const locale = user.preferredLanguage ?? 'en';
+      return res.redirect(`${webOrigin}/${locale}/events`);
+    } catch {
+      return res.redirect(`${webOrigin}/en/login?error=invalid_link`);
+    }
   }
 }

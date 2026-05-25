@@ -78,7 +78,7 @@ export class EventInvitesService {
           phoneE164: dto.phoneE164 ?? null,
           passwordHash,
           displayName: dto.displayName,
-          isGuest: true,
+          isGuest: false,
           role: 'USER',
         },
       });

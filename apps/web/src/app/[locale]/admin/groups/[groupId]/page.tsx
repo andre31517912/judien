@@ -13,7 +13,6 @@ type AdminGroupItem = {
     name: string;
     description: string;
     discoverableBySearch: boolean;
-    memberDataPrivate: boolean;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';

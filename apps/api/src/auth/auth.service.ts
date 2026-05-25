@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { MessagingService } from '../messaging/messaging.service';
 import type { GuestGroupJoinDto, SignupDto } from '@judien/shared';
 import { normalizePhone } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
@@ -23,6 +24,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly messaging: MessagingService,
   ) {}
 
   async signup(dto: SignupDto): Promise<User> {
@@ -41,36 +43,7 @@ export class AuthService {
     ];
     const existing = await this.prisma.user.findFirst({ where: { OR: orConditions } });
     if (existing) {
-      if (!existing.isGuest) {
-        throw new ConflictException('Email or phone already registered.');
-      }
-      // Guest account found — let the user claim it with a real password
-      const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
-      return this.prisma.$transaction(async (tx) => {
-        const claimed = await tx.user.update({
-          where: { id: existing.id },
-          data: {
-            phoneE164: dto.phone,
-            email:
-              dto.email ??
-              (existing.email &&
-              !existing.email.endsWith('@guest.local') &&
-              !existing.email.endsWith('@invited.local')
-                ? existing.email
-                : null),
-            passwordHash,
-            displayName: dto.displayName?.trim() || existing.displayName,
-            preferredLanguage: dto.preferredLanguage,
-            role: invite.role,
-            isGuest: false,
-          },
-        });
-        await tx.inviteToken.update({
-          where: { id: invite.id },
-          data: { usedById: claimed.id, usedAt: new Date() },
-        });
-        return claimed;
-      });
+      throw new ConflictException('An account with this email or phone already exists. Please log in instead.');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
@@ -83,6 +56,7 @@ export class AuthService {
           displayName: dto.displayName?.trim() || null,
           preferredLanguage: dto.preferredLanguage,
           role: invite.role,
+          hasPassword: true,
         },
       });
       await tx.inviteToken.update({
@@ -129,12 +103,93 @@ export class AuthService {
     return payload;
   }
 
-  async validateInvite(token: string): Promise<{ valid: boolean; role?: string; expiresAt?: Date }> {
-    const invite = await this.prisma.inviteToken.findUnique({ where: { token } });
+  async validateInvite(token: string): Promise<{ valid: boolean; role?: string; expiresAt?: Date; createdByName?: string }> {
+    const invite = await this.prisma.inviteToken.findUnique({
+      where: { token },
+      include: { createdBy: { select: { displayName: true } } },
+    });
     if (!invite || invite.usedAt || invite.expiresAt <= new Date()) {
       return { valid: false };
     }
-    return { valid: true, role: invite.role, expiresAt: invite.expiresAt };
+    return {
+      valid: true,
+      role: invite.role,
+      expiresAt: invite.expiresAt,
+      createdByName: invite.createdBy.displayName ?? undefined,
+    };
+  }
+
+  /**
+   * Send a magic sign-in link to the user's email.
+   * Silent if the email isn't registered (avoids leaking account existence).
+   */
+  async requestMagicLink(email: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) return;
+
+    const token = this.jwt.sign(
+      { sub: user.id, type: 'magic' },
+      { expiresIn: '15m' },
+    );
+
+    const locale = user.preferredLanguage ?? 'en';
+    const apiBase = process.env.API_BASE_URL ?? 'http://localhost:4000';
+    const link = `${apiBase}/api/auth/magic-link?token=${token}`;
+
+    const subject = locale === 'zh' ? '您的登入連結' : 'Your sign-in link';
+    const text =
+      locale === 'zh'
+        ? `點擊以下連結登入（15 分鐘內有效）：\n${link}`
+        : `Click the link below to sign in (valid for 15 minutes):\n${link}`;
+    const html =
+      locale === 'zh'
+        ? `<p>點擊以下連結登入（15 分鐘內有效）：</p><p><a href="${link}">登入</a></p>`
+        : `<p>Click below to sign in (valid for 15 minutes):</p><p><a href="${link}">Sign in</a></p>`;
+
+    await this.messaging.sendEmail({ userId: user.id, to: email, subject, text, html });
+  }
+
+  /**
+   * Send a magic sign-in link via SMS to the user's phone.
+   * Silent if the phone isn't registered.
+   */
+  async requestMagicLinkSms(phone: string): Promise<void> {
+    const normalized = normalizePhone(phone);
+    if (!normalized) return;
+    const user = await this.prisma.user.findUnique({ where: { phoneE164: normalized } });
+    if (!user) return;
+
+    const token = this.jwt.sign(
+      { sub: user.id, type: 'magic' },
+      { expiresIn: '15m' },
+    );
+
+    const locale = user.preferredLanguage ?? 'en';
+    const apiBase = process.env.API_BASE_URL ?? 'http://localhost:4000';
+    const link = `${apiBase}/api/auth/magic-link?token=${token}`;
+
+    const body =
+      locale === 'zh'
+        ? `您的登入連結（15 分鐘內有效）：${link}`
+        : `Your sign-in link (valid 15 min): ${link}`;
+
+    await this.messaging.sendSms({ userId: user.id, to: normalized, body });
+  }
+
+  /**
+   * Verify a magic link token and return the associated user.
+   */
+  async verifyMagicLink(token: string): Promise<User> {
+    let payload: { sub: string; type: string };
+    try {
+      payload = this.jwt.verify<{ sub: string; type: string }>(token);
+    } catch {
+      throw new UnauthorizedException('Magic link is invalid or expired.');
+    }
+    if (payload.type !== 'magic') throw new UnauthorizedException('Invalid token type.');
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!user) throw new UnauthorizedException('User not found.');
+    return user;
   }
 
   /**
@@ -172,7 +227,7 @@ export class AuthService {
           passwordHash,
           ...(phone ? { phoneE164: phone } : {}),
           displayName,
-          isGuest: true,
+          isGuest: false,
           role: 'USER',
         },
       });

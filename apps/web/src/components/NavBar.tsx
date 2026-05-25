@@ -49,7 +49,7 @@ export default function NavBar({ locale }: NavBarProps) {
             </Link>
             <Link
               href={`/${locale}/signup`}
-              className="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"
+              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             >
               {zh ? '註冊' : 'Sign Up'}
             </Link>

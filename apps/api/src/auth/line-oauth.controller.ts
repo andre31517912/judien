@@ -224,7 +224,7 @@ export class LineOAuthController {
               displayName: profile.displayName,
               email: `line_${profile.userId}@line.local`,
               passwordHash,
-              isGuest: true,
+              isGuest: false,
               role: 'USER',
             },
           });

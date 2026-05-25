@@ -22,7 +22,6 @@ export default function NewGroupScreen() {
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [memberDataPrivate, setMemberDataPrivate] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,7 +41,6 @@ export default function NewGroupScreen() {
           pid,
           description: description.trim(),
           discoverableBySearch: false,
-          memberDataPrivate,
           adminUserIds: [],
         }),
       });
@@ -129,15 +127,6 @@ export default function NewGroupScreen() {
           <Text style={styles.privacyNote}>
             {zh ? '此群組建立後預設為私人，之後可於群組設定中開啟搜尋。' : 'This group starts private by default. Search discoverability can be enabled later in group settings.'}
           </Text>
-          <View style={styles.toggleRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.toggleTitle}>{zh ? '成員資料隱私模式' : 'Member data privacy mode'}</Text>
-              <Text style={styles.toggleDesc}>
-                {zh ? '開啟後，普通成員僅可看見 display name、角色與加入日期。' : 'When on, regular members only see display name, role, and join date.'}
-              </Text>
-            </View>
-            <Switch value={memberDataPrivate} onValueChange={setMemberDataPrivate} />
-          </View>
         </View>
 
         <TouchableOpacity

@@ -21,7 +21,6 @@ type GroupListItem = {
     pid: string;
     name: string;
     description: string;
-    memberDataPrivate: boolean;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -412,12 +411,7 @@ export default function GroupDetailScreen() {
 
       {tab === 'members' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
-          {groupItem.group.memberDataPrivate && !isGroupAdmin ? (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyEmoji}>🔒</Text>
-              <Text style={styles.emptyText}>{zh ? '此群組成員資料為私人' : 'Member directory is private'}</Text>
-            </View>
-          ) : members.map((m) => (
+          {members.map((m) => (
             <View key={m.userId} style={styles.memberCard}>
               <View style={styles.memberInfo}>
                 <Text style={styles.memberName}>{m.displayName || m.email || m.userId}</Text>
@@ -685,9 +679,7 @@ const styles = StyleSheet.create({
         </TouchableOpacity>
         {membersOpen && (
           <>
-            {groupItem.group.memberDataPrivate && !isGroupAdmin ? (
-              <Text style={styles.emptyText}>{zh ? '此群組成員資料為私人' : 'Member directory is private for this group'}</Text>
-            ) : members.map((m) => (
+            {members.map((m) => (
               <View key={m.userId} style={styles.inlineCard}>
                 <Text style={styles.inlineTitle}>{m.displayName || m.email || m.userId}</Text>
                 <Text style={styles.inlineMeta}>{m.joinedAt ? new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}</Text>

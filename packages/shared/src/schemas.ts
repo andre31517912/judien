@@ -181,7 +181,6 @@ export const CreateGroupSchema = z.object({
   description: z.string().max(1000).optional(),
   photoUrl: z.string().url().nullable().optional(),
   discoverableBySearch: z.boolean().optional().default(false),
-  memberDataPrivate: z.boolean().optional().default(false),
   adminUserIds: z.array(z.string().min(1)).optional().default([]),
   parentGroupId: z.string().optional(),
   initialMemberIds: z.array(z.string().min(1)).optional().default([]),
@@ -193,7 +192,6 @@ export const UpdateGroupSettingsSchema = z.object({
   description: z.string().max(1000).optional(),
   photoUrl: z.string().url().nullable().optional(),
   discoverableBySearch: z.boolean().optional(),
-  memberDataPrivate: z.boolean().optional(),
 });
 export type UpdateGroupSettingsDto = z.infer<typeof UpdateGroupSettingsSchema>;
 

@@ -17,7 +17,6 @@ type MyGroupItem = {
     name: string;
     description: string;
     photoUrl: string | null;
-    memberDataPrivate: boolean;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -690,12 +689,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Members */}
         {viewTab === 'members' && (
           <div className="mx-auto max-w-2xl space-y-2">
-            {group.memberDataPrivate && !isGroupAdmin ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">🔒</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '此群組成員資料為私人' : 'Member directory is private'}</p>
-              </div>
-            ) : members.map((member) => (
+            {members.map((member) => (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
                   <div className="flex items-center gap-2">

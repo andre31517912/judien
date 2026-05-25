@@ -78,6 +78,7 @@ model User {
   muteLinePush      Boolean  @default(false)
   lineUserId        String?  @unique
   isGuest           Boolean  @default(false)
+  hasPassword       Boolean  @default(false)
   createdAt         DateTime @default(now())
 
   events                 Event[]
@@ -328,7 +329,6 @@ model Group {
   description          String   @default("")
   photoUrl             String?
   discoverableBySearch Boolean  @default(false)
-  memberDataPrivate    Boolean  @default(false)
   parentGroupId        String?
   createdById          String
   createdBy            User     @relation("GroupCreatedBy", fields: [createdById], references: [id])
@@ -347,7 +347,7 @@ model Group {
 
   donationRecords DonationRecord[]
 
-  @@index([name])
+  @@unique([name])
   @@index([discoverableBySearch])
   @@index([parentGroupId])
 }

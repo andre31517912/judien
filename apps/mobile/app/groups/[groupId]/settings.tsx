@@ -31,7 +31,6 @@ export default function GroupSettingsScreen() {
   const [tab, setTab] = useState<Tab>('general');
 
   const [discoverableBySearch, setDiscoverableBySearch] = useState(false);
-  const [memberDataPrivate, setMemberDataPrivate] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState('');
@@ -60,14 +59,13 @@ export default function GroupSettingsScreen() {
     if (!groupId) return;
     try {
       const [myGroups, invData, reqData] = await Promise.all([
-        apiFetch<Array<{ group: { discoverableBySearch: boolean; memberDataPrivate: boolean } }>>('/groups/me'),
+        apiFetch<Array<{ group: { discoverableBySearch: boolean } }>>('/groups/me'),
         apiFetch<PendingInvite[]>(`/groups/${groupId}/invites`).catch(() => []),
         apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => []),
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
       if (current) {
         setDiscoverableBySearch(current.group.discoverableBySearch);
-        setMemberDataPrivate(current.group.memberDataPrivate);
       }
       setPendingInvites((invData ?? []).filter((inv) => inv.status === 'PENDING'));
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
@@ -184,7 +182,7 @@ export default function GroupSettingsScreen() {
     try {
       await apiFetch(`/groups/${groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify({ discoverableBySearch, memberDataPrivate }),
+        body: JSON.stringify({ discoverableBySearch }),
       });
       Alert.alert('✓', zh ? '設定已儲存' : 'Settings saved.');
     } catch (err: any) {
@@ -227,26 +225,6 @@ export default function GroupSettingsScreen() {
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Text style={styles.settingLabel}>{zh ? '允許搜尋及申請加入' : 'Discoverable by search'}</Text>
-              <Text style={styles.settingDesc}>{zh ? '開啟後，使用者可搜尋此群組並送出加入申請。' : 'Users can find and request to join this group.'}</Text>
-            </View>
-            <Switch
-              value={discoverableBySearch}
-              onValueChange={setDiscoverableBySearch}
-              trackColor={{ true: '#4F46E5' }}
-            />
-          </View>
-
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>{zh ? '成員資料隱私模式' : 'Member data privacy'}</Text>
-              <Text style={styles.settingDesc}>{zh ? '開啟後，一般成員只能看到顯示名稱、角色與加入日期。' : 'Regular members only see display name, role, and join date.'}</Text>
-            </View>
-            <Switch
-              value={memberDataPrivate}
-              onValueChange={setMemberDataPrivate}
-              trackColor={{ true: '#4F46E5' }}
-            />
-          </View>
 
           <TouchableOpacity style={styles.primaryBtn} onPress={saveSettings} disabled={settingsSaving}>
             <Text style={styles.primaryBtnText}>{settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}</Text>

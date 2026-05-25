@@ -136,6 +136,7 @@ exports.Prisma.UserScalarFieldEnum = {
   muteLinePush: 'muteLinePush',
   lineUserId: 'lineUserId',
   isGuest: 'isGuest',
+  hasPassword: 'hasPassword',
   createdAt: 'createdAt'
 };
 
@@ -274,7 +275,6 @@ exports.Prisma.GroupScalarFieldEnum = {
   description: 'description',
   photoUrl: 'photoUrl',
   discoverableBySearch: 'discoverableBySearch',
-  memberDataPrivate: 'memberDataPrivate',
   parentGroupId: 'parentGroupId',
   createdById: 'createdById',
   createdAt: 'createdAt',
