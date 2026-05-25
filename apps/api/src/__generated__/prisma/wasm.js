@@ -342,6 +342,22 @@ exports.Prisma.InviteTokenScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  title_en: 'title_en',
+  title_zh: 'title_zh',
+  body_en: 'body_en',
+  body_zh: 'body_zh',
+  read: 'read',
+  actionUrl: 'actionUrl',
+  groupId: 'groupId',
+  eventId: 'eventId',
+  requestId: 'requestId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -415,6 +431,14 @@ exports.GroupJoinRequestStatus = exports.$Enums.GroupJoinRequestStatus = {
   REJECTED: 'REJECTED'
 };
 
+exports.NotificationType = exports.$Enums.NotificationType = {
+  JOIN_REQUEST_RECEIVED: 'JOIN_REQUEST_RECEIVED',
+  JOIN_REQUEST_APPROVED: 'JOIN_REQUEST_APPROVED',
+  JOIN_REQUEST_REJECTED: 'JOIN_REQUEST_REJECTED',
+  EVENT_REMINDER: 'EVENT_REMINDER',
+  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
@@ -433,7 +457,8 @@ exports.Prisma.ModelName = {
   GroupInvite: 'GroupInvite',
   GroupJoinRequest: 'GroupJoinRequest',
   DonationRecord: 'DonationRecord',
-  InviteToken: 'InviteToken'
+  InviteToken: 'InviteToken',
+  Notification: 'Notification'
 };
 
 /**

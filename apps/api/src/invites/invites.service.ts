@@ -9,7 +9,8 @@ export class InvitesService {
 
   async create(adminId: string, dto: CreateInviteDto) {
     const token = randomBytes(24).toString('hex'); // 48-char hex token
-    const expiresAt = new Date(Date.now() + dto.expiresInHours * 60 * 60 * 1000);
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + SEVEN_DAYS_MS);
     return this.prisma.inviteToken.create({
       data: { token, role: dto.role, createdById: adminId, expiresAt },
     });

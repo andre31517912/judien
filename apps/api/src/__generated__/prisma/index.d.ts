@@ -103,6 +103,11 @@ export type DonationRecord = $Result.DefaultSelection<Prisma.$DonationRecordPayl
  * 
  */
 export type InviteToken = $Result.DefaultSelection<Prisma.$InviteTokenPayload>
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 
 /**
  * Enums
@@ -180,6 +185,17 @@ export const GroupJoinRequestStatus: {
 
 export type GroupJoinRequestStatus = (typeof GroupJoinRequestStatus)[keyof typeof GroupJoinRequestStatus]
 
+
+export const NotificationType: {
+  JOIN_REQUEST_RECEIVED: 'JOIN_REQUEST_RECEIVED',
+  JOIN_REQUEST_APPROVED: 'JOIN_REQUEST_APPROVED',
+  JOIN_REQUEST_REJECTED: 'JOIN_REQUEST_REJECTED',
+  EVENT_REMINDER: 'EVENT_REMINDER',
+  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED'
+};
+
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
+
 }
 
 export type Role = $Enums.Role
@@ -213,6 +229,10 @@ export const GroupInviteStatus: typeof $Enums.GroupInviteStatus
 export type GroupJoinRequestStatus = $Enums.GroupJoinRequestStatus
 
 export const GroupJoinRequestStatus: typeof $Enums.GroupJoinRequestStatus
+
+export type NotificationType = $Enums.NotificationType
+
+export const NotificationType: typeof $Enums.NotificationType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -516,6 +536,16 @@ export class PrismaClient<
     * ```
     */
   get inviteToken(): Prisma.InviteTokenDelegate<ExtArgs>;
+
+  /**
+   * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Notifications
+    * const notifications = await prisma.notification.findMany()
+    * ```
+    */
+  get notification(): Prisma.NotificationDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -974,7 +1004,8 @@ export namespace Prisma {
     GroupInvite: 'GroupInvite',
     GroupJoinRequest: 'GroupJoinRequest',
     DonationRecord: 'DonationRecord',
-    InviteToken: 'InviteToken'
+    InviteToken: 'InviteToken',
+    Notification: 'Notification'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -990,7 +1021,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "donationRecord" | "inviteToken"
+      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "donationRecord" | "inviteToken" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2254,6 +2285,76 @@ export namespace Prisma {
           }
         }
       }
+      Notification: {
+        payload: Prisma.$NotificationPayload<ExtArgs>
+        fields: Prisma.NotificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NotificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          delete: {
+            args: Prisma.NotificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          update: {
+            args: Prisma.NotificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.NotificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotification>
+          }
+          groupBy: {
+            args: Prisma.NotificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2436,6 +2537,7 @@ export namespace Prisma {
     donationRecordsCreated: number
     inviteTokensCreated: number
     inviteTokensUsed: number
+    notifications: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2460,6 +2562,7 @@ export namespace Prisma {
     donationRecordsCreated?: boolean | UserCountOutputTypeCountDonationRecordsCreatedArgs
     inviteTokensCreated?: boolean | UserCountOutputTypeCountInviteTokensCreatedArgs
     inviteTokensUsed?: boolean | UserCountOutputTypeCountInviteTokensUsedArgs
+    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   }
 
   // Custom InputTypes
@@ -2620,6 +2723,13 @@ export namespace Prisma {
     where?: InviteTokenWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+  }
+
 
   /**
    * Count Type EventCountOutputType
@@ -2773,6 +2883,7 @@ export namespace Prisma {
     news: number
     eventSeries: number
     donationRecords: number
+    notifications: number
   }
 
   export type GroupCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2785,6 +2896,7 @@ export namespace Prisma {
     news?: boolean | GroupCountOutputTypeCountNewsArgs
     eventSeries?: boolean | GroupCountOutputTypeCountEventSeriesArgs
     donationRecords?: boolean | GroupCountOutputTypeCountDonationRecordsArgs
+    notifications?: boolean | GroupCountOutputTypeCountNotificationsArgs
   }
 
   // Custom InputTypes
@@ -2859,6 +2971,13 @@ export namespace Prisma {
    */
   export type GroupCountOutputTypeCountDonationRecordsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DonationRecordWhereInput
+  }
+
+  /**
+   * GroupCountOutputType without action
+   */
+  export type GroupCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
   }
 
 
@@ -3131,6 +3250,7 @@ export namespace Prisma {
     donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
     inviteTokensCreated?: boolean | User$inviteTokensCreatedArgs<ExtArgs>
     inviteTokensUsed?: boolean | User$inviteTokensUsedArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3192,6 +3312,7 @@ export namespace Prisma {
     donationRecordsCreated?: boolean | User$donationRecordsCreatedArgs<ExtArgs>
     inviteTokensCreated?: boolean | User$inviteTokensCreatedArgs<ExtArgs>
     inviteTokensUsed?: boolean | User$inviteTokensUsedArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3220,6 +3341,7 @@ export namespace Prisma {
       donationRecordsCreated: Prisma.$DonationRecordPayload<ExtArgs>[]
       inviteTokensCreated: Prisma.$InviteTokenPayload<ExtArgs>[]
       inviteTokensUsed: Prisma.$InviteTokenPayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3622,6 +3744,7 @@ export namespace Prisma {
     donationRecordsCreated<T extends User$donationRecordsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$donationRecordsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
     inviteTokensCreated<T extends User$inviteTokensCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$inviteTokensCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany"> | Null>
     inviteTokensUsed<T extends User$inviteTokensUsedArgs<ExtArgs> = {}>(args?: Subset<T, User$inviteTokensUsedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InviteTokenPayload<ExtArgs>, T, "findMany"> | Null>
+    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4397,6 +4520,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: InviteTokenScalarFieldEnum | InviteTokenScalarFieldEnum[]
+  }
+
+  /**
+   * User.notifications
+   */
+  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -15830,6 +15973,7 @@ export namespace Prisma {
     news?: boolean | Group$newsArgs<ExtArgs>
     eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
     donationRecords?: boolean | Group$donationRecordsArgs<ExtArgs>
+    notifications?: boolean | Group$notificationsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["group"]>
 
@@ -15873,6 +16017,7 @@ export namespace Prisma {
     news?: boolean | Group$newsArgs<ExtArgs>
     eventSeries?: boolean | Group$eventSeriesArgs<ExtArgs>
     donationRecords?: boolean | Group$donationRecordsArgs<ExtArgs>
+    notifications?: boolean | Group$notificationsArgs<ExtArgs>
     _count?: boolean | GroupCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type GroupIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -15894,6 +16039,7 @@ export namespace Prisma {
       news: Prisma.$NewsPayload<ExtArgs>[]
       eventSeries: Prisma.$EventSeriesPayload<ExtArgs>[]
       donationRecords: Prisma.$DonationRecordPayload<ExtArgs>[]
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16281,6 +16427,7 @@ export namespace Prisma {
     news<T extends Group$newsArgs<ExtArgs> = {}>(args?: Subset<T, Group$newsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NewsPayload<ExtArgs>, T, "findMany"> | Null>
     eventSeries<T extends Group$eventSeriesArgs<ExtArgs> = {}>(args?: Subset<T, Group$eventSeriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventSeriesPayload<ExtArgs>, T, "findMany"> | Null>
     donationRecords<T extends Group$donationRecordsArgs<ExtArgs> = {}>(args?: Subset<T, Group$donationRecordsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DonationRecordPayload<ExtArgs>, T, "findMany"> | Null>
+    notifications<T extends Group$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Group$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16830,6 +16977,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DonationRecordScalarFieldEnum | DonationRecordScalarFieldEnum[]
+  }
+
+  /**
+   * Group.notifications
+   */
+  export type Group$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -21913,6 +22080,1056 @@ export namespace Prisma {
 
 
   /**
+   * Model Notification
+   */
+
+  export type AggregateNotification = {
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  export type NotificationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: $Enums.NotificationType | null
+    title_en: string | null
+    title_zh: string | null
+    body_en: string | null
+    body_zh: string | null
+    read: boolean | null
+    actionUrl: string | null
+    groupId: string | null
+    eventId: string | null
+    requestId: string | null
+    createdAt: Date | null
+  }
+
+  export type NotificationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: $Enums.NotificationType | null
+    title_en: string | null
+    title_zh: string | null
+    body_en: string | null
+    body_zh: string | null
+    read: boolean | null
+    actionUrl: string | null
+    groupId: string | null
+    eventId: string | null
+    requestId: string | null
+    createdAt: Date | null
+  }
+
+  export type NotificationCountAggregateOutputType = {
+    id: number
+    userId: number
+    type: number
+    title_en: number
+    title_zh: number
+    body_en: number
+    body_zh: number
+    read: number
+    actionUrl: number
+    groupId: number
+    eventId: number
+    requestId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type NotificationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title_en?: true
+    title_zh?: true
+    body_en?: true
+    body_zh?: true
+    read?: true
+    actionUrl?: true
+    groupId?: true
+    eventId?: true
+    requestId?: true
+    createdAt?: true
+  }
+
+  export type NotificationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title_en?: true
+    title_zh?: true
+    body_en?: true
+    body_zh?: true
+    read?: true
+    actionUrl?: true
+    groupId?: true
+    eventId?: true
+    requestId?: true
+    createdAt?: true
+  }
+
+  export type NotificationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title_en?: true
+    title_zh?: true
+    body_en?: true
+    body_zh?: true
+    read?: true
+    actionUrl?: true
+    groupId?: true
+    eventId?: true
+    requestId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type NotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notification to aggregate.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Notifications
+    **/
+    _count?: true | NotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type GetNotificationAggregateType<T extends NotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotification[P]>
+      : GetScalarType<T[P], AggregateNotification[P]>
+  }
+
+
+
+
+  export type NotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithAggregationInput | NotificationOrderByWithAggregationInput[]
+    by: NotificationScalarFieldEnum[] | NotificationScalarFieldEnum
+    having?: NotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationCountAggregateInputType | true
+    _min?: NotificationMinAggregateInputType
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type NotificationGroupByOutputType = {
+    id: string
+    userId: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en: string
+    body_zh: string
+    read: boolean
+    actionUrl: string | null
+    groupId: string | null
+    eventId: string | null
+    requestId: string | null
+    createdAt: Date
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  type GetNotificationGroupByPayload<T extends NotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    body_en?: boolean
+    body_zh?: boolean
+    read?: boolean
+    actionUrl?: boolean
+    groupId?: boolean
+    eventId?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | Notification$groupArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    body_en?: boolean
+    body_zh?: boolean
+    read?: boolean
+    actionUrl?: boolean
+    groupId?: boolean
+    eventId?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | Notification$groupArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title_en?: boolean
+    title_zh?: boolean
+    body_en?: boolean
+    body_zh?: boolean
+    read?: boolean
+    actionUrl?: boolean
+    groupId?: boolean
+    eventId?: boolean
+    requestId?: boolean
+    createdAt?: boolean
+  }
+
+  export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | Notification$groupArgs<ExtArgs>
+  }
+  export type NotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    group?: boolean | Notification$groupArgs<ExtArgs>
+  }
+
+  export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Notification"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      group: Prisma.$GroupPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      type: $Enums.NotificationType
+      title_en: string
+      title_zh: string
+      body_en: string
+      body_zh: string
+      read: boolean
+      actionUrl: string | null
+      groupId: string | null
+      eventId: string | null
+      requestId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["notification"]>
+    composites: {}
+  }
+
+  type NotificationGetPayload<S extends boolean | null | undefined | NotificationDefaultArgs> = $Result.GetResult<Prisma.$NotificationPayload, S>
+
+  type NotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<NotificationFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: NotificationCountAggregateInputType | true
+    }
+
+  export interface NotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Notification'], meta: { name: 'Notification' } }
+    /**
+     * Find zero or one Notification that matches the filter.
+     * @param {NotificationFindUniqueArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationFindUniqueArgs>(args: SelectSubset<T, NotificationFindUniqueArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Notification that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {NotificationFindUniqueOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Notification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationFindFirstArgs>(args?: SelectSubset<T, NotificationFindFirstArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Notification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Notifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Notifications
+     * const notifications = await prisma.notification.findMany()
+     * 
+     * // Get first 10 Notifications
+     * const notifications = await prisma.notification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const notificationWithIdOnly = await prisma.notification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NotificationFindManyArgs>(args?: SelectSubset<T, NotificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Notification.
+     * @param {NotificationCreateArgs} args - Arguments to create a Notification.
+     * @example
+     * // Create one Notification
+     * const Notification = await prisma.notification.create({
+     *   data: {
+     *     // ... data to create a Notification
+     *   }
+     * })
+     * 
+     */
+    create<T extends NotificationCreateArgs>(args: SelectSubset<T, NotificationCreateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Notifications.
+     * @param {NotificationCreateManyArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NotificationCreateManyArgs>(args?: SelectSubset<T, NotificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Notifications and returns the data saved in the database.
+     * @param {NotificationCreateManyAndReturnArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Notifications and only return the `id`
+     * const notificationWithIdOnly = await prisma.notification.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NotificationCreateManyAndReturnArgs>(args?: SelectSubset<T, NotificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Notification.
+     * @param {NotificationDeleteArgs} args - Arguments to delete one Notification.
+     * @example
+     * // Delete one Notification
+     * const Notification = await prisma.notification.delete({
+     *   where: {
+     *     // ... filter to delete one Notification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NotificationDeleteArgs>(args: SelectSubset<T, NotificationDeleteArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Notification.
+     * @param {NotificationUpdateArgs} args - Arguments to update one Notification.
+     * @example
+     * // Update one Notification
+     * const notification = await prisma.notification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NotificationUpdateArgs>(args: SelectSubset<T, NotificationUpdateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Notifications.
+     * @param {NotificationDeleteManyArgs} args - Arguments to filter Notifications to delete.
+     * @example
+     * // Delete a few Notifications
+     * const { count } = await prisma.notification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NotificationDeleteManyArgs>(args?: SelectSubset<T, NotificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NotificationUpdateManyArgs>(args: SelectSubset<T, NotificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Notification.
+     * @param {NotificationUpsertArgs} args - Arguments to update or create a Notification.
+     * @example
+     * // Update or create a Notification
+     * const notification = await prisma.notification.upsert({
+     *   create: {
+     *     // ... data to create a Notification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Notification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationUpsertArgs>(args: SelectSubset<T, NotificationUpsertArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationCountArgs} args - Arguments to filter Notifications to count.
+     * @example
+     * // Count the number of Notifications
+     * const count = await prisma.notification.count({
+     *   where: {
+     *     // ... the filter for the Notifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationCountArgs>(
+      args?: Subset<T, NotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationAggregateArgs>(args: Subset<T, NotificationAggregateArgs>): Prisma.PrismaPromise<GetNotificationAggregateType<T>>
+
+    /**
+     * Group by Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Notification model
+   */
+  readonly fields: NotificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Notification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    group<T extends Notification$groupArgs<ExtArgs> = {}>(args?: Subset<T, Notification$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Notification model
+   */ 
+  interface NotificationFieldRefs {
+    readonly id: FieldRef<"Notification", 'String'>
+    readonly userId: FieldRef<"Notification", 'String'>
+    readonly type: FieldRef<"Notification", 'NotificationType'>
+    readonly title_en: FieldRef<"Notification", 'String'>
+    readonly title_zh: FieldRef<"Notification", 'String'>
+    readonly body_en: FieldRef<"Notification", 'String'>
+    readonly body_zh: FieldRef<"Notification", 'String'>
+    readonly read: FieldRef<"Notification", 'Boolean'>
+    readonly actionUrl: FieldRef<"Notification", 'String'>
+    readonly groupId: FieldRef<"Notification", 'String'>
+    readonly eventId: FieldRef<"Notification", 'String'>
+    readonly requestId: FieldRef<"Notification", 'String'>
+    readonly createdAt: FieldRef<"Notification", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Notification findUnique
+   */
+  export type NotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findUniqueOrThrow
+   */
+  export type NotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findFirst
+   */
+  export type NotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findFirstOrThrow
+   */
+  export type NotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findMany
+   */
+  export type NotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notifications to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification create
+   */
+  export type NotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Notification.
+     */
+    data: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+  }
+
+  /**
+   * Notification createMany
+   */
+  export type NotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Notification createManyAndReturn
+   */
+  export type NotificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Notification update
+   */
+  export type NotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Notification.
+     */
+    data: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+    /**
+     * Choose, which Notification to update.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification updateMany
+   */
+  export type NotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+  }
+
+  /**
+   * Notification upsert
+   */
+  export type NotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Notification to update in case it exists.
+     */
+    where: NotificationWhereUniqueInput
+    /**
+     * In case the Notification found by the `where` argument doesn't exist, create a new Notification with this data.
+     */
+    create: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+    /**
+     * In case the Notification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+  }
+
+  /**
+   * Notification delete
+   */
+  export type NotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter which Notification to delete.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification deleteMany
+   */
+  export type NotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notifications to delete
+     */
+    where?: NotificationWhereInput
+  }
+
+  /**
+   * Notification.group
+   */
+  export type Notification$groupArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Group
+     */
+    select?: GroupSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GroupInclude<ExtArgs> | null
+    where?: GroupWhereInput
+  }
+
+  /**
+   * Notification without action
+   */
+  export type NotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -22200,6 +23417,25 @@ export namespace Prisma {
   export type InviteTokenScalarFieldEnum = (typeof InviteTokenScalarFieldEnum)[keyof typeof InviteTokenScalarFieldEnum]
 
 
+  export const NotificationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    type: 'type',
+    title_en: 'title_en',
+    title_zh: 'title_zh',
+    body_en: 'body_en',
+    body_zh: 'body_zh',
+    read: 'read',
+    actionUrl: 'actionUrl',
+    groupId: 'groupId',
+    eventId: 'eventId',
+    requestId: 'requestId',
+    createdAt: 'createdAt'
+  };
+
+  export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -22428,6 +23664,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'NotificationType'
+   */
+  export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'NotificationType[]'
+   */
+  export type ListEnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -22484,6 +23734,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordListRelationFilter
     inviteTokensCreated?: InviteTokenListRelationFilter
     inviteTokensUsed?: InviteTokenListRelationFilter
+    notifications?: NotificationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -22523,6 +23774,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordOrderByRelationAggregateInput
     inviteTokensCreated?: InviteTokenOrderByRelationAggregateInput
     inviteTokensUsed?: InviteTokenOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -22565,6 +23817,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordListRelationFilter
     inviteTokensCreated?: InviteTokenListRelationFilter
     inviteTokensUsed?: InviteTokenListRelationFilter
+    notifications?: NotificationListRelationFilter
   }, "id" | "email" | "phoneE164" | "lineUserId">
 
   export type UserOrderByWithAggregationInput = {
@@ -23509,6 +24762,7 @@ export namespace Prisma {
     news?: NewsListRelationFilter
     eventSeries?: EventSeriesListRelationFilter
     donationRecords?: DonationRecordListRelationFilter
+    notifications?: NotificationListRelationFilter
   }
 
   export type GroupOrderByWithRelationInput = {
@@ -23533,6 +24787,7 @@ export namespace Prisma {
     news?: NewsOrderByRelationAggregateInput
     eventSeries?: EventSeriesOrderByRelationAggregateInput
     donationRecords?: DonationRecordOrderByRelationAggregateInput
+    notifications?: NotificationOrderByRelationAggregateInput
   }
 
   export type GroupWhereUniqueInput = Prisma.AtLeast<{
@@ -23560,6 +24815,7 @@ export namespace Prisma {
     news?: NewsListRelationFilter
     eventSeries?: EventSeriesListRelationFilter
     donationRecords?: DonationRecordListRelationFilter
+    notifications?: NotificationListRelationFilter
   }, "id" | "pid" | "name">
 
   export type GroupOrderByWithAggregationInput = {
@@ -24005,6 +25261,104 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"InviteToken"> | Date | string
   }
 
+  export type NotificationWhereInput = {
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    title_en?: StringFilter<"Notification"> | string
+    title_zh?: StringFilter<"Notification"> | string
+    body_en?: StringFilter<"Notification"> | string
+    body_zh?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    actionUrl?: StringNullableFilter<"Notification"> | string | null
+    groupId?: StringNullableFilter<"Notification"> | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
+    requestId?: StringNullableFilter<"Notification"> | string | null
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+  }
+
+  export type NotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    body_en?: SortOrder
+    body_zh?: SortOrder
+    read?: SortOrder
+    actionUrl?: SortOrderInput | SortOrder
+    groupId?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    group?: GroupOrderByWithRelationInput
+  }
+
+  export type NotificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    userId?: StringFilter<"Notification"> | string
+    type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    title_en?: StringFilter<"Notification"> | string
+    title_zh?: StringFilter<"Notification"> | string
+    body_en?: StringFilter<"Notification"> | string
+    body_zh?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    actionUrl?: StringNullableFilter<"Notification"> | string | null
+    groupId?: StringNullableFilter<"Notification"> | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
+    requestId?: StringNullableFilter<"Notification"> | string | null
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    user?: XOR<UserRelationFilter, UserWhereInput>
+    group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
+  }, "id">
+
+  export type NotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    body_en?: SortOrder
+    body_zh?: SortOrder
+    read?: SortOrder
+    actionUrl?: SortOrderInput | SortOrder
+    groupId?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
+    requestId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: NotificationCountOrderByAggregateInput
+    _max?: NotificationMaxOrderByAggregateInput
+    _min?: NotificationMinOrderByAggregateInput
+  }
+
+  export type NotificationScalarWhereWithAggregatesInput = {
+    AND?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    OR?: NotificationScalarWhereWithAggregatesInput[]
+    NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Notification"> | string
+    userId?: StringWithAggregatesFilter<"Notification"> | string
+    type?: EnumNotificationTypeWithAggregatesFilter<"Notification"> | $Enums.NotificationType
+    title_en?: StringWithAggregatesFilter<"Notification"> | string
+    title_zh?: StringWithAggregatesFilter<"Notification"> | string
+    body_en?: StringWithAggregatesFilter<"Notification"> | string
+    body_zh?: StringWithAggregatesFilter<"Notification"> | string
+    read?: BoolWithAggregatesFilter<"Notification"> | boolean
+    actionUrl?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    groupId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    eventId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    requestId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email?: string | null
@@ -24042,6 +25396,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -24081,6 +25436,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -24120,6 +25476,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -24159,6 +25516,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -25144,6 +26502,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateInput = {
@@ -25166,6 +26525,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUpdateInput = {
@@ -25188,6 +26548,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateInput = {
@@ -25210,6 +26571,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateManyInput = {
@@ -25662,6 +27024,116 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationCreateInput = {
+    id?: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutNotificationsInput
+    group?: GroupCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    groupId?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+    group?: GroupUpdateOneWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationCreateManyInput = {
+    id?: string
+    userId: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    groupId?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -25805,6 +27277,12 @@ export namespace Prisma {
     none?: InviteTokenWhereInput
   }
 
+  export type NotificationListRelationFilter = {
+    every?: NotificationWhereInput
+    some?: NotificationWhereInput
+    none?: NotificationWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -25867,6 +27345,10 @@ export namespace Prisma {
   }
 
   export type InviteTokenOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NotificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -27009,6 +28491,71 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type EnumNotificationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.NotificationType | EnumNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNotificationTypeFilter<$PrismaModel> | $Enums.NotificationType
+  }
+
+  export type NotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    body_en?: SortOrder
+    body_zh?: SortOrder
+    read?: SortOrder
+    actionUrl?: SortOrder
+    groupId?: SortOrder
+    eventId?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    body_en?: SortOrder
+    body_zh?: SortOrder
+    read?: SortOrder
+    actionUrl?: SortOrder
+    groupId?: SortOrder
+    eventId?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title_en?: SortOrder
+    title_zh?: SortOrder
+    body_en?: SortOrder
+    body_zh?: SortOrder
+    read?: SortOrder
+    actionUrl?: SortOrder
+    groupId?: SortOrder
+    eventId?: SortOrder
+    requestId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NotificationType | EnumNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.NotificationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNotificationTypeFilter<$PrismaModel>
+    _max?: NestedEnumNotificationTypeFilter<$PrismaModel>
+  }
+
   export type EventCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -27156,6 +28703,13 @@ export namespace Prisma {
     connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
   }
 
+  export type NotificationCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -27301,6 +28855,13 @@ export namespace Prisma {
     connectOrCreate?: InviteTokenCreateOrConnectWithoutUsedByInput | InviteTokenCreateOrConnectWithoutUsedByInput[]
     createMany?: InviteTokenCreateManyUsedByInputEnvelope
     connect?: InviteTokenWhereUniqueInput | InviteTokenWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -27617,6 +29178,20 @@ export namespace Prisma {
     deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
   }
 
+  export type NotificationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -27909,6 +29484,20 @@ export namespace Prisma {
     update?: InviteTokenUpdateWithWhereUniqueWithoutUsedByInput | InviteTokenUpdateWithWhereUniqueWithoutUsedByInput[]
     updateMany?: InviteTokenUpdateManyWithWhereWithoutUsedByInput | InviteTokenUpdateManyWithWhereWithoutUsedByInput[]
     deleteMany?: InviteTokenScalarWhereInput | InviteTokenScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutEventsInput = {
@@ -28730,6 +30319,13 @@ export namespace Prisma {
     connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
   }
 
+  export type NotificationCreateNestedManyWithoutGroupInput = {
+    create?: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput> | NotificationCreateWithoutGroupInput[] | NotificationUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutGroupInput | NotificationCreateOrConnectWithoutGroupInput[]
+    createMany?: NotificationCreateManyGroupInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type GroupUncheckedCreateNestedManyWithoutParentGroupInput = {
     create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
@@ -28791,6 +30387,13 @@ export namespace Prisma {
     connectOrCreate?: DonationRecordCreateOrConnectWithoutGroupInput | DonationRecordCreateOrConnectWithoutGroupInput[]
     createMany?: DonationRecordCreateManyGroupInputEnvelope
     connect?: DonationRecordWhereUniqueInput | DonationRecordWhereUniqueInput[]
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutGroupInput = {
+    create?: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput> | NotificationCreateWithoutGroupInput[] | NotificationUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutGroupInput | NotificationCreateOrConnectWithoutGroupInput[]
+    createMany?: NotificationCreateManyGroupInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutCreatedGroupsNestedInput = {
@@ -28937,6 +30540,20 @@ export namespace Prisma {
     deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
   }
 
+  export type NotificationUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput> | NotificationCreateWithoutGroupInput[] | NotificationUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutGroupInput | NotificationCreateOrConnectWithoutGroupInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutGroupInput | NotificationUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: NotificationCreateManyGroupInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutGroupInput | NotificationUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutGroupInput | NotificationUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type GroupUncheckedUpdateManyWithoutParentGroupNestedInput = {
     create?: XOR<GroupCreateWithoutParentGroupInput, GroupUncheckedCreateWithoutParentGroupInput> | GroupCreateWithoutParentGroupInput[] | GroupUncheckedCreateWithoutParentGroupInput[]
     connectOrCreate?: GroupCreateOrConnectWithoutParentGroupInput | GroupCreateOrConnectWithoutParentGroupInput[]
@@ -29061,6 +30678,20 @@ export namespace Prisma {
     update?: DonationRecordUpdateWithWhereUniqueWithoutGroupInput | DonationRecordUpdateWithWhereUniqueWithoutGroupInput[]
     updateMany?: DonationRecordUpdateManyWithWhereWithoutGroupInput | DonationRecordUpdateManyWithWhereWithoutGroupInput[]
     deleteMany?: DonationRecordScalarWhereInput | DonationRecordScalarWhereInput[]
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutGroupNestedInput = {
+    create?: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput> | NotificationCreateWithoutGroupInput[] | NotificationUncheckedCreateWithoutGroupInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutGroupInput | NotificationCreateOrConnectWithoutGroupInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutGroupInput | NotificationUpsertWithWhereUniqueWithoutGroupInput[]
+    createMany?: NotificationCreateManyGroupInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutGroupInput | NotificationUpdateWithWhereUniqueWithoutGroupInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutGroupInput | NotificationUpdateManyWithWhereWithoutGroupInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutGroupMembershipInvitesInput = {
@@ -29289,6 +30920,40 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutInviteTokensUsedInput, UserUpdateWithoutInviteTokensUsedInput>, UserUncheckedUpdateWithoutInviteTokensUsedInput>
+  }
+
+  export type UserCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type GroupCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<GroupCreateWithoutNotificationsInput, GroupUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutNotificationsInput
+    connect?: GroupWhereUniqueInput
+  }
+
+  export type EnumNotificationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.NotificationType
+  }
+
+  export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    upsert?: UserUpsertWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type GroupUpdateOneWithoutNotificationsNestedInput = {
+    create?: XOR<GroupCreateWithoutNotificationsInput, GroupUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: GroupCreateOrConnectWithoutNotificationsInput
+    upsert?: GroupUpsertWithoutNotificationsInput
+    disconnect?: GroupWhereInput | boolean
+    delete?: GroupWhereInput | boolean
+    connect?: GroupWhereUniqueInput
+    update?: XOR<XOR<GroupUpdateToOneWithWhereWithoutNotificationsInput, GroupUpdateWithoutNotificationsInput>, GroupUncheckedUpdateWithoutNotificationsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -29704,6 +31369,23 @@ export namespace Prisma {
     _max?: NestedDecimalFilter<$PrismaModel>
   }
 
+  export type NestedEnumNotificationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.NotificationType | EnumNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNotificationTypeFilter<$PrismaModel> | $Enums.NotificationType
+  }
+
+  export type NestedEnumNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.NotificationType | EnumNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.NotificationType[] | ListEnumNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.NotificationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumNotificationTypeFilter<$PrismaModel>
+    _max?: NestedEnumNotificationTypeFilter<$PrismaModel>
+  }
+
   export type EventCreateWithoutCreatedByInput = {
     id?: string
     partNumber?: number | null
@@ -29939,6 +31621,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutCreatedByInput = {
@@ -29960,6 +31643,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutCreatedByInput = {
@@ -30417,6 +32101,46 @@ export namespace Prisma {
 
   export type InviteTokenCreateManyUsedByInputEnvelope = {
     data: InviteTokenCreateManyUsedByInput | InviteTokenCreateManyUsedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type NotificationCreateWithoutUserInput = {
+    id?: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    group?: GroupCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    groupId?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationCreateOrConnectWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationCreateManyUserInputEnvelope = {
+    data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -30982,6 +32706,41 @@ export namespace Prisma {
     data: XOR<InviteTokenUpdateManyMutationInput, InviteTokenUncheckedUpdateManyWithoutUsedByInput>
   }
 
+  export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutUserInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type NotificationScalarWhereInput = {
+    AND?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    OR?: NotificationScalarWhereInput[]
+    NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
+    title_en?: StringFilter<"Notification"> | string
+    title_zh?: StringFilter<"Notification"> | string
+    body_en?: StringFilter<"Notification"> | string
+    body_zh?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    actionUrl?: StringNullableFilter<"Notification"> | string | null
+    groupId?: StringNullableFilter<"Notification"> | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
+    requestId?: StringNullableFilter<"Notification"> | string | null
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+  }
+
   export type UserCreateWithoutEventsInput = {
     id?: string
     email?: string | null
@@ -31018,6 +32777,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -31056,6 +32816,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -31082,6 +32843,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutEventsInput = {
@@ -31103,6 +32865,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutEventsInput = {
@@ -31381,6 +33144,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -31419,6 +33183,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutEventsInput = {
@@ -31451,6 +33216,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutEventsInput = {
@@ -31472,6 +33238,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type EventSeriesUpsertWithoutEventsInput = {
@@ -31752,6 +33519,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventShareLinksInput = {
@@ -31790,6 +33558,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventShareLinksInput = {
@@ -31915,6 +33684,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventShareLinksInput = {
@@ -31953,6 +33723,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EventCreateWithoutGuestRsvpsInput = {
@@ -32127,6 +33898,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
@@ -32165,6 +33937,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventSeriesCreatedInput = {
@@ -32191,6 +33964,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutEventSeriesInput = {
@@ -32212,6 +33986,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutEventSeriesInput = {
@@ -32336,6 +34111,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
@@ -32374,6 +34150,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutEventSeriesInput = {
@@ -32406,6 +34183,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutEventSeriesInput = {
@@ -32427,6 +34205,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type EventUpsertWithWhereUniqueWithoutSeriesInput = {
@@ -32546,6 +34325,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
@@ -32584,6 +34364,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesCreatedInput = {
@@ -32627,6 +34408,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
@@ -32665,6 +34447,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesAcceptedInput = {
@@ -32790,6 +34573,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
@@ -32828,6 +34612,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutEventInvitesAcceptedInput = {
@@ -32877,6 +34662,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
@@ -32915,6 +34701,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EventCreateWithoutRsvpsInput = {
@@ -33018,6 +34805,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
@@ -33056,6 +34844,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRsvpsInput = {
@@ -33181,6 +34970,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
@@ -33219,6 +35009,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
@@ -33322,6 +35113,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -33360,6 +35152,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -33540,6 +35333,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -33578,6 +35372,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CommentUpsertWithoutRepliesInput = {
@@ -33646,6 +35441,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMessagesInput = {
@@ -33667,6 +35463,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMessagesInput = {
@@ -33710,6 +35507,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
@@ -33748,6 +35546,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMessagesInput = {
@@ -33785,6 +35584,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMessagesInput = {
@@ -33806,6 +35606,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMessagesInput = {
@@ -33855,6 +35656,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
@@ -33893,6 +35695,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EventCreateWithoutReminderRulesInput = {
@@ -34132,6 +35935,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
@@ -34170,6 +35974,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageLogsInput = {
@@ -34295,6 +36100,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
@@ -34333,6 +36139,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupCreateWithoutNewsInput = {
@@ -34354,6 +36161,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutNewsInput = {
@@ -34375,6 +36183,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutNewsInput = {
@@ -34418,6 +36227,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNewsInput = {
@@ -34456,6 +36266,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNewsInput = {
@@ -34493,6 +36304,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutNewsInput = {
@@ -34514,6 +36326,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutNewsInput = {
@@ -34563,6 +36376,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsInput = {
@@ -34601,6 +36415,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -34639,6 +36454,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -34677,6 +36493,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -34703,6 +36520,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutSubgroupsInput = {
@@ -34724,6 +36542,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutSubgroupsInput = {
@@ -34750,6 +36569,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutParentGroupInput = {
@@ -34771,6 +36591,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutParentGroupInput = {
@@ -35071,6 +36892,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type NotificationCreateWithoutGroupInput = {
+    id?: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateWithoutGroupInput = {
+    id?: string
+    userId: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationCreateOrConnectWithoutGroupInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput>
+  }
+
+  export type NotificationCreateManyGroupInputEnvelope = {
+    data: NotificationCreateManyGroupInput | NotificationCreateManyGroupInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutCreatedGroupsInput = {
     update: XOR<UserUpdateWithoutCreatedGroupsInput, UserUncheckedUpdateWithoutCreatedGroupsInput>
     create: XOR<UserCreateWithoutCreatedGroupsInput, UserUncheckedCreateWithoutCreatedGroupsInput>
@@ -35118,6 +36979,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -35156,6 +37018,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutSubgroupsInput = {
@@ -35188,6 +37051,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutSubgroupsInput = {
@@ -35209,6 +37073,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUpsertWithWhereUniqueWithoutParentGroupInput = {
@@ -35355,6 +37220,22 @@ export namespace Prisma {
     data: XOR<DonationRecordUpdateManyMutationInput, DonationRecordUncheckedUpdateManyWithoutGroupInput>
   }
 
+  export type NotificationUpsertWithWhereUniqueWithoutGroupInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutGroupInput, NotificationUncheckedUpdateWithoutGroupInput>
+    create: XOR<NotificationCreateWithoutGroupInput, NotificationUncheckedCreateWithoutGroupInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutGroupInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutGroupInput, NotificationUncheckedUpdateWithoutGroupInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutGroupInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutGroupInput>
+  }
+
   export type UserCreateWithoutGroupMembershipInvitesInput = {
     id?: string
     email?: string | null
@@ -35391,6 +37272,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
@@ -35429,6 +37311,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInvitesInput = {
@@ -35455,6 +37338,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutMembershipsInput = {
@@ -35476,6 +37360,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutMembershipsInput = {
@@ -35519,6 +37404,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -35557,6 +37443,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -35611,6 +37498,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
@@ -35649,6 +37537,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutMembershipsInput = {
@@ -35681,6 +37570,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutMembershipsInput = {
@@ -35702,6 +37592,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupMembershipsInput = {
@@ -35751,6 +37642,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -35789,6 +37681,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutGroupInvitesSentInput = {
@@ -35827,6 +37720,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
@@ -35865,6 +37759,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesSentInput = {
@@ -35908,6 +37803,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
@@ -35946,6 +37842,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesReceivedInput = {
@@ -35972,6 +37869,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutInvitesInput = {
@@ -35993,6 +37891,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutInvitesInput = {
@@ -36047,6 +37946,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
@@ -36085,6 +37985,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutGroupInvitesReceivedInput = {
@@ -36134,6 +38035,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
@@ -36172,6 +38074,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupUpsertWithoutInvitesInput = {
@@ -36204,6 +38107,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutInvitesInput = {
@@ -36225,6 +38129,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupCreateWithoutJoinRequestsInput = {
@@ -36246,6 +38151,7 @@ export namespace Prisma {
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutJoinRequestsInput = {
@@ -36267,6 +38173,7 @@ export namespace Prisma {
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
     donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutJoinRequestsInput = {
@@ -36310,6 +38217,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
@@ -36348,6 +38256,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupJoinRequestsInput = {
@@ -36391,6 +38300,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
@@ -36429,6 +38339,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewedJoinRequestsInput = {
@@ -36466,6 +38377,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutJoinRequestsInput = {
@@ -36487,6 +38399,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutGroupJoinRequestsInput = {
@@ -36536,6 +38449,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
@@ -36574,6 +38488,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutReviewedJoinRequestsInput = {
@@ -36623,6 +38538,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
@@ -36661,6 +38577,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type GroupCreateWithoutDonationRecordsInput = {
@@ -36682,6 +38599,7 @@ export namespace Prisma {
     events?: EventCreateNestedManyWithoutGroupInput
     news?: NewsCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    notifications?: NotificationCreateNestedManyWithoutGroupInput
   }
 
   export type GroupUncheckedCreateWithoutDonationRecordsInput = {
@@ -36703,6 +38621,7 @@ export namespace Prisma {
     events?: EventUncheckedCreateNestedManyWithoutGroupInput
     news?: NewsUncheckedCreateNestedManyWithoutGroupInput
     eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutGroupInput
   }
 
   export type GroupCreateOrConnectWithoutDonationRecordsInput = {
@@ -36746,6 +38665,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsForInput = {
@@ -36784,6 +38704,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsForInput = {
@@ -36827,6 +38748,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsCreatedInput = {
@@ -36865,6 +38787,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsCreatedInput = {
@@ -36902,6 +38825,7 @@ export namespace Prisma {
     events?: EventUpdateManyWithoutGroupNestedInput
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutDonationRecordsInput = {
@@ -36923,6 +38847,7 @@ export namespace Prisma {
     events?: EventUncheckedUpdateManyWithoutGroupNestedInput
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type UserUpsertWithoutDonationRecordsForInput = {
@@ -36972,6 +38897,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsForInput = {
@@ -37010,6 +38936,7 @@ export namespace Prisma {
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutDonationRecordsCreatedInput = {
@@ -37059,6 +38986,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsCreatedInput = {
@@ -37097,6 +39025,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutInviteTokensCreatedInput = {
@@ -37135,6 +39064,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInviteTokensCreatedInput = {
@@ -37173,6 +39103,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInviteTokensCreatedInput = {
@@ -37216,6 +39147,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutInviteTokensUsedInput = {
@@ -37254,6 +39186,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
     donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
     inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutInviteTokensUsedInput = {
@@ -37308,6 +39241,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInviteTokensCreatedInput = {
@@ -37346,6 +39280,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutInviteTokensUsedInput = {
@@ -37395,6 +39330,7 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInviteTokensUsedInput = {
@@ -37433,6 +39369,283 @@ export namespace Prisma {
     donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
     donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
     inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutNotificationsInput = {
+    id?: string
+    email?: string | null
+    passwordHash: string
+    phoneE164?: string | null
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
+    isGuest?: boolean
+    hasPassword?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+  }
+
+  export type UserUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    email?: string | null
+    passwordHash: string
+    phoneE164?: string | null
+    displayName?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteSms?: boolean
+    muteEmail?: boolean
+    muteLinePush?: boolean
+    lineUserId?: string | null
+    isGuest?: boolean
+    hasPassword?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+  }
+
+  export type UserCreateOrConnectWithoutNotificationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+  }
+
+  export type GroupCreateWithoutNotificationsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    photoUrl?: string | null
+    discoverableBySearch?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutCreatedGroupsInput
+    parentGroup?: GroupCreateNestedOneWithoutSubgroupsInput
+    subgroups?: GroupCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageCreateNestedManyWithoutGroupInput
+    events?: EventCreateNestedManyWithoutGroupInput
+    news?: NewsCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    pid: string
+    name: string
+    description?: string
+    photoUrl?: string | null
+    discoverableBySearch?: boolean
+    parentGroupId?: string | null
+    createdById: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subgroups?: GroupUncheckedCreateNestedManyWithoutParentGroupInput
+    memberships?: GroupMembershipUncheckedCreateNestedManyWithoutGroupInput
+    invites?: GroupInviteUncheckedCreateNestedManyWithoutGroupInput
+    joinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutGroupInput
+    messages?: GroupMessageUncheckedCreateNestedManyWithoutGroupInput
+    events?: EventUncheckedCreateNestedManyWithoutGroupInput
+    news?: NewsUncheckedCreateNestedManyWithoutGroupInput
+    eventSeries?: EventSeriesUncheckedCreateNestedManyWithoutGroupInput
+    donationRecords?: DonationRecordUncheckedCreateNestedManyWithoutGroupInput
+  }
+
+  export type GroupCreateOrConnectWithoutNotificationsInput = {
+    where: GroupWhereUniqueInput
+    create: XOR<GroupCreateWithoutNotificationsInput, GroupUncheckedCreateWithoutNotificationsInput>
+  }
+
+  export type UserUpsertWithoutNotificationsInput = {
+    update: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type UserUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteSms?: BoolFieldUpdateOperationsInput | boolean
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+  }
+
+  export type GroupUpsertWithoutNotificationsInput = {
+    update: XOR<GroupUpdateWithoutNotificationsInput, GroupUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<GroupCreateWithoutNotificationsInput, GroupUncheckedCreateWithoutNotificationsInput>
+    where?: GroupWhereInput
+  }
+
+  export type GroupUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: GroupWhereInput
+    data: XOR<GroupUpdateWithoutNotificationsInput, GroupUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type GroupUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+    parentGroup?: GroupUpdateOneWithoutSubgroupsNestedInput
+    subgroups?: GroupUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUpdateManyWithoutGroupNestedInput
+    events?: EventUpdateManyWithoutGroupNestedInput
+    news?: NewsUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+  }
+
+  export type GroupUncheckedUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    pid?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    discoverableBySearch?: BoolFieldUpdateOperationsInput | boolean
+    parentGroupId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subgroups?: GroupUncheckedUpdateManyWithoutParentGroupNestedInput
+    memberships?: GroupMembershipUncheckedUpdateManyWithoutGroupNestedInput
+    invites?: GroupInviteUncheckedUpdateManyWithoutGroupNestedInput
+    joinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutGroupNestedInput
+    messages?: GroupMessageUncheckedUpdateManyWithoutGroupNestedInput
+    events?: EventUncheckedUpdateManyWithoutGroupNestedInput
+    news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
+    eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
+    donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type EventCreateManyCreatedByInput = {
@@ -37667,6 +39880,21 @@ export namespace Prisma {
     createdById: string
     expiresAt: Date | string
     usedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type NotificationCreateManyUserInput = {
+    id?: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    groupId?: string | null
+    eventId?: string | null
+    requestId?: string | null
     createdAt?: Date | string
   }
 
@@ -37915,6 +40143,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutCreatedByInput = {
@@ -37936,6 +40165,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutCreatedByInput = {
@@ -38408,6 +40638,51 @@ export namespace Prisma {
     createdById?: StringFieldUpdateOperationsInput | string
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    group?: GroupUpdateOneWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -38905,6 +41180,21 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type NotificationCreateManyGroupInput = {
+    id?: string
+    userId: string
+    type: $Enums.NotificationType
+    title_en: string
+    title_zh: string
+    body_en?: string
+    body_zh?: string
+    read?: boolean
+    actionUrl?: string | null
+    eventId?: string | null
+    requestId?: string | null
+    createdAt?: Date | string
+  }
+
   export type GroupUpdateWithoutParentGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     pid?: StringFieldUpdateOperationsInput | string
@@ -38924,6 +41214,7 @@ export namespace Prisma {
     news?: NewsUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateWithoutParentGroupInput = {
@@ -38945,6 +41236,7 @@ export namespace Prisma {
     news?: NewsUncheckedUpdateManyWithoutGroupNestedInput
     eventSeries?: EventSeriesUncheckedUpdateManyWithoutGroupNestedInput
     donationRecords?: DonationRecordUncheckedUpdateManyWithoutGroupNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutGroupNestedInput
   }
 
   export type GroupUncheckedUpdateManyWithoutParentGroupInput = {
@@ -39263,6 +41555,51 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutGroupInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
+    title_en?: StringFieldUpdateOperationsInput | string
+    title_zh?: StringFieldUpdateOperationsInput | string
+    body_en?: StringFieldUpdateOperationsInput | string
+    body_zh?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
+    requestId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
 
 
   /**
@@ -39360,6 +41697,10 @@ export namespace Prisma {
      * @deprecated Use InviteTokenDefaultArgs instead
      */
     export type InviteTokenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = InviteTokenDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use NotificationDefaultArgs instead
+     */
+    export type NotificationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = NotificationDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

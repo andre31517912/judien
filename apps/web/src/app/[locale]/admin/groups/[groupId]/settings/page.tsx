@@ -67,14 +67,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
-  const [inviteLoading, setInviteLoading] = useState(false);
-
-  const [addIdentifier, setAddIdentifier] = useState('');
-  const [addRole, setAddRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
-  const [addLoading, setAddLoading] = useState(false);
+  const [memberAddMode, setMemberAddMode] = useState<'search' | 'new'>('search');
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
+  const [memberSearchResults, setMemberSearchResults] = useState<{ id: string; displayName: string | null; email: string | null; phoneE164: string | null }[]>([]);
+  const [memberSearchLoading, setMemberSearchLoading] = useState(false);
+  const [memberAddRole, setMemberAddRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
+  const [memberAddLoading, setMemberAddLoading] = useState<string | null>(null);
+  const [newMemberForm, setNewMemberForm] = useState({ displayName: '', phone: '', email: '' });
+  const [newMemberRole, setNewMemberRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
+  const [newMemberLoading, setNewMemberLoading] = useState(false);
 
   const importFileRef = useRef<HTMLInputElement>(null);
   const [importLoading, setImportLoading] = useState(false);
@@ -112,6 +113,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [childSearchResults, setChildSearchResults] = useState<GroupSearchResult[]>([]);
   const [childSearchLoading, setChildSearchLoading] = useState(false);
   const [childLinking, setChildLinking] = useState(false);
+  const [childSevering, setChildSevering] = useState(false);
   const [newChildForm, setNewChildForm] = useState({ name: '', description: '' });
   const [childCreating, setChildCreating] = useState(false);
 
@@ -491,53 +493,75 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
   };
 
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
-    setError('');
-    if (!inviteEmail.trim() && !invitePhone.trim()) {
-      setError(zh ? '請輸入 email 或電話號碼。' : 'Please provide an email or phone number.');
-      return;
-    }
-    setInviteLoading(true);
+  const handleMemberSearch = async () => {
+    if (!memberSearchQuery.trim()) return;
+    setMemberSearchLoading(true);
+    setMemberSearchResults([]);
     try {
-      const payload: Record<string, unknown> = { role: inviteRole };
-      if (inviteEmail.trim()) payload.email = inviteEmail.trim();
-      if (invitePhone.trim()) payload.phoneE164 = invitePhone.trim();
-      await apiFetch(`/groups/${params.groupId}/invites`, {
-        method: 'POST',
-        body: JSON.stringify({ invites: [payload] }),
-      });
-      setInviteEmail('');
-      setInvitePhone('');
-      setInviteRole('GROUP_MEMBER');
-      setSuccess(zh ? '邀請已送出。' : 'Invitation sent.');
-      await loadPage();
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to invite member.');
-    } finally {
-      setInviteLoading(false);
+      const results = await apiFetch<{ id: string; displayName: string | null; email: string | null; phoneE164: string | null }[]>(
+        `/groups/${params.groupId}/members/search-users?q=${encodeURIComponent(memberSearchQuery.trim())}`,
+      );
+      setMemberSearchResults(results);
+    } catch { /* ignore */ } finally {
+      setMemberSearchLoading(false);
     }
   };
 
-  const handleAddMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
+  const handleAddExistingMember = async (userId: string, displayName: string | null) => {
+    setMemberAddLoading(userId);
     setError('');
-    setAddLoading(true);
+    setSuccess('');
     try {
-      const result = await apiFetch<{ added: boolean; displayName: string | null }>(`/groups/${params.groupId}/members`, {
+      await apiFetch(`/groups/${params.groupId}/members`, {
         method: 'POST',
-        body: JSON.stringify({ identifier: addIdentifier.trim(), role: addRole }),
+        body: JSON.stringify({ identifier: userId, role: memberAddRole }),
       });
-      setAddIdentifier('');
-      setAddRole('GROUP_MEMBER');
-      setSuccess(zh ? `成員已新增：${result.displayName ?? addIdentifier.trim()}` : `Member added: ${result.displayName ?? addIdentifier.trim()}`);
+      setMemberSearchResults((prev) => prev.filter((u) => u.id !== userId));
+      setSuccess(zh ? `成員已新增：${displayName ?? userId}` : `Member added: ${displayName ?? userId}`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to add member.');
     } finally {
-      setAddLoading(false);
+      setMemberAddLoading(null);
+    }
+  };
+
+  const handleCreateAndAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!newMemberForm.displayName.trim()) {
+      setError(zh ? '請輸入姓名。' : 'Full name is required.');
+      return;
+    }
+    if (!newMemberForm.phone.trim() && !newMemberForm.email.trim()) {
+      setError(zh ? '請輸入電話或電子郵件至少一項。' : 'Phone or email is required.');
+      return;
+    }
+    setNewMemberLoading(true);
+    try {
+      const result = await apiFetch<{ created: boolean; displayName: string | null }>(`/groups/${params.groupId}/members/new-and-add`, {
+        method: 'POST',
+        body: JSON.stringify({
+          displayName: newMemberForm.displayName.trim(),
+          phone: newMemberForm.phone.trim() || undefined,
+          email: newMemberForm.email.trim() || undefined,
+          role: newMemberRole,
+        }),
+      });
+      setNewMemberForm({ displayName: '', phone: '', email: '' });
+      setNewMemberRole('GROUP_MEMBER');
+      const name = result.displayName ?? newMemberForm.displayName.trim();
+      setSuccess(
+        result.created
+          ? (zh ? `帳號已建立並新增為成員：${name}` : `Account created and added as member: ${name}`)
+          : (zh ? `現有用戶已新增為成員：${name}` : `Existing user added as member: ${name}`),
+      );
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed.');
+    } finally {
+      setNewMemberLoading(false);
     }
   };
 
@@ -654,7 +678,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           ← {zh ? `返回 ${groupItem.group.name}` : `Back to ${groupItem.group.name}`}
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {zh ? '群組管理' : 'Group Management'} — {groupItem.group.name}
+          {zh ? '群組設定' : 'Group Settings'} — {groupItem.group.name}
         </h1>
         {joinRequests.length > 0 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
@@ -839,6 +863,27 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                     <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm">
                       <Link href={`/${params.locale}/admin/groups/${sg.id}`} className="flex-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate">{sg.name}</Link>
                       {sg.description && <span className="text-gray-400 dark:text-gray-500 truncate max-w-[160px] hidden sm:block">{sg.description}</span>}
+                      <button
+                        onClick={async () => {
+                          if (!confirm(zh ? `確定要將「${sg.name}」從子群組中移除嗎？` : `Remove "${sg.name}" as a child group?`)) return;
+                          setChildSevering(true);
+                          setError('');
+                          setSuccess('');
+                          try {
+                            await apiFetch(`/groups/${sg.id}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
+                            setSuccess(zh ? `「${sg.name}」已從子群組移除。` : `"${sg.name}" removed from child groups.`);
+                            await loadPage();
+                          } catch (err: unknown) {
+                            setError((err as Error).message ?? 'Failed.');
+                          } finally {
+                            setChildSevering(false);
+                          }
+                        }}
+                        disabled={childSevering}
+                        className="shrink-0 rounded-md border border-red-200 dark:border-red-800 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
+                      >
+                        {zh ? '移除' : 'Remove'}
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -953,36 +998,40 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         {/* Group photo */}
         <div className="mt-4">
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片' : 'Group Photo'}</label>
-          {(groupPhotoPreview ?? currentGroupPhotoUrl) && (
-            <div className="relative mb-2 inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+          <div
+            onClick={() => groupPhotoFileRef.current?.click()}
+            className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
+          >
+            {(groupPhotoPreview ?? currentGroupPhotoUrl) ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={groupPhotoPreview ?? (currentGroupPhotoUrl ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}${currentGroupPhotoUrl}` : '')}
                 alt="group"
-                className="h-24 w-24 rounded-full object-cover border border-gray-200 dark:border-gray-700"
+                className="w-full h-full object-cover"
               />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
+                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-xs">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
+              </div>
+            )}
+            {(groupPhotoPreview ?? currentGroupPhotoUrl) && (
               <button
                 type="button"
-                onClick={() => { setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
-                className="absolute -top-1 -right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/80"
+                onClick={(ev) => { ev.stopPropagation(); setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
+                className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70"
               >✕</button>
-            </div>
-          )}
-          <div>
-            <button
-              type="button"
-              onClick={() => groupPhotoFileRef.current?.click()}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-            >
-              {(groupPhotoPreview ?? currentGroupPhotoUrl) ? (zh ? '更換照片' : 'Change Photo') : (zh ? '上傳群組照片' : 'Upload Group Photo')}
-            </button>
-            <input ref={groupPhotoFileRef} type="file" accept="image/*" onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              setGroupPhotoFile(file);
-              setGroupPhotoPreview(URL.createObjectURL(file));
-            }} className="hidden" />
+            )}
           </div>
+          <input ref={groupPhotoFileRef} type="file" accept="image/*" onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setGroupPhotoFile(file);
+            setGroupPhotoPreview(URL.createObjectURL(file));
+          }} className="hidden" />
         </div>
 
         {/* Name & description edit */}
@@ -1022,57 +1071,148 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </button>
       </section>
 
-      {/* Invite Member */}
+      {/* Add Member */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '邀請成員' : 'Invite Member'}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '輸入電子郵件或手機號碼發送群組邀請。' : 'Send a group invitation by email or phone.'}</p>
-        <form onSubmit={handleInvite} className="mt-4 grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-            <input value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="member@example.com" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
-            <input value={invitePhone} onChange={(e) => setInvitePhone(e.target.value)} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder="+886900000123" />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
-            <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-              <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
-              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button type="submit" disabled={inviteLoading || (!inviteEmail.trim() && !invitePhone.trim())} className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {inviteLoading ? (zh ? '發送中…' : 'Sending…') : (zh ? '發送邀請' : 'Send Invite')}
-            </button>
-          </div>
-        </form>
-      </section>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '新增成員' : 'Add Member'}</h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {zh ? '搜尋現有 Judien 用戶，或為尚未加入的人建立新帳號。' : 'Search for an existing Judien user, or create a new account for someone not yet on Judien.'}
+        </p>
 
-      {/* Add Member Directly — platform admin or group admin */}
-      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
-          <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件 / 手機 / 用戶 ID' : 'Email / Phone / User ID'}</label>
-              <input value={addIdentifier} onChange={(e) => setAddIdentifier(e.target.value)} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder={zh ? 'member@example.com 或 +886…' : 'member@example.com or +886…'} />
+        {/* Mode toggle */}
+        <div className="mt-4 flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden w-fit">
+          <button
+            type="button"
+            onClick={() => setMemberAddMode('search')}
+            className={`px-4 py-2 text-sm font-medium transition ${memberAddMode === 'search' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          >
+            {zh ? '搜尋現有用戶' : 'Search Existing User'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMemberAddMode('new')}
+            className={`px-4 py-2 text-sm font-medium transition border-l border-gray-200 dark:border-gray-700 ${memberAddMode === 'new' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          >
+            {zh ? '建立新帳號並加入' : 'Create New Account & Add'}
+          </button>
+        </div>
+
+        {/* Search mode */}
+        {memberAddMode === 'search' && (
+          <div className="mt-4 space-y-3">
+            <div className="flex gap-2">
+              <input
+                value={memberSearchQuery}
+                onChange={(e) => setMemberSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void handleMemberSearch(); } }}
+                placeholder={zh ? '姓名、電子郵件或電話…' : 'Name, email, or phone…'}
+                className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => void handleMemberSearch()}
+                disabled={memberSearchLoading || !memberSearchQuery.trim()}
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {memberSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
+              </button>
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
-              <select value={addRole} onChange={(e) => setAddRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+
+            {/* Role selector for search mode */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '加入角色' : 'Add as'}</label>
+              <select
+                value={memberAddRole}
+                onChange={(e) => setMemberAddRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
+                className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
                 <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
                 <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
               </select>
             </div>
-            <div className="flex items-end md:col-span-3">
-              <button type="submit" disabled={addLoading || !addIdentifier.trim()} className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
-                {addLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '直接新增' : 'Add Directly')}
-              </button>
+
+            {/* Search results */}
+            {memberSearchResults.length > 0 && (
+              <div className="space-y-2">
+                {memberSearchResults.map((u) => (
+                  <div key={u.id} className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{u.displayName ?? (zh ? '未命名' : 'Unnamed')}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{u.email ?? u.phoneE164 ?? u.id}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleAddExistingMember(u.id, u.displayName)}
+                      disabled={memberAddLoading === u.id}
+                      className="shrink-0 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {memberAddLoading === u.id ? '…' : (zh ? '新增' : 'Add')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {memberSearchResults.length === 0 && memberSearchQuery.trim() && !memberSearchLoading && (
+              <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '找不到符合的用戶。' : 'No matching users found.'}</p>
+            )}
+          </div>
+        )}
+
+        {/* Create new account mode */}
+        {memberAddMode === 'new' && (
+          <form onSubmit={(e) => void handleCreateAndAddMember(e)} className="mt-4 space-y-3">
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '姓名（必填）' : 'Full Name (required)'}</label>
+              <input
+                value={newMemberForm.displayName}
+                onChange={(e) => setNewMemberForm((f) => ({ ...f, displayName: e.target.value }))}
+                placeholder={zh ? '真實姓名' : 'Full name'}
+                required
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
             </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '手機號碼（選填）' : 'Phone Number (optional)'}</label>
+              <input
+                value={newMemberForm.phone}
+                onChange={(e) => setNewMemberForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="+886900000123"
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件（選填）' : 'Email Address (optional)'}</label>
+              <input
+                value={newMemberForm.email}
+                onChange={(e) => setNewMemberForm((f) => ({ ...f, email: e.target.value }))}
+                placeholder="member@example.com"
+                type="email"
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
+              <select
+                value={newMemberRole}
+                onChange={(e) => setNewMemberRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              >
+                <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
+                <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
+              </select>
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {zh ? '電話或電子郵件至少填寫一項。若此聯絡方式已有帳號，將直接加入群組。' : 'At least one of phone or email is required. If an account with that contact info already exists, they will be added directly.'}
+            </p>
+            <button
+              type="submit"
+              disabled={newMemberLoading || !newMemberForm.displayName.trim() || (!newMemberForm.phone.trim() && !newMemberForm.email.trim())}
+              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            >
+              {newMemberLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立帳號並加入群組' : 'Create Account & Add to Group')}
+            </button>
           </form>
-        </section>
+        )}
+      </section>
 
       {/* Members list */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">

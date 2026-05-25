@@ -29,6 +29,7 @@ import {
   ReviewGroupJoinRequestSchema,
   UpdateGroupSettingsSchema,
   AddMemberDirectlySchema,
+  CreateAndAddMemberSchema,
   SetParentGroupSchema,
   type ChangeGroupMemberRoleDto,
   type CreateGroupDto,
@@ -38,6 +39,7 @@ import {
   type ReviewGroupJoinRequestDto,
   type UpdateGroupSettingsDto,
   type AddMemberDirectlyDto,
+  type CreateAndAddMemberDto,
   type SetParentGroupDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
@@ -141,6 +143,12 @@ export class GroupsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('my-join-requests')
+  myJoinRequests(@CurrentUser() user: User) {
+    return this.groupsService.myJoinRequests(user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post(':groupId/join-requests')
   requestJoin(
     @Param('groupId') groupId: string,
@@ -167,6 +175,26 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.reviewJoinRequest(requestId, dto, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/members/search-users')
+  searchUsersToAdd(
+    @Param('groupId') groupId: string,
+    @Query('q') q: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.searchUsersToAdd(groupId, q ?? '', user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/members/new-and-add')
+  createAndAddMember(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(CreateAndAddMemberSchema)) dto: CreateAndAddMemberDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.createAndAddMember(groupId, dto, user);
   }
 
   @UseGuards(AuthGuard('jwt'))

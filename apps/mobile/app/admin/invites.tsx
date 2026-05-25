@@ -34,7 +34,7 @@ export default function AdminInvitesScreen() {
   const generate = async (role: 'USER' | 'ADMIN') => {
     setCreating(true);
     try {
-      await apiFetch('/invites', { method: 'POST', body: JSON.stringify({ role, expiresInHours: 48 }) });
+      await apiFetch('/invites', { method: 'POST', body: JSON.stringify({ role }) });
       await load();
       Alert.alert(t('common.appName'), t('admin.inviteCreated'));
     } catch (err: any) {
@@ -48,28 +48,6 @@ export default function AdminInvitesScreen() {
     const url = `${API_BASE.replace('/api', '')}/signup?invite=${token}`;
     Clipboard.setString(url);
     Alert.alert(t('common.appName'), t('admin.inviteCopied'));
-  };
-
-  const revoke = async (id: string) => {
-    Alert.alert(
-      zh ? '撤銷邀請' : 'Revoke Invite',
-      zh ? '確定要撤銷這個邀請連結嗎？' : 'Revoke this invite link?',
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('admin.inviteRevoke'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await apiFetch(`/invites/${id}`, { method: 'DELETE' });
-              setInvites((prev) => prev.filter((i) => i.id !== id));
-            } catch (err: any) {
-              Alert.alert('Error', err.message ?? 'Failed to revoke invite.');
-            }
-          },
-        },
-      ],
-    );
   };
 
   if (loading || pageLoading) {
@@ -146,9 +124,6 @@ export default function AdminInvitesScreen() {
                   <TouchableOpacity style={styles.copyBtn} onPress={() => copyLink(invite.token)}>
                     <Text style={styles.copyBtnText}>{zh ? '複製連結' : 'Copy Link'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.revokeBtn} onPress={() => revoke(invite.id)}>
-                    <Text style={styles.revokeBtnText}>{t('admin.inviteRevoke')}</Text>
-                  </TouchableOpacity>
                 </View>
               )}
             </View>
@@ -184,6 +159,4 @@ const styles = StyleSheet.create({
   cardActions: { flexDirection: 'row', gap: 8, marginTop: 10 },
   copyBtn: { flex: 1, backgroundColor: '#f3f4f6', borderRadius: 8, padding: 8, alignItems: 'center' },
   copyBtnText: { fontSize: 13, color: '#111' },
-  revokeBtn: { flex: 1, backgroundColor: '#fee2e2', borderRadius: 8, padding: 8, alignItems: 'center' },
-  revokeBtnText: { fontSize: 13, color: '#ef4444' },
 });

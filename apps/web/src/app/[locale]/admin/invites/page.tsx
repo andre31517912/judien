@@ -42,7 +42,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
     try {
       const invite = await apiFetch<InviteToken>('/invites', {
         method: 'POST',
-        body: JSON.stringify({ role, expiresInHours: 48 }),
+        body: JSON.stringify({ role }),
       });
       const link = `${window.location.origin}/${params.locale}/signup?invite=${invite.token}`;
       setModalRole(role);
@@ -64,16 +64,6 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
       setTimeout(() => setCopied(false), 2500);
     } catch {
       linkRef.current?.select();
-    }
-  };
-
-  const revoke = async (id: string) => {
-    if (!confirm(zh ? '確定要撤銷這個邀請連結嗎？' : 'Revoke this invite link?')) return;
-    try {
-      await apiFetch(`/invites/${id}`, { method: 'DELETE' });
-      setInvites((prev) => prev.filter((i) => i.id !== id));
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to revoke invite.');
     }
   };
 
@@ -138,14 +128,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
                         : `${zh ? '到期' : 'Expires'} ${new Date(invite.expiresAt).toLocaleDateString()}`}
                   </p>
                 </div>
-                {!used && !expired && (
-                  <button
-                    onClick={() => revoke(invite.id)}
-                    className="text-xs text-red-400 hover:text-red-600 shrink-0"
-                  >
-                    {zh ? '撤銷' : 'Revoke'}
-                  </button>
-                )}
+
               </li>
             );
           })}
@@ -170,8 +153,8 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
               {zh
-                ? '將以下連結分享給您要邀請的人，連結在 48 小時內有效，且僅能使用一次。'
-                : 'Share this link with the person you want to invite. It expires in 48 hours and can only be used once.'}
+                ? '將以下連結分享給您要邀請的人，連結在 7 天內有效，且僅能使用一次。'
+                : 'Share this link with the person you want to invite. It expires in 7 days and can only be used once.'}
             </p>
 
             <div className="flex gap-2 mb-4">

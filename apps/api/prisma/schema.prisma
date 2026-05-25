@@ -62,6 +62,14 @@ enum GroupJoinRequestStatus {
   REJECTED
 }
 
+enum NotificationType {
+  JOIN_REQUEST_RECEIVED
+  JOIN_REQUEST_APPROVED
+  JOIN_REQUEST_REJECTED
+  EVENT_REMINDER
+  GROUP_INVITE_RECEIVED
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -104,6 +112,8 @@ model User {
 
   inviteTokensCreated InviteToken[] @relation("InviteTokenCreatedBy")
   inviteTokensUsed    InviteToken[] @relation("InviteTokenUsedBy")
+
+  notifications       Notification[]
 
   @@index([email])
   @@index([role])
@@ -347,6 +357,8 @@ model Group {
 
   donationRecords    DonationRecord[]
 
+  notifications      Notification[]
+
   @@unique([name])
   @@index([discoverableBySearch])
   @@index([parentGroupId])
@@ -447,4 +459,26 @@ model InviteToken {
 
   @@index([token])
   @@index([createdById])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title_en  String
+  title_zh  String
+  body_en   String           @default("")
+  body_zh   String           @default("")
+  read      Boolean          @default(false)
+  actionUrl String?
+  groupId   String?
+  eventId   String?
+  requestId String?
+  createdAt DateTime         @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
 }

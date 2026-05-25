@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiUpload } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 type AdminGroupItem = {
@@ -64,6 +64,9 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [composingEvent, setComposingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
   const [eventLoading, setEventLoading] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
 
   const loadPage = async () => {
     setPageLoading(true);
@@ -170,11 +173,18 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
     setEventLoading(true);
     setError('');
     try {
+      let coverImageUrl: string | undefined;
+      if (coverFile) {
+        const uploadRes = await apiUpload(coverFile);
+        coverImageUrl = uploadRes.url;
+      }
       await apiFetch('/events', {
         method: 'POST',
-        body: JSON.stringify({ groupId: params.groupId, title_en: eventForm.title, title_zh: eventForm.title, description_en: eventForm.description, description_zh: eventForm.description, location_en: eventForm.location, location_zh: eventForm.location, startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined, endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : undefined, timezone: eventForm.timezone, feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : undefined, feeCurrency: eventForm.feeCurrency }),
+        body: JSON.stringify({ groupId: params.groupId, title_en: eventForm.title, title_zh: eventForm.title, description_en: eventForm.description, description_zh: eventForm.description, location_en: eventForm.location, location_zh: eventForm.location, startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined, endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : undefined, timezone: eventForm.timezone, feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : undefined, feeCurrency: eventForm.feeCurrency, ...(coverImageUrl ? { coverImageUrl } : {}) }),
       });
       setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+      setCoverFile(null);
+      setCoverPreview(null);
       setComposingEvent(false);
       setSuccess(zh ? '活動已建立。' : 'Event created.');
       await loadPage();
@@ -351,11 +361,37 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                         <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                       </div>
                     </div>
+                    {/* Cover photo */}
+                    <div>
+                      <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面照片（選填）' : 'Cover Photo (optional)'}</label>
+                      <div
+                        onClick={() => coverFileRef.current?.click()}
+                        className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
+                      >
+                        {coverPreview ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={coverPreview} alt="preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
+                            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-sm">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
+                          </div>
+                        )}
+                        {coverPreview && (
+                          <button type="button" onClick={(ev) => { ev.stopPropagation(); setCoverFile(null); setCoverPreview(null); }}
+                            className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+                        )}
+                      </div>
+                      <input ref={coverFileRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }} className="hidden" />
+                    </div>
                     <div className="flex gap-2">
                       <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
                         {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
                       </button>
-                      <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
                         {zh ? '取消' : 'Cancel'}
                       </button>
                     </div>

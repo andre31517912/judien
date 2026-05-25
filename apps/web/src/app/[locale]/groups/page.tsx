@@ -40,6 +40,8 @@ type SearchResult = {
   description: string;
 };
 
+type MyPendingRequest = { groupId: string; status: string; createdAt: string };
+
 export default function MyGroupsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
@@ -55,6 +57,8 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
   const [joinMsg, setJoinMsg] = useState('');
   const [joinSuccess, setJoinSuccess] = useState(false);
 
+  const [myPendingRequests, setMyPendingRequests] = useState<MyPendingRequest[]>([]);
+
   const [respondingId, setRespondingId] = useState<string | null>(null);
 
   const loadPage = () => {
@@ -63,10 +67,12 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
     Promise.all([
       apiFetch<GroupListItem[]>('/groups/me'),
       apiFetch<MyInvite[]>('/groups/invitations/me'),
+      apiFetch<MyPendingRequest[]>('/groups/my-join-requests').catch(() => [] as MyPendingRequest[]),
     ])
-      .then(([g, i]) => {
+      .then(([g, i, jr]) => {
         setGroups(g.filter((item) => item.membership.status === 'ACCEPTED'));
         setInvites(i.filter((inv) => inv.status === 'PENDING'));
+        setMyPendingRequests(jr);
       })
       .catch((err: Error) => setError(err.message ?? 'Failed to load groups.'))
       .finally(() => setPageLoading(false));
@@ -115,6 +121,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
       await apiFetch(`/groups/${groupId}/join-requests`, { method: 'POST', body: JSON.stringify({ message: '' }) });
       setJoinSuccess(true);
       setJoinMsg(zh ? '加入申請已送出，等待管理員審核。' : 'Join request sent. Awaiting approval.');
+      setMyPendingRequests((prev) => [...prev.filter((r) => r.groupId !== groupId), { groupId, status: 'PENDING', createdAt: new Date().toISOString() }]);
     } catch (err: Error | unknown) {
       setJoinSuccess(false);
       setJoinMsg((err as Error).message ?? 'Request failed.');
@@ -270,6 +277,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
           <div className="mt-4 space-y-3">
             {searchResults.map((result) => {
               const alreadyMember = groups.some((g) => g.group.id === result.id);
+              const hasPending = myPendingRequests.some((r) => r.groupId === result.id);
               return (
                 <div key={result.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3">
                   <div>
@@ -277,11 +285,15 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                     {result.description && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{result.description}</p>}
                   </div>
                   {alreadyMember ? (
-                    <span className="text-xs text-green-600">{zh ? '已加入' : 'Already a member'}</span>
+                    <span className="text-xs font-medium text-green-600 dark:text-green-400">{zh ? '已加入' : 'Already a member'}</span>
+                  ) : hasPending ? (
+                    <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2.5 py-1 text-xs font-medium">
+                      {zh ? '申請審核中' : 'Request pending'}
+                    </span>
                   ) : (
                     <button
                       onClick={() => handleRequestJoin(result.id)}
-                      className="rounded-md border border-indigo-300 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+                      className="rounded-md border border-indigo-300 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
                     >
                       {zh ? '申請加入' : 'Request to Join'}
                     </button>

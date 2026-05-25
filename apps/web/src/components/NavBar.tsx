@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../context/auth.context';
+import NotificationBell from './NotificationBell';
 
 interface NavBarProps { locale: string }
 
@@ -38,6 +39,7 @@ export default function NavBar({ locale }: NavBarProps) {
             <Link href={`/${locale}/profile?from=${encodeURIComponent(pathname)}`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white max-w-[120px] truncate">
               {(user as any).displayName || user.email?.split('@')[0] || user.phoneE164 || 'User'}
             </Link>
+            <NotificationBell locale={locale} />
             <button onClick={handleLogout} className="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300">
               {zh ? '登出' : 'Logout'}
             </button>

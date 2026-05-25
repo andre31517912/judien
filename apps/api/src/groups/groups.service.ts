@@ -5,10 +5,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
 import type {
   AddMemberDirectlyDto,
+  CreateAndAddMemberDto,
   CreateGroupDto,
   CreateGroupJoinRequestDto,
   InviteGroupMembersDto,
@@ -20,12 +22,14 @@ import type {
 import type { User } from '../__generated__/prisma';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessagingService } from '../messaging/messaging.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class GroupsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly messaging: MessagingService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(dto: CreateGroupDto, user: User) {
@@ -472,6 +476,13 @@ export class GroupsService {
     return { status: 'ACCEPTED' };
   }
 
+  async myJoinRequests(user: User) {
+    return this.prisma.groupJoinRequest.findMany({
+      where: { requesterUserId: user.id, status: 'PENDING' },
+      select: { groupId: true, status: true, createdAt: true },
+    });
+  }
+
   async requestJoin(groupId: string, dto: CreateGroupJoinRequestDto, user: User) {
     const group = await this.ensureGroupExists(groupId);
     if (!group.discoverableBySearch) {
@@ -498,6 +509,27 @@ export class GroupsService {
         reviewedAt: null,
         reviewedByUserId: null,
       },
+    }).then(async (req) => {
+      // Notify all GROUP_ADMINs of this group
+      const admins = await this.prisma.groupMembership.findMany({
+        where: { groupId, role: 'GROUP_ADMIN', status: 'ACCEPTED' },
+        select: { userId: true },
+      });
+      const requesterName = (user as any).displayName || user.email || user.phoneE164 || 'Someone';
+      await this.notifications.createMany(
+        admins.map((a) => ({
+          userId: a.userId,
+          type: 'JOIN_REQUEST_RECEIVED' as const,
+          title_en: `New join request for ${group.name}`,
+          title_zh: `${group.name} 有新的加入申請`,
+          body_en: `${requesterName} has requested to join ${group.name}.`,
+          body_zh: `${requesterName} 申請加入 ${group.name}。`,
+          actionUrl: `/admin/groups/${groupId}/settings`,
+          groupId,
+          requestId: req.id,
+        })),
+      );
+      return req;
     });
   }
 
@@ -529,8 +561,11 @@ export class GroupsService {
       throw new BadRequestException('Join request has already been resolved.');
     }
 
+    const group = await this.prisma.group.findUnique({ where: { id: req.groupId }, select: { name: true } });
+    const groupName = group?.name ?? 'the group';
+
     if (dto.action === 'reject') {
-      return this.prisma.groupJoinRequest.update({
+      const updated = await this.prisma.groupJoinRequest.update({
         where: { id: requestId },
         data: {
           status: 'REJECTED',
@@ -538,6 +573,17 @@ export class GroupsService {
           reviewedAt: new Date(),
         },
       });
+      await this.notifications.create({
+        userId: req.requesterUserId,
+        type: 'JOIN_REQUEST_REJECTED',
+        title_en: `Join request declined`,
+        title_zh: `加入申請被拒絕`,
+        body_en: `Your request to join ${groupName} has been declined.`,
+        body_zh: `您申請加入 ${groupName} 的請求已被拒絕。`,
+        groupId: req.groupId,
+        requestId,
+      });
+      return updated;
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -565,6 +611,18 @@ export class GroupsService {
         },
       });
 
+      return updated;
+    }).then(async (updated) => {
+      await this.notifications.create({
+        userId: req.requesterUserId,
+        type: 'JOIN_REQUEST_APPROVED',
+        title_en: `Join request approved`,
+        title_zh: `加入申請已批准`,
+        body_en: `Your request to join ${groupName} has been approved. Welcome!`,
+        body_zh: `您申請加入 ${groupName} 的請求已獲批准，歡迎加入！`,
+        groupId: req.groupId,
+        requestId,
+      });
       return updated;
     });
   }
@@ -683,6 +741,104 @@ export class GroupsService {
     }
 
     return { added: true, userId: targetUser.id, displayName: targetUser.displayName };
+  }
+
+  async searchUsersToAdd(groupId: string, q: string, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    const query = (q ?? '').trim();
+    if (query.length < 2) return [];
+
+    const existingMemberIds = (await this.prisma.groupMembership.findMany({
+      where: { groupId, status: 'ACCEPTED' },
+      select: { userId: true },
+    })).map((m) => m.userId);
+
+    return this.prisma.user.findMany({
+      where: {
+        id: { notIn: existingMemberIds },
+        OR: [
+          { displayName: { contains: query, mode: 'insensitive' } },
+          { email: { contains: query, mode: 'insensitive' } },
+          { phoneE164: { contains: query } },
+        ],
+      },
+      select: { id: true, displayName: true, email: true, phoneE164: true },
+      take: 10,
+    });
+  }
+
+  async createAndAddMember(groupId: string, dto: CreateAndAddMemberDto, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    const group = await this.ensureGroupExists(groupId);
+
+    if (!dto.phone && !dto.email) {
+      throw new BadRequestException('At least one of phone or email is required.');
+    }
+
+    // If a user with this phone/email already exists, just add them
+    const orConditions = [
+      ...(dto.phone ? [{ phoneE164: dto.phone }] : []),
+      ...(dto.email ? [{ email: dto.email }] : []),
+    ];
+    const existingUser = await this.prisma.user.findFirst({ where: { OR: orConditions } });
+    if (existingUser) {
+      await this.prisma.groupMembership.upsert({
+        where: { groupId_userId: { groupId, userId: existingUser.id } },
+        create: { groupId, userId: existingUser.id, status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
+        update: { status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
+      });
+      return { created: false, added: true, userId: existingUser.id, displayName: existingUser.displayName };
+    }
+
+    // Create brand-new user account and add to group in a transaction
+    const tempPassword = randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(tempPassword, 12);
+
+    const newUser = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.user.create({
+        data: {
+          email: dto.email ?? null,
+          phoneE164: dto.phone ?? null,
+          displayName: dto.displayName.trim() || null,
+          passwordHash,
+          hasPassword: true,
+          role: 'USER',
+          preferredLanguage: 'en',
+        },
+      });
+      await tx.groupMembership.create({
+        data: {
+          groupId,
+          userId: u.id,
+          status: 'ACCEPTED',
+          role: dto.role,
+          joinedAt: new Date(),
+          ...(user.role === 'ADMIN' ? { invitedByPlatformAdminId: user.id } : {}),
+        },
+      });
+      return u;
+    });
+
+    // Notify the new user
+    const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+    const groupLink = `${webOrigin}/en/groups/${groupId}`;
+    if (newUser.email) {
+      await this.messaging.sendEmail({
+        userId: newUser.id,
+        to: newUser.email,
+        subject: `You have been added to ${group.name} on Judien`,
+        text: `A Judien account has been created for you and you have been added to the group "${group.name}". Visit: ${groupLink}`,
+      });
+    }
+    if (newUser.phoneE164) {
+      await this.messaging.sendSms({
+        userId: newUser.id,
+        to: newUser.phoneE164,
+        body: `A Judien account was created for you and you've been added to "${group.name}": ${groupLink}`,
+      });
+    }
+
+    return { created: true, added: true, userId: newUser.id, displayName: newUser.displayName };
   }
 
   async canAccessGroup(groupId: string, userId?: string) {

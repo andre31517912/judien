@@ -235,6 +235,18 @@ export const AddMemberDirectlySchema = z.object({
 });
 export type AddMemberDirectlyDto = z.infer<typeof AddMemberDirectlySchema>;
 
+export const CreateAndAddMemberSchema = z
+  .object({
+    displayName: z.string().min(1),
+    phone: z.string().optional(),
+    email: z.string().email().optional(),
+    role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']).default('GROUP_MEMBER'),
+  })
+  .refine((d) => d.phone || d.email, {
+    message: 'At least one of phone or email is required.',
+  });
+export type CreateAndAddMemberDto = z.infer<typeof CreateAndAddMemberSchema>;
+
 export const CommentListQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(30),

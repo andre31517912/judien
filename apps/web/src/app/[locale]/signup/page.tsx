@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
+import PolicyModal from '@/components/PolicyModal';
 
 export default function SignupPage({ params }: { params: { locale: string } }) {
   const { signup } = useAuth();
@@ -24,6 +25,8 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [lineLoading, setLineLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [policyModal, setPolicyModal] = useState<'privacy' | 'terms' | null>(null);
 
   // Auto-read invite token from ?invite= URL param
   useEffect(() => {
@@ -91,19 +94,39 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
         </div>
       )}
 
-      {inviteInfo?.valid === true && (
+      {inviteInfo?.valid === true && inviteInfo.role === 'ADMIN' && (
+        <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/20 px-5 py-4 text-sm text-amber-900 dark:text-amber-300">
+          <p className="font-semibold text-base mb-1">
+            {zh ? '管理員邀請' : 'Administrator Invitation'}
+          </p>
+          {zh ? (
+            <p>
+              {inviteInfo.createdByName ? <><strong>{inviteInfo.createdByName}</strong> 正在邀請您以<strong>管理員</strong>身份在 Judien 註冊，享有額外的管理權限。</> : '您已受邀以管理員身份在 Judien 註冊，享有額外的管理權限。'}
+            </p>
+          ) : (
+            <p>
+              {inviteInfo.createdByName ? <><strong>{inviteInfo.createdByName}</strong> is inviting you to sign up to Judien as an <strong>administrator</strong> with extra privileges.</> : 'You have been invited to sign up to Judien as an administrator with extra privileges.'}
+            </p>
+          )}
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+            {zh ? '請在下方建立您的帳號。' : 'Create your account below to get started.'}
+          </p>
+        </div>
+      )}
+
+      {inviteInfo?.valid === true && inviteInfo.role !== 'ADMIN' && (
         <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-900/20 px-4 py-3 text-sm text-indigo-800 dark:text-indigo-300">
           {zh ? (
             <>
-              {inviteInfo.createdByName && <><strong>{inviteInfo.createdByName}</strong> 邀請您加入 Judien，身份為 </>}
-              {!inviteInfo.createdByName && '您受邀加入 Judien，身份為 '}
-              <strong>{inviteInfo.role === 'ADMIN' ? '管理員' : '用戶'}</strong>。在下方建立帳號。
+              {inviteInfo.createdByName && <><strong>{inviteInfo.createdByName}</strong> 邀請您加入 Judien。</>}
+              {!inviteInfo.createdByName && '您受邀加入 Judien。'}
+              {' '}{zh ? '在下方建立帳號。' : ''}
             </>
           ) : (
             <>
-              {inviteInfo.createdByName && <><strong>{inviteInfo.createdByName}</strong> has invited you to join Judien as a </>}
-              {!inviteInfo.createdByName && "You've been invited to join Judien as a "}
-              <strong>{inviteInfo.role === 'ADMIN' ? 'Admin' : 'User'}</strong>. Create your account below.
+              {inviteInfo.createdByName && <><strong>{inviteInfo.createdByName}</strong> has invited you to join Judien.</>}
+              {!inviteInfo.createdByName && "You've been invited to join Judien."}
+              {' '}Create your account below.
             </>
           )}
         </div>
@@ -115,9 +138,37 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
         {field(zh ? '電話號碼（如 +886912345678）' : 'Phone (e.g. +886912345678)', 'phone', 'tel')}
         {field(zh ? '密碼（至少 8 字元）' : 'Password (min 8 chars)', 'password', 'password')}
         {field(zh ? '電子郵件' : 'Email', 'email', 'email', false)}
+        {/* Terms & Privacy checkbox */}
+        <div className="flex items-start gap-2.5">
+          <input
+            type="checkbox"
+            id="agreeTerms"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            className="mt-0.5 w-4 h-4 shrink-0 accent-indigo-600"
+          />
+          <label htmlFor="agreeTerms" className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
+            {zh ? '我同意 ' : 'I agree to the '}
+            <button
+              type="button"
+              onClick={() => setPolicyModal('terms')}
+              className="text-indigo-600 dark:text-indigo-400 underline underline-offset-2 hover:text-indigo-800"
+            >
+              {zh ? '使用條款' : 'Terms of Use'}
+            </button>
+            {zh ? ' 及 ' : ' and '}
+            <button
+              type="button"
+              onClick={() => setPolicyModal('privacy')}
+              className="text-indigo-600 dark:text-indigo-400 underline underline-offset-2 hover:text-indigo-800"
+            >
+              {zh ? '隱私政策' : 'Privacy Policy'}
+            </button>
+          </label>
+        </div>
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !agreedToTerms}
           className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
           {loading ? '…' : (zh ? '建立帳號' : 'Create Account')}
@@ -147,6 +198,10 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
           {zh ? '登入' : 'Log In'}
         </Link>
       </p>
+
+      {policyModal && (
+        <PolicyModal type={policyModal} onClose={() => setPolicyModal(null)} />
+      )}
     </div>
   );
 }

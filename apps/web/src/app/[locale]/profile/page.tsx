@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
+import PolicyModal from '@/components/PolicyModal';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
@@ -22,10 +23,17 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [lineLinked, setLineLinked] = useState(false);
   const [lineMsg, setLineMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [lineLoading, setLineLoading] = useState(false);
-  const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [lang, setLang] = useState<'en' | 'zh'>(params.locale as 'en' | 'zh');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [policyModal, setPolicyModal] = useState<'privacy' | 'terms' | null>(null);
+
+  type AdminInvite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
+  const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
+  const [inviteGenerating, setInviteGenerating] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -37,7 +45,10 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       setMuteEmail((user as any).muteEmail ?? false);
       setMuteLinePush(user.muteLinePush ?? false);
       setLineLinked(!!user.lineUserId);
-      setLang(user.preferredLanguage);
+      // lang is driven by the URL locale, not the stored preference
+      if (user.role === 'ADMIN') {
+        apiFetch<AdminInvite[]>('/invites').then(setAdminInvites).catch(() => {});
+      }
     }
   }, [user]);
 
@@ -314,6 +325,123 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           {saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
         </button>
       </form>
+
+      {/* Legal links */}
+      <div className="mt-6 flex gap-4 text-xs text-gray-400 dark:text-gray-500">
+        <button
+          type="button"
+          onClick={() => setPolicyModal('privacy')}
+          className="hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition"
+        >
+          {zh ? '隱私政策' : 'Privacy Policy'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setPolicyModal('terms')}
+          className="hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition"
+        >
+          {zh ? '使用條款' : 'Terms of Use'}
+        </button>
+      </div>
+
+      {policyModal && (
+        <PolicyModal type={policyModal} onClose={() => setPolicyModal(null)} />
+      )}
+
+      {/* Admin invite link generator */}
+      {user.role === 'ADMIN' && (
+        <div className="mt-8 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50 dark:bg-indigo-950/20 p-6">
+          <h2 className="text-base font-semibold text-indigo-900 dark:text-indigo-300 mb-1">
+            {zh ? '邀請新管理員' : 'Invite New Administrator'}
+          </h2>
+          <p className="text-sm text-indigo-700 dark:text-indigo-400 mb-4">
+            {zh ? '產生一個邀請連結，讓對方以管理員身份在 Judien 完成註冊。' : 'Generate a link so someone can sign up to Judien with administrator privileges.'}
+          </p>
+
+          <button
+            type="button"
+            disabled={inviteGenerating}
+            onClick={async () => {
+              setInviteGenerating(true);
+              setInviteLink(null);
+              setInviteCopied(false);
+              try {
+                const inv = await apiFetch<{ token: string }>('/invites', {
+                  method: 'POST',
+                  body: JSON.stringify({ role: 'ADMIN', expiresInHours: 168 }),
+                });
+                const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                const link = `${origin}/${params.locale}/signup?invite=${inv.token}`;
+                setInviteLink(link);
+                setAdminInvites((prev) => [...prev, { id: '', token: inv.token, role: 'ADMIN', expiresAt: new Date(Date.now() + 168 * 3600 * 1000).toISOString(), usedAt: null, createdAt: new Date().toISOString(), usedBy: null }]);
+              } catch (err: any) {
+                setMsg({ text: err.message ?? 'Failed to generate invite.', ok: false });
+              } finally {
+                setInviteGenerating(false);
+              }
+            }}
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {inviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生管理員邀請連結' : 'Generate Admin Invite Link')}
+          </button>
+
+          {inviteLink && (
+            <div className="mt-4 space-y-2">
+              <p className="text-xs font-medium text-indigo-800 dark:text-indigo-300">{zh ? '邀請連結（7 天內有效）：' : 'Invite link (valid for 7 days):'}</p>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={inviteLink}
+                  className="flex-1 rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(inviteLink).then(() => {
+                      setInviteCopied(true);
+                      setTimeout(() => setInviteCopied(false), 2000);
+                    }).catch(() => {});
+                  }}
+                  className="shrink-0 rounded-md border border-indigo-300 dark:border-indigo-600 px-3 py-2 text-xs font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition"
+                >
+                  {inviteCopied ? (zh ? '已複製！' : 'Copied!') : (zh ? '複製' : 'Copy')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Existing unused admin invites */}
+          {adminInvites.filter((i) => !i.usedAt && i.role === 'ADMIN').length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs font-medium text-indigo-800 dark:text-indigo-300 mb-2">{zh ? '尚未使用的管理員邀請：' : 'Unused admin invites:'}</p>
+              <div className="space-y-2">
+                {adminInvites.filter((i) => !i.usedAt && i.role === 'ADMIN').map((inv, idx) => {
+                  const link = `${typeof window !== 'undefined' ? window.location.origin : ''}/${params.locale}/signup?invite=${inv.token}`;
+                  return (
+                    <div key={inv.id || idx} className="flex items-center gap-2 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 px-3 py-2">
+                      <span className="flex-1 text-xs font-mono text-gray-500 dark:text-gray-400 truncate">{link}</span>
+                      <span className="text-xs text-gray-400 shrink-0">{zh ? '到期：' : 'Exp:'} {new Date(inv.expiresAt).toLocaleDateString()}</span>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!inv.id || !confirm(zh ? '確定要撤銷此邀請嗎？' : 'Revoke this invite?')) return;
+                          try {
+                            await apiFetch(`/invites/${inv.id}`, { method: 'DELETE' });
+                            setAdminInvites((prev) => prev.filter((i) => i.id !== inv.id));
+                          } catch { /* ignore */ }
+                        }}
+                        className="shrink-0 text-xs text-red-500 hover:text-red-600 font-medium"
+                      >
+                        {zh ? '撤銷' : 'Revoke'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
