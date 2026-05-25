@@ -118,7 +118,10 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err?.message ?? 'API error');
+    const msg: string = typeof err?.message === 'string' ? err.message : (err?.message?.message ?? 'API error');
+    const errors: Record<string, string[]> | undefined = err?.errors;
+    const detail = errors ? ` (${Object.entries(errors).map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`).join('; ')})` : '';
+    throw Object.assign(new Error(msg + detail), { errors });
   }
 
   if (res.status === 204) return undefined as T;

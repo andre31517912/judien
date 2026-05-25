@@ -40,6 +40,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim()) { setError('Group name is required.'); return; }
     setError('');
     setSaving(true);
     try {
@@ -48,12 +49,12 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
       let photoUrl: string | null = null;
       if (photoFile) {
         const uploaded = await apiUpload(photoFile);
-        photoUrl = uploaded.url;
+        photoUrl = resolveImageUrl(uploaded.url);
       }
       await apiFetch('/groups', {
         method: 'POST',
         body: JSON.stringify({
-          name,
+          name: name.trim(),
           pid: generatedPid,
           description,
           discoverableBySearch: true,

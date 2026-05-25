@@ -128,15 +128,6 @@ export class GroupsService {
     const q = query.trim();
     if (!q) return [];
 
-    const memberGroupIds = user
-      ? (await this.prisma.groupMembership.findMany({
-          where: { userId: user.id, status: 'ACCEPTED' },
-          select: { groupId: true },
-        })).map((m) => m.groupId)
-      : [];
-
-    const isPlatformAdmin = user?.role === 'ADMIN';
-
     return this.prisma.group.findMany({
       where: { name: { contains: q, mode: 'insensitive' } },
       include: { createdBy: { select: { id: true, displayName: true } } },

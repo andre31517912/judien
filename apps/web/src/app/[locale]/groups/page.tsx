@@ -66,20 +66,6 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
       className="flex items-stretch rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
     >
-      {/* Drag handle */}
-      <button
-        {...attributes}
-        {...listeners}
-        className="flex items-center justify-center w-10 shrink-0 text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 cursor-grab active:cursor-grabbing touch-none rounded-l-2xl"
-        tabIndex={-1}
-        aria-label={zh ? '拖動以排序' : 'Drag to reorder'}
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-          <rect y="1" width="14" height="1.75" rx="0.875"/>
-          <rect y="6.125" width="14" height="1.75" rx="0.875"/>
-          <rect y="11.25" width="14" height="1.75" rx="0.875"/>
-        </svg>
-      </button>
       {/* Clickable link area */}
       <Link href={`/${locale}/groups/${item.group.id}`} className="flex-1 p-5 block">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -110,6 +96,20 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
           </div>
         </div>
       </Link>
+      {/* Drag handle — right side */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center w-10 shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing touch-none rounded-r-2xl border-l border-gray-100 dark:border-gray-800"
+        tabIndex={-1}
+        aria-label={zh ? '拖動以排序' : 'Drag to reorder'}
+      >
+        <svg width="16" height="16" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+          <rect y="1" width="14" height="1.75" rx="0.875"/>
+          <rect y="6.125" width="14" height="1.75" rx="0.875"/>
+          <rect y="11.25" width="14" height="1.75" rx="0.875"/>
+        </svg>
+      </button>
     </div>
   );
 }
