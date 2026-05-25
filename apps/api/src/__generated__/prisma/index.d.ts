@@ -17020,8 +17020,18 @@ export namespace Prisma {
 
   export type AggregateGroupMembership = {
     _count: GroupMembershipCountAggregateOutputType | null
+    _avg: GroupMembershipAvgAggregateOutputType | null
+    _sum: GroupMembershipSumAggregateOutputType | null
     _min: GroupMembershipMinAggregateOutputType | null
     _max: GroupMembershipMaxAggregateOutputType | null
+  }
+
+  export type GroupMembershipAvgAggregateOutputType = {
+    sortOrder: number | null
+  }
+
+  export type GroupMembershipSumAggregateOutputType = {
+    sortOrder: number | null
   }
 
   export type GroupMembershipMinAggregateOutputType = {
@@ -17032,6 +17042,7 @@ export namespace Prisma {
     status: $Enums.GroupMembershipStatus | null
     invitedByPlatformAdminId: string | null
     joinedAt: Date | null
+    sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17044,6 +17055,7 @@ export namespace Prisma {
     status: $Enums.GroupMembershipStatus | null
     invitedByPlatformAdminId: string | null
     joinedAt: Date | null
+    sortOrder: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -17056,11 +17068,20 @@ export namespace Prisma {
     status: number
     invitedByPlatformAdminId: number
     joinedAt: number
+    sortOrder: number
     createdAt: number
     updatedAt: number
     _all: number
   }
 
+
+  export type GroupMembershipAvgAggregateInputType = {
+    sortOrder?: true
+  }
+
+  export type GroupMembershipSumAggregateInputType = {
+    sortOrder?: true
+  }
 
   export type GroupMembershipMinAggregateInputType = {
     id?: true
@@ -17070,6 +17091,7 @@ export namespace Prisma {
     status?: true
     invitedByPlatformAdminId?: true
     joinedAt?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -17082,6 +17104,7 @@ export namespace Prisma {
     status?: true
     invitedByPlatformAdminId?: true
     joinedAt?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -17094,6 +17117,7 @@ export namespace Prisma {
     status?: true
     invitedByPlatformAdminId?: true
     joinedAt?: true
+    sortOrder?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -17137,6 +17161,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: GroupMembershipAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GroupMembershipSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: GroupMembershipMinAggregateInputType
@@ -17167,6 +17203,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: GroupMembershipCountAggregateInputType | true
+    _avg?: GroupMembershipAvgAggregateInputType
+    _sum?: GroupMembershipSumAggregateInputType
     _min?: GroupMembershipMinAggregateInputType
     _max?: GroupMembershipMaxAggregateInputType
   }
@@ -17179,9 +17217,12 @@ export namespace Prisma {
     status: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId: string | null
     joinedAt: Date | null
+    sortOrder: number
     createdAt: Date
     updatedAt: Date
     _count: GroupMembershipCountAggregateOutputType | null
+    _avg: GroupMembershipAvgAggregateOutputType | null
+    _sum: GroupMembershipSumAggregateOutputType | null
     _min: GroupMembershipMinAggregateOutputType | null
     _max: GroupMembershipMaxAggregateOutputType | null
   }
@@ -17208,6 +17249,7 @@ export namespace Prisma {
     status?: boolean
     invitedByPlatformAdminId?: boolean
     joinedAt?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     invitedByPlatformAdmin?: boolean | GroupMembership$invitedByPlatformAdminArgs<ExtArgs>
@@ -17223,6 +17265,7 @@ export namespace Prisma {
     status?: boolean
     invitedByPlatformAdminId?: boolean
     joinedAt?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     invitedByPlatformAdmin?: boolean | GroupMembership$invitedByPlatformAdminArgs<ExtArgs>
@@ -17238,6 +17281,7 @@ export namespace Prisma {
     status?: boolean
     invitedByPlatformAdminId?: boolean
     joinedAt?: boolean
+    sortOrder?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -17268,6 +17312,7 @@ export namespace Prisma {
       status: $Enums.GroupMembershipStatus
       invitedByPlatformAdminId: string | null
       joinedAt: Date | null
+      sortOrder: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["groupMembership"]>
@@ -17673,6 +17718,7 @@ export namespace Prisma {
     readonly status: FieldRef<"GroupMembership", 'GroupMembershipStatus'>
     readonly invitedByPlatformAdminId: FieldRef<"GroupMembership", 'String'>
     readonly joinedAt: FieldRef<"GroupMembership", 'DateTime'>
+    readonly sortOrder: FieldRef<"GroupMembership", 'Int'>
     readonly createdAt: FieldRef<"GroupMembership", 'DateTime'>
     readonly updatedAt: FieldRef<"GroupMembership", 'DateTime'>
   }
@@ -23349,6 +23395,7 @@ export namespace Prisma {
     status: 'status',
     invitedByPlatformAdminId: 'invitedByPlatformAdminId',
     joinedAt: 'joinedAt',
+    sortOrder: 'sortOrder',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -24861,6 +24908,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFilter<"GroupMembership"> | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: StringNullableFilter<"GroupMembership"> | string | null
     joinedAt?: DateTimeNullableFilter<"GroupMembership"> | Date | string | null
+    sortOrder?: IntFilter<"GroupMembership"> | number
     createdAt?: DateTimeFilter<"GroupMembership"> | Date | string
     updatedAt?: DateTimeFilter<"GroupMembership"> | Date | string
     invitedByPlatformAdmin?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -24876,6 +24924,7 @@ export namespace Prisma {
     status?: SortOrder
     invitedByPlatformAdminId?: SortOrderInput | SortOrder
     joinedAt?: SortOrderInput | SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     invitedByPlatformAdmin?: UserOrderByWithRelationInput
@@ -24895,6 +24944,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFilter<"GroupMembership"> | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: StringNullableFilter<"GroupMembership"> | string | null
     joinedAt?: DateTimeNullableFilter<"GroupMembership"> | Date | string | null
+    sortOrder?: IntFilter<"GroupMembership"> | number
     createdAt?: DateTimeFilter<"GroupMembership"> | Date | string
     updatedAt?: DateTimeFilter<"GroupMembership"> | Date | string
     invitedByPlatformAdmin?: XOR<UserNullableRelationFilter, UserWhereInput> | null
@@ -24910,11 +24960,14 @@ export namespace Prisma {
     status?: SortOrder
     invitedByPlatformAdminId?: SortOrderInput | SortOrder
     joinedAt?: SortOrderInput | SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GroupMembershipCountOrderByAggregateInput
+    _avg?: GroupMembershipAvgOrderByAggregateInput
     _max?: GroupMembershipMaxOrderByAggregateInput
     _min?: GroupMembershipMinOrderByAggregateInput
+    _sum?: GroupMembershipSumOrderByAggregateInput
   }
 
   export type GroupMembershipScalarWhereWithAggregatesInput = {
@@ -24928,6 +24981,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusWithAggregatesFilter<"GroupMembership"> | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: StringNullableWithAggregatesFilter<"GroupMembership"> | string | null
     joinedAt?: DateTimeNullableWithAggregatesFilter<"GroupMembership"> | Date | string | null
+    sortOrder?: IntWithAggregatesFilter<"GroupMembership"> | number
     createdAt?: DateTimeWithAggregatesFilter<"GroupMembership"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"GroupMembership"> | Date | string
   }
@@ -26616,6 +26670,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     invitedByPlatformAdmin?: UserCreateNestedOneWithoutGroupMembershipInvitesInput
@@ -26631,6 +26686,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26640,6 +26696,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     invitedByPlatformAdmin?: UserUpdateOneWithoutGroupMembershipInvitesNestedInput
@@ -26655,6 +26712,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26667,6 +26725,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26676,6 +26735,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26688,6 +26748,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28222,8 +28283,13 @@ export namespace Prisma {
     status?: SortOrder
     invitedByPlatformAdminId?: SortOrder
     joinedAt?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type GroupMembershipAvgOrderByAggregateInput = {
+    sortOrder?: SortOrder
   }
 
   export type GroupMembershipMaxOrderByAggregateInput = {
@@ -28234,6 +28300,7 @@ export namespace Prisma {
     status?: SortOrder
     invitedByPlatformAdminId?: SortOrder
     joinedAt?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28246,8 +28313,13 @@ export namespace Prisma {
     status?: SortOrder
     invitedByPlatformAdminId?: SortOrder
     joinedAt?: SortOrder
+    sortOrder?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type GroupMembershipSumOrderByAggregateInput = {
+    sortOrder?: SortOrder
   }
 
   export type EnumGroupMembershipRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -31661,6 +31733,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     invitedByPlatformAdmin?: UserCreateNestedOneWithoutGroupMembershipInvitesInput
@@ -31674,6 +31747,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31693,6 +31767,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     group: GroupCreateNestedOneWithoutMembershipsInput
@@ -31706,6 +31781,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -32393,6 +32469,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFilter<"GroupMembership"> | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: StringNullableFilter<"GroupMembership"> | string | null
     joinedAt?: DateTimeNullableFilter<"GroupMembership"> | Date | string | null
+    sortOrder?: IntFilter<"GroupMembership"> | number
     createdAt?: DateTimeFilter<"GroupMembership"> | Date | string
     updatedAt?: DateTimeFilter<"GroupMembership"> | Date | string
   }
@@ -36609,6 +36686,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     invitedByPlatformAdmin?: UserCreateNestedOneWithoutGroupMembershipInvitesInput
@@ -36622,6 +36700,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39737,6 +39816,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39748,6 +39828,7 @@ export namespace Prisma {
     role?: $Enums.GroupMembershipRole
     status?: $Enums.GroupMembershipStatus
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40185,6 +40266,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     invitedByPlatformAdmin?: UserUpdateOneWithoutGroupMembershipInvitesNestedInput
@@ -40198,6 +40280,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40209,6 +40292,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40218,6 +40302,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneRequiredWithoutMembershipsNestedInput
@@ -40231,6 +40316,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40242,6 +40328,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41091,6 +41178,7 @@ export namespace Prisma {
     status?: $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: string | null
     joinedAt?: Date | string | null
+    sortOrder?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41256,6 +41344,7 @@ export namespace Prisma {
     role?: EnumGroupMembershipRoleFieldUpdateOperationsInput | $Enums.GroupMembershipRole
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     invitedByPlatformAdmin?: UserUpdateOneWithoutGroupMembershipInvitesNestedInput
@@ -41269,6 +41358,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41280,6 +41370,7 @@ export namespace Prisma {
     status?: EnumGroupMembershipStatusFieldUpdateOperationsInput | $Enums.GroupMembershipStatus
     invitedByPlatformAdminId?: NullableStringFieldUpdateOperationsInput | string | null
     joinedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    sortOrder?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

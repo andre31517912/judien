@@ -289,6 +289,7 @@ exports.Prisma.GroupMembershipScalarFieldEnum = {
   status: 'status',
   invitedByPlatformAdminId: 'invitedByPlatformAdminId',
   joinedAt: 'joinedAt',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

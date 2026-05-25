@@ -100,7 +100,7 @@ export class GroupsService {
     const memberships = await this.prisma.groupMembership.findMany({
       where: { userId: user.id, status: 'ACCEPTED' },
       include: { group: { include: { createdBy: { select: { displayName: true } } } } },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ sortOrder: 'asc' }, { updatedAt: 'desc' }],
     });
 
     return memberships.map((m) => ({
@@ -111,6 +111,17 @@ export class GroupsService {
         joinedAt: m.joinedAt,
       },
     }));
+  }
+
+  async reorderMyGroups(user: User, groupIds: string[]) {
+    await this.prisma.$transaction(
+      groupIds.map((groupId, index) =>
+        this.prisma.groupMembership.updateMany({
+          where: { userId: user.id, groupId },
+          data: { sortOrder: index },
+        }),
+      ),
+    );
   }
 
   async search(query: string, user?: User) {

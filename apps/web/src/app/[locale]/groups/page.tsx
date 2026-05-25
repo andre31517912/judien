@@ -4,6 +4,22 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type GroupListItem = {
   group: {
@@ -42,6 +58,62 @@ type SearchResult = {
 
 type MyPendingRequest = { groupId: string; status: string; createdAt: string };
 
+function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: string; zh: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.group.id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+      className="flex items-stretch rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+    >
+      {/* Drag handle */}
+      <button
+        {...attributes}
+        {...listeners}
+        className="flex items-center justify-center w-10 shrink-0 text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 cursor-grab active:cursor-grabbing touch-none rounded-l-2xl"
+        tabIndex={-1}
+        aria-label={zh ? '拖動以排序' : 'Drag to reorder'}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+          <rect y="1" width="14" height="1.75" rx="0.875"/>
+          <rect y="6.125" width="14" height="1.75" rx="0.875"/>
+          <rect y="11.25" width="14" height="1.75" rx="0.875"/>
+        </svg>
+      </button>
+      {/* Clickable link area */}
+      <Link href={`/${locale}/groups/${item.group.id}`} className="flex-1 p-5 block">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.group.name}</h3>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                item.membership.role === 'GROUP_ADMIN'
+                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                  : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+              }`}>
+                {item.membership.role === 'GROUP_ADMIN'
+                  ? (zh ? '群組管理員' : 'Group Admin')
+                  : (zh ? '群組成員' : 'Group Member')}
+              </span>
+            </div>
+            {item.group.description && (
+              <p className="text-sm text-gray-600 dark:text-gray-400">{item.group.description}</p>
+            )}
+          </div>
+          <div className="flex flex-col items-end gap-1 text-xs">
+            {item.membership.joinedAt && (
+              <span className="text-gray-400 dark:text-gray-500">
+                {zh ? '加入於 ' : 'Joined '}
+                {new Date(item.membership.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
 export default function MyGroupsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
@@ -58,8 +130,29 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
   const [joinSuccess, setJoinSuccess] = useState(false);
 
   const [myPendingRequests, setMyPendingRequests] = useState<MyPendingRequest[]>([]);
+  const [orderedGroups, setOrderedGroups] = useState<GroupListItem[]>([]);
 
   const [respondingId, setRespondingId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setOrderedGroups((prev) => {
+      const oldIndex = prev.findIndex((g) => g.group.id === active.id);
+      const newIndex = prev.findIndex((g) => g.group.id === over.id);
+      const next = arrayMove(prev, oldIndex, newIndex);
+      apiFetch('/groups/me/order', {
+        method: 'PATCH',
+        body: JSON.stringify({ order: next.map((g) => g.group.id) }),
+      }).catch(() => {});
+      return next;
+    });
+  };
 
   const loadPage = () => {
     setPageLoading(true);
@@ -70,7 +163,9 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
       apiFetch<MyPendingRequest[]>('/groups/my-join-requests').catch(() => [] as MyPendingRequest[]),
     ])
       .then(([g, i, jr]) => {
-        setGroups(g.filter((item) => item.membership.status === 'ACCEPTED'));
+        const accepted = g.filter((item) => item.membership.status === 'ACCEPTED');
+        setGroups(accepted);
+        setOrderedGroups(accepted);
         setInvites(i.filter((inv) => inv.status === 'PENDING'));
         setMyPendingRequests(jr);
       })
@@ -203,45 +298,15 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
             <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '您尚未加入任何群組。' : "You haven't joined any groups yet."}</p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {memberGroups.map(({ group, membership }) => (
-              <Link
-                key={group.id}
-                href={`/${params.locale}/groups/${group.id}`}
-                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{group.name}</h3>
-                      <span
-                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                          membership.role === 'GROUP_ADMIN'
-                            ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                            : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-                        }`}
-                      >
-                        {membership.role === 'GROUP_ADMIN'
-                          ? (zh ? '群組管理員' : 'Group Admin')
-                          : (zh ? '群組成員' : 'Group Member')}
-                      </span>
-                    </div>
-                    {group.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{group.description}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-1 text-xs">
-                    {membership.joinedAt && (
-                      <span className="text-gray-400 dark:text-gray-500">
-                        {zh ? '加入於 ' : 'Joined '}
-                        {new Date(membership.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={orderedGroups.map((g) => g.group.id)} strategy={verticalListSortingStrategy}>
+              <div className="grid gap-4">
+                {orderedGroups.map((item) => (
+                  <SortableGroupRow key={item.group.id} item={item} locale={params.locale} zh={zh} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
       </section>
 

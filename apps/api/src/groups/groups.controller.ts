@@ -73,6 +73,15 @@ export class GroupsController {
     return this.groupsService.myGroups(user);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me/order')
+  reorderMyGroups(
+    @CurrentUser() user: User,
+    @Body() body: { order: string[] },
+  ) {
+    return this.groupsService.reorderMyGroups(user, body.order ?? []);
+  }
+
   @UseGuards(new OptionalJwtGuard())
   @Get('search')
   search(

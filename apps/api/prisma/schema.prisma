@@ -373,6 +373,7 @@ model GroupMembership {
   invitedByPlatformAdminId String?
   invitedByPlatformAdmin User?                 @relation("GroupMembershipInvitedBy", fields: [invitedByPlatformAdminId], references: [id])
   joinedAt               DateTime?
+  sortOrder              Int                   @default(0)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
 
