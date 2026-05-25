@@ -52,7 +52,6 @@ export default function NavBar({ locale }: NavBarProps) {
                 {zh ? '我的群組' : 'My Groups'}
               </Link>
             )}
-            <NotificationBell locale={locale} />
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
@@ -89,6 +88,7 @@ export default function NavBar({ locale }: NavBarProps) {
                 </div>
               )}
             </div>
+            <NotificationBell locale={locale} />
           </>
         ) : (
           <>

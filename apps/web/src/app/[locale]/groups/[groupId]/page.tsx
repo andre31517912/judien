@@ -113,6 +113,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ title: '', body: '' });
   const [editSaving, setEditSaving] = useState(false);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
 
   type SubgroupInfo = { id: string; name: string; description: string };
   type RelationshipsData = {
@@ -395,6 +396,23 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to change role.');
+    }
+  };
+
+  const handleReviewJoinRequest = async (requestId: string, action: 'approve' | 'reject') => {
+    setReviewingId(requestId);
+    setError('');
+    try {
+      await apiFetch(`/groups/join-requests/${requestId}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      });
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      if (action === 'approve') await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to review request.');
+    } finally {
+      setReviewingId(null);
     }
   };
 
@@ -719,11 +737,44 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 )}
               </div>
             ))}
-            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</p>
+            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</p>
+            {/* Pending join requests - group admin only */}
+            {isGroupAdmin && joinRequests.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
+                  {zh ? `待審核申請 (${joinRequests.length})` : `Pending Requests (${joinRequests.length})`}
+                </h3>
+                {joinRequests.map((req) => (
+                  <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
+                      {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleReviewJoinRequest(req.id, 'approve')}
+                        disabled={reviewingId === req.id}
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                      >
+                        {zh ? '批准' : 'Approve'}
+                      </button>
+                      <button
+                        onClick={() => handleReviewJoinRequest(req.id, 'reject')}
+                        disabled={reviewingId === req.id}
+                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
+                      >
+                        {zh ? '拒絕' : 'Decline'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Invite */}
+        {/* Invite */}}
         {viewTab === 'invite' && (
           <div className="mx-auto max-w-2xl space-y-6">
             {/* Send invite form */}

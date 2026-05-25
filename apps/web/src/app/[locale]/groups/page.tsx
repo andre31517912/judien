@@ -257,69 +257,8 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      {/* Pending invitations */}
-      {pendingInvites.length > 0 && (
-        <section className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-amber-900 dark:text-amber-300">
-            {zh ? `待處理邀請 (${pendingInvites.length})` : `Pending Invitations (${pendingInvites.length})`}
-          </h2>
-          <div className="space-y-3">
-            {pendingInvites.map((inv) => (
-              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-900 px-4 py-3">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{inv.group.name}</p>
-                  {inv.group.description && (
-                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{inv.group.description}</p>
-                  )}
-                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                    {zh ? '到期：' : 'Expires: '}
-                    {new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleRespondInvite(inv.token, true)}
-                    disabled={respondingId === inv.token}
-                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-                  >
-                    {zh ? '接受' : 'Accept'}
-                  </button>
-                  <button
-                    onClick={() => handleRespondInvite(inv.token, false)}
-                    disabled={respondingId === inv.token}
-                    className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    {zh ? '拒絕' : 'Decline'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* My groups */}
-      <section>
-        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{zh ? '我加入的群組' : 'Groups I Belong To'}</h2>
-        {memberGroups.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '您尚未加入任何群組。' : "You haven't joined any groups yet."}</p>
-          </div>
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={orderedGroups.map((g) => g.group.id)} strategy={verticalListSortingStrategy}>
-              <div className="grid gap-4">
-                {orderedGroups.map((item) => (
-                  <SortableGroupRow key={item.group.id} item={item} locale={params.locale} zh={zh} />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
-      </section>
-
       {/* Search & request to join */}
-        <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '搜尋並申請加入群組' : 'Search & Request to Join'}</h2>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           {zh ? '搜尋可加入的公開群組，並送出加入申請。' : 'Find a public group and send a join request.'}
@@ -381,6 +320,68 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
           <p className="mt-4 text-sm text-gray-400 dark:text-gray-500">{zh ? '未找到符合的群組。' : 'No groups found.'}</p>
         )}
       </section>
+
+      {/* Pending invitations */
+      {pendingInvites.length > 0 && (
+        <section className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold text-amber-900 dark:text-amber-300">
+            {zh ? `待處理邀請 (${pendingInvites.length})` : `Pending Invitations (${pendingInvites.length})`}
+          </h2>
+          <div className="space-y-3">
+            {pendingInvites.map((inv) => (
+              <div key={inv.id} className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-gray-900 px-4 py-3">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">{inv.group.name}</p>
+                  {inv.group.description && (
+                    <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{inv.group.description}</p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                    {zh ? '到期：' : 'Expires: '}
+                    {new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleRespondInvite(inv.token, true)}
+                    disabled={respondingId === inv.token}
+                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                  >
+                    {zh ? '接受' : 'Accept'}
+                  </button>
+                  <button
+                    onClick={() => handleRespondInvite(inv.token, false)}
+                    disabled={respondingId === inv.token}
+                    className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {zh ? '拒絕' : 'Decline'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* My groups */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{zh ? '我加入的群組' : 'Groups I Belong To'}</h2>
+        {memberGroups.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '您尚未加入任何群組。' : "You haven't joined any groups yet."}</p>
+          </div>
+        ) : (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={orderedGroups.map((g) => g.group.id)} strategy={verticalListSortingStrategy}>
+              <div className="grid gap-4">
+                {orderedGroups.map((item) => (
+                  <SortableGroupRow key={item.group.id} item={item} locale={params.locale} zh={zh} />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </section>
+
     </div>
   );
 }
