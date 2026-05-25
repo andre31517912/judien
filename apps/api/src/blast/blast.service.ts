@@ -25,7 +25,24 @@ export class BlastService {
       });
       users = rsvps.map((r) => r.user);
     } else {
-      users = await this.prisma.user.findMany();
+      // 'invited': users who accepted an EventInvite OR RSVPed
+      const [rsvps, invites] = await Promise.all([
+        this.prisma.rSVP.findMany({ where: { eventId }, include: { user: true } }),
+        this.prisma.eventInvite.findMany({
+          where: { eventId, acceptedByUserId: { not: null } },
+          include: { acceptedBy: true },
+        }),
+      ]);
+      const seen = new Set<string>();
+      for (const r of rsvps) {
+        if (!seen.has(r.user.id)) { seen.add(r.user.id); users.push(r.user); }
+      }
+      for (const inv of invites) {
+        if (inv.acceptedBy && !seen.has(inv.acceptedBy.id)) {
+          seen.add(inv.acceptedBy.id);
+          users.push(inv.acceptedBy);
+        }
+      }
     }
 
     let sent = 0;

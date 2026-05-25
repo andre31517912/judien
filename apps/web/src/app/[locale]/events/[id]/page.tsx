@@ -52,7 +52,7 @@ export default function EventDetailPage() {
   // blast state (admin only)
   const [blastMsg, setBlastMsg] = useState('');
   const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
-  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'all'>('rsvped');
+  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('rsvped');
   const [blastResult, setBlastResult] = useState('');
 
   // invite state
@@ -664,7 +664,7 @@ export default function EventDetailPage() {
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送對象' : 'Send to'}</p>
               <div className="flex gap-3">
-                {([['rsvped', zh ? '已回覆的用戶' : 'RSVPed only'], ['all', zh ? '全部用戶' : 'All users']] as const).map(([val, label]) => (
+                {([['rsvped', zh ? '已回覆的用戶' : 'RSVPed Only'], ['invited', zh ? '所有受邀者' : 'All Invited']] as const).map(([val, label]) => (
                   <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>

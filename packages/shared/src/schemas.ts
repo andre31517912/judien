@@ -122,8 +122,8 @@ export type SetRemindersDto = z.infer<typeof SetRemindersSchema>;
 
 export const BlastSchema = z.object({
   channels: z.array(z.enum(['SMS', 'EMAIL', 'LINE'])).min(1),
-  /** Default 'rsvped' = all users who RSVPed any status; 'all' = all registered users */
-  audience: z.enum(['rsvped', 'all']).default('rsvped'),
+  /** 'rsvped' = users who RSVPed any status; 'invited' = users who accepted an invite or RSVPed */
+  audience: z.enum(['rsvped', 'invited']).default('rsvped'),
   messageEn: z.string().min(1).max(1600),
   messageZh: z.string().min(1).max(1600),
 });
