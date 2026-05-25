@@ -43,8 +43,8 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
     setError('');
     setSaving(true);
     try {
-      // Fall back to a short unique ID if the name is all non-Latin (e.g. Chinese)
-      const generatedPid = suggestedPid || `group-${Date.now().toString(36).slice(-6)}`;
+      // Fall back to a short unique ID if the name is all non-Latin (e.g. Chinese) or too short
+      const generatedPid = suggestedPid.length >= 3 ? suggestedPid : `group-${Date.now().toString(36).slice(-6)}`;
       let photoUrl: string | null = null;
       if (photoFile) {
         const uploaded = await apiUpload(photoFile);
@@ -56,7 +56,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           name,
           pid: generatedPid,
           description,
-          discoverableBySearch: false,
+          discoverableBySearch: true,
           adminUserIds: [],
           ...(photoUrl ? { photoUrl } : {}),
         }),
@@ -86,9 +86,6 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           ← {zh ? '返回群組列表' : 'Back to groups'}
         </Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '建立群組' : 'Create Group'}</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          {zh ? '建立新的 Rotary 分組並設定初始隱私規則。' : 'Create a new Rotary group and set its initial privacy rules.'}
-        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
@@ -145,10 +142,6 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           </div>
           <input ref={photoFileRef} type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
         </div>
-
-        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-600 dark:text-gray-400">
-            {zh ? '此群組建立後預設為私人，之後可於群組設定中開啟搜尋。' : 'This group starts private by default. Search discoverability can be enabled later in group settings.'}
-          </div>
 
         <div className="flex items-center justify-end gap-3">
           <Link href={`/${params.locale}/admin/groups`} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">

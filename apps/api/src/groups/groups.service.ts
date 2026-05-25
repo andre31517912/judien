@@ -138,19 +138,7 @@ export class GroupsService {
     const isPlatformAdmin = user?.role === 'ADMIN';
 
     return this.prisma.group.findMany({
-      where: isPlatformAdmin
-        ? { name: { contains: q, mode: 'insensitive' } }
-        : {
-            AND: [
-              { name: { contains: q, mode: 'insensitive' } },
-              {
-                OR: [
-                  { discoverableBySearch: true },
-                  ...(memberGroupIds.length > 0 ? [{ id: { in: memberGroupIds } }] : []),
-                ],
-              },
-            ],
-          },
+      where: { name: { contains: q, mode: 'insensitive' } },
       include: { createdBy: { select: { id: true, displayName: true } } },
       orderBy: { name: 'asc' },
       take: 25,

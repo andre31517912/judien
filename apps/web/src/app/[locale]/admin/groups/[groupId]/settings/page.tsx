@@ -85,7 +85,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [showExportModal, setShowExportModal] = useState(false);
   const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
-  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: false });
+  const [groupSettings, setGroupSettings] = useState({ name: '', description: '' });
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   const groupPhotoFileRef = useRef<HTMLInputElement>(null);
@@ -331,7 +331,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         setGroupSettings({
           name: current.group.name,
           description: current.group.description ?? '',
-          discoverableBySearch: current.group.discoverableBySearch,
         });
         const photoUrl = (current.group as { photoUrl?: string | null }).photoUrl ?? null;
         setCurrentGroupPhotoUrl(photoUrl);
@@ -476,7 +475,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       const payload: Record<string, unknown> = {
         name: groupSettings.name,
         description: groupSettings.description,
-        discoverableBySearch: groupSettings.discoverableBySearch,
       };
       if (photoUrl !== undefined) payload.photoUrl = photoUrl;
       await apiFetch(`/groups/${params.groupId}/settings`, {
@@ -1053,18 +1051,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              checked={groupSettings.discoverableBySearch}
-              onChange={(e) => setGroupSettings((s) => ({ ...s, discoverableBySearch: e.target.checked }))}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
-            />
-            <span>
-              <span className="block text-sm font-medium text-gray-900 dark:text-white">{zh ? '允許搜尋及申請加入' : 'Discoverable by search'}</span>
-              <span className="block text-xs text-gray-500 dark:text-gray-400">{zh ? '開啟後，使用者可搜尋此群組並送出加入申請。' : 'Users can find this group via search and send join requests.'}</span>
-            </span>
-          </label>
+
         </div>
         <button onClick={handleSaveSettings} disabled={settingsSaving} className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
           {settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}
