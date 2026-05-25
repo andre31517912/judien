@@ -1089,30 +1089,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </form>
         </section>
 
-      {/* Add Member Directly — platform admin or group admin */}
-      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '直接新增成員' : 'Add Member Directly'}</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '以電子郵件、手機號碼或用戶 ID 直接加入成員，無需邀請流程。' : 'Add a member instantly by email, phone, or user ID — no invite required.'}</p>
-          <form onSubmit={handleAddMember} className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件 / 手機 / 用戶 ID' : 'Email / Phone / User ID'}</label>
-              <input value={addIdentifier} onChange={(e) => setAddIdentifier(e.target.value)} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" placeholder={zh ? 'member@example.com 或 +886…' : 'member@example.com or +886…'} />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
-              <select value={addRole} onChange={(e) => setAddRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
-                <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
-              </select>
-            </div>
-            <div className="flex items-end md:col-span-3">
-              <button type="submit" disabled={addLoading || !addIdentifier.trim()} className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
-                {addLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '直接新增' : 'Add Directly')}
-              </button>
-            </div>
-          </form>
-        </section>
-
       {/* Members list */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
@@ -1125,7 +1101,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             {isPlatformAdmin && (
               <>
                 <div className="relative">
-                  <button onClick={() => triggerImport()} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                  <button onClick={() => setShowImportModal(true)} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
                     {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入 CSV' : '📥 Import CSV')}
                   </button>
                   <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
@@ -1459,6 +1435,35 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {deleteGroupLoading ? (zh ? '刪除中…' : 'Deleting…') : (zh ? '確認刪除' : 'Yes, Delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CSV Import Format Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {zh ? 'CSV 格式範例' : 'CSV Format'}
+            </h3>
+            <pre className="mt-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 text-xs text-gray-700 dark:text-gray-300 whitespace-pre overflow-x-auto">{`name,phone,email\nBob Smith,+886912345678,bob@example.com\n陳小明,+886987654321,ming@example.com`}</pre>
+            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
+              {zh ? '手機需含國碼（如 +886）。' : 'Phone must include country code (e.g. +1, +886).'}
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                {zh ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={() => { setShowImportModal(false); setTimeout(() => importFileRef.current?.click(), 50); }}
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              >
+                {zh ? '選擇檔案' : 'Select File'}
               </button>
             </div>
           </div>

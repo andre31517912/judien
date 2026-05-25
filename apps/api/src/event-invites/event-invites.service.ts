@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
+import * as bcrypt from 'bcryptjs';
 import type { CreateEventInviteDto, AcceptEventInviteDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 
@@ -59,40 +60,43 @@ export class EventInvitesService {
     const event = await this.prisma.event.findUnique({ where: { id: invite.eventId } });
     if (!event) throw new NotFoundException('Event not found.');
 
-    // Find or create user
-    let user = await this.prisma.user.findUnique({
-      where: { phoneE164: dto.phoneE164 },
-    });
+    // Find or create user — dedup across phone and email
+    const lookupConditions: object[] = [];
+    if (dto.phoneE164) lookupConditions.push({ phoneE164: dto.phoneE164 });
+    if (dto.email) lookupConditions.push({ email: dto.email });
+
+    let user = lookupConditions.length > 0
+      ? await this.prisma.user.findFirst({ where: { OR: lookupConditions } })
+      : null;
 
     if (!user) {
-      // Create new user with a placeholder email if not provided
-      const email = dto.email || `user_${randomBytes(8).toString('hex')}@invited.local`;
-      // Generate a random password (user can reset via email if real email provided)
-      const password = randomBytes(16).toString('hex');
-      // Password will need to be hashed - but for invited users, they might not need it if using phone
-
+      const email = dto.email ?? `user_${randomBytes(8).toString('hex')}@invited.local`;
+      const passwordHash = await bcrypt.hash(randomBytes(16).toString('hex'), 10);
       user = await this.prisma.user.create({
         data: {
           email,
-          phoneE164: dto.phoneE164,
-          passwordHash: password, // In real app, hash this. For now, placeholder.
+          phoneE164: dto.phoneE164 ?? null,
+          passwordHash,
           displayName: dto.displayName,
+          isGuest: true,
+          role: 'USER',
         },
       });
     } else {
-      // Update existing user's display name if provided
-      if (dto.displayName) {
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: { displayName: dto.displayName },
-        });
+      // Merge any missing identifiers onto the existing account
+      const updates: Record<string, unknown> = {};
+      if (dto.displayName && !user.displayName) updates.displayName = dto.displayName;
+      if (dto.phoneE164 && !user.phoneE164) updates.phoneE164 = dto.phoneE164;
+      if (
+        dto.email &&
+        (!user.email ||
+          user.email.endsWith('@invited.local') ||
+          user.email.endsWith('@guest.local'))
+      ) {
+        updates.email = dto.email;
       }
-      // Update email if provided and different
-      if (dto.email && user.email !== dto.email) {
-        user = await this.prisma.user.update({
-          where: { id: user.id },
-          data: { email: dto.email },
-        });
+      if (Object.keys(updates).length > 0) {
+        user = await this.prisma.user.update({ where: { id: user.id }, data: updates });
       }
     }
 

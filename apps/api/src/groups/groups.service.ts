@@ -896,27 +896,56 @@ export class GroupsService {
 
     const fs = await import('fs/promises');
     const text = await fs.readFile(filePath, 'utf-8');
-    // Skip header row if it looks like a header (non-email/id first cell)
+
     const allLines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    const identifiers = allLines
-      .map((line) => line.split(',')[0].replace(/^"|"$/g, '').trim())
-      .filter(Boolean);
+    if (allLines.length === 0) return { total: 0, results: [] };
+
+    const parseRow = (line: string) => line.split(',').map((c) => c.replace(/^"|"$/g, '').trim());
+
+    // Detect named header row: look for "email" and/or "phone" column headers
+    const firstRow = parseRow(allLines[0]);
+    const emailIdx = firstRow.findIndex((h) => /^email$/i.test(h));
+    const phoneIdx = firstRow.findIndex((h) => /^(phone|mobile|tel|e164|phonee164)$/i.test(h));
+    const hasHeader = emailIdx !== -1 || phoneIdx !== -1;
+    const dataLines = hasHeader ? allLines.slice(1) : allLines;
 
     const results: Array<{ identifier: string; status: 'added' | 'not_found' | 'already_member' }> = [];
 
-    for (const id of identifiers) {
-      const targetUser = await this.prisma.user.findFirst({
-        where: { OR: [{ id }, { email: id }, { phoneE164: id }] },
-      });
+    for (const line of dataLines) {
+      const cols = parseRow(line);
+
+      // Build candidate identifiers for this row (email preferred over phone)
+      let candidates: string[];
+      if (hasHeader) {
+        candidates = [
+          emailIdx !== -1 ? cols[emailIdx] : '',
+          phoneIdx !== -1 ? cols[phoneIdx] : '',
+        ].filter(Boolean);
+      } else {
+        // No named header: fall back to first column (plain email or E.164 phone)
+        candidates = [cols[0]].filter(Boolean);
+      }
+
+      if (candidates.length === 0) continue;
+      const displayId = candidates[0];
+
+      let targetUser: Awaited<ReturnType<typeof this.prisma.user.findFirst>> = null;
+      for (const id of candidates) {
+        targetUser = await this.prisma.user.findFirst({
+          where: { OR: [{ email: id }, { phoneE164: id }] },
+        });
+        if (targetUser) break;
+      }
+
       if (!targetUser) {
-        results.push({ identifier: id, status: 'not_found' });
+        results.push({ identifier: displayId, status: 'not_found' });
         continue;
       }
       const existing = await this.prisma.groupMembership.findUnique({
         where: { groupId_userId: { groupId, userId: targetUser.id } },
       });
       if (existing?.status === 'ACCEPTED') {
-        results.push({ identifier: id, status: 'already_member' });
+        results.push({ identifier: displayId, status: 'already_member' });
         continue;
       }
       await this.prisma.groupMembership.upsert({
@@ -924,10 +953,10 @@ export class GroupsService {
         create: { groupId, userId: targetUser.id, status: 'ACCEPTED', role: 'GROUP_MEMBER', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
         update: { status: 'ACCEPTED', joinedAt: new Date(), invitedByPlatformAdminId: user.id },
       });
-      results.push({ identifier: id, status: 'added' });
+      results.push({ identifier: displayId, status: 'added' });
     }
 
-    return { total: identifiers.length, results };
+    return { total: dataLines.length, results };
   }
 
   async exportMembers(groupId: string, user: User): Promise<{ buffer: Buffer; filename: string }> {

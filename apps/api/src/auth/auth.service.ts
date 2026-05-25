@@ -41,7 +41,36 @@ export class AuthService {
     ];
     const existing = await this.prisma.user.findFirst({ where: { OR: orConditions } });
     if (existing) {
-      throw new ConflictException('Email or phone already registered.');
+      if (!existing.isGuest) {
+        throw new ConflictException('Email or phone already registered.');
+      }
+      // Guest account found — let the user claim it with a real password
+      const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+      return this.prisma.$transaction(async (tx) => {
+        const claimed = await tx.user.update({
+          where: { id: existing.id },
+          data: {
+            phoneE164: dto.phone,
+            email:
+              dto.email ??
+              (existing.email &&
+              !existing.email.endsWith('@guest.local') &&
+              !existing.email.endsWith('@invited.local')
+                ? existing.email
+                : null),
+            passwordHash,
+            displayName: dto.displayName?.trim() || existing.displayName,
+            preferredLanguage: dto.preferredLanguage,
+            role: invite.role,
+            isGuest: false,
+          },
+        });
+        await tx.inviteToken.update({
+          where: { id: invite.id },
+          data: { usedById: claimed.id, usedAt: new Date() },
+        });
+        return claimed;
+      });
     }
 
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
