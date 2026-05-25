@@ -412,13 +412,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
   if (!groupItem) {
     return (
-      <div className="space-y-4">
-        <Link href={`/${params.locale}/groups`} className="text-sm text-gray-500 hover:text-gray-800">
-          ← {zh ? '返回我的群組' : 'Back to My Groups'}
-        </Link>
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">
-          {error || (zh ? '找不到此群組。' : 'Group not found.')}
-        </div>
+      <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">
+        {error || (zh ? '找不到此群組。' : 'Group not found.')}
       </div>
     );
   }
@@ -438,21 +433,19 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     <>
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
-      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 pb-0 pt-6 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        {/* Banner */}
+        {group.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={resolveImageUrl(group.photoUrl) ?? ''}
+            alt={group.name}
+            className="w-full h-40 sm:h-56 object-cover"
+          />
+        )}
+        <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
-            <Link href={`/${params.locale}/groups`} className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-              ← {zh ? '所有群組' : 'All Groups'}
-            </Link>
-            {/* Group photo */}
-            {group.photoUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={resolveImageUrl(group.photoUrl) ?? ''}
-                alt={group.name}
-                className="h-20 w-20 rounded-full object-cover border border-gray-200 dark:border-gray-700 mb-2"
-              />
-            )}
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             {relationships?.lineage && relationships.lineage.length > 1 && (
               <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -465,7 +458,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </p>
             )}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
               <span
                 className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                   isGroupAdmin
@@ -532,6 +525,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             </button>
           ))}
         </div>
+      </div>
       </div>
 
       {/* ── Tab content ── */}

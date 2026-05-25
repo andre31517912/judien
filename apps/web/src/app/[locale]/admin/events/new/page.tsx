@@ -80,7 +80,6 @@ export default function NewEventPage({ params }: { params: { locale: string } })
   if (user?.role !== 'ADMIN') return (
     <div className="text-center py-16">
       <p className="text-red-500 font-medium">Admin access required.</p>
-      <a href={`/${params.locale}/events`} className="text-indigo-600 underline mt-3 block text-sm">← Back to events</a>
     </div>
   );
 

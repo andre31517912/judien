@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import NavBar from '../../components/NavBar';
 import HtmlLang from '../../components/HtmlLang';
 import AuthGuard from '../../components/AuthGuard';
+import Footer from '../../components/Footer';
 
 const locales = ['en', 'zh'];
 
@@ -15,12 +16,13 @@ export default async function LocaleLayout({
 }) {
   if (!locales.includes(params.locale)) notFound();
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black transition-colors">
       <HtmlLang locale={params.locale} />
       <NavBar locale={params.locale} />
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
         <AuthGuard locale={params.locale}>{children}</AuthGuard>
       </main>
+      <Footer locale={params.locale} />
     </div>
   );
 }

@@ -82,12 +82,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="space-y-2">
-        <Link href={`/${params.locale}/admin/groups`} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-          ← {zh ? '返回群組列表' : 'Back to groups'}
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '建立群組' : 'Create Group'}</h1>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '建立群組' : 'Create Group'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         {error && <p className="text-sm text-red-500">{error}</p>}

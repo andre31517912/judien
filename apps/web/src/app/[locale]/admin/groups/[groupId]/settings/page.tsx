@@ -672,9 +672,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <Link href={`/${params.locale}/admin/groups/${params.groupId}`} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-          ← {zh ? `返回 ${groupItem.group.name}` : `Back to ${groupItem.group.name}`}
-        </Link>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {zh ? '群組設定' : 'Group Settings'} — {groupItem.group.name}
         </h1>

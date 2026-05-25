@@ -176,7 +176,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   if (user?.role !== 'ADMIN') return (
     <div className="text-center py-16">
       <p className="text-red-500 font-medium">Admin access required.</p>
-      <a href={`/${params.locale}/events`} className="text-indigo-600 underline mt-3 block text-sm">← Back to events</a>
     </div>
   );
 
@@ -199,12 +198,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
       {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
-        <a
-          href={`/${params.locale}/events/${params.id}`}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 mr-2"
-        >
-          ← {zh ? '返回' : 'Back'}
-        </a>
         <button
           type="button"
           onClick={doUpdate}

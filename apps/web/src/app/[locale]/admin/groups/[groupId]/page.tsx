@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch, apiUpload } from '@/lib/api';
+import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 type AdminGroupItem = {
@@ -12,6 +12,7 @@ type AdminGroupItem = {
     pid: string;
     name: string;
     description: string;
+    photoUrl: string | null;
     discoverableBySearch: boolean;
   };
   membership: {
@@ -202,12 +203,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   }
 
   if (!groupItem) {
-    return (
-      <div className="space-y-4">
-        <Link href={`/${params.locale}/admin/groups`} className="text-sm text-gray-500 hover:text-gray-800">← {zh ? '所有群組' : 'All Groups'}</Link>
-        <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>
-      </div>
-    );
+    return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>;
   }
 
   const { group } = groupItem;
@@ -222,15 +218,21 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   return (
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 px-4 pb-0 pt-6 sm:px-6 lg:px-8">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950">
+        {group.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={resolveImageUrl(group.photoUrl) ?? ''}
+            alt={group.name}
+            className="w-full h-40 sm:h-56 object-cover"
+          />
+        )}
+        <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-1">
-            <Link href={`/${params.locale}/admin/groups`} className="text-xs text-gray-400 hover:text-gray-600">
-              ← {zh ? '所有群組' : 'All Groups'}
-            </Link>
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : 'members'}</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -284,6 +286,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               {composingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
             </button>
           )}
+        </div>
         </div>
       </div>
 

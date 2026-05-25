@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 
 type Mode = 'email' | 'sms';
@@ -135,11 +134,7 @@ export default function ForgotPasswordPage({ params }: { params: { locale: strin
         </form>
       )}
 
-      <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
-        <Link href={`/${params.locale}/login`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
-          ← {zh ? '返回登入' : 'Back to login'}
-        </Link>
-      </p>
+
     </div>
   );
 }

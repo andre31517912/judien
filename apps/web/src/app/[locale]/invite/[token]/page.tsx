@@ -197,7 +197,7 @@ export default function InviteAcceptPage() {
           {(!isGroup || !hasAccount) && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {zh ? '顯示名稱' : 'Display Name'}{!isGroup || !hasAccount ? ' *' : ''}
+                {zh ? '姓名' : 'Full Name'}{!isGroup || !hasAccount ? ' *' : ''}
               </label>
               <input
                 type="text"

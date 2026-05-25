@@ -325,12 +325,6 @@ export default function EventDetailPage() {
       {user?.role === 'ADMIN' ? (
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
           <a
-            href={`/${locale}/events`}
-            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 mr-2"
-          >
-            ← {zh ? '返回' : 'Back'}
-          </a>
-          <a
             href={`/${locale}/admin/events/${params.id}/edit`}
             className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
           >
@@ -349,14 +343,7 @@ export default function EventDetailPage() {
             ⬇️ {zh ? '匯出 CSV' : 'Export CSV'}
           </button>
         </div>
-      ) : (
-        <a
-          href={`/${locale}/events`}
-          className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1 self-start"
-        >
-          ← Back
-        </a>
-      )}
+      ) : null}
 
       {resolveImageUrl(event.coverImageUrl) ? (
         // eslint-disable-next-line @next/next/no-img-element

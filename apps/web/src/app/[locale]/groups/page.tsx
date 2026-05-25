@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, resolveImageUrl } from '@/lib/api';
 import {
   DndContext,
   closestCenter,
@@ -27,6 +27,7 @@ type GroupListItem = {
     pid: string;
     name: string;
     description: string;
+    photoUrl: string | null;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -64,43 +65,50 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
-      className="flex items-stretch rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+      className="flex items-stretch rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden"
     >
-      {/* Clickable link area */}
-      <Link href={`/${locale}/groups/${item.group.id}`} className="flex-1 p-5 block">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.group.name}</h3>
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                item.membership.role === 'GROUP_ADMIN'
-                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                  : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-              }`}>
-                {item.membership.role === 'GROUP_ADMIN'
-                  ? (zh ? '群組管理員' : 'Group Admin')
-                  : (zh ? '群組成員' : 'Group Member')}
-              </span>
-            </div>
-            {item.group.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">{item.group.description}</p>
-            )}
+      {/* Full-height left photo */}
+      <div className="w-20 shrink-0 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+        {item.group.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={resolveImageUrl(item.group.photoUrl) ?? ''} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <svg className="w-7 h-7 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+        )}
+      </div>
+      <Link href={`/${locale}/groups/${item.group.id}`} className="flex-1 flex items-center px-4 py-4">
+        {/* Text */}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">{item.group.name}</h3>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+              item.membership.role === 'GROUP_ADMIN'
+                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+            }`}>
+              {item.membership.role === 'GROUP_ADMIN'
+                ? (zh ? '群組管理員' : 'Group Admin')
+                : (zh ? '群組成員' : 'Group Member')}
+            </span>
           </div>
-          <div className="flex flex-col items-end gap-1 text-xs">
-            {item.membership.joinedAt && (
-              <span className="text-gray-400 dark:text-gray-500">
-                {zh ? '加入於 ' : 'Joined '}
-                {new Date(item.membership.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
-              </span>
-            )}
-          </div>
+          {item.group.description && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{item.group.description}</p>
+          )}
+          {item.membership.joinedAt && (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              {zh ? '加入於 ' : 'Joined '}
+              {new Date(item.membership.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
+            </p>
+          )}
         </div>
       </Link>
-      {/* Drag handle — right side */}
+      {/* Drag handle */}
       <button
         {...attributes}
         {...listeners}
-        className="flex items-center justify-center w-10 shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing touch-none rounded-r-2xl border-l border-gray-100 dark:border-gray-800"
+        className="flex items-center justify-center w-10 shrink-0 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing touch-none border-l border-gray-100 dark:border-gray-800"
         tabIndex={-1}
         aria-label={zh ? '拖動以排序' : 'Drag to reorder'}
       >

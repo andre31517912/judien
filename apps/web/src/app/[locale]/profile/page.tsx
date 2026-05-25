@@ -5,14 +5,12 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import PolicyModal from '@/components/PolicyModal';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, refresh } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const backHref = searchParams.get('from') ?? `/${params.locale}/events`;
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -26,9 +24,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [lang, setLang] = useState<'en' | 'zh'>(params.locale as 'en' | 'zh');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { theme, setTheme } = useTheme();
-  const [policyModal, setPolicyModal] = useState<'privacy' | 'terms' | null>(null);
-
   type AdminInvite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
   const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
   const [inviteGenerating, setInviteGenerating] = useState(false);
@@ -38,8 +35,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   useEffect(() => {
     if (user) {
       setDisplayName((user as any).displayName ?? '');
-      setPhone('');
-      setEmail('');
+      setPhone((user as any)?.phoneE164 ?? '');
+      setEmail((user as any)?.email ?? '');
       setPassword('');
       setMuteSms((user as any).muteSms ?? false);
       setMuteEmail((user as any).muteEmail ?? false);
@@ -76,8 +73,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       displayName: displayName.trim(),
     };
     // Only send phone/email if they have actually changed
-    if (phone.trim()) body.phone = phone.trim();
-    if (email.trim() && email.trim() !== (user as any)?.email) body.email = email.trim();
+    if (phone.trim() && phone.trim() !== ((user as any)?.phoneE164 ?? '')) body.phone = phone.trim();
+    if (email.trim() && email.trim() !== ((user as any)?.email ?? '')) body.email = email.trim();
     if (password.trim()) body.password = password.trim();
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
@@ -99,8 +96,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
   return (
     <div className="max-w-md mx-auto mt-8">
-      <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold dark:text-white">{zh ? '個人資料' : 'Profile'}</h1>
         <span
           className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -111,14 +107,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         >
           {user.role === 'ADMIN' ? (zh ? '平台管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
-      </div>
-        <button
-          type="button"
-          onClick={() => router.push(backHref)}
-          className="bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700 font-medium"
-        >
-          ‹ {zh ? '返回' : 'Back'}
-        </button>
       </div>
 
       {msg && (
@@ -131,12 +119,12 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-            {zh ? '顯示名稱' : 'Display Name'}
+            {zh ? '姓名' : 'Full Name'}
           </label>
           <input
             type="text"
             value={displayName}
-            placeholder={(user as any)?.displayName || (zh ? '輸入顯示名稱' : 'Enter a display name')}
+            placeholder={(user as any)?.displayName || (zh ? '輸入姓名' : 'Enter full name')}
             onChange={(e) => setDisplayName(e.target.value)}
             className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
@@ -308,13 +296,32 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '新密碼' : 'Password'}
           </label>
-          <input
-            type="password"
-            value={password}
-            placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label={showPassword ? (zh ? '隱藏密碼' : 'Hide password') : (zh ? '顯示密碼' : 'Show password')}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 4.411m0 0L21 21" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         <button
@@ -325,28 +332,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           {saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
         </button>
       </form>
-
-      {/* Legal links */}
-      <div className="mt-6 flex gap-4 text-xs text-gray-400 dark:text-gray-500">
-        <button
-          type="button"
-          onClick={() => setPolicyModal('privacy')}
-          className="hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition"
-        >
-          {zh ? '隱私政策' : 'Privacy Policy'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setPolicyModal('terms')}
-          className="hover:text-indigo-600 dark:hover:text-indigo-400 underline underline-offset-2 transition"
-        >
-          {zh ? '使用條款' : 'Terms of Use'}
-        </button>
-      </div>
-
-      {policyModal && (
-        <PolicyModal type={policyModal} onClose={() => setPolicyModal(null)} />
-      )}
 
       {/* Admin invite link generator */}
       {user.role === 'ADMIN' && (

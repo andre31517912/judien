@@ -134,7 +134,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
 
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {field(zh ? '顯示名稱' : 'Display Name', 'displayName')}
+        {field(zh ? '姓名' : 'Full Name', 'displayName')}
         {field(zh ? '電話號碼（如 +886912345678）' : 'Phone (e.g. +886912345678)', 'phone', 'tel')}
         {field(zh ? '密碼（至少 8 字元）' : 'Password (min 8 chars)', 'password', 'password')}
         {field(zh ? '電子郵件' : 'Email', 'email', 'email', false)}

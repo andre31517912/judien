@@ -156,10 +156,7 @@ export default function SharedEventPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <Link href={`/${locale}/events`} className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
-          ← {zh ? '返回活動' : 'Back to Events'}
-        </Link>
+      <div className="flex justify-end">
         <button onClick={copyLink} className="text-sm rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
           {copied ? (zh ? '已複製' : 'Copied') : (zh ? '複製分享連結' : 'Copy Share Link')}
         </button>
