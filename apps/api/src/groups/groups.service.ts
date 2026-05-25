@@ -187,6 +187,7 @@ export class GroupsService {
             email: true,
             phoneE164: true,
             displayName: true,
+            role: true,
           },
         },
       },
@@ -197,6 +198,7 @@ export class GroupsService {
       userId: m.user.id,
       displayName: m.user.displayName,
       role: m.role,
+      userRole: m.user.role,
       joinedAt: m.joinedAt,
       email: isPlatformAdmin || isGroupAdmin ? m.user.email : null,
       phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
@@ -219,7 +221,7 @@ export class GroupsService {
       const childRows = await this.prisma.groupMembership.findMany({
         where: { groupId: child.id, status: 'ACCEPTED' },
         include: {
-          user: { select: { id: true, email: true, phoneE164: true, displayName: true } },
+          user: { select: { id: true, email: true, phoneE164: true, displayName: true, role: true } },
         },
         orderBy: { joinedAt: 'asc' },
       });
@@ -229,6 +231,7 @@ export class GroupsService {
             userId: m.user.id,
             displayName: m.user.displayName,
             role: m.role,
+            userRole: m.user.role,
             joinedAt: m.joinedAt,
             email: isPlatformAdmin || isGroupAdmin ? m.user.email : null,
             phoneE164: isPlatformAdmin || isGroupAdmin ? m.user.phoneE164 : null,
@@ -828,7 +831,7 @@ export class GroupsService {
       });
     }
 
-    return { created: true, added: true, userId: newUser.id, displayName: newUser.displayName };
+    return { created: true, added: true, userId: newUser.id, displayName: newUser.displayName, tempPassword };
   }
 
   async canAccessGroup(groupId: string, userId?: string) {

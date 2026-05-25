@@ -89,14 +89,14 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
           disabled={creating}
           className="flex-1 bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 text-sm font-medium disabled:opacity-60 transition"
         >
-          {zh ? '邀請用戶' : 'Invite as User'}
+          {zh ? '邀請平台用戶' : 'Invite as Platform User'}
         </button>
         <button
           onClick={() => generate('ADMIN')}
           disabled={creating}
           className="flex-1 bg-purple-700 text-white py-2.5 rounded-lg hover:bg-purple-800 text-sm font-medium disabled:opacity-60 transition"
         >
-          {zh ? '邀請管理員' : 'Invite as Admin'}
+          {zh ? '邀請平台管理員' : 'Invite as Platform Admin'}
         </button>
       </div>
 
@@ -116,7 +116,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
                     ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                     : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                 }`}>
-                  {invite.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+                  {invite.role === 'ADMIN' ? (zh ? '平台管理員' : 'Platform Admin') : (zh ? '平台用戶' : 'Platform User')}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-mono text-xs text-gray-400 truncate">{invite.token}</p>
@@ -145,7 +145,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
                   ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
                   : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
               }`}>
-                {modalRole === 'ADMIN' ? (zh ? '管理員邀請' : 'Admin invite') : (zh ? '用戶邀請' : 'User invite')}
+                {modalRole === 'ADMIN' ? (zh ? '平台管理員邀請' : 'Platform Admin invite') : (zh ? '平台用戶邀請' : 'Platform User invite')}
               </span>
             </div>
             <h2 className="text-lg font-bold dark:text-white mb-1">

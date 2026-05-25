@@ -29,6 +29,7 @@ type GroupMember = {
   userId: string;
   displayName: string | null;
   role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
+  userRole: 'ADMIN' | 'USER';
   joinedAt: string | null;
   email: string | null;
   phoneE164: string | null;
@@ -533,13 +534,18 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             <button
               key={t.key}
               onClick={() => setViewTab(t.key)}
-              className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
                 viewTab === t.key
                   ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               {zh ? t.labelZh : t.label}
+              {t.key === 'members' && isGroupAdmin && joinRequests.length > 0 && (
+                <span className="inline-flex items-center justify-center h-4.5 min-w-[1.125rem] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none py-0.5">
+                  {joinRequests.length}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -701,11 +707,60 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Members */}
         {viewTab === 'members' && (
           <div className="mx-auto max-w-2xl space-y-2">
+            <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
+              {members.length + (isGroupAdmin ? joinRequests.length : 0)}{' '}
+              {zh ? '位成員' : (members.length + (isGroupAdmin ? joinRequests.length : 0)) === 1 ? 'member' : 'members'}
+              {isGroupAdmin && joinRequests.length > 0 && (
+                <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  {joinRequests.length} {zh ? '待審核' : 'pending'}
+                </span>
+              )}
+            </p>
+            {/* Pending join requests shown inline at top – group admin only */}
+            {isGroupAdmin && joinRequests.map((req) => (
+              <div key={`req-${req.id}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 shadow-sm">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
+                    <span className="rounded-full bg-amber-200 dark:bg-amber-800/60 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                      {zh ? '申請中' : 'Pending'}
+                    </span>
+                  </div>
+                  {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleReviewJoinRequest(req.id, 'approve')}
+                    disabled={reviewingId === req.id}
+                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                  >
+                    {zh ? '批准' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => handleReviewJoinRequest(req.id, 'reject')}
+                    disabled={reviewingId === req.id}
+                    className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
+                  >
+                    {zh ? '拒絕' : 'Decline'}
+                  </button>
+                </div>
+              </div>
+            ))}
             {members.map((member) => (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+                    {member.userRole === 'ADMIN' ? (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
+                        {zh ? '平台管理員' : 'Platform Admin'}
+                      </span>
+                    ) : member.userRole === 'USER' && member.role === 'GROUP_ADMIN' ? (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                        {zh ? '群組管理員' : 'Group Admin'}
+                      </span>
+                    ) : null}
                     {member.childGroupName && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
                         {member.childGroupName}
@@ -737,44 +792,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 )}
               </div>
             ))}
-            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</p>
-            {/* Pending join requests - group admin only */}
-            {isGroupAdmin && joinRequests.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-                  {zh ? `待審核申請 (${joinRequests.length})` : `Pending Requests (${joinRequests.length})`}
-                </h3>
-                {joinRequests.map((req) => (
-                  <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
-                      {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
-                      <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleReviewJoinRequest(req.id, 'approve')}
-                        disabled={reviewingId === req.id}
-                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                      >
-                        {zh ? '批准' : 'Approve'}
-                      </button>
-                      <button
-                        onClick={() => handleReviewJoinRequest(req.id, 'reject')}
-                        disabled={reviewingId === req.id}
-                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
-                      >
-                        {zh ? '拒絕' : 'Decline'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
-        {/* Invite */}}
+        {/* Invite */}
         {viewTab === 'invite' && (
           <div className="mx-auto max-w-2xl space-y-6">
             {/* Send invite form */}

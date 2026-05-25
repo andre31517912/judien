@@ -49,20 +49,18 @@ export default function NavBar({ locale }: NavBarProps) {
               </Link>
             ) : (
               <Link href={`/${locale}/groups`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-                {zh ? '我的群組' : 'My Groups'}
+                {zh ? '群組' : 'Groups'}
               </Link>
             )}
+            <div className="flex items-center gap-1.5">
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
                 <span className="max-w-[120px] truncate">
                   {(user as any).displayName || user.email?.split('@')[0] || user.phoneE164 || 'User'}
                 </span>
-                <svg className="h-3.5 w-3.5 shrink-0 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                </svg>
               </button>
               {showUserMenu && (
                 <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white dark:bg-gray-900 shadow-lg ring-1 ring-black/5 dark:ring-white/10 py-1 z-40">
@@ -89,6 +87,7 @@ export default function NavBar({ locale }: NavBarProps) {
               )}
             </div>
             <NotificationBell locale={locale} />
+            </div>
           </>
         ) : (
           <>

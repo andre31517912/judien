@@ -76,6 +76,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [newMemberForm, setNewMemberForm] = useState({ displayName: '', phone: '', email: '' });
   const [newMemberRole, setNewMemberRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
   const [newMemberLoading, setNewMemberLoading] = useState(false);
+  const [newMemberTempPassword, setNewMemberTempPassword] = useState<{ name: string; password: string } | null>(null);
 
   const importFileRef = useRef<HTMLInputElement>(null);
   const [importLoading, setImportLoading] = useState(false);
@@ -538,7 +539,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
     setNewMemberLoading(true);
     try {
-      const result = await apiFetch<{ created: boolean; displayName: string | null }>(`/groups/${params.groupId}/members/new-and-add`, {
+      const result = await apiFetch<{ created: boolean; displayName: string | null; tempPassword?: string }>(`/groups/${params.groupId}/members/new-and-add`, {
         method: 'POST',
         body: JSON.stringify({
           displayName: newMemberForm.displayName.trim(),
@@ -550,11 +551,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setNewMemberForm({ displayName: '', phone: '', email: '' });
       setNewMemberRole('GROUP_MEMBER');
       const name = result.displayName ?? newMemberForm.displayName.trim();
-      setSuccess(
-        result.created
-          ? (zh ? `帳號已建立並新增為成員：${name}` : `Account created and added as member: ${name}`)
-          : (zh ? `現有用戶已新增為成員：${name}` : `Existing user added as member: ${name}`),
-      );
+      if (result.created && result.tempPassword) {
+        setNewMemberTempPassword({ name, password: result.tempPassword });
+        setSuccess('');
+      } else {
+        setNewMemberTempPassword(null);
+        setSuccess(
+          zh ? `現有用戶已新增為成員：${name}` : `Existing user added as member: ${name}`,
+        );
+      }
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed.');
@@ -1195,6 +1200,37 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               {newMemberLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立帳號並加入群組' : 'Create Account & Add to Group')}
             </button>
           </form>
+          {newMemberTempPassword && (
+            <div className="mt-4 rounded-lg border border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-900/30 p-4">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">
+                {zh ? `✅ 帳號已建立：${newMemberTempPassword.name}` : `✅ Account created: ${newMemberTempPassword.name}`}
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">
+                {zh
+                  ? '請將以下臨時密碼傳送給該成員。他們可在個人資料中設定新密碼。'
+                  : 'Share this temporary password with the member. They can set a new password in their profile.'}
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 rounded bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-700 px-3 py-1.5 text-sm font-mono text-gray-900 dark:text-white select-all">
+                  {newMemberTempPassword.password}
+                </code>
+                <button
+                  type="button"
+                  onClick={() => { void navigator.clipboard.writeText(newMemberTempPassword.password); }}
+                  className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+                >
+                  {zh ? '複製' : 'Copy'}
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewMemberTempPassword(null)}
+                className="mt-2 text-xs text-amber-600 dark:text-amber-400 underline"
+              >
+                {zh ? '關閉' : 'Dismiss'}
+              </button>
+            </div>
+          )}
         )}
       </section>
 
