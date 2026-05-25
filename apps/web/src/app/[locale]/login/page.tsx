@@ -72,7 +72,7 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
             type="text"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            placeholder={zh ? 'someone@example.com 或 +886912345678' : 'someone@example.com or +886912345678'}
+            placeholder=""
             required
             className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />

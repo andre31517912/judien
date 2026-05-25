@@ -96,6 +96,7 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [orderedGroups, setOrderedGroups] = useState<GroupListItem[]>([]);
+  const [filterQuery, setFilterQuery] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -150,6 +151,14 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
+      {/* Filter */}
+      <input
+        value={filterQuery}
+        onChange={(e) => setFilterQuery(e.target.value)}
+        placeholder={zh ? '搜尋群組名稱…' : 'Filter by group name…'}
+        className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+      />
+
       {orderedGroups.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">{zh ? '尚未建立任何群組。' : 'No groups created yet.'}</p>
@@ -158,7 +167,7 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={orderedGroups.map((g) => g.group.id)} strategy={verticalListSortingStrategy}>
             <div className="grid gap-4">
-              {orderedGroups.map((item) => (
+              {orderedGroups.filter((item) => !filterQuery.trim() || item.group.name.toLowerCase().includes(filterQuery.toLowerCase())).map((item) => (
                 <SortableGroupRow key={item.group.id} item={item} locale={params.locale} zh={zh} />
               ))}
             </div>
