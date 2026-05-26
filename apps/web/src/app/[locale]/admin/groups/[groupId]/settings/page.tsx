@@ -56,10 +56,18 @@ type JoinRequest = {
 };
 
 export default function GroupSettingsPage({ params }: { params: { locale: string; groupId: string } }) {
-  // ...existing code...
+
+  // ...other state and functions...
+
+  const handleDeleteDonation = async (id: string) => {
+    if (!confirm(zh ? '確定要刪除此捐款記錄嗎？' : 'Delete this donation record?')) return;
+    setError('');
+    try {
       await apiFetch(`/groups/${params.groupId}/donations/${id}`, { method: 'DELETE' });
       setDonations((prev) => prev.filter((d) => d.id !== id));
-    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed.');
+    }
   };
 
   // ── Report state ─────────────────────────────────────────────────────────
@@ -537,6 +545,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create group event.');
+
     } finally {
       setEventLoading(false);
     }
@@ -547,14 +556,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const isPlatformAdmin = user?.role === 'ADMIN';
   const isGroupAdmin = groupItem?.membership.role === 'GROUP_ADMIN';
 
+
   if (!user || (!isPlatformAdmin && !isGroupAdmin)) {
     return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{zh ? '您沒有權限管理此群組。' : 'You do not have permission to manage this group.'}</div>;
   }
-
   if (!groupItem) {
     return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>;
   }
-
   return (
     <div className="space-y-8">
       <div className="space-y-1">
