@@ -674,8 +674,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>;
   }
 
-  // ...existing code...
-
   return (
     <div className="space-y-8">
       <div className="space-y-1">
