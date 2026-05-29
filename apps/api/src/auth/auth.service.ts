@@ -28,14 +28,15 @@ export class AuthService {
   ) {}
 
   async signup(dto: SignupDto): Promise<User> {
-    // Require a valid invite token — signup is not open to the public
-    if (!dto.inviteToken) {
-      throw new BadRequestException('An invite token is required to sign up.');
+    // Validate invite token only when one is provided (e.g. admin invite flow).
+    // Regular users may sign up without a token.
+    let invite: Awaited<ReturnType<typeof this.prisma.inviteToken.findUnique>> | null = null;
+    if (dto.inviteToken) {
+      invite = await this.prisma.inviteToken.findUnique({ where: { token: dto.inviteToken } });
+      if (!invite) throw new BadRequestException('Invalid invite token.');
+      if (invite.usedAt) throw new BadRequestException('Invite token has already been used.');
+      if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite token has expired.');
     }
-    const invite = await this.prisma.inviteToken.findUnique({ where: { token: dto.inviteToken } });
-    if (!invite) throw new BadRequestException('Invalid invite token.');
-    if (invite.usedAt) throw new BadRequestException('Invite token has already been used.');
-    if (invite.expiresAt <= new Date()) throw new BadRequestException('Invite token has expired.');
 
     const orConditions = [
       { phoneE164: dto.phone },
@@ -55,14 +56,18 @@ export class AuthService {
           phoneE164: dto.phone,
           displayName: dto.displayName?.trim() || null,
           preferredLanguage: dto.preferredLanguage,
-          role: invite.role,
+          // Use the role from the invite token if provided; otherwise default to USER
+          role: invite ? invite.role : 'USER',
           hasPassword: true,
         },
       });
-      await tx.inviteToken.update({
-        where: { id: invite.id },
-        data: { usedById: user.id, usedAt: new Date() },
-      });
+      // Mark the invite token as used when one was provided
+      if (invite) {
+        await tx.inviteToken.update({
+          where: { id: invite.id },
+          data: { usedById: user.id, usedAt: new Date() },
+        });
+      }
       return user;
     });
   }
