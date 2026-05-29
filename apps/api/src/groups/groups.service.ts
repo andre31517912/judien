@@ -56,7 +56,7 @@ export class GroupsService {
           name: dto.name,
           description: dto.description ?? '',
           photoUrl: dto.photoUrl ?? null,
-          discoverableBySearch: dto.discoverableBySearch ?? false,
+          discoverableBySearch: dto.discoverableBySearch ?? true,
           createdById: user.id,
           ...(dto.parentGroupId ? { parentGroupId: dto.parentGroupId } : {}),
         },

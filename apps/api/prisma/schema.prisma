@@ -338,7 +338,7 @@ model Group {
   name               String
   description        String            @default("")
   photoUrl           String?
-  discoverableBySearch Boolean         @default(false)
+  discoverableBySearch Boolean         @default(true)
   parentGroupId      String?
   createdById        String
   createdBy          User              @relation("GroupCreatedBy", fields: [createdById], references: [id])

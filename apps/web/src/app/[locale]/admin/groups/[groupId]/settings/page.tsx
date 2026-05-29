@@ -76,7 +76,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [showExportModal, setShowExportModal] = useState(false);
   const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
-  const [groupSettings, setGroupSettings] = useState({ name: '', description: '' });
+  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: true });
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   const groupPhotoFileRef = useRef<HTMLInputElement>(null);
@@ -335,6 +335,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         setGroupSettings({
           name: current.group.name,
           description: current.group.description ?? '',
+          discoverableBySearch: current.group.discoverableBySearch ?? true,
         });
         const photoUrl = (current.group as { photoUrl?: string | null }).photoUrl ?? null;
         setCurrentGroupPhotoUrl(photoUrl);
@@ -479,6 +480,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       const payload: Record<string, unknown> = {
         name: groupSettings.name,
         description: groupSettings.description,
+        discoverableBySearch: groupSettings.discoverableBySearch,
       };
       if (photoUrl !== undefined) payload.photoUrl = photoUrl;
       await apiFetch(`/groups/${params.groupId}/settings`, {
@@ -1058,6 +1060,28 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
 
         </div>
+
+        {/* Discoverability toggle */}
+        <div className="mt-5 flex items-start gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
+          <input
+            id="discoverableBySearch"
+            type="checkbox"
+            checked={!groupSettings.discoverableBySearch}
+            onChange={(e) => setGroupSettings((s) => ({ ...s, discoverableBySearch: !e.target.checked }))}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-indigo-600"
+          />
+          <label htmlFor="discoverableBySearch" className="cursor-pointer select-none">
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              {zh ? '停用搜尋探索（設為私密群組）' : 'Disable search discovery (make group private)'}
+            </p>
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+              {zh
+                ? '勾選後，用戶將無法搜尋此群組或送出加入申請。預設為可搜尋。'
+                : 'When checked, users cannot search for this group or submit join requests. Groups are searchable by default.'}
+            </p>
+          </label>
+        </div>
+
         <button onClick={handleSaveSettings} disabled={settingsSaving} className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
           {settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}
         </button>
