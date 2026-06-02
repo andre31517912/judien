@@ -31,7 +31,7 @@ const adapter = isMock ? new MockMessagingAdapter() : new ProductionMessagingAda
 interface ReminderJobData {
   eventId: string;
   offsetMinutes: number;
-  channels: ('SMS' | 'EMAIL' | 'LINE')[];
+  channels: ('EMAIL' | 'LINE')[];
 }
 
 async function processReminder(job: Job<ReminderJobData>) {
@@ -69,13 +69,25 @@ async function processReminder(job: Job<ReminderJobData>) {
     });
     const subject = t(dict.messages.reminderSubject, { title });
 
+    // Create in-app notification for reminder
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'EVENT_REMINDER',
+        title_en: subject,
+        title_zh: lang === 'zh' ? subject : t(getDict('zh').messages.reminderSubject, { title: event.title_zh }),
+        body_en: body,
+        body_zh: lang === 'zh' ? body : t(getDict('zh').messages.reminderBody, { title: event.title_zh, date: dateStr, time: timeStr, timezone: event.timezone }),
+        actionUrl: `/events/${eventId}`,
+        eventId,
+      },
+    }).catch((err: unknown) => console.warn('[worker] Notification create failed:', err));
+
     // Log to DB then send — skip per-channel if user has muted that channel
     for (const channel of channels) {
-      if (channel === 'SMS' && user.muteSms) continue;
-      if (channel === 'SMS' && !user.phoneE164) continue;
       if (channel === 'EMAIL' && user.muteEmail) continue;
       if (channel === 'EMAIL' && !user.email) continue;
-      const toAddress = channel === 'SMS' ? user.phoneE164! : user.email!;
+      const toAddress = channel === 'LINE' ? (user.lineUserId ?? '') : user.email!;
       const log = await prisma.messageLog.create({
         data: {
           userId: user.id,
@@ -89,9 +101,7 @@ async function processReminder(job: Job<ReminderJobData>) {
 
       let providerId: string | null = null;
       try {
-        if (channel === 'SMS') {
-          providerId = await adapter.sendSms({ to: user.phoneE164!, body });
-        } else if (channel === 'LINE') {
+        if (channel === 'LINE') {
           if (user.lineUserId && !user.muteLinePush) {
             providerId = await adapter.sendLine?.({ to: user.lineUserId, text: body }) ?? null;
           }

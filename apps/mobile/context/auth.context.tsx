@@ -7,6 +7,7 @@ interface AuthContextValue {
   user: Omit<User, 'passwordHash'> | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   signup: (data: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -53,6 +54,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(data.user);
   };
 
+  const loginWithTokens = async (accessToken: string, refreshToken: string) => {
+    await SecureStore.setItemAsync('access_token', accessToken);
+    await SecureStore.setItemAsync('refresh_token', refreshToken);
+    const me = await apiFetch<AuthContextValue['user']>('/auth/me');
+    setUser(me);
+  };
+
   const logout = async () => {
     await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {});
     await SecureStore.deleteItemAsync('access_token');
@@ -68,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, refresh }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithTokens, signup, logout, refresh }}>
       {children}
     </AuthContext.Provider>
   );

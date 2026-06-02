@@ -3,12 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { CreateNewsDto, NewsListQuery, UpdateNewsDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from '../groups/groups.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class NewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly groupsService: GroupsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private readonly newsInclude = {
@@ -62,7 +64,50 @@ export class NewsService {
       }
     }
     // Personal/global announcement (no groupId): any authenticated user can post
-    return this.prisma.news.create({ data: { ...dto, createdById: user.id } });
+    const news = await this.prisma.news.create({ data: { ...dto, createdById: user.id }, include: this.newsInclude });
+
+    // Notify group members (or all users for global news)
+    this.notifyNewsPublished(news, user).catch(() => {});
+
+    return news;
+  }
+
+  private async notifyNewsPublished(
+    news: { id: string; title_en: string; title_zh: string; groupId: string | null; createdById: string },
+    author: User,
+  ) {
+    const authorName = (author as any).displayName || author.email || 'Someone';
+    let recipientIds: string[] = [];
+
+    if (news.groupId) {
+      const memberships = await this.prisma.groupMembership.findMany({
+        where: { groupId: news.groupId, status: 'ACCEPTED', userId: { not: author.id } },
+        select: { userId: true },
+      });
+      recipientIds = memberships.map((m) => m.userId);
+    } else {
+      // Global news: notify all non-guest users except the author
+      const users = await this.prisma.user.findMany({
+        where: { isGuest: false, id: { not: author.id } },
+        select: { id: true },
+      });
+      recipientIds = users.map((u) => u.id);
+    }
+
+    if (!recipientIds.length) return;
+
+    await this.notificationsService.createMany(
+      recipientIds.map((userId) => ({
+        userId,
+        type: 'NEWS_PUBLISHED' as const,
+        title_en: news.title_en || 'New announcement',
+        title_zh: news.title_zh || '新公告',
+        body_en: `${authorName} published a new post.`,
+        body_zh: `${authorName} 發布了新公告。`,
+        actionUrl: `/feed`,
+        groupId: news.groupId ?? undefined,
+      })),
+    );
   }
 
   async update(id: string, dto: UpdateNewsDto, user: User) {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { apiFetch, apiUpload, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import type { EventWithCounts, PaginatedResponse, News } from '@judien/shared';
@@ -16,6 +17,15 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const [scope, setScope] = useState<PageScope>('home');
+  const searchParams = useSearchParams();
+  const [lineNewBanner, setLineNewBanner] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('line_new') === '1') {
+      setLineNewBanner(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Events state ──────────────────────────────────────────────────────────
   const [events, setEvents] = useState<EventWithCounts[]>([]);
@@ -178,6 +188,35 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
 
   return (
     <div>
+      {/* LINE new user banner */}
+      {lineNewBanner && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl bg-[#06C755]/10 border border-[#06C755]/30 p-4">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-[#06C755] shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.477 2 2 6.036 2 11.07c0 4.522 3.613 8.312 8.5 8.94v2.99s-.01.3.18.37c.23.08.36-.14.36-.14l2.17-2.89c.26.02.53.03.79.03 5.523 0 10-4.036 10-9.07C24 6.036 17.523 2 12 2z"/>
+          </svg>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 dark:text-white">
+              {zh ? '歡迎加入 Judien！' : 'Welcome to Judien!'}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+              {zh
+                ? '加入我們的 LINE 官方帳號，接收活動提醒與通知。'
+                : 'Add our LINE official account to receive event reminders and notifications.'}
+            </p>
+            {process.env.NEXT_PUBLIC_LINE_OFFICIAL_ACCOUNT_ID && (
+              <a
+                href={`https://line.me/ti/p/@${process.env.NEXT_PUBLIC_LINE_OFFICIAL_ACCOUNT_ID}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-xs font-medium text-[#06C755] hover:underline"
+              >
+                {zh ? '➕ 加入好友' : '➕ Add as Friend'}
+              </a>
+            )}
+          </div>
+          <button onClick={() => setLineNewBanner(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none shrink-0">×</button>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex gap-0">
           <button className={tabCls(scope === 'home')} onClick={() => setScope('home')}>

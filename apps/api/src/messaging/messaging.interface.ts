@@ -1,8 +1,3 @@
-export interface SendSmsOptions {
-  to: string;       // E.164
-  body: string;
-}
-
 export interface SendEmailOptions {
   to: string;
   subject: string;
@@ -16,7 +11,6 @@ export interface SendLineOptions {
 }
 
 export interface MessagingAdapter {
-  sendSms(opts: SendSmsOptions): Promise<string | null>;
   sendEmail(opts: SendEmailOptions): Promise<string | null>;
   sendLine?(opts: SendLineOptions): Promise<string | null>;
 }

@@ -13,7 +13,6 @@ export default function ProfileScreen() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [muteSms, setMuteSms] = useState(false);
   const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [colorTheme, setColorThemeState] = useState<'light' | 'dark'>('light');
@@ -26,7 +25,6 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (user) {
-      setMuteSms((user as any).muteSms ?? false);
       setMuteEmail((user as any).muteEmail ?? false);
       const savedLang = user.preferredLanguage as 'en' | 'zh';
       setLang(savedLang);
@@ -37,7 +35,6 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     const body: Record<string, unknown> = {
       preferredLanguage: lang,
-      muteSms,
       muteEmail,
     };
     if (displayName.trim()) body.displayName = displayName.trim();
@@ -108,11 +105,6 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
-
-      <View style={styles.muteRow}>
-        <Text style={styles.label}>{t('profile.muteSms')}</Text>
-        <Switch value={muteSms} onValueChange={setMuteSms} trackColor={{ true: '#4F46E5' }} />
       </View>
 
       <View style={styles.muteRow}>

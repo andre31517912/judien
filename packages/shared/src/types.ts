@@ -1,7 +1,7 @@
 // Core domain enums
 export type Role = 'USER' | 'ADMIN';
-export type RSVPStatus = 'GOING' | 'MAYBE' | 'NO';
-export type MessageChannel = 'SMS' | 'EMAIL' | 'LINE';
+export type RSVPStatus = 'GOING' | 'NO';
+export type MessageChannel = 'EMAIL' | 'LINE';
 export type MessageStatus = 'PENDING' | 'SENT' | 'FAILED';
 export type PreferredLanguage = 'en' | 'zh';
 export type GroupMembershipRole = 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -62,9 +62,10 @@ export interface Event {
 }
 
 export interface EventWithCounts extends Event {
-  rsvpCounts: { GOING: number; MAYBE: number; NO: number };
+  rsvpCounts: { GOING: number; NO: number };
   myRsvp: RSVPStatus | null; // populated when authenticated
   shareToken?: string | null;
+  isPast?: boolean;
 }
 
 // ─── News ────────────────────────────────────────────────────────────────────

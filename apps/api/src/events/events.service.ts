@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import type { CreateEventDto, UpdateEventDto, EventListQuery } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from '../groups/groups.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class EventsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly groupsService: GroupsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(query: EventListQuery, userId?: string) {
@@ -88,6 +90,7 @@ export class EventsService {
         shareToken: event.shareLink?.token ?? null,
         rsvpCounts: counts,
         myRsvp: myRsvpMap.get(event.id) ?? null,
+        isPast: new Date(event.startAt) < new Date(),
       };
     });
 
@@ -134,11 +137,17 @@ export class EventsService {
       myRsvp,
       createdByEmail: event.createdBy?.email ?? null,
       createdBy: undefined,
+      isPast: new Date(event.startAt) < new Date(),
     };
   }
 
   async createShareLink(eventId: string, actor: User) {
     const event = await this.ensureExists(eventId);
+
+    if (new Date(event.startAt) < new Date()) {
+      throw new ForbiddenException('Cannot create a share link for a past event.');
+    }
+
     if (event.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(event.groupId, actor.id);
       if (!canAccess) {
@@ -198,6 +207,7 @@ export class EventsService {
       myRsvp,
       createdByEmail: event.createdBy?.email ?? null,
       createdBy: undefined,
+      isPast: new Date(event.startAt) < new Date(),
     };
   }
 
@@ -256,6 +266,35 @@ export class EventsService {
     await this.prisma.event.delete({ where: { id } });
   }
 
+  async inviteMembers(eventId: string, userIds: string[], actor: User) {
+    const event = await this.ensureExists(eventId);
+
+    // Only platform admin or group admin can send invites
+    if (event.groupId) {
+      const canManage = await this.groupsService.canManageGroupContent(event.groupId, actor);
+      if (!canManage) throw new ForbiddenException('You do not have permission to invite members to this event.');
+    } else if (actor.role !== 'ADMIN') {
+      throw new ForbiddenException('Only platform admins can invite members to global events.');
+    }
+
+    const title_en = event.title_en || event.title_zh;
+    const title_zh = event.title_zh || event.title_en;
+
+    const inputs = userIds.map((userId) => ({
+      userId,
+      type: 'EVENT_INVITE' as const,
+      title_en: `You've been invited to ${title_en}`,
+      title_zh: `您被邀請參加 ${title_zh}`,
+      body_en: `An admin has invited you to join this event. Tap to view details.`,
+      body_zh: `管理員邀請您參加此活動，點擊查看詳情。`,
+      actionUrl: `/events/${eventId}`,
+      eventId,
+    }));
+
+    await this.notifications.createMany(inputs);
+    return { invited: userIds.length };
+  }
+
   private async ensureExists(id: string) {
     const event = await this.prisma.event.findUnique({ where: { id } });
     if (!event) throw new NotFoundException('Event not found.');
@@ -263,10 +302,10 @@ export class EventsService {
   }
 
   private mergeRsvpCounts(
-    rsvps: Array<{ status: 'GOING' | 'MAYBE' | 'NO' }>,
-    guestRsvps: Array<{ status: 'GOING' | 'MAYBE' | 'NO' }>,
+    rsvps: Array<{ status: 'GOING' | 'NO' }>,
+    guestRsvps: Array<{ status: 'GOING' | 'NO' }>,
   ) {
-    const counts = { GOING: 0, MAYBE: 0, NO: 0 };
+    const counts = { GOING: 0, NO: 0 };
     for (const r of rsvps) counts[r.status]++;
     for (const r of guestRsvps) counts[r.status]++;
     return counts;

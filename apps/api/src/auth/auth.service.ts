@@ -155,33 +155,6 @@ export class AuthService {
   }
 
   /**
-   * Send a magic sign-in link via SMS to the user's phone.
-   * Silent if the phone isn't registered.
-   */
-  async requestMagicLinkSms(phone: string): Promise<void> {
-    const normalized = normalizePhone(phone);
-    if (!normalized) return;
-    const user = await this.prisma.user.findUnique({ where: { phoneE164: normalized } });
-    if (!user) return;
-
-    const token = this.jwt.sign(
-      { sub: user.id, type: 'magic' },
-      { expiresIn: '15m' },
-    );
-
-    const locale = user.preferredLanguage ?? 'en';
-    const apiBase = process.env.API_BASE_URL ?? 'http://localhost:4000';
-    const link = `${apiBase}/api/auth/magic-link?token=${token}`;
-
-    const body =
-      locale === 'zh'
-        ? `您的登入連結（15 分鐘內有效）：${link}`
-        : `Your sign-in link (valid 15 min): ${link}`;
-
-    await this.messaging.sendSms({ userId: user.id, to: normalized, body });
-  }
-
-  /**
    * Verify a magic link token and return the associated user.
    */
   async verifyMagicLink(token: string): Promise<User> {

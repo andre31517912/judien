@@ -122,15 +122,13 @@ export class AuthController {
     return { user: safeUser(user), accessToken, refreshToken, groupId, existingAccount };
   }
 
-  // POST /api/auth/forgot-password — send a magic sign-in link via email or SMS
+  // POST /api/auth/forgot-password — send a magic sign-in link via email
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() body: { email?: string; phone?: string }) {
+  async forgotPassword(@Body() body: { email?: string }) {
     if (typeof body.email === 'string' && body.email.trim()) {
       await this.authService.requestMagicLink(body.email.trim());
-    } else if (typeof body.phone === 'string' && body.phone.trim()) {
-      await this.authService.requestMagicLinkSms(body.phone.trim());
     }
     return { sent: true };
   }

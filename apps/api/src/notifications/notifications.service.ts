@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MessagingService } from '../messaging/messaging.service';
 import type { NotificationType, User } from '../__generated__/prisma';
 
 export interface CreateNotificationInput {
@@ -17,15 +18,49 @@ export interface CreateNotificationInput {
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(NotificationsService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly messaging: MessagingService,
+  ) {}
 
   async create(input: CreateNotificationInput) {
-    return this.prisma.notification.create({ data: input });
+    const notification = await this.prisma.notification.create({ data: input });
+    // Best-effort LINE push
+    this.sendLinePushForNotification(input).catch(() => {});
+    return notification;
   }
 
   async createMany(inputs: CreateNotificationInput[]) {
     if (!inputs.length) return;
-    return this.prisma.notification.createMany({ data: inputs });
+    const result = await this.prisma.notification.createMany({ data: inputs });
+    // Best-effort LINE push for each
+    for (const input of inputs) {
+      this.sendLinePushForNotification(input).catch(() => {});
+    }
+    return result;
+  }
+
+  private async sendLinePushForNotification(input: CreateNotificationInput) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { lineUserId: true, muteLinePush: true, preferredLanguage: true },
+      });
+      if (!user?.lineUserId || user.muteLinePush) return;
+      const lang = user.preferredLanguage === 'zh' ? 'zh' : 'en';
+      const title = lang === 'zh' ? input.title_zh : input.title_en;
+      const body = lang === 'zh' ? (input.body_zh ?? '') : (input.body_en ?? '');
+      const text = body ? `${title}\n${body}` : title;
+      await this.messaging.sendLine({
+        userId: input.userId,
+        to: user.lineUserId,
+        text,
+      });
+    } catch (err) {
+      this.logger.warn(`LINE push failed for user ${input.userId}: ${err}`);
+    }
   }
 
   async list(user: User) {

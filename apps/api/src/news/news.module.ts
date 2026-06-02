@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { NewsController } from './news.controller';
 import { GroupsModule } from '../groups/groups.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  imports: [GroupsModule],
+  imports: [GroupsModule, NotificationsModule],
   providers: [NewsService],
   controllers: [NewsController],
 })

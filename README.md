@@ -22,8 +22,8 @@ Admins can send one-click SMS + Email blasts to RSVP'd users and pre-configure p
 | API | NestJS (Node.js) | Structured DI, guards, decorators |
 | DB | PostgreSQL + Prisma | Relational integrity, strong TS types |
 | Queue | Redis + BullMQ | Reliable delayed jobs, retries |
-| SMS | Twilio | Best Taiwan coverage + E.164 |
-| Email | SendGrid | High deliverability; simple API |
+| LINE | LINE Messaging API | Primary push notifications for Taiwan users |
+| Email | Resend | Transactional email, backup notifications |
 | Auth | JWT (access 15 m + refresh 30 d) | httpOnly cookies on web; SecureStore RN |
 | i18n | next-intl (web) / i18next (RN) | Same string dictionaries in /shared |
 | Validation | Zod | Shared between API + clients |
@@ -188,7 +188,7 @@ pnpm dev:mobile
 | DELETE | /api/comments/:id | ADMIN | Soft-delete comment |
 | GET | /api/events/:id/reminders | ADMIN | Get reminder rules |
 | POST | /api/events/:id/reminders | ADMIN | Set reminder rules (schedules jobs) |
-| POST | /api/events/:id/blast | ADMIN | Send SMS+Email blast |
+| POST | /api/events/:id/blast | ADMIN | Send Email+LINE blast |
 
 ---
 
@@ -209,10 +209,10 @@ Dictionaries live in `/packages/shared/src/i18n/` and are imported by both apps.
 Admin click "Send Blast"
   → POST /api/events/:id/blast
   → BlastService resolves audience (RSVP'd users)
-  → For each user: MessagingService.sendEmail + sendSms
+  → For each user: MessagingService.sendEmail + sendLine
   → MessagingService logs MessageLog (PENDING → SENT/FAILED)
   → Adapter: MockAdapter (MOCK_MODE=true) logs to console
-             ProductionAdapter calls Twilio / SendGrid
+             ProductionAdapter calls Resend / LINE Messaging API
 
 Admin saves ReminderRule (e.g. 1440 min before)
   → RemindersService.setForEvent
@@ -221,13 +221,12 @@ Admin saves ReminderRule (e.g. 1440 min before)
 
 At fire time → reminder.worker.ts
   → Fetches event + RSVP'd non-muted users
-  → Sends SMS/Email per user via adapter
+  → Sends EMAIL/LINE per user via adapter
   → Logs each send to MessageLog
   → BullMQ auto-retries up to 3× on failure (exponential back-off)
 ```
 
-**SMS opt-out**: Users can toggle `notificationsMuted` in their profile.  
-Post-MVP: Twilio inbound webhook to parse STOP replies and flip the flag automatically.
+**Notification opt-out**: Users can toggle `notificationsMuted`, `muteEmail`, or `muteLinePush` in their profile settings.
 
 ---
 
@@ -247,7 +246,7 @@ Post-MVP: Twilio inbound webhook to parse STOP replies and flip the flag automat
 
 ## 9. What I Would Build Next (Post-MVP)
 
-1. **Phone OTP verification** — Twilio Verify for SMS OTP on signup/login for stronger auth
+1. **LINE push enhancements** — Rich messages (Flex Messages), quick-reply buttons for RSVP confirmations via LINE
 2. **Real-time RSVP + comment updates** — Socket.io or Server-Sent Events so attendee counts update live
 3. **Invite-only events + guest list** — Import contacts, send invite links, capacity limits
 4. **Event cover photo uploads** — S3-compatible storage (AWS S3 or Cloudflare R2) with presigned URLs instead of raw URL input

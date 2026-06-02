@@ -71,7 +71,7 @@ export default function SharedEventPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
+  const handleRsvp = async (status: 'GOING' | 'NO') => {
     setSaving(true);
     setError('');
     try {
@@ -139,7 +139,9 @@ export default function SharedEventPage() {
   const description = zh ? event.description_zh : event.description_en;
   const location = zh ? event.location_zh : event.location_en;
 
-  const rsvpBtn = (status: 'GOING' | 'MAYBE' | 'NO', label: string) => (
+  const isPast = event ? new Date(event.startAt) < new Date() : false;
+
+  const rsvpBtn = (status: 'GOING' | 'NO', label: string) => (
     <button
       key={status}
       onClick={() => handleRsvp(status)}
@@ -181,12 +183,11 @@ export default function SharedEventPage() {
 
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-3">
         <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-          <span>✓ {event.rsvpCounts.GOING} {zh ? '參加' : 'Going'}</span>
-          <span>? {event.rsvpCounts.MAYBE} {zh ? '也許' : 'Maybe'}</span>
-          <span>✕ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
+          <span>✓ {event.rsvpCounts.GOING} {zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going')}</span>
+          <span>✕ {event.rsvpCounts.NO} {zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going')}</span>
         </div>
 
-        {!user && (
+        {!isPast && !user && (
           <div className="grid gap-2 md:grid-cols-3">
             <input
               value={guest.name}
@@ -209,11 +210,12 @@ export default function SharedEventPage() {
           </div>
         )}
 
+        {!isPast && (
         <div className="flex gap-2 flex-wrap">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
-          {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
         </div>
+        )}
 
         {error ? <p className="text-sm text-red-500">{error}</p> : null}
       </div>
@@ -221,11 +223,11 @@ export default function SharedEventPage() {
       {guests && (
         <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-white mb-3">{zh ? '出席名單' : 'Attendance'}</h2>
-          <div className="grid gap-3 md:grid-cols-3">
-            {(['GOING', 'MAYBE', 'NO'] as const).map((status) => (
+          <div className="grid gap-3 md:grid-cols-2">
+            {(['GOING', 'NO'] as const).map((status) => (
               <div key={status} className="rounded-lg border border-gray-100 dark:border-gray-800 p-3">
                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                  {status === 'GOING' ? (zh ? '參加' : 'Going') : status === 'MAYBE' ? (zh ? '也許' : 'Maybe') : (zh ? '不參加' : 'Not Going')}
+                  {status === 'GOING' ? (zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going')) : (zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'))}
                 </p>
                 {(guests[status] ?? []).length === 0 ? (
                   <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '尚無' : 'None yet'}</p>

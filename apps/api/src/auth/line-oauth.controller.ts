@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
+import { MessagingService } from '../messaging/messaging.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { User } from '../__generated__/prisma';
 
@@ -34,10 +35,10 @@ function getSecret() {
 
 /**
  * State format: base64url( "{type}:{id}:{ts}:{sig}" )
- *   type = 'link' (authenticated user linking LINE) | 'login' (unauthenticated LINE login)
- *   id   = userId for 'link', random nonce for 'login'
+ *   type = 'link' (authenticated user linking LINE) | 'login' (unauthenticated LINE login) | 'login-mobile' (mobile app LINE login)
+ *   id   = userId for 'link', random nonce for 'login'/'login-mobile'
  */
-function signState(type: 'link' | 'login', id: string): string {
+function signState(type: 'link' | 'login' | 'login-mobile', id: string): string {
   const ts = Date.now();
   const data = `${type}:${id}:${ts}`;
   const sig = crypto
@@ -51,6 +52,7 @@ function signState(type: 'link' | 'login', id: string): string {
 type StateResult =
   | { type: 'link'; userId: string }
   | { type: 'login'; nonce: string }
+  | { type: 'login-mobile'; nonce: string }
   | null;
 
 function verifyState(state: string): StateResult {
@@ -69,6 +71,7 @@ function verifyState(state: string): StateResult {
     if (sig !== expected) return null;
     if (type === 'link') return { type: 'link', userId: id };
     if (type === 'login') return { type: 'login', nonce: id };
+    if (type === 'login-mobile') return { type: 'login-mobile', nonce: id };
     return null;
   } catch {
     return null;
@@ -80,6 +83,7 @@ export class LineOAuthController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService,
+    private readonly messaging: MessagingService,
   ) {}
 
   /**
@@ -123,6 +127,32 @@ export class LineOAuthController {
 
     const nonce = crypto.randomBytes(16).toString('hex');
     const state = signState('login', nonce);
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: channelId,
+      redirect_uri: redirectUri,
+      state,
+      scope: 'profile',
+    });
+
+    return { url: `${LINE_AUTH_URL}?${params.toString()}` };
+  }
+
+  /**
+   * GET /api/auth/line/login-mobile
+   * Returns the LINE OAuth URL for mobile app (redirects to judien:// deep link with tokens).
+   */
+  @Get('login-mobile')
+  getLoginMobileUrl() {
+    const channelId = process.env.LINE_LOGIN_CHANNEL_ID;
+    const redirectUri = process.env.LINE_REDIRECT_URI;
+
+    if (!channelId || !redirectUri) {
+      return { error: 'LINE_LOGIN_CHANNEL_ID or LINE_REDIRECT_URI not configured.' };
+    }
+
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const state = signState('login-mobile', nonce);
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: channelId,
@@ -203,17 +233,21 @@ export class LineOAuthController {
           data: { lineUserId: profile.userId },
         });
 
+        // Best-effort: send welcome LINE message with Add Friend link
+        this.sendLineWelcomeMessage(profile.userId, false).catch(() => {});
+
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         const locale = user?.preferredLanguage ?? 'en';
         return res.redirect(`${webOrigin}/${locale}/profile?line=linked`);
       } else {
-        // ---- Login mode: find or create account via LINE ID ----
+        // ---- Login mode (web or mobile): find or create account via LINE ID ----
         let user = await this.prisma.user.findUnique({
           where: { lineUserId: profile.userId },
         });
+        let isNewUser = false;
 
         if (!user) {
-          // No account linked to this LINE ID — create a minimal guest account
+          // No account linked to this LINE ID — create account with LINE display name
           const passwordHash = await bcrypt.hash(
             crypto.randomBytes(16).toString('hex'),
             10,
@@ -228,17 +262,62 @@ export class LineOAuthController {
               role: 'USER',
             },
           });
+          isNewUser = true;
+        }
+
+        // Best-effort: send LINE welcome message with Add Friend link for new users
+        if (isNewUser) {
+          this.sendLineWelcomeMessage(profile.userId, true).catch(() => {});
         }
 
         const tokens = this.authService.issueTokens(user);
+
+        if (parsed.type === 'login-mobile') {
+          // Mobile: redirect to deep link with tokens
+          const deepLink = `judien://line-auth?accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}&isNew=${isNewUser ? '1' : '0'}`;
+          return res.redirect(deepLink);
+        }
+
+        // Web: set cookies and redirect
         res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
         res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
         const locale = user.preferredLanguage ?? 'en';
-        return res.redirect(`${webOrigin}/${locale}/`);
+        const newUserParam = isNewUser ? '?line_new=1' : '';
+        return res.redirect(`${webOrigin}/${locale}/${newUserParam}`);
       }
     } catch {
       return errorRedirect('unexpected_error');
     }
+  }
+
+  /**
+   * Sends a LINE welcome message with friend invite link to Judien's business LINE account.
+   * Best-effort: errors are suppressed.
+   */
+  private async sendLineWelcomeMessage(lineUserId: string, isNew: boolean): Promise<void> {
+    const officialAccountId = process.env.LINE_OFFICIAL_ACCOUNT_ID;
+    const friendUrl = officialAccountId
+      ? `https://line.me/ti/p/@${officialAccountId}`
+      : null;
+
+    const textEn = isNew
+      ? `Welcome to Judien! 🎉\nTo receive event reminders and updates via LINE, please add our official account as a friend:${friendUrl ? `\n${friendUrl}` : ''}`
+      : `Welcome back to Judien! 👋${friendUrl ? `\nAdd our official account for notifications:\n${friendUrl}` : ''}`;
+
+    const token = process.env.LINE_MESSAGING_CHANNEL_ACCESS_TOKEN;
+    if (!token) return;
+
+    await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: lineUserId,
+        messages: [{ type: 'text', text: textEn }],
+      }),
+    });
   }
 
   /**

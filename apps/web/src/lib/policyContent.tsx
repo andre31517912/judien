@@ -24,7 +24,7 @@ export function PrivacyPolicyContent() {
         <h3 className="font-semibold text-gray-900 dark:text-white mb-1">2. How We Use Your Information</h3>
         <ul className="list-disc pl-5 space-y-1">
           <li>Operate and improve the Judien platform.</li>
-          <li>Send event reminders, invitations, and notifications via SMS, email, or LINE.</li>
+          <li>Send event reminders, invitations, and notifications via email or LINE.</li>
           <li>Allow group admins to manage their members.</li>
           <li>Respond to support requests.</li>
           <li>Comply with legal obligations.</li>
@@ -37,7 +37,7 @@ export function PrivacyPolicyContent() {
         <p>We may share your information with:</p>
         <ul className="list-disc pl-5 space-y-1 mt-1">
           <li><strong>Group admins:</strong> can see your display name, email, phone, and role within their group.</li>
-          <li><strong>Service providers:</strong> SMS gateways (Twilio), email providers (Resend), cloud hosting (Render, Vercel), and LINE messaging — only as needed to deliver the service.</li>
+          <li><strong>Service providers:</strong> Email providers (Resend), cloud hosting (Render, Vercel), and LINE messaging — only as needed to deliver the service.</li>
           <li><strong>Legal authorities:</strong> if required by law or to protect the rights of users and Judien.</li>
         </ul>
       </section>
@@ -45,7 +45,7 @@ export function PrivacyPolicyContent() {
       <section>
         <h3 className="font-semibold text-gray-900 dark:text-white mb-1">4. Notifications & Communications</h3>
         <p>
-          By creating an account, you may receive transactional messages (event reminders, invitations). You can mute SMS, email, and LINE push notifications at any time in your profile settings.
+          By creating an account, you may receive transactional messages (event reminders, invitations). You can mute email and LINE push notifications at any time in your profile settings.
         </p>
       </section>
 

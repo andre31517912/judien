@@ -46,7 +46,7 @@ export default function EventDetailScreen() {
       .catch(() => {});
   }, [id]);
 
-  const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
+  const handleRsvp = async (status: 'GOING' | 'NO') => {
     if (!user) { Alert.alert('Login required'); return; }
     try {
       if (myRsvp === status) {
@@ -153,8 +153,9 @@ export default function EventDetailScreen() {
   const location = zh ? event.location_zh : event.location_en;
   const fee = event.feeAmount ? `${event.feeCurrency} ${event.feeAmount}` : t('events.free');
   const dateStr = new Date(event.startAt).toLocaleString();
+  const isPast = new Date(event.startAt) < new Date();
 
-  const rsvpBtn = (status: 'GOING' | 'MAYBE' | 'NO', label: string) => (
+  const rsvpBtn = (status: 'GOING' | 'NO', label: string) => (
     <TouchableOpacity
       key={status}
       style={[styles.rsvpBtn, myRsvp === status && styles.rsvpBtnActive]}
@@ -195,18 +196,18 @@ export default function EventDetailScreen() {
         {desc ? <Text style={styles.desc}>{desc}</Text> : null}
 
         <View style={styles.countsRow}>
-          <Text style={styles.count}>✓ {event.rsvpCounts.GOING} {t('rsvp.going')}</Text>
-          <Text style={styles.count}>? {event.rsvpCounts.MAYBE} {t('rsvp.maybe')}</Text>
-          <Text style={styles.count}>✗ {event.rsvpCounts.NO} {t('rsvp.notGoing')}</Text>
+          <Text style={styles.count}>✓ {event.rsvpCounts.GOING} {isPast ? (zh ? '出席' : 'Attended') : t('rsvp.going')}</Text>
+          <Text style={styles.count}>✗ {event.rsvpCounts.NO} {isPast ? (zh ? '缺席' : 'Did Not Attend') : t('rsvp.notGoing')}</Text>
         </View>
 
-        <View style={styles.rsvpRow}>
-          {rsvpBtn('GOING', t('rsvp.going'))}
-          {rsvpBtn('MAYBE', t('rsvp.maybe'))}
-          {rsvpBtn('NO', t('rsvp.notGoing'))}
-        </View>
+        {!isPast && (
+          <View style={styles.rsvpRow}>
+            {rsvpBtn('GOING', t('rsvp.going'))}
+            {rsvpBtn('NO', t('rsvp.notGoing'))}
+          </View>
+        )}
 
-        {user && (
+        {!isPast && user && (
           <TouchableOpacity style={styles.inviteBtn} onPress={handleCreateShareLink} disabled={inviteLoading}>
             <Text style={styles.inviteBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}</Text>
           </TouchableOpacity>

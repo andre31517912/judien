@@ -19,9 +19,11 @@ import {
   CreateEventSchema,
   UpdateEventSchema,
   EventListQuerySchema,
+  BulkInviteMembersSchema,
   type CreateEventDto,
   type UpdateEventDto,
   type EventListQuery,
+  type BulkInviteMembersDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 
@@ -103,5 +105,16 @@ export class EventsController {
     @CurrentUser() user?: User,
   ) {
     return this.eventsService.getByShareToken(token, user?.id);
+  }
+
+  // POST /api/events/:id/invite-members — invite specific group members (admin/group-admin only)
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/invite-members')
+  inviteMembers(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(BulkInviteMembersSchema)) dto: BulkInviteMembersDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.inviteMembers(id, dto.userIds, user);
   }
 }

@@ -123,7 +123,6 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 export const RSVPStatus: {
   GOING: 'GOING',
-  MAYBE: 'MAYBE',
   NO: 'NO'
 };
 
@@ -131,7 +130,6 @@ export type RSVPStatus = (typeof RSVPStatus)[keyof typeof RSVPStatus]
 
 
 export const MessageChannel: {
-  SMS: 'SMS',
   EMAIL: 'EMAIL',
   LINE: 'LINE'
 };
@@ -191,7 +189,9 @@ export const NotificationType: {
   JOIN_REQUEST_APPROVED: 'JOIN_REQUEST_APPROVED',
   JOIN_REQUEST_REJECTED: 'JOIN_REQUEST_REJECTED',
   EVENT_REMINDER: 'EVENT_REMINDER',
-  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED'
+  EVENT_INVITE: 'EVENT_INVITE',
+  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED',
+  NEWS_PUBLISHED: 'NEWS_PUBLISHED'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -3004,7 +3004,6 @@ export namespace Prisma {
     preferredLanguage: string | null
     colorTheme: string | null
     role: $Enums.Role | null
-    muteSms: boolean | null
     muteEmail: boolean | null
     muteLinePush: boolean | null
     lineUserId: string | null
@@ -3022,7 +3021,6 @@ export namespace Prisma {
     preferredLanguage: string | null
     colorTheme: string | null
     role: $Enums.Role | null
-    muteSms: boolean | null
     muteEmail: boolean | null
     muteLinePush: boolean | null
     lineUserId: string | null
@@ -3040,7 +3038,6 @@ export namespace Prisma {
     preferredLanguage: number
     colorTheme: number
     role: number
-    muteSms: number
     muteEmail: number
     muteLinePush: number
     lineUserId: number
@@ -3060,7 +3057,6 @@ export namespace Prisma {
     preferredLanguage?: true
     colorTheme?: true
     role?: true
-    muteSms?: true
     muteEmail?: true
     muteLinePush?: true
     lineUserId?: true
@@ -3078,7 +3074,6 @@ export namespace Prisma {
     preferredLanguage?: true
     colorTheme?: true
     role?: true
-    muteSms?: true
     muteEmail?: true
     muteLinePush?: true
     lineUserId?: true
@@ -3096,7 +3091,6 @@ export namespace Prisma {
     preferredLanguage?: true
     colorTheme?: true
     role?: true
-    muteSms?: true
     muteEmail?: true
     muteLinePush?: true
     lineUserId?: true
@@ -3187,7 +3181,6 @@ export namespace Prisma {
     preferredLanguage: string
     colorTheme: string
     role: $Enums.Role
-    muteSms: boolean
     muteEmail: boolean
     muteLinePush: boolean
     lineUserId: string | null
@@ -3222,7 +3215,6 @@ export namespace Prisma {
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: boolean
@@ -3263,7 +3255,6 @@ export namespace Prisma {
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: boolean
@@ -3281,7 +3272,6 @@ export namespace Prisma {
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: boolean
@@ -3352,7 +3342,6 @@ export namespace Prisma {
       preferredLanguage: string
       colorTheme: string
       role: $Enums.Role
-      muteSms: boolean
       muteEmail: boolean
       muteLinePush: boolean
       lineUserId: string | null
@@ -3782,7 +3771,6 @@ export namespace Prisma {
     readonly preferredLanguage: FieldRef<"User", 'String'>
     readonly colorTheme: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
-    readonly muteSms: FieldRef<"User", 'Boolean'>
     readonly muteEmail: FieldRef<"User", 'Boolean'>
     readonly muteLinePush: FieldRef<"User", 'Boolean'>
     readonly lineUserId: FieldRef<"User", 'String'>
@@ -23198,7 +23186,6 @@ export namespace Prisma {
     preferredLanguage: 'preferredLanguage',
     colorTheme: 'colorTheme',
     role: 'role',
-    muteSms: 'muteSms',
     muteEmail: 'muteEmail',
     muteLinePush: 'muteLinePush',
     lineUserId: 'lineUserId',
@@ -23753,7 +23740,6 @@ export namespace Prisma {
     preferredLanguage?: StringFilter<"User"> | string
     colorTheme?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
     muteLinePush?: BoolFilter<"User"> | boolean
     lineUserId?: StringNullableFilter<"User"> | string | null
@@ -23793,7 +23779,6 @@ export namespace Prisma {
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
-    muteSms?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
@@ -23837,7 +23822,6 @@ export namespace Prisma {
     preferredLanguage?: StringFilter<"User"> | string
     colorTheme?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
-    muteSms?: BoolFilter<"User"> | boolean
     muteEmail?: BoolFilter<"User"> | boolean
     muteLinePush?: BoolFilter<"User"> | boolean
     isGuest?: BoolFilter<"User"> | boolean
@@ -23876,7 +23860,6 @@ export namespace Prisma {
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
-    muteSms?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
@@ -23900,7 +23883,6 @@ export namespace Prisma {
     preferredLanguage?: StringWithAggregatesFilter<"User"> | string
     colorTheme?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
-    muteSms?: BoolWithAggregatesFilter<"User"> | boolean
     muteEmail?: BoolWithAggregatesFilter<"User"> | boolean
     muteLinePush?: BoolWithAggregatesFilter<"User"> | boolean
     lineUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -25422,7 +25404,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -25462,7 +25443,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -25502,7 +25482,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25542,7 +25521,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25582,7 +25560,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -25600,7 +25577,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -25618,7 +25594,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27422,7 +27397,6 @@ export namespace Prisma {
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
-    muteSms?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
@@ -27440,7 +27414,6 @@ export namespace Prisma {
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
-    muteSms?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
@@ -27458,7 +27431,6 @@ export namespace Prisma {
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
-    muteSms?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
     lineUserId?: SortOrder
@@ -32827,7 +32799,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -32866,7 +32837,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -33194,7 +33164,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33233,7 +33202,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33569,7 +33537,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -33608,7 +33575,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -33734,7 +33700,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33773,7 +33738,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33948,7 +33912,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -33987,7 +33950,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34161,7 +34123,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34200,7 +34161,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34375,7 +34335,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34414,7 +34373,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34458,7 +34416,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34497,7 +34454,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34623,7 +34579,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34662,7 +34617,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34712,7 +34666,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34751,7 +34704,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34855,7 +34807,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -34894,7 +34845,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -35020,7 +34970,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35059,7 +35008,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35163,7 +35111,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -35202,7 +35149,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -35383,7 +35329,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35422,7 +35367,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35557,7 +35501,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -35596,7 +35539,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -35706,7 +35648,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35745,7 +35686,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35985,7 +35925,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -36024,7 +35963,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -36150,7 +36088,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36189,7 +36126,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36277,7 +36213,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -36316,7 +36251,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -36426,7 +36360,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36465,7 +36398,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36504,7 +36436,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -36543,7 +36474,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37031,7 +36961,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37070,7 +36999,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37324,7 +37252,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37363,7 +37290,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37456,7 +37382,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37495,7 +37420,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37550,7 +37474,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37589,7 +37512,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37694,7 +37616,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37733,7 +37654,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37772,7 +37692,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37811,7 +37730,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37855,7 +37773,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37894,7 +37811,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -37998,7 +37914,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38037,7 +37952,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38087,7 +38001,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38126,7 +38039,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38269,7 +38181,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38308,7 +38219,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38352,7 +38262,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38391,7 +38300,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38501,7 +38409,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38540,7 +38447,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38590,7 +38496,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38629,7 +38534,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38717,7 +38621,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38756,7 +38659,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38800,7 +38702,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38839,7 +38740,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -38949,7 +38849,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38988,7 +38887,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39038,7 +38936,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39077,7 +38974,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39116,7 +39012,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39155,7 +39050,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39199,7 +39093,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39238,7 +39131,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39293,7 +39185,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39332,7 +39223,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39382,7 +39272,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39421,7 +39310,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39460,7 +39348,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39499,7 +39386,6 @@ export namespace Prisma {
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
-    muteSms?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
     lineUserId?: string | null
@@ -39603,7 +39489,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39642,7 +39527,6 @@ export namespace Prisma {
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    muteSms?: BoolFieldUpdateOperationsInput | boolean
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null

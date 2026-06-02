@@ -356,13 +356,6 @@ export class GroupsService {
             text: `You have been invited to join a group on Judien. Open this link to respond: ${inviteLink}`,
           });
         }
-        if (phoneE164) {
-          await this.messaging.sendSms({
-            userId: targetUser?.id ?? user.id,
-            to: phoneE164,
-            body: `Judien invite: ${inviteLink}`,
-          });
-        }
 
         out.push({ inviteId: invite.id, token: invite.token, email: invite.email, phoneE164: invite.phoneE164 });
       }
@@ -725,13 +718,6 @@ export class GroupsService {
         text: `You have been added to the group "${group.name}" on Judien. Click here to view: ${groupLink}`,
       });
     }
-    if (targetUser.phoneE164) {
-      await this.messaging.sendSms({
-        userId: targetUser.id,
-        to: targetUser.phoneE164,
-        body: `You've been added to "${group.name}" on Judien: ${groupLink}`,
-      });
-    }
 
     return { added: true, userId: targetUser.id, displayName: targetUser.displayName };
   }
@@ -821,13 +807,6 @@ export class GroupsService {
         to: newUser.email,
         subject: `You have been added to ${group.name} on Judien`,
         text: `A Judien account has been created for you and you have been added to the group "${group.name}". Visit: ${groupLink}`,
-      });
-    }
-    if (newUser.phoneE164) {
-      await this.messaging.sendSms({
-        userId: newUser.id,
-        to: newUser.phoneE164,
-        body: `A Judien account was created for you and you've been added to "${group.name}": ${groupLink}`,
       });
     }
 

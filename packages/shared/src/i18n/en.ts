@@ -69,7 +69,6 @@ const en = {
   profile: {
     title: 'Profile',
     language: 'Display Language',
-    muteSms: 'Mute SMS notifications',
     muteEmail: 'Mute email notifications',
     updateProfile: 'Update Profile',
     updateSuccess: 'Profile updated.',
@@ -81,7 +80,6 @@ const en = {
     addReminder: 'Add Reminder',
     offsetMinutes: 'Offset (minutes before event)',
     channels: 'Channels',
-    sms: 'SMS',
     email: 'Email',
     messageEn: 'Message (English)',
     messageZh: 'Message (Chinese)',

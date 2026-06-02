@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { MessagingAdapter, SendSmsOptions, SendEmailOptions, SendLineOptions } from './messaging.interface';
+import type { MessagingAdapter, SendEmailOptions, SendLineOptions } from './messaging.interface';
 
 /**
  * Mock adapter – logs to console instead of calling real providers.
@@ -8,11 +8,6 @@ import type { MessagingAdapter, SendSmsOptions, SendEmailOptions, SendLineOption
 @Injectable()
 export class MockMessagingAdapter implements MessagingAdapter {
   private readonly logger = new Logger(MockMessagingAdapter.name);
-
-  async sendSms(opts: SendSmsOptions): Promise<string | null> {
-    this.logger.log(`[MOCK SMS] to=${opts.to} body="${opts.body}"`);
-    return `mock_sms_${Date.now()}`;
-  }
 
   async sendEmail(opts: SendEmailOptions): Promise<string | null> {
     this.logger.log(

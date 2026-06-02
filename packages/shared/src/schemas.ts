@@ -73,7 +73,7 @@ export type UpdateEventDto = z.infer<typeof UpdateEventSchema>;
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 
 export const RsvpSchema = z.object({
-  status: z.enum(['GOING', 'MAYBE', 'NO']),
+  status: z.enum(['GOING', 'NO']),
   declineReason: z.string().max(500).optional(),
 });
 export type RsvpDto = z.infer<typeof RsvpSchema>;
@@ -86,7 +86,7 @@ export const GuestRsvpIdentitySchema = z.object({
 export type GuestRsvpIdentityDto = z.infer<typeof GuestRsvpIdentitySchema>;
 
 export const SharedEventRsvpSchema = z.object({
-  status: z.enum(['GOING', 'MAYBE', 'NO']),
+  status: z.enum(['GOING', 'NO']),
   guest: GuestRsvpIdentitySchema.optional(),
 });
 export type SharedEventRsvpDto = z.infer<typeof SharedEventRsvpSchema>;
@@ -108,7 +108,7 @@ export type UpdateCommentDto = z.infer<typeof UpdateCommentSchema>;
 
 export const ReminderRuleSchema = z.object({
   offsetMinutes: z.number().int().positive(),
-  channels: z.array(z.enum(['SMS', 'EMAIL', 'LINE'])).min(1),
+  channels: z.array(z.enum(['EMAIL', 'LINE'])).min(1),
   enabled: z.boolean().default(true),
 });
 export type ReminderRuleDto = z.infer<typeof ReminderRuleSchema>;
@@ -121,13 +121,20 @@ export type SetRemindersDto = z.infer<typeof SetRemindersSchema>;
 // ─── Blast ────────────────────────────────────────────────────────────────────
 
 export const BlastSchema = z.object({
-  channels: z.array(z.enum(['SMS', 'EMAIL', 'LINE'])).min(1),
+  channels: z.array(z.enum(['EMAIL', 'LINE'])).min(1),
   /** 'rsvped' = users who RSVPed any status; 'invited' = users who accepted an invite or RSVPed */
   audience: z.enum(['rsvped', 'invited']).default('rsvped'),
   messageEn: z.string().min(1).max(1600),
   messageZh: z.string().min(1).max(1600),
 });
 export type BlastDto = z.infer<typeof BlastSchema>;
+
+// ─── Bulk Member Invite ───────────────────────────────────────────────────────
+
+export const BulkInviteMembersSchema = z.object({
+  userIds: z.array(z.string().cuid()).min(1).max(500),
+});
+export type BulkInviteMembersDto = z.infer<typeof BulkInviteMembersSchema>;
 
 // ─── News ────────────────────────────────────────────────────────────────────
 
@@ -152,7 +159,6 @@ export const UpdateProfileSchema = z.object({
   password: z.string().min(8).max(128).optional(),
   preferredLanguage: z.enum(['en', 'zh']).optional(),
   colorTheme: z.enum(['light', 'dark']).optional(),
-  muteSms: z.boolean().optional(),
   muteEmail: z.boolean().optional(),
   muteLinePush: z.boolean().optional(),
 });

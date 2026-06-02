@@ -15,6 +15,10 @@ export class RsvpService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
 
+    if (new Date(event.startAt) < new Date()) {
+      throw new ForbiddenException('Cannot RSVP to a past event.');
+    }
+
     if (event.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
       if (!canAccess) {
@@ -67,14 +71,13 @@ export class RsvpService {
       }),
     ]);
 
-    const groups: Record<'GOING' | 'MAYBE' | 'NO', { handle: string; displayName: string | null; source: 'user' | 'guest' }[]> = {
+    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; source: 'user' | 'guest' }[]> = {
       GOING: [],
-      MAYBE: [],
       NO: [],
     };
 
     for (const r of rsvps) {
-      const status = r.status as 'GOING' | 'MAYBE' | 'NO';
+      const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
         groups[status].push({
           handle: this.maskIdentifier(r.user.email ?? ''),
@@ -85,7 +88,7 @@ export class RsvpService {
     }
 
     for (const r of guestRsvps) {
-      const status = r.status as 'GOING' | 'MAYBE' | 'NO';
+      const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
         groups[status].push({
           handle: this.maskIdentifier(r.guestEmail),

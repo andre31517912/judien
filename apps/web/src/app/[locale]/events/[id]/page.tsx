@@ -32,10 +32,10 @@ export default function EventDetailPage() {
 
   // guest list
   type GuestEntry = { handle: string; displayName: string | null };
-  type Guests = { GOING: GuestEntry[]; MAYBE: GuestEntry[]; NO: GuestEntry[] };
+  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'MAYBE' | 'NO'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
 
   const loadGuests = async () => {
@@ -116,10 +116,14 @@ export default function EventDetailPage() {
       setRsvpStatus(ev.myRsvp);
       setComments(comms.data);
       setLoading(false);
+      // Auto-show guest list for past events
+      if (ev.isPast) {
+        setShowGuests(true);
+      }
     }).catch(() => setLoading(false));
   }, [params.id]);
 
-  const handleRsvp = async (status: 'GOING' | 'MAYBE' | 'NO') => {
+  const handleRsvp = async (status: 'GOING' | 'NO') => {
     if (!user) return;
     // Clicking NO when not already NO → show the reason prompt instead of submitting
     if (status === 'NO' && rsvpStatus !== 'NO') {
@@ -142,7 +146,7 @@ export default function EventDetailPage() {
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
     setEvent(ev);
     if (showGuests) {
-      const data = await apiFetch<{ GOING: { handle: string; displayName: string | null }[]; MAYBE: { handle: string; displayName: string | null }[]; NO: { handle: string; displayName: string | null }[] }>(`/events/${params.id}/rsvp/guests`);
+      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
       setGuests(data);
     } else {
       setGuests(null);
@@ -161,7 +165,7 @@ export default function EventDetailPage() {
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
     setEvent(ev);
     if (showGuests) {
-      const data = await apiFetch<{ GOING: { handle: string; displayName: string | null }[]; MAYBE: { handle: string; displayName: string | null }[]; NO: { handle: string; displayName: string | null }[] }>(`/events/${params.id}/rsvp/guests`);
+      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
       setGuests(data);
     } else {
       setGuests(null);
@@ -291,7 +295,9 @@ export default function EventDetailPage() {
     ? `${event.feeCurrency} ${event.feeAmount}`
     : zh ? '免費' : 'Free';
 
-  const rsvpBtn = (status: 'GOING' | 'MAYBE' | 'NO', label: string) => (
+  const isPast = event ? new Date(event.startAt) < new Date() : false;
+
+  const rsvpBtn = (status: 'GOING' | 'NO', label: string) => (
     <button
       key={status}
       onClick={() => handleRsvp(status)}
@@ -432,19 +438,19 @@ export default function EventDetailPage() {
 
       {/* RSVP counts */}
       <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-        <span>✓ {event.rsvpCounts.GOING} {zh ? '參加' : 'Going'}</span>
-        <span>? {event.rsvpCounts.MAYBE} {zh ? '也許' : 'Maybe'}</span>
-        <span>✕ {event.rsvpCounts.NO} {zh ? '不參加' : 'Not Going'}</span>
+        <span>✓ {event.rsvpCounts.GOING} {zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going')}</span>
+        <span>✕ {event.rsvpCounts.NO} {zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going')}</span>
       </div>
 
-      {/* RSVP buttons (requires login) */}
+      {/* RSVP buttons (requires login, hidden for past events) */}
       {user ? (
         <div className="flex flex-col gap-3">
+        {!isPast && (
         <div className="flex gap-3 items-center flex-wrap">
           {rsvpBtn('GOING', zh ? '參加' : 'Going')}
-          {rsvpBtn('MAYBE', zh ? '也許' : 'Maybe')}
           {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
         </div>
+        )}
         {showNoReason && (
           <div className="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -490,6 +496,7 @@ export default function EventDetailPage() {
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
+          {!isPast && (
           <button
             onClick={handleCreateInvite}
             disabled={inviteLoading}
@@ -497,6 +504,7 @@ export default function EventDetailPage() {
           >
             {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
           </button>
+          )}
           {user?.role === 'ADMIN' && (
             <button
               onClick={() => {
@@ -540,11 +548,10 @@ export default function EventDetailPage() {
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
             {/* tab header */}
             <div className="flex border-b border-gray-100 dark:border-gray-800">
-              {(['GOING', 'MAYBE', 'NO'] as const).map((s) => {
+              {(['GOING', 'NO'] as const).map((s) => {
                 const labels = {
-                  GOING: zh ? '參加' : 'Going',
-                  MAYBE: zh ? '也許' : 'Maybe',
-                  NO: zh ? '不參加' : 'Not Going',
+                  GOING: zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'),
+                  NO: zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'),
                 };
                 return (
                   <button

@@ -20,12 +20,10 @@ enum Role {
 
 enum RSVPStatus {
   GOING
-  MAYBE
   NO
 }
 
 enum MessageChannel {
-  SMS
   EMAIL
   LINE
 }
@@ -67,7 +65,9 @@ enum NotificationType {
   JOIN_REQUEST_APPROVED
   JOIN_REQUEST_REJECTED
   EVENT_REMINDER
+  EVENT_INVITE
   GROUP_INVITE_RECEIVED
+  NEWS_PUBLISHED
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -81,7 +81,6 @@ model User {
   preferredLanguage String   @default("en") // 'en' | 'zh'
   colorTheme        String   @default("light") // 'light' | 'dark'
   role              Role     @default(USER)
-  muteSms           Boolean  @default(false)
   muteEmail         Boolean  @default(false)
   muteLinePush      Boolean  @default(false)
   lineUserId        String?  @unique
@@ -338,7 +337,7 @@ model Group {
   name                 String
   description          String   @default("")
   photoUrl             String?
-  discoverableBySearch Boolean  @default(false)
+  discoverableBySearch Boolean  @default(true)
   parentGroupId        String?
   createdById          String
   createdBy            User     @relation("GroupCreatedBy", fields: [createdById], references: [id])

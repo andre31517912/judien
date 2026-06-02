@@ -71,7 +71,6 @@ const zh: I18nDict = {
   profile: {
     title: '個人資料',
     language: '顯示語言',
-    muteSms: '靜音簡訊通知',
     muteEmail: '靜音電子郵件通知',
     updateProfile: '更新資料',
     updateSuccess: '資料已更新。',
@@ -83,7 +82,7 @@ const zh: I18nDict = {
     addReminder: '新增提醒',
     offsetMinutes: '提前幾分鐘',
     channels: '發送管道',
-    sms: '簡訊',
+
     email: '電子郵件',
     messageEn: '訊息內容（英文）',
     messageZh: '訊息內容（中文）',

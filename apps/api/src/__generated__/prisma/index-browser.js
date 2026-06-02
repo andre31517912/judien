@@ -131,7 +131,6 @@ exports.Prisma.UserScalarFieldEnum = {
   preferredLanguage: 'preferredLanguage',
   colorTheme: 'colorTheme',
   role: 'role',
-  muteSms: 'muteSms',
   muteEmail: 'muteEmail',
   muteLinePush: 'muteLinePush',
   lineUserId: 'lineUserId',
@@ -390,12 +389,10 @@ exports.Role = exports.$Enums.Role = {
 
 exports.RSVPStatus = exports.$Enums.RSVPStatus = {
   GOING: 'GOING',
-  MAYBE: 'MAYBE',
   NO: 'NO'
 };
 
 exports.MessageChannel = exports.$Enums.MessageChannel = {
-  SMS: 'SMS',
   EMAIL: 'EMAIL',
   LINE: 'LINE'
 };
@@ -437,7 +434,9 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   JOIN_REQUEST_APPROVED: 'JOIN_REQUEST_APPROVED',
   JOIN_REQUEST_REJECTED: 'JOIN_REQUEST_REJECTED',
   EVENT_REMINDER: 'EVENT_REMINDER',
-  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED'
+  EVENT_INVITE: 'EVENT_INVITE',
+  GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED',
+  NEWS_PUBLISHED: 'NEWS_PUBLISHED'
 };
 
 exports.Prisma.ModelName = {

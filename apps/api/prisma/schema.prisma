@@ -20,12 +20,10 @@ enum Role {
 
 enum RSVPStatus {
   GOING
-  MAYBE
   NO
 }
 
 enum MessageChannel {
-  SMS
   EMAIL
   LINE
 }
@@ -67,7 +65,9 @@ enum NotificationType {
   JOIN_REQUEST_APPROVED
   JOIN_REQUEST_REJECTED
   EVENT_REMINDER
+  EVENT_INVITE
   GROUP_INVITE_RECEIVED
+  NEWS_PUBLISHED
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -81,7 +81,6 @@ model User {
   preferredLanguage  String        @default("en")  // 'en' | 'zh'
   colorTheme         String        @default("light") // 'light' | 'dark'
   role               Role          @default(USER)
-  muteSms            Boolean       @default(false)
   muteEmail          Boolean       @default(false)
   muteLinePush       Boolean       @default(false)
   lineUserId         String?       @unique
@@ -287,7 +286,7 @@ model ReminderRule {
   id            String   @id @default(cuid())
   eventId       String
   offsetMinutes Int      // e.g. 1440 = 24h before
-  channels      Json     // string[] e.g. ["SMS","EMAIL"]
+  channels      Json     // string[] e.g. ["EMAIL","LINE"]
   enabled       Boolean  @default(true)
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)

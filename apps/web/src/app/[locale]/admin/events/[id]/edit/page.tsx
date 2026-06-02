@@ -30,10 +30,18 @@ function minutesToLabel(m: number) {
   return `${m} min before`;
 }
 
+interface GroupMember {
+  userId: string;
+  displayName: string | null;
+  email: string | null;
+  role: string;
+}
+
 const REMINDER_PRESETS = [
   { label: '1 week before', minutes: 10080 },
   { label: '3 days before', minutes: 4320 },
   { label: '1 day before', minutes: 1440 },
+  { label: '2 hours before', minutes: 120 },
   { label: '1 hour before', minutes: 60 },
   { label: '15 min before', minutes: 15 },
 ];
@@ -56,6 +64,12 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [submitting, setSubmitting] = useState(false);
   const [savingReminders, setSavingReminders] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // group member invite state
+  const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
+  const [inviting, setInviting] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
 
   // cover image
   const coverFileRef = useRef<HTMLInputElement>(null);
@@ -88,6 +102,12 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     });
     apiFetch<ReminderRule[]>(`/events/${params.id}/reminders`).then((rules) => {
       setReminders(rules.map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
+    });
+    // Load group members if event belongs to a group
+    apiFetch<Event>(`/events/${params.id}`).then((ev) => {
+      if (ev.groupId) {
+        apiFetch<GroupMember[]>(`/groups/${ev.groupId}/members`).then(setGroupMembers).catch(() => {});
+      }
     });
   }, [params.id]);
 
@@ -140,6 +160,33 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     router.push(`/${params.locale}/events`);
   };
 
+  // ── member invites ──────────────────────────────────────────────────────────
+  const toggleMember = (userId: string) =>
+    setSelectedMemberIds((prev) => {
+      const next = new Set(prev);
+      next.has(userId) ? next.delete(userId) : next.add(userId);
+      return next;
+    });
+
+  const selectAllMembers = () => setSelectedMemberIds(new Set(groupMembers.map((m) => m.userId)));
+  const clearMemberSelection = () => setSelectedMemberIds(new Set());
+
+  const handleSendInvites = async () => {
+    if (selectedMemberIds.size === 0) return;
+    setInviting(true);
+    setInviteSent(false);
+    try {
+      await apiFetch(`/events/${params.id}/invite-members`, {
+        method: 'POST',
+        body: JSON.stringify({ userIds: Array.from(selectedMemberIds) }),
+      });
+      setInviteSent(true);
+      setSelectedMemberIds(new Set());
+    } finally {
+      setInviting(false);
+    }
+  };
+
   // ── reminders ───────────────────────────────────────────────────────────────
   const addPresetReminder = (minutes: number) => {
     if (reminders.some((r) => r.offsetMinutes === minutes)) return; // no dup
@@ -161,7 +208,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         body: JSON.stringify({
           rules: reminders.map((r) => ({
             offsetMinutes: r.offsetMinutes,
-            channels: r.channels as ('SMS' | 'EMAIL')[],
+            channels: r.channels as ('EMAIL' | 'LINE')[],
             enabled: r.enabled,
           })),
         }),
@@ -313,6 +360,79 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         </form>
       </section>
 
+      {/* ── Invite Group Members ────────────────────────────────────────────── */}
+      {groupMembers.length > 0 && (
+        <section>
+          <h2 className="text-xl font-semibold mb-1 dark:text-white">{zh ? '邀請群組成員' : 'Invite Group Members'}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            {zh ? '選擇要邀請到此活動的成員，系統將傳送通知給他們。' : 'Select members to invite to this event. They will receive an in-app, email, or LINE notification.'}
+          </p>
+
+          {inviteSent && (
+            <p className="text-green-600 text-sm mb-3">✓ {zh ? '邀請已送出！' : 'Invitations sent!'}</p>
+          )}
+
+          <div className="flex gap-2 mb-3">
+            <button
+              type="button"
+              onClick={selectAllMembers}
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              {zh ? '全選' : 'Select all'}
+            </button>
+            <span className="text-gray-300 dark:text-gray-600">|</span>
+            <button
+              type="button"
+              onClick={clearMemberSelection}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:underline"
+            >
+              {zh ? '取消全選' : 'Clear'}
+            </button>
+            <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+              {selectedMemberIds.size} {zh ? '已選' : 'selected'}
+            </span>
+          </div>
+
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+            {groupMembers.map((m) => (
+              <label
+                key={m.userId}
+                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedMemberIds.has(m.userId)}
+                  onChange={() => toggleMember(m.userId)}
+                  className="w-4 h-4 text-indigo-600 rounded"
+                />
+                <span className="text-sm font-medium text-gray-800 dark:text-gray-200 flex-1">
+                  {m.displayName ?? '(no name)'}
+                </span>
+                {m.role === 'GROUP_ADMIN' && (
+                  <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded px-1.5 py-0.5">
+                    Admin
+                  </span>
+                )}
+                {m.email && (
+                  <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{m.email}</span>
+                )}
+              </label>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSendInvites}
+            disabled={inviting || selectedMemberIds.size === 0}
+            className="mt-3 bg-indigo-600 text-white text-sm px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition"
+          >
+            {inviting
+              ? (zh ? '傳送中…' : 'Sending…')
+              : (zh ? `傳送邀請 (${selectedMemberIds.size})` : `Send Invites (${selectedMemberIds.size})`)}
+          </button>
+        </section>
+      )}
+
       {/* ── Automatic reminders ─────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xl font-semibold mb-1 dark:text-white">Automatic Reminders</h2>
@@ -371,10 +491,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             <label className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={r.channels.includes('EMAIL')}
                 onChange={(e) => toggleReminderChannel(i, 'EMAIL', e.target.checked)} /> Email
-            </label>
-            <label className="flex items-center gap-1 text-sm">
-              <input type="checkbox" checked={r.channels.includes('SMS')}
-                onChange={(e) => toggleReminderChannel(i, 'SMS', e.target.checked)} /> SMS
             </label>
             <label className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={r.channels.includes('LINE')}

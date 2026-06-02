@@ -15,7 +15,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [muteSms, setMuteSms] = useState(false);
   const [muteEmail, setMuteEmail] = useState(false);
   const [muteLinePush, setMuteLinePush] = useState(false);
   const [lineLinked, setLineLinked] = useState(false);
@@ -38,7 +37,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       setPhone((user as any)?.phoneE164 ?? '');
       setEmail((user as any)?.email ?? '');
       setPassword('');
-      setMuteSms((user as any).muteSms ?? false);
       setMuteEmail((user as any).muteEmail ?? false);
       setMuteLinePush(user.muteLinePush ?? false);
       setLineLinked(!!user.lineUserId);
@@ -67,7 +65,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     setSaving(true);
     const body: Record<string, unknown> = {
       preferredLanguage: lang,
-      muteSms,
       muteEmail,
       muteLinePush,
       displayName: displayName.trim(),
@@ -173,14 +170,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
               </button>
             ))}
           </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <input type="checkbox" id="muteSms" checked={muteSms}
-            onChange={(e) => setMuteSms(e.target.checked)} className="w-4 h-4" />
-          <label htmlFor="muteSms" className="text-sm dark:text-gray-300">
-            {zh ? '靜音簡訊通知' : 'Mute SMS notifications'}
-          </label>
         </div>
 
         <div className="flex items-center gap-3">

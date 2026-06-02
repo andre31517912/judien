@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 
 type AppNotification = {
@@ -23,6 +24,7 @@ interface NotificationBellProps {
 
 export default function NotificationBell({ locale }: NotificationBellProps) {
   const zh = locale === 'zh';
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -94,6 +96,10 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
 
   const handleNotificationClick = (n: AppNotification) => {
     if (!n.read) markRead(n.id);
+    if (n.actionUrl) {
+      setOpen(false);
+      router.push(`/${locale}${n.actionUrl}`);
+    }
   };
 
   return (
