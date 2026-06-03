@@ -64,14 +64,15 @@ export class BlastService {
         });
       }
 
-      if (dto.channels.includes('LINE') && !user.muteLinePush && user.lineUserId) {
-        await this.messaging.sendLine({
-          userId: user.id,
-          eventId,
-          to: user.lineUserId,
-          text: message,
-        });
-      }
+      // LINE blast disabled — re-enable when LINE Messaging API is active
+      // if (dto.channels.includes('LINE') && !user.muteLinePush && user.lineUserId) {
+      //   await this.messaging.sendLine({
+      //     userId: user.id,
+      //     eventId,
+      //     to: user.lineUserId,
+      //     text: message,
+      //   });
+      // }
 
       sent++;
     }

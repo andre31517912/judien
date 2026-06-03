@@ -492,10 +492,11 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               <input type="checkbox" checked={r.channels.includes('EMAIL')}
                 onChange={(e) => toggleReminderChannel(i, 'EMAIL', e.target.checked)} /> Email
             </label>
-            <label className="flex items-center gap-1 text-sm">
+            {/* LINE reminder disabled — re-enable when LINE Messaging API is active */}
+            {/* <label className="flex items-center gap-1 text-sm">
               <input type="checkbox" checked={r.channels.includes('LINE')}
                 onChange={(e) => toggleReminderChannel(i, 'LINE', e.target.checked)} /> LINE
-            </label>
+            </label> */}
             <label className="flex items-center gap-1 text-sm ml-2">
               <input type="checkbox" checked={r.enabled}
                 onChange={(e) => setReminders((prev) => prev.map((x, j) => j !== i ? x : { ...x, enabled: e.target.checked }))} />

@@ -102,9 +102,10 @@ async function processReminder(job: Job<ReminderJobData>) {
       let providerId: string | null = null;
       try {
         if (channel === 'LINE') {
-          if (user.lineUserId && !user.muteLinePush) {
-            providerId = await adapter.sendLine?.({ to: user.lineUserId, text: body }) ?? null;
-          }
+          // LINE reminder disabled — re-enable when LINE Messaging API is active
+          // if (user.lineUserId && !user.muteLinePush) {
+          //   providerId = await adapter.sendLine?.({ to: user.lineUserId, text: body }) ?? null;
+          // }
         } else {
           providerId = await adapter.sendEmail({ to: user.email!, subject, text: body });
         }

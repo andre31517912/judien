@@ -27,41 +27,42 @@ export class NotificationsService {
 
   async create(input: CreateNotificationInput) {
     const notification = await this.prisma.notification.create({ data: input });
-    // Best-effort LINE push
-    this.sendLinePushForNotification(input).catch(() => {});
+    // LINE push disabled — re-enable when LINE Messaging API is active
+    // this.sendLinePushForNotification(input).catch(() => {});
     return notification;
   }
 
   async createMany(inputs: CreateNotificationInput[]) {
     if (!inputs.length) return;
     const result = await this.prisma.notification.createMany({ data: inputs });
-    // Best-effort LINE push for each
-    for (const input of inputs) {
-      this.sendLinePushForNotification(input).catch(() => {});
-    }
+    // LINE push disabled — re-enable when LINE Messaging API is active
+    // for (const input of inputs) {
+    //   this.sendLinePushForNotification(input).catch(() => {});
+    // }
     return result;
   }
 
-  private async sendLinePushForNotification(input: CreateNotificationInput) {
-    try {
-      const user = await this.prisma.user.findUnique({
-        where: { id: input.userId },
-        select: { lineUserId: true, muteLinePush: true, preferredLanguage: true },
-      });
-      if (!user?.lineUserId || user.muteLinePush) return;
-      const lang = user.preferredLanguage === 'zh' ? 'zh' : 'en';
-      const title = lang === 'zh' ? input.title_zh : input.title_en;
-      const body = lang === 'zh' ? (input.body_zh ?? '') : (input.body_en ?? '');
-      const text = body ? `${title}\n${body}` : title;
-      await this.messaging.sendLine({
-        userId: input.userId,
-        to: user.lineUserId,
-        text,
-      });
-    } catch (err) {
-      this.logger.warn(`LINE push failed for user ${input.userId}: ${err}`);
-    }
-  }
+  // LINE push disabled — re-enable when LINE Messaging API is active
+  // private async sendLinePushForNotification(input: CreateNotificationInput) {
+  //   try {
+  //     const user = await this.prisma.user.findUnique({
+  //       where: { id: input.userId },
+  //       select: { lineUserId: true, muteLinePush: true, preferredLanguage: true },
+  //     });
+  //     if (!user?.lineUserId || user.muteLinePush) return;
+  //     const lang = user.preferredLanguage === 'zh' ? 'zh' : 'en';
+  //     const title = lang === 'zh' ? input.title_zh : input.title_en;
+  //     const body = lang === 'zh' ? (input.body_zh ?? '') : (input.body_en ?? '');
+  //     const text = body ? `${title}\n${body}` : title;
+  //     await this.messaging.sendLine({
+  //       userId: input.userId,
+  //       to: user.lineUserId,
+  //       text,
+  //     });
+  //   } catch (err) {
+  //     this.logger.warn(`LINE push failed for user ${input.userId}: ${err}`);
+  //   }
+  // }
 
   async list(user: User) {
     return this.prisma.notification.findMany({
