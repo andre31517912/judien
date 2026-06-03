@@ -1479,7 +1479,7 @@ export class GroupsService {
     const memberSummary = memberIds.map((uid) => {
       const totalEvents = events.length;
       const going = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'GOING')).length;
-      const maybe = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'MAYBE')).length;
+      const maybe = 0;
       const no = events.filter((ev) => ev.rsvps.some((r) => r.userId === uid && r.status === 'NO')).length;
       const usd = donations.filter((d) => d.forUserId === uid && d.currency === 'USD').reduce((s, d) => s + Number(d.amount), 0);
       const ntd = donations.filter((d) => d.forUserId === uid && d.currency === 'NTD').reduce((s, d) => s + Number(d.amount), 0);
