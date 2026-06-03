@@ -486,7 +486,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                     {(zh ? ev.location_zh : ev.location_en) && (
                       <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
                     )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
                   {ev.feeAmount != null && ev.feeAmount > 0 && (
                     <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
@@ -524,7 +524,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                     {(zh ? ev.location_zh : ev.location_en) && (
                       <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
                     )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
                 </div>
               </Link>
