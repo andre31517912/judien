@@ -5,6 +5,9 @@
   - You are about to drop the column `muteSms` on the `User` table. All the data in the column will be lost.
 
 */
+-- Remove any SMS message logs before dropping the SMS enum value
+DELETE FROM "MessageLog" WHERE "channel" = 'SMS';
+
 -- AlterEnum
 BEGIN;
 CREATE TYPE "MessageChannel_new" AS ENUM ('EMAIL', 'LINE');
