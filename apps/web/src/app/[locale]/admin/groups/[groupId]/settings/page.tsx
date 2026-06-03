@@ -203,8 +203,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   // ── Report state ─────────────────────────────────────────────────────────
   type ReportData = {
     groupName: string; year: number; totalEvents: number; totalMembers: number;
-    events: { id: string; title: string; startAt: string; memberRsvps: { userId: string; displayName: string | null; email: string; status: 'GOING' | 'MAYBE' | 'NO' | null }[] }[];
-    members: { userId: string; displayName: string | null; email: string; totalEvents: number; going: number; maybe: number; no: number; noResponse: number; attendanceRate: number; totalDonatedUSD: number; totalDonatedNTD: number }[];
+    events: { id: string; title: string; startAt: string; memberRsvps: { userId: string; displayName: string | null; email: string; status: 'GOING' | 'NO' | null }[] }[];
+    members: { userId: string; displayName: string | null; email: string; totalEvents: number; going: number; no: number; noResponse: number; attendanceRate: number; totalDonatedUSD: number; totalDonatedNTD: number }[];
   };
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -235,9 +235,9 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     lines.push('');
 
     // Member stats section
-    lines.push(row('Member', 'Email', 'Going', 'Maybe', 'No', 'No Response', 'Attendance %', 'Donated USD', 'Donated NTD'));
+    lines.push(row('Member', 'Email', 'Going', 'No', 'No Response', 'Attendance %', 'Donated USD', 'Donated NTD'));
     for (const m of data.members) {
-      lines.push(row(m.displayName ?? m.email, m.email, m.going, m.maybe, m.no, m.noResponse, m.attendanceRate, m.totalDonatedUSD, m.totalDonatedNTD));
+      lines.push(row(m.displayName ?? m.email, m.email, m.going, m.no, m.noResponse, m.attendanceRate, m.totalDonatedUSD, m.totalDonatedNTD));
     }
     lines.push('');
 
@@ -1535,7 +1535,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                       <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
                         <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
                         <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✓ {zh ? '參加' : 'Going'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">? {zh ? '也許' : 'Maybe'}</th>
                         <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✗ {zh ? '不參加' : 'No'}</th>
                         <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">– {zh ? '未回應' : 'No resp.'}</th>
                         <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">{zh ? '出席率' : 'Attendance'}</th>
@@ -1548,7 +1547,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                         <tr key={m.userId}>
                           <td className="py-2 pr-4 text-gray-900 dark:text-white">{m.displayName ?? m.email}</td>
                           <td className="py-2 pr-4 text-center text-green-600">{m.going}</td>
-                          <td className="py-2 pr-4 text-center text-yellow-600">{m.maybe}</td>
                           <td className="py-2 pr-4 text-center text-red-500">{m.no}</td>
                           <td className="py-2 pr-4 text-center text-gray-400">{m.noResponse}</td>
                           <td className="py-2 pr-4 text-center">
@@ -1599,7 +1597,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                                     <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName ?? r.email}</td>
                                     <td className="px-4 py-2">
                                       {r.status === 'GOING' ? <span className="text-green-600 font-medium">✓ {zh ? '參加' : 'Going'}</span>
-                                      : r.status === 'MAYBE' ? <span className="text-yellow-600">? {zh ? '也許' : 'Maybe'}</span>
                                       : r.status === 'NO' ? <span className="text-red-500">✗ {zh ? '不參加' : 'No'}</span>
                                       : <span className="text-gray-300 dark:text-gray-600">– {zh ? '未回應' : 'No response'}</span>}
                                     </td>

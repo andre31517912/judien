@@ -14,7 +14,7 @@ type GuestIdentity = {
 };
 
 type GuestEntry = { handle: string; displayName: string | null; source: 'user' | 'guest' };
-type Guests = { GOING: GuestEntry[]; MAYBE: GuestEntry[]; NO: GuestEntry[] };
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[] };
 
 const GUEST_IDENTITY_KEY = 'shared_event_guest_identity_v1';
 

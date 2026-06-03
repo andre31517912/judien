@@ -506,7 +506,7 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
           {location && <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{location}</p>}
           <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">{fee}</p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            ✓ {event.rsvpCounts.GOING} &nbsp; ? {event.rsvpCounts.MAYBE} &nbsp; ✗ {event.rsvpCounts.NO}
+            ✓ {event.rsvpCounts.GOING} &nbsp; ✗ {event.rsvpCounts.NO}
           </p>
         </div>
       </Link>
