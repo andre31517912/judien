@@ -55,6 +55,19 @@ type JoinRequest = {
   requester: { id: string; displayName: string | null; email: string };
 };
 
+type GroupRelationshipRequest = {
+  id: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+  sourceGroupId: string;
+  sourceGroupName: string;
+  targetGroupId: string;
+  targetGroupName: string;
+  requesterUserId: string;
+  requesterDisplayName: string | null;
+  requesterEmail: string | null;
+};
+
 export default function GroupSettingsPage({ params }: { params: { locale: string; groupId: string } }) {
 
   const zh = params.locale === 'zh';
@@ -104,6 +117,9 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [newChildForm, setNewChildForm] = useState({ name: '', description: '' });
   const [childCreating, setChildCreating] = useState(false);
   const [childInitialMemberIds, setChildInitialMemberIds] = useState<string[]>([]);
+  const [incomingRelationshipRequests, setIncomingRelationshipRequests] = useState<GroupRelationshipRequest[]>([]);
+  const [outgoingRelationshipRequests, setOutgoingRelationshipRequests] = useState<GroupRelationshipRequest[]>([]);
+  const [reviewingRelationshipRequestId, setReviewingRelationshipRequestId] = useState<string | null>(null);
 
   const [memberAddMode, setMemberAddMode] = useState<'search' | 'new'>('search');
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
@@ -350,6 +366,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       const rel = await apiFetch<{ parentGroup: { id: string; name: string } | null; subgroups: { id: string; name: string; description: string }[] }>(`/groups/${params.groupId}/relationships`).catch(() => null);
       setRelationships(rel);
 
+      const relationRequests = await apiFetch<{ incoming: GroupRelationshipRequest[]; outgoing: GroupRelationshipRequest[] }>(
+        `/groups/${params.groupId}/relationship-requests`,
+      ).catch(() => ({ incoming: [], outgoing: [] }));
+      setIncomingRelationshipRequests((relationRequests?.incoming ?? []).filter((r) => r.status === 'PENDING'));
+      setOutgoingRelationshipRequests((relationRequests?.outgoing ?? []).filter((r) => r.status === 'PENDING'));
+
       if (!current) setError(zh ? '找不到此群組。' : 'Group not found.');
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to load group.');
@@ -392,15 +414,18 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   };
 
   const handleLinkChildGroup = async (childId: string, childName: string) => {
-    if (!confirm(zh ? `確定要將「${childName}」設為此群組的子群組嗎？` : `Set "${childName}" as a subgroup of this group?`)) return;
+    if (!confirm(zh ? `送出申請，將「${childName}」設為此群組的子群組？` : `Submit request to link "${childName}" as a child group?`)) return;
     setChildLinking(true);
     setError('');
     setSuccess('');
     try {
-      await apiFetch(`/groups/${childId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: params.groupId }) });
+      await apiFetch(`/groups/${childId}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: params.groupId }),
+      });
       setChildSearchQuery('');
       setChildSearchResults([]);
-      setSuccess(zh ? `「${childName}」已設為子群組。` : `"${childName}" is now a subgroup.`);
+      setSuccess(zh ? `已送出子群組連結申請：${childName}` : `Relationship request submitted for ${childName}.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed.');
@@ -425,10 +450,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           description: newParentForm.description.trim() || undefined,
         }),
       });
-      await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: created.id }) });
+      await apiFetch(`/groups/${params.groupId}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: created.id }),
+      });
       const createdName = newParentForm.name.trim();
       setNewParentForm({ name: '', description: '' });
-      setSuccess(zh ? `父群組「${createdName}」已建立並設定。` : `Parent group "${createdName}" created and set.`);
+      setSuccess(zh ? `父群組「${createdName}」已建立，並送出連結申請。` : `Parent group "${createdName}" created and relationship request submitted.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create parent group.');
@@ -445,20 +473,23 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     setSuccess('');
     try {
       const generatedPid = slugifyPid(newChildForm.name) || `group-${Date.now().toString(36).slice(-6)}`;
-      await apiFetch('/groups', {
+      const created = await apiFetch<{ id: string; name: string }>('/groups', {
         method: 'POST',
         body: JSON.stringify({
           pid: generatedPid,
           name: newChildForm.name.trim(),
           description: newChildForm.description.trim() || undefined,
-          parentGroupId: params.groupId,
           initialMemberIds: childInitialMemberIds,
         }),
       });
       const createdName = newChildForm.name.trim();
+      await apiFetch(`/groups/${created.id}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: params.groupId }),
+      });
       setNewChildForm({ name: '', description: '' });
       setChildInitialMemberIds([]);
-      setSuccess(zh ? `子群組「${createdName}」已建立。` : `Child group "${createdName}" created.`);
+      setSuccess(zh ? `子群組「${createdName}」已建立，並送出連結申請。` : `Child group "${createdName}" created and relationship request submitted.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create child group.');
@@ -588,6 +619,26 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
   };
 
+  const handleReviewRelationshipRequest = async (requestId: string, action: 'approve' | 'reject') => {
+    setReviewingRelationshipRequestId(requestId);
+    setError('');
+    setSuccess('');
+    try {
+      await apiFetch(`/groups/relationship-requests/${requestId}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action }),
+      });
+      setSuccess(action === 'approve'
+        ? (zh ? '已核准群組層級申請。' : 'Group relationship request approved.')
+        : (zh ? '已拒絕群組層級申請。' : 'Group relationship request rejected.'));
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to review relationship request.');
+    } finally {
+      setReviewingRelationshipRequestId(null);
+    }
+  };
+
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccess('');
@@ -671,6 +722,9 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const isPlatformAdmin = user?.role === 'ADMIN';
   const isGroupAdmin = groupItem?.membership.role === 'GROUP_ADMIN';
+  const isGroupCreator = groupItem?.group.createdById === user?.id;
+  const canManageRelationshipRequests = isPlatformAdmin || isGroupCreator;
+  const canReviewRelationshipRequests = isGroupCreator;
 
 
   if (!user || (!isPlatformAdmin && !isGroupAdmin)) {

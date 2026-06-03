@@ -37,17 +37,6 @@ type GroupMember = {
   childGroupName: string | null;
 };
 
-type PendingInvite = {
-  id: string;
-  token: string;
-  status: string;
-  expiresAt: string;
-  createdAt: string;
-  email: string | null;
-  phoneE164: string | null;
-  invitedUserId: string | null;
-};
-
 type JoinRequest = {
   id: string;
   status: string;
@@ -68,17 +57,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
-  // GROUP_ADMIN: invite form
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
-  const [inviteLoading, setInviteLoading] = useState(false);
 
   // GROUP_ADMIN: news post form
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
@@ -100,11 +82,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
 
-  // Active tab for the management area (GROUP_ADMIN only)
-  const [adminTab, setAdminTab] = useState<'invite' | 'news' | 'event' | 'requests'>('invite');
-
   // Main view tabs
-  type ViewTab = 'feed' | 'upcoming' | 'past' | 'members' | 'invite';
+  type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
   const [viewTab, setViewTab] = useState<ViewTab>('feed');
   const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
   const [pastLoaded, setPastLoaded] = useState(false);
@@ -156,19 +135,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       setNews(groupNews);
       setEvents(groupEvents.data);
 
-      // Load invites and join requests for any accepted member (invite) and admin (requests)
+      // Load join requests for group admins.
       if (current?.membership.status === 'ACCEPTED') {
-        const invitesPromise = apiFetch<PendingInvite[]>(`/groups/${params.groupId}/invites`).catch(() => [] as PendingInvite[]);
         if (current?.membership.role === 'GROUP_ADMIN') {
-          const [invitesRes, requestsRes] = await Promise.all([
-            invitesPromise,
-            apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]),
-          ]);
-          setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
+          const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);
           setJoinRequests((requestsRes ?? []).filter((r) => r.status === 'PENDING'));
         } else {
-          const invitesRes = await invitesPromise;
-          setPendingInvites((invitesRes ?? []).filter((inv) => inv.status === 'PENDING'));
+          setJoinRequests([]);
         }
       }
 
@@ -205,35 +178,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     if (viewTab === 'past' && user) loadPastEvents();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewTab]);
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess('');
-    setError('');
-    if (!inviteEmail.trim() && !invitePhone.trim()) {
-      setError(zh ? '請輸入 email 或電話號碼。' : 'Please provide an email or phone number.');
-      return;
-    }
-    setInviteLoading(true);
-    try {
-      const payload: Record<string, unknown> = { role: inviteRole };
-      if (inviteEmail.trim()) payload.email = inviteEmail.trim();
-      if (invitePhone.trim()) payload.phoneE164 = invitePhone.trim();
-      await apiFetch(`/groups/${params.groupId}/invites`, {
-        method: 'POST',
-        body: JSON.stringify({ invites: [payload] }),
-      });
-      setInviteEmail('');
-      setInvitePhone('');
-      setInviteRole('GROUP_MEMBER');
-      setSuccess(zh ? '邀請已送出。' : 'Invitation sent.');
-      await loadPage();
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to send invitation.');
-    } finally {
-      setInviteLoading(false);
-    }
-  };
 
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -445,7 +389,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
     { key: 'past',     label: 'Past',    labelZh: '過去活動' },
     { key: 'members',  label: 'Members', labelZh: '成員' },
-    { key: 'invite',   label: 'Invite',  labelZh: '邀請' },
   ];
 
   return (
@@ -454,13 +397,19 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Banner */}
-        {group.photoUrl && (
+        {group.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={resolveImageUrl(group.photoUrl) ?? ''}
             alt={group.name}
             className="w-full h-40 sm:h-56 object-cover"
           />
+        ) : (
+          <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+            <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+          </div>
         )}
         <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
@@ -478,15 +427,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             )}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
-              <span
-                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  isGroupAdmin
-                    ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                    : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-                }`}
-              >
-                {isGroupAdmin ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
-              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -557,7 +497,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Feed */}
         {viewTab === 'feed' && (
-          <div className="mx-auto max-w-2xl space-y-4">
+          <div className="space-y-4">
             {news.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">📢</p>
@@ -637,7 +577,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
-          <div className="mx-auto max-w-2xl space-y-3">
+          <div className="space-y-3">
             {events.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
                 <p className="text-3xl">📅</p>
@@ -673,7 +613,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Past events */}
         {viewTab === 'past' && (
-          <div className="mx-auto max-w-2xl space-y-3">
+          <div className="space-y-3">
             {pastLoading ? (
               <p className="py-16 text-center text-sm text-gray-400 dark:text-gray-500">{zh ? '載入中…' : 'Loading…'}</p>
             ) : pastEvents.length === 0 ? (
@@ -706,7 +646,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Members */}
         {viewTab === 'members' && (
-          <div className="mx-auto max-w-2xl space-y-2">
+          <div className="space-y-2">
             <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
               {members.length + (isGroupAdmin ? joinRequests.length : 0)}{' '}
               {zh ? '位成員' : (members.length + (isGroupAdmin ? joinRequests.length : 0)) === 1 ? 'member' : 'members'}
@@ -752,15 +692,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
-                    {member.userRole === 'ADMIN' ? (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300">
-                        {zh ? '平台管理員' : 'Platform Admin'}
-                      </span>
-                    ) : member.userRole === 'USER' && member.role === 'GROUP_ADMIN' ? (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
-                        {zh ? '群組管理員' : 'Group Admin'}
-                      </span>
-                    ) : null}
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                      member.role === 'GROUP_ADMIN'
+                        ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
+                    </span>
                     {member.childGroupName && (
                       <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
                         {member.childGroupName}
@@ -795,75 +733,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           </div>
         )}
 
-        {/* Invite */}
-        {viewTab === 'invite' && (
-          <div className="mx-auto max-w-2xl space-y-6">
-            {/* Send invite form */}
-            <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{zh ? '邀請新成員' : 'Invite a Member'}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '透過電子郵件或手機號碼傳送邀請。' : 'Send an invite via email or phone number.'}</p>
-              <form onSubmit={handleInvite} className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '電子郵件' : 'Email'}</label>
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder="member@example.com"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '手機號碼' : 'Phone'}</label>
-                  <input
-                    type="tel"
-                    value={invitePhone}
-                    onChange={(e) => setInvitePhone(e.target.value)}
-                    className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder="+886…"
-                  />
-                </div>
-                {isGroupAdmin && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
-                    <select
-                      value={inviteRole}
-                      onChange={(e) => setInviteRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
-                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    >
-                      <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
-                      <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
-                    </select>
-                  </div>
-                )}
-                <div className="flex items-end sm:col-span-2">
-                  <button
-                    type="submit"
-                    disabled={inviteLoading || (!inviteEmail.trim() && !invitePhone.trim())}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                  >
-                    {inviteLoading ? (zh ? '傳送中…' : 'Sending…') : (zh ? '傳送邀請' : 'Send Invite')}
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* Pending invites list */}
-            {pendingInvites.length > 0 && (
-              <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-3">{zh ? '待回覆邀請' : 'Pending Invites'} ({pendingInvites.length})</h3>
-                <ul className="space-y-2">
-                  {pendingInvites.map((inv) => (
-                    <li key={inv.id} className="flex items-center justify-between text-sm text-gray-700 dark:text-gray-300 py-1 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                      <span>{inv.email ?? inv.phoneE164 ?? (zh ? '已邀請用戶' : 'Invited user')}</span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">{inv.createdAt ? new Date(inv.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
 

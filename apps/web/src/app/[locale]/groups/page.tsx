@@ -81,18 +81,7 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
       <Link href={`/${locale}/groups/${item.group.id}`} className="flex-1 flex items-center px-4 py-4">
         {/* Text */}
         <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">{item.group.name}</h3>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-              item.membership.role === 'GROUP_ADMIN'
-                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
-            }`}>
-              {item.membership.role === 'GROUP_ADMIN'
-                ? (zh ? '群組管理員' : 'Group Admin')
-                : (zh ? '群組成員' : 'Group Member')}
-            </span>
-          </div>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">{item.group.name}</h3>
           {item.group.description && (
             <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{item.group.description}</p>
           )}
@@ -248,7 +237,15 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組' : 'Groups'}</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組' : 'Groups'}</h1>
+        <Link
+          href={`/${params.locale}/admin/groups/new`}
+          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+        >
+          {zh ? '+ 建立群組' : '+ Create Group'}
+        </Link>
+      </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 

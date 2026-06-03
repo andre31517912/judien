@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
@@ -39,6 +40,14 @@ type JoinRequest = {
   requester: { id: string; displayName: string | null; email: string };
 };
 
+type SubgroupInfo = { id: string; name: string; description?: string };
+type RelationshipsData = {
+  parentGroup: SubgroupInfo | null;
+  subgroups: SubgroupInfo[];
+  lineage?: Array<{ id: string; name: string }>;
+  tree?: Array<SubgroupInfo & { children: SubgroupInfo[] }>;
+};
+
 export default function AdminGroupPage({ params }: { params: { locale: string; groupId: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
@@ -69,6 +78,19 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
+  const [relationshipsLoading, setRelationshipsLoading] = useState(false);
+  const [showRelationships, setShowRelationships] = useState(false);
+
+  const loadRelationships = async () => {
+    setRelationshipsLoading(true);
+    try {
+      const data = await apiFetch<RelationshipsData>(`/groups/${params.groupId}/relationships`);
+      setRelationships(data);
+    } finally {
+      setRelationshipsLoading(false);
+    }
+  };
 
   const loadPage = async () => {
     setPageLoading(true);
@@ -239,36 +261,60 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950">
-        {group.photoUrl && (
+        {group.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={resolveImageUrl(group.photoUrl) ?? ''}
             alt={group.name}
             className="w-full h-40 sm:h-56 object-cover"
           />
+        ) : (
+          <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+            <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+            </svg>
+          </div>
         )}
         <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  if (!relationships) await loadRelationships();
+                  setShowRelationships(true);
+                }}
+                disabled={relationshipsLoading}
+                className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
+              >
+                {relationshipsLoading ? (
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-500" />
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-indigo-500">
+                    <path d="M2 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3ZM2 10a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3ZM9 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V3ZM13 9.5a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H12v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H13V9.5Z" />
+                  </svg>
+                )}
+                {zh ? '層級圖' : 'Hierarchy'}
+              </button>
+              {joinRequests.length > 0 && (
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                  {joinRequests.length} {zh ? '待審核' : 'pending'}
+                </span>
+              )}
+              <Link
+                href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
+                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+              >
+                ⚙️ {zh ? '管理群組' : 'Manage'}
+              </Link>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {joinRequests.length > 0 && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-                {joinRequests.length} {zh ? '待審核' : 'pending'}
-              </span>
-            )}
-            <Link
-              href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
-              className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
-            >
-              ⚙️ {zh ? '管理群組' : 'Manage'}
-            </Link>
-          </div>
-        </div>
+        
 
         {error && <p className="mb-3 text-sm text-red-500">{error}</p>}
         {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
@@ -560,6 +606,16 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         )}
 
       </div>
+
+      {showRelationships && relationships && (
+        <GroupHierarchyChart
+          data={relationships}
+          currentGroupId={params.groupId}
+          locale={params.locale}
+          loading={relationshipsLoading}
+          onClose={() => setShowRelationships(false)}
+        />
+      )}
     </div>
   );
 }

@@ -53,7 +53,6 @@ export default function GroupsTab() {
   const { i18n } = useTranslation();
   const { user } = useAuth();
   const zh = i18n.language === 'zh';
-  const isPlatformAdmin = user?.role === 'ADMIN';
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -139,11 +138,9 @@ export default function GroupsTab() {
       <View style={styles.headerRow}>
         <Text style={styles.title}>{zh ? '我的群組' : 'My Groups'}</Text>
         <View style={styles.headerActions}>
-          {isPlatformAdmin ? (
-            <TouchableOpacity style={styles.createGroupBtn} onPress={() => router.push('/admin/groups/new')}>
-              <Text style={styles.createGroupBtnText}>{zh ? '+ 建立群組' : '+ Create Group'}</Text>
-            </TouchableOpacity>
-          ) : null}
+          <TouchableOpacity style={styles.createGroupBtn} onPress={() => router.push('/admin/groups/new')}>
+            <Text style={styles.createGroupBtnText}>{zh ? '+ 建立群組' : '+ Create Group'}</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => loadPage(false)} disabled={refreshing}>
             <Text style={styles.refreshText}>{refreshing ? (zh ? '更新中…' : 'Refreshing…') : (zh ? '更新' : 'Refresh')}</Text>
           </TouchableOpacity>
@@ -179,8 +176,6 @@ export default function GroupsTab() {
           <TouchableOpacity key={item.group.id} style={styles.card} onPress={() => router.push(`/groups/${item.group.id}`)}>
             <View style={styles.cardTopRow}>
               <Text style={styles.cardTitle}>{item.group.name}</Text>
-              <View style={styles.badge}>
-              </View>
             </View>
             <Text style={styles.pidText}>{item.group.pid}</Text>
             {item.group.description ? <Text style={styles.cardSub}>{item.group.description}</Text> : null}
@@ -257,8 +252,6 @@ const styles = StyleSheet.create({
   pidText: { fontSize: 12, color: '#6B7280' },
   cardSub: { fontSize: 13, color: '#4B5563' },
   metaText: { fontSize: 12, color: '#9CA3AF' },
-  badge: { backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  badgeText: { color: '#4338CA', fontSize: 11, fontWeight: '700' },
   actionsRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
   primaryBtn: { backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, paddingHorizontal: 12 },
   primaryBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },

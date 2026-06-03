@@ -31,6 +31,8 @@ import {
   AddMemberDirectlySchema,
   CreateAndAddMemberSchema,
   SetParentGroupSchema,
+  CreateGroupRelationshipRequestSchema,
+  ReviewGroupRelationshipRequestSchema,
   type ChangeGroupMemberRoleDto,
   type CreateGroupDto,
   type CreateGroupJoinRequestDto,
@@ -41,6 +43,8 @@ import {
   type AddMemberDirectlyDto,
   type CreateAndAddMemberDto,
   type SetParentGroupDto,
+  type CreateGroupRelationshipRequestDto,
+  type ReviewGroupRelationshipRequestDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from './groups.service';
@@ -257,6 +261,35 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.setParentGroup(groupId, dto, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/relationship-requests')
+  createRelationshipRequest(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(CreateGroupRelationshipRequestSchema)) dto: CreateGroupRelationshipRequestDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.createRelationshipRequest(groupId, dto, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/relationship-requests')
+  listRelationshipRequests(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.listRelationshipRequests(groupId, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('relationship-requests/:requestId/review')
+  reviewRelationshipRequest(
+    @Param('requestId') requestId: string,
+    @Body(new ZodValidationPipe(ReviewGroupRelationshipRequestSchema)) dto: ReviewGroupRelationshipRequestDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.reviewRelationshipRequest(requestId, dto, user);
   }
 
   // ─── Import / Export ─────────────────────────────────────────────────────

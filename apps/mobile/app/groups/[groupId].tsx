@@ -255,8 +255,6 @@ export default function GroupDetailScreen() {
                 {relationships.lineage.map((n) => n.name).join(' › ')}
               </Text>
             )}
-            <View style={styles.roleBadge}>
-            </View>
           </View>
           {isGroupAdmin && (
             <TouchableOpacity
@@ -462,8 +460,6 @@ const styles = StyleSheet.create({
   groupTitle: { fontSize: 22, fontWeight: '800', color: '#111827', lineHeight: 28 },
   groupDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
   breadcrumb: { fontSize: 11, color: '#9CA3AF' },
-  roleBadge: { alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3, marginTop: 4 },
-  roleBadgeText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
   settingsBtn: {
     width: 40, height: 40,
     borderRadius: 20,
@@ -563,8 +559,6 @@ const styles = StyleSheet.create({
         <Text style={styles.groupTitle}>{groupItem.group.name}</Text>
         <Text style={styles.groupPid}>PID: {groupItem.group.pid}</Text>
         {groupItem.group.description ? <Text style={styles.groupDesc}>{groupItem.group.description}</Text> : null}
-        <View style={styles.roleBadge}>
-        </View>
       </View>
 
       {relationships && (
@@ -726,8 +720,6 @@ const styles = StyleSheet.create({
   groupTitle: { fontSize: 22, fontWeight: '700', color: '#111827' },
   groupPid: { fontSize: 12, color: '#6B7280' },
   groupDesc: { fontSize: 13, color: '#4B5563' },
-  roleBadge: { marginTop: 6, alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  roleBadgeText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
   section: { gap: 8 },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1F2937' },
   subtleTitle: { fontSize: 13, fontWeight: '600', color: '#4B5563' },

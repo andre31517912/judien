@@ -286,7 +286,7 @@ model ReminderRule {
   id            String  @id @default(cuid())
   eventId       String
   offsetMinutes Int // e.g. 1440 = 24h before
-  channels      Json // string[] e.g. ["SMS","EMAIL"]
+  channels      Json // string[] e.g. ["EMAIL","LINE"]
   enabled       Boolean @default(true)
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)

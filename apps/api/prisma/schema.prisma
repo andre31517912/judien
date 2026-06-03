@@ -426,6 +426,27 @@ model GroupJoinRequest {
   @@index([requesterUserId, status])
 }
 
+model GroupRelationshipRequest {
+  id               String   @id
+  sourceGroupId    String
+  targetGroupId    String
+  requesterUserId  String
+  status           String   @default("PENDING")
+  reviewedByUserId String?
+  reviewedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sourceGroup Group @relation("GroupRelationshipRequestSource", fields: [sourceGroupId], references: [id], onDelete: Cascade)
+  targetGroup Group @relation("GroupRelationshipRequestTarget", fields: [targetGroupId], references: [id], onDelete: Cascade)
+  requester   User  @relation("GroupRelationshipRequestRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  reviewer    User? @relation("GroupRelationshipRequestReviewer", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([sourceGroupId, status])
+  @@index([targetGroupId, status])
+  @@index([requesterUserId, status])
+}
+
 model DonationRecord {
   id          String   @id @default(cuid())
   groupId     String

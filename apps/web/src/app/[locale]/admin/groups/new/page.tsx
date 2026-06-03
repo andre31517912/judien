@@ -62,7 +62,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           ...(photoUrl ? { photoUrl } : {}),
         }),
       });
-      router.push(`/${params.locale}/admin/groups`);
+      router.push(`/${params.locale}/groups`);
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create group.');
     } finally {
@@ -72,10 +72,10 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
 
   if (loading) return <p className="py-16 text-center text-gray-400">Loading…</p>;
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user) {
     return (
       <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">
-        {zh ? '只有平台管理員可以建立群組。' : 'Only platform admins can create groups.'}
+        {zh ? '請先登入。' : 'Please log in first.'}
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <Link href={`/${params.locale}/admin/groups`} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+          <Link href={`/${params.locale}/groups`} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
             {zh ? '取消' : 'Cancel'}
           </Link>
           <button

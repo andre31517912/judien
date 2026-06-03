@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { AuthProvider } from '../context/auth.context';
@@ -7,6 +7,12 @@ import { ThemeProvider } from '../components/ThemeProvider';
 export const metadata: Metadata = {
   title: 'Judien',
   description: 'Events for Taiwan',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

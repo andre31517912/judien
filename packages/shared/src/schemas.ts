@@ -308,6 +308,16 @@ export const SetParentGroupSchema = z.object({
 });
 export type SetParentGroupDto = z.infer<typeof SetParentGroupSchema>;
 
+export const CreateGroupRelationshipRequestSchema = z.object({
+  parentGroupId: z.string().min(1),
+});
+export type CreateGroupRelationshipRequestDto = z.infer<typeof CreateGroupRelationshipRequestSchema>;
+
+export const ReviewGroupRelationshipRequestSchema = z.object({
+  action: z.enum(['approve', 'reject']),
+});
+export type ReviewGroupRelationshipRequestDto = z.infer<typeof ReviewGroupRelationshipRequestSchema>;
+
 // ─── Guest Login ──────────────────────────────────────────────────────────────
 
 export const GuestGroupJoinSchema = z.object({

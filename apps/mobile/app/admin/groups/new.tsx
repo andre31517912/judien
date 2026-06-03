@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { apiFetch } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
@@ -60,12 +60,12 @@ export default function NewGroupScreen() {
     );
   }
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user) {
     return (
       <View style={styles.centerWrap}>
         <Stack.Screen options={{ title: zh ? '建立群組' : 'Create Group' }} />
         <View style={styles.errorCard}>
-          <Text style={styles.errorText}>{zh ? '只有平台管理員可以建立群組。' : 'Only platform admins can create groups.'}</Text>
+          <Text style={styles.errorText}>{zh ? '請先登入。' : 'Please log in first.'}</Text>
         </View>
       </View>
     );

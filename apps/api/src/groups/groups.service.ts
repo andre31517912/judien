@@ -10,10 +10,12 @@ import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
 import type {
   AddMemberDirectlyDto,
+  CreateGroupRelationshipRequestDto,
   CreateAndAddMemberDto,
   CreateGroupDto,
   CreateGroupJoinRequestDto,
   InviteGroupMembersDto,
+  ReviewGroupRelationshipRequestDto,
   RespondGroupInviteDto,
   ReviewGroupJoinRequestDto,
   SetParentGroupDto,
@@ -33,7 +35,7 @@ export class GroupsService {
   ) {}
 
   async create(dto: CreateGroupDto, user: User) {
-    this.assertPlatformAdmin(user);
+    const isPlatformAdmin = user.role === 'ADMIN';
 
     const duplicate = await this.prisma.group.findUnique({
       where: { name: dto.name.trim() },
@@ -42,7 +44,17 @@ export class GroupsService {
       throw new ConflictException(`A group named "${dto.name}" already exists.`);
     }
 
-    const adminIds = Array.from(new Set([user.id, ...dto.adminUserIds]));
+    if (!isPlatformAdmin && dto.parentGroupId) {
+      throw new ForbiddenException('Only platform admins can assign a parent group during creation.');
+    }
+
+    // Group creator is always a group admin. Only platform admins can pre-assign extra admins.
+    const adminIds = isPlatformAdmin
+      ? Array.from(new Set([user.id, ...dto.adminUserIds]))
+      : [user.id];
+
+    // Only platform admins can pre-seed members during creation.
+    const initialMemberIds = isPlatformAdmin ? (dto.initialMemberIds ?? []) : [];
 
     return this.prisma.$transaction(async (tx) => {
       if (dto.parentGroupId) {
@@ -69,14 +81,14 @@ export class GroupsService {
           role: 'GROUP_ADMIN',
           status: 'ACCEPTED',
           joinedAt: new Date(),
-          invitedByPlatformAdminId: user.id,
+          ...(isPlatformAdmin ? { invitedByPlatformAdminId: user.id } : {}),
         })),
         skipDuplicates: true,
       });
 
       // Add any initial members (e.g. selected from parent group member list)
-      if (dto.initialMemberIds && dto.initialMemberIds.length > 0) {
-        const memberIds = dto.initialMemberIds.filter((id) => !adminIds.includes(id));
+      if (initialMemberIds.length > 0) {
+        const memberIds = initialMemberIds.filter((id) => !adminIds.includes(id));
         if (memberIds.length > 0) {
           await tx.groupMembership.createMany({
             data: memberIds.map((memberId) => ({
@@ -85,7 +97,7 @@ export class GroupsService {
               role: 'GROUP_MEMBER' as const,
               status: 'ACCEPTED' as const,
               joinedAt: new Date(),
-              invitedByPlatformAdminId: user.id,
+              ...(isPlatformAdmin ? { invitedByPlatformAdminId: user.id } : {}),
             })),
             skipDuplicates: true,
           });
@@ -923,23 +935,291 @@ export class GroupsService {
   }
 
   async setParentGroup(groupId: string, dto: SetParentGroupDto, user: User) {
-    this.assertPlatformAdmin(user);
-    await this.ensureGroupExists(groupId);
+    const group = await this.ensureGroupExists(groupId);
 
+    // Direct parent assignment now requires the request/approval flow.
     if (dto.parentGroupId) {
-      if (dto.parentGroupId === groupId) {
-        throw new BadRequestException('A group cannot be its own parent.');
-      }
-      await this.ensureGroupExists(dto.parentGroupId);
+      throw new ForbiddenException('Use relationship requests to link parent/child groups.');
+    }
 
-      await this.assertNoHierarchyCycle(groupId, dto.parentGroupId);
-      await this.assertDepthWithinLimit(groupId, dto.parentGroupId);
+    // Allow unlink if actor is platform admin, source creator, or current parent creator.
+    let canUnlink = user.role === 'ADMIN' || group.createdById === user.id;
+    if (!canUnlink && group.parentGroupId) {
+      const currentParent = await this.prisma.group.findUnique({
+        where: { id: group.parentGroupId },
+        select: { createdById: true },
+      });
+      canUnlink = currentParent?.createdById === user.id;
+    }
+
+    if (!canUnlink) {
+      throw new ForbiddenException('Only relevant group creators can remove this parent/child link.');
     }
 
     return this.prisma.group.update({
       where: { id: groupId },
-      data: { parentGroupId: dto.parentGroupId },
+      data: { parentGroupId: null },
     });
+  }
+
+  async createRelationshipRequest(groupId: string, dto: CreateGroupRelationshipRequestDto, user: User) {
+    const sourceGroup = await this.ensureGroupExists(groupId);
+    const targetGroup = await this.ensureGroupExists(dto.parentGroupId);
+
+    if (sourceGroup.id === targetGroup.id) {
+      throw new BadRequestException('A group cannot be its own parent.');
+    }
+
+    // Request can be initiated by source creator, target creator, or platform admin.
+    const canRequest =
+      user.role === 'ADMIN' ||
+      sourceGroup.createdById === user.id ||
+      targetGroup.createdById === user.id;
+    if (!canRequest) {
+      throw new ForbiddenException('Only involved group creators can request this relationship.');
+    }
+
+    if (sourceGroup.parentGroupId === targetGroup.id) {
+      throw new BadRequestException('These groups are already linked with this parent relationship.');
+    }
+
+    await this.assertNoHierarchyCycle(sourceGroup.id, targetGroup.id);
+    await this.assertDepthWithinLimit(sourceGroup.id, targetGroup.id);
+
+    const existing = await this.prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id
+      FROM "GroupRelationshipRequest"
+      WHERE "sourceGroupId" = ${sourceGroup.id}
+        AND "targetGroupId" = ${targetGroup.id}
+        AND status = 'PENDING'
+      LIMIT 1
+    `;
+    if (existing.length > 0) {
+      throw new ConflictException('A pending relationship request already exists for these groups.');
+    }
+
+    const relationshipRequestId = `grpr_${randomBytes(16).toString('hex')}`;
+
+    const created = await this.prisma.$queryRaw<Array<{ id: string; status: string; createdAt: Date }>>`
+      INSERT INTO "GroupRelationshipRequest" (
+        id,
+        "sourceGroupId",
+        "targetGroupId",
+        "requesterUserId",
+        status,
+        "createdAt",
+        "updatedAt"
+      )
+      VALUES (
+        ${relationshipRequestId},
+        ${sourceGroup.id},
+        ${targetGroup.id},
+        ${user.id},
+        'PENDING',
+        NOW(),
+        NOW()
+      )
+      RETURNING id, status, "createdAt"
+    `;
+
+    // Notify target group creator for approval.
+    await this.notifications.create({
+      userId: targetGroup.createdById,
+      type: 'JOIN_REQUEST_RECEIVED',
+      title_en: `Group relationship request for ${targetGroup.name}`,
+      title_zh: `${targetGroup.name} 有群組層級申請`,
+      body_en: `${sourceGroup.name} requested to be linked under ${targetGroup.name}.`,
+      body_zh: `${sourceGroup.name} 申請與 ${targetGroup.name} 建立父子群組關係。`,
+      actionUrl: `/admin/groups/${targetGroup.id}/settings`,
+      groupId: targetGroup.id,
+      requestId: created[0].id,
+    });
+
+    return {
+      id: created[0].id,
+      status: created[0].status,
+      sourceGroup: { id: sourceGroup.id, name: sourceGroup.name },
+      targetGroup: { id: targetGroup.id, name: targetGroup.name },
+      createdAt: created[0].createdAt,
+    };
+  }
+
+  async listRelationshipRequests(groupId: string, user: User) {
+    const currentGroup = await this.ensureGroupExists(groupId);
+
+    const canView =
+      user.role === 'ADMIN' ||
+      currentGroup.createdById === user.id ||
+      (await this.prisma.groupMembership.findUnique({
+        where: { groupId_userId: { groupId, userId: user.id } },
+        select: { role: true, status: true },
+      }).then((m) => m?.status === 'ACCEPTED' && m.role === 'GROUP_ADMIN'));
+
+    if (!canView) {
+      throw new ForbiddenException('You do not have permission to view relationship requests for this group.');
+    }
+
+    const incoming = await this.prisma.$queryRaw<Array<{
+      id: string;
+      status: string;
+      createdAt: Date;
+      sourceGroupId: string;
+      sourceGroupName: string;
+      targetGroupId: string;
+      targetGroupName: string;
+      requesterUserId: string;
+      requesterDisplayName: string | null;
+      requesterEmail: string | null;
+    }>>`
+      SELECT
+        r.id,
+        r.status,
+        r."createdAt",
+        r."sourceGroupId",
+        s.name AS "sourceGroupName",
+        r."targetGroupId",
+        t.name AS "targetGroupName",
+        r."requesterUserId",
+        u."displayName" AS "requesterDisplayName",
+        u.email AS "requesterEmail"
+      FROM "GroupRelationshipRequest" r
+      JOIN "Group" s ON s.id = r."sourceGroupId"
+      JOIN "Group" t ON t.id = r."targetGroupId"
+      JOIN "User" u ON u.id = r."requesterUserId"
+      WHERE r."targetGroupId" = ${groupId}
+      ORDER BY r."createdAt" DESC
+    `;
+
+    const outgoing = await this.prisma.$queryRaw<Array<{
+      id: string;
+      status: string;
+      createdAt: Date;
+      sourceGroupId: string;
+      sourceGroupName: string;
+      targetGroupId: string;
+      targetGroupName: string;
+      requesterUserId: string;
+      requesterDisplayName: string | null;
+      requesterEmail: string | null;
+    }>>`
+      SELECT
+        r.id,
+        r.status,
+        r."createdAt",
+        r."sourceGroupId",
+        s.name AS "sourceGroupName",
+        r."targetGroupId",
+        t.name AS "targetGroupName",
+        r."requesterUserId",
+        u."displayName" AS "requesterDisplayName",
+        u.email AS "requesterEmail"
+      FROM "GroupRelationshipRequest" r
+      JOIN "Group" s ON s.id = r."sourceGroupId"
+      JOIN "Group" t ON t.id = r."targetGroupId"
+      JOIN "User" u ON u.id = r."requesterUserId"
+      WHERE r."sourceGroupId" = ${groupId}
+      ORDER BY r."createdAt" DESC
+    `;
+
+    return {
+      incoming,
+      outgoing,
+      canReviewIncoming: currentGroup.createdById === user.id,
+    };
+  }
+
+  async reviewRelationshipRequest(requestId: string, dto: ReviewGroupRelationshipRequestDto, user: User) {
+    const rows = await this.prisma.$queryRaw<Array<{
+      id: string;
+      status: string;
+      sourceGroupId: string;
+      targetGroupId: string;
+      requesterUserId: string;
+    }>>`
+      SELECT id, status, "sourceGroupId", "targetGroupId", "requesterUserId"
+      FROM "GroupRelationshipRequest"
+      WHERE id = ${requestId}
+      LIMIT 1
+    `;
+
+    if (!rows.length) throw new NotFoundException('Relationship request not found.');
+    const req = rows[0];
+
+    if (req.status !== 'PENDING') {
+      throw new BadRequestException('Relationship request has already been resolved.');
+    }
+
+    const targetGroup = await this.prisma.group.findUnique({
+      where: { id: req.targetGroupId },
+      select: { id: true, name: true, createdById: true },
+    });
+    const sourceGroup = await this.prisma.group.findUnique({
+      where: { id: req.sourceGroupId },
+      select: { id: true, name: true },
+    });
+    if (!targetGroup || !sourceGroup) throw new NotFoundException('Group not found.');
+
+    if (targetGroup.createdById !== user.id) {
+      throw new ForbiddenException('Only the target group creator can approve this request.');
+    }
+
+    if (dto.action === 'approve') {
+      await this.assertNoHierarchyCycle(req.sourceGroupId, req.targetGroupId);
+      await this.assertDepthWithinLimit(req.sourceGroupId, req.targetGroupId);
+
+      await this.prisma.$transaction(async (tx) => {
+        await tx.group.update({
+          where: { id: req.sourceGroupId },
+          data: { parentGroupId: req.targetGroupId },
+        });
+
+        await tx.$executeRaw`
+          UPDATE "GroupRelationshipRequest"
+          SET status = 'APPROVED',
+              "reviewedByUserId" = ${user.id},
+              "reviewedAt" = NOW(),
+              "updatedAt" = NOW()
+          WHERE id = ${requestId}
+        `;
+      });
+
+      await this.notifications.create({
+        userId: req.requesterUserId,
+        type: 'JOIN_REQUEST_APPROVED',
+        title_en: `Group relationship approved`,
+        title_zh: `群組層級申請已核准`,
+        body_en: `${sourceGroup.name} is now linked under ${targetGroup.name}.`,
+        body_zh: `${sourceGroup.name} 已連結為 ${targetGroup.name} 的子群組。`,
+        actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
+        groupId: sourceGroup.id,
+        requestId,
+      });
+
+      return { id: requestId, status: 'APPROVED' };
+    }
+
+    await this.prisma.$executeRaw`
+      UPDATE "GroupRelationshipRequest"
+      SET status = 'REJECTED',
+          "reviewedByUserId" = ${user.id},
+          "reviewedAt" = NOW(),
+          "updatedAt" = NOW()
+      WHERE id = ${requestId}
+    `;
+
+    await this.notifications.create({
+      userId: req.requesterUserId,
+      type: 'JOIN_REQUEST_REJECTED',
+      title_en: `Group relationship rejected`,
+      title_zh: `群組層級申請被拒絕`,
+      body_en: `Your request to link ${sourceGroup.name} under ${targetGroup.name} was rejected.`,
+      body_zh: `您將 ${sourceGroup.name} 連結到 ${targetGroup.name} 的申請已被拒絕。`,
+      actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
+      groupId: sourceGroup.id,
+      requestId,
+    });
+
+    return { id: requestId, status: 'REJECTED' };
   }
 
   private async assertNoHierarchyCycle(groupId: string, parentGroupId: string) {
