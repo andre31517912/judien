@@ -7,15 +7,27 @@ export const REMINDER_QUEUE = 'REMINDER_QUEUE';
 export const REMINDER_QUEUE_NAME = 'reminders';
 
 // Support REDIS_URL (Upstash rediss://, Render, Railway) or individual host/port vars.
-// Pass the URL string directly so ioredis handles rediss:// TLS natively.
-const rawRedisOptions: any = process.env.REDIS_URL
-  ? process.env.REDIS_URL
-  : {
-      host: process.env.REDIS_HOST ?? 'localhost',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD ?? undefined,
+function buildRedisOptions() {
+  if (process.env.REDIS_URL) {
+    const url = new URL(process.env.REDIS_URL);
+    return {
+      host: url.hostname,
+      port: Number(url.port),
+      username: url.username || undefined,
+      password: url.password || undefined,
       maxRetriesPerRequest: null as null,
+      ...(process.env.REDIS_URL.startsWith('rediss://') ? { tls: {} } : {}),
     };
+  }
+  return {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? 6379),
+    password: process.env.REDIS_PASSWORD ?? undefined,
+    maxRetriesPerRequest: null as null,
+  };
+}
+
+const rawRedisOptions = buildRedisOptions();
 
 const redisProvider = {
   provide: REDIS_CONNECTION,
