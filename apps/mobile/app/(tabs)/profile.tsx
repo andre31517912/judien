@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/auth.context';
 import { apiFetch } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import i18n from '../../lib/i18n';
 
 export default function ProfileScreen() {
   const { user, logout, refresh } = useAuth();
   const { t } = useTranslation();
+  const router = useRouter();
+  const zh = i18n.language === 'zh';
+
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [muteEmail, setMuteEmail] = useState(false);
+  const [muteLinePush, setMuteLinePush] = useState(false);
+  const [lineLinked, setLineLinked] = useState(false);
+  const [lineLoading, setLineLoading] = useState(false);
+  const [lineMsg, setLineMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [colorTheme, setColorThemeState] = useState<'light' | 'dark'>('light');
 
@@ -26,6 +34,8 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (user) {
       setMuteEmail((user as any).muteEmail ?? false);
+      setMuteLinePush((user as any).muteLinePush ?? false);
+      setLineLinked(!!(user as any).lineUserId);
       const savedLang = user.preferredLanguage as 'en' | 'zh';
       setLang(savedLang);
       i18n.changeLanguage(savedLang);
@@ -36,6 +46,7 @@ export default function ProfileScreen() {
     const body: Record<string, unknown> = {
       preferredLanguage: lang,
       muteEmail,
+      muteLinePush,
     };
     if (displayName.trim()) body.displayName = displayName.trim();
     if (phone.trim()) body.phone = phone.trim();
@@ -51,13 +62,54 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = async () => { await logout(); };
+
+  const handleSetTheme = async (th: 'light' | 'dark') => {
+    setColorThemeState(th);
+    await AsyncStorage.setItem('theme', th);
   };
 
-  const handleSetTheme = async (t: 'light' | 'dark') => {
-    setColorThemeState(t);
-    await AsyncStorage.setItem('theme', t);
+  const handleLinkLine = async () => {
+    setLineLoading(true);
+    setLineMsg(null);
+    try {
+      const data = await apiFetch<{ url?: string; error?: string }>('/auth/line/connect');
+      if (data.url) {
+        await Linking.openURL(data.url);
+      } else {
+        setLineMsg({ text: data.error ?? 'LINE not configured.', ok: false });
+      }
+    } catch (err: any) {
+      setLineMsg({ text: err.message ?? 'Error starting LINE link.', ok: false });
+    } finally {
+      setLineLoading(false);
+    }
+  };
+
+  const handleUnlinkLine = async () => {
+    Alert.alert(
+      zh ? '解除連結 LINE' : 'Unlink LINE',
+      zh ? '確定要解除 LINE 帳號連結嗎？' : 'Are you sure you want to unlink your LINE account?',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: zh ? '解除連結' : 'Unlink', style: 'destructive',
+          onPress: async () => {
+            setLineLoading(true);
+            try {
+              await apiFetch('/auth/line/connect', { method: 'DELETE' });
+              await refresh();
+              setLineLinked(false);
+              setLineMsg({ text: zh ? 'LINE 帳號已解除連結。' : 'LINE account unlinked.', ok: true });
+            } catch (err: any) {
+              setLineMsg({ text: err.message ?? 'Error unlinking LINE.', ok: false });
+            } finally {
+              setLineLoading(false);
+            }
+          },
+        },
+      ],
+    );
   };
 
   if (!user) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Please log in.</Text></View>;
@@ -68,19 +120,17 @@ export default function ProfileScreen() {
         <Text style={styles.title}>{t('profile.title')}</Text>
         <View style={[styles.roleBadge, user.role === 'ADMIN' ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
           <Text style={[styles.roleBadgeText, user.role === 'ADMIN' ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser]}>
-            {user.role === 'ADMIN' ? (lang === 'zh' ? '管理員' : 'Admin') : (lang === 'zh' ? '用戶' : 'User')}
+            {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
           </Text>
         </View>
       </View>
-
-      {/* Current info card removed — values shown as placeholders below */}
 
       <Text style={styles.label}>{t('auth.displayName')}</Text>
       <TextInput
         style={styles.input}
         value={displayName}
         onChangeText={setDisplayName}
-        placeholder={(user as any).displayName || (lang === 'zh' ? '輸入顯示名稱' : 'Enter display name')}
+        placeholder={(user as any).displayName || (zh ? '輸入顯示名稱' : 'Enter display name')}
       />
 
       <Text style={styles.label}>{t('profile.language')}</Text>
@@ -95,13 +145,13 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>{lang === 'zh' ? '主題' : 'Theme'}</Text>
+      <Text style={styles.label}>{zh ? '主題' : 'Theme'}</Text>
       <View style={styles.langRow}>
-        {(['light', 'dark'] as const).map((t) => (
-          <TouchableOpacity key={t} onPress={() => handleSetTheme(t)}
-            style={[styles.langBtn, colorTheme === t && styles.langBtnActive]}>
-            <Text style={[styles.langBtnText, colorTheme === t && styles.langBtnTextActive]}>
-              {t === 'light' ? (lang === 'zh' ? '☀️ 淺色' : '☀️ Light') : (lang === 'zh' ? '🌙 深色' : '🌙 Dark')}
+        {(['light', 'dark'] as const).map((th) => (
+          <TouchableOpacity key={th} onPress={() => handleSetTheme(th)}
+            style={[styles.langBtn, colorTheme === th && styles.langBtnActive]}>
+            <Text style={[styles.langBtnText, colorTheme === th && styles.langBtnTextActive]}>
+              {th === 'light' ? (zh ? '☀️ 淺色' : '☀️ Light') : (zh ? '🌙 深色' : '🌙 Dark')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -110,6 +160,40 @@ export default function ProfileScreen() {
       <View style={styles.muteRow}>
         <Text style={styles.label}>{t('profile.muteEmail')}</Text>
         <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
+      </View>
+
+      {/* LINE Account */}
+      <View style={styles.lineCard}>
+        <View style={styles.lineCardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.lineCardTitle}>{zh ? 'LINE 帳號連結' : 'LINE Account'}</Text>
+            <Text style={styles.lineCardSubtitle}>
+              {lineLinked
+                ? (zh ? '已連結，可接收 LINE 推播通知。' : 'Linked — you can receive LINE push notifications.')
+                : (zh ? '連結後可接收 LINE 推播通知。' : 'Link to receive LINE push notifications.')}
+            </Text>
+          </View>
+          {lineLinked ? (
+            <TouchableOpacity onPress={handleUnlinkLine} disabled={lineLoading}>
+              <Text style={[styles.lineUnlinkBtn, lineLoading && { opacity: 0.5 }]}>
+                {lineLoading ? '…' : (zh ? '解除連結' : 'Unlink')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.lineLinkBtn} onPress={handleLinkLine} disabled={lineLoading}>
+              <Text style={styles.lineLinkBtnText}>{lineLoading ? '…' : (zh ? '連結 LINE' : 'Link LINE')}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+        {lineMsg && (
+          <Text style={[styles.lineMsg, { color: lineMsg.ok ? '#16A34A' : '#EF4444' }]}>{lineMsg.text}</Text>
+        )}
+        {lineLinked && (
+          <View style={styles.muteRow}>
+            <Text style={styles.label}>{zh ? '靜音 LINE 推播' : 'Mute LINE push'}</Text>
+            <Switch value={muteLinePush} onValueChange={setMuteLinePush} trackColor={{ true: '#4F46E5' }} />
+          </View>
+        )}
       </View>
 
       <Text style={styles.label}>{t('auth.phone')}</Text>
@@ -128,6 +212,17 @@ export default function ProfileScreen() {
       <TouchableOpacity style={[styles.btn, { backgroundColor: '#EF4444', marginTop: 12 }]} onPress={handleLogout}>
         <Text style={styles.btnText}>{t('auth.logout')}</Text>
       </TouchableOpacity>
+
+      {/* Policy links */}
+      <View style={styles.policyRow}>
+        <TouchableOpacity onPress={() => router.push('/policy/terms')}>
+          <Text style={styles.policyLink}>{zh ? '使用條款' : 'Terms of Use'}</Text>
+        </TouchableOpacity>
+        <Text style={styles.policySep}>·</Text>
+        <TouchableOpacity onPress={() => router.push('/policy/privacy')}>
+          <Text style={styles.policyLink}>{zh ? '隱私政策' : 'Privacy Policy'}</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -150,7 +245,18 @@ const styles = StyleSheet.create({
   langBtnText: { color: '#374151', fontSize: 14 },
   langBtnTextActive: { color: '#fff' },
   muteRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  lineCard: { marginTop: 20, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, padding: 14 },
+  lineCardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  lineCardTitle: { fontSize: 14, fontWeight: '600', color: '#111' },
+  lineCardSubtitle: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  lineLinkBtn: { backgroundColor: '#06C755', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  lineLinkBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  lineUnlinkBtn: { color: '#EF4444', fontSize: 13, fontWeight: '600' },
+  lineMsg: { fontSize: 12, marginTop: 8 },
   input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10, padding: 12, fontSize: 15, marginBottom: 4 },
   btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 20 },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  policyRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 28, gap: 8 },
+  policyLink: { fontSize: 13, color: '#6B7280', textDecorationLine: 'underline' },
+  policySep: { color: '#D1D5DB', fontSize: 13 },
 });

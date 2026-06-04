@@ -236,11 +236,18 @@ export default function EventsTab() {
                     <Image source={{ uri: resolveImageUrl(item.coverImageUrl)! }} style={styles.thumbnail} />
                   )}
                   <View style={styles.cardBody}>
+                    {(item as any).seriesTitle && (
+                      <View style={styles.seriesBadge}>
+                        <Text style={styles.seriesBadgeText}>
+                          📚 {(item as any).seriesTitle}{(item as any).partNumber ? ` #${(item as any).partNumber}` : ''}
+                        </Text>
+                      </View>
+                    )}
                     <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
                     {item.groupName && <Text style={styles.cardGroup}>👥 {item.groupName}</Text>}
                     <Text style={styles.cardMeta}>{date}</Text>
                     {location ? <Text style={styles.cardMeta} numberOfLines={1}>{location}</Text> : null}
-                    <Text style={styles.rsvpRow}>✓ {item.rsvpCounts.GOING}  ?{item.rsvpCounts.MAYBE}  ✗{item.rsvpCounts.NO}</Text>
+                    <Text style={styles.rsvpRow}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -266,6 +273,8 @@ const styles = StyleSheet.create({
   cardBody: { flex: 1 },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 },
   cardGroup: { fontSize: 12, color: '#4F46E5', fontWeight: '500', marginBottom: 4 },
+  seriesBadge: { backgroundColor: '#EEF2FF', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 4 },
+  seriesBadgeText: { color: '#4338CA', fontSize: 11, fontWeight: '500' },
   cardMeta: { fontSize: 13, color: '#6B7280' },
   rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 4 },
   backBtn: { color: '#4F46E5', fontSize: 17 },

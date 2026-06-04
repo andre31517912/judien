@@ -59,6 +59,9 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.lineBtn} onPress={handleLineLogin}>
         <Text style={styles.lineBtnText}>🟩 {t('auth.lineLogin') || 'Continue with LINE'}</Text>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} style={{ marginBottom: 12 }}>
+        <Text style={styles.link}>{t('auth.forgotPassword') || 'Forgot password / Get sign-in link'}</Text>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push('/(auth)/signup')}>
         <Text style={styles.link}>{t('auth.noAccount')}</Text>
       </TouchableOpacity>
