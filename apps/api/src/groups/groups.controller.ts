@@ -30,6 +30,7 @@ import {
   UpdateGroupSettingsSchema,
   AddMemberDirectlySchema,
   CreateAndAddMemberSchema,
+  BulkCreateAndAddMembersSchema,
   SetParentGroupSchema,
   CreateGroupRelationshipRequestSchema,
   ReviewGroupRelationshipRequestSchema,
@@ -42,6 +43,7 @@ import {
   type UpdateGroupSettingsDto,
   type AddMemberDirectlyDto,
   type CreateAndAddMemberDto,
+  type BulkCreateAndAddMembersDto,
   type SetParentGroupDto,
   type CreateGroupRelationshipRequestDto,
   type ReviewGroupRelationshipRequestDto,
@@ -208,6 +210,16 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.createAndAddMember(groupId, dto, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':groupId/members/bulk-create-and-add')
+  bulkCreateAndAddMembers(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(BulkCreateAndAddMembersSchema)) dto: BulkCreateAndAddMembersDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.bulkCreateAndAddMembers(groupId, dto, user);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -76,6 +76,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
@@ -132,6 +133,17 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [newMemberRole, setNewMemberRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
   const [newMemberLoading, setNewMemberLoading] = useState(false);
   const [newMemberTempPassword, setNewMemberTempPassword] = useState<{ name: string; password: string } | null>(null);
+  const [newMemberPasswordMode, setNewMemberPasswordMode] = useState<'random' | 'custom'>('random');
+  const [newMemberCustomPassword, setNewMemberCustomPassword] = useState('');
+
+  // Bulk add state
+  const [bulkText, setBulkText] = useState('');
+  const [bulkPasswordMode, setBulkPasswordMode] = useState<'shared' | 'random'>('shared');
+  const [bulkSharedPassword, setBulkSharedPassword] = useState('');
+  const [bulkRole, setBulkRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
+  const [bulkLoading, setBulkLoading] = useState(false);
+  type BulkResult = { displayName: string; email?: string; phone?: string; created: boolean; added: boolean; tempPassword?: string; error?: string };
+  const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
 
   const [newsForm, setNewsForm] = useState({ title: '', body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
@@ -582,10 +594,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           phone: newMemberForm.phone.trim() || undefined,
           email: newMemberForm.email.trim() || undefined,
           role: newMemberRole,
+          ...(newMemberPasswordMode === 'custom' && newMemberCustomPassword.trim()
+            ? { password: newMemberCustomPassword.trim() }
+            : {}),
         }),
       });
       setNewMemberForm({ displayName: '', phone: '', email: '' });
       setNewMemberRole('GROUP_MEMBER');
+      setNewMemberCustomPassword('');
+      setNewMemberPasswordMode('random');
       const name = result.displayName ?? newMemberForm.displayName.trim();
       if (result.created && result.tempPassword) {
         setNewMemberTempPassword({ name, password: result.tempPassword });
@@ -601,6 +618,59 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setError((err as Error).message ?? 'Failed.');
     } finally {
       setNewMemberLoading(false);
+    }
+  };
+
+  const handleBulkAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setBulkResults(null);
+    const lines = bulkText.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) { setError(zh ? '請輸入成員資料。' : 'Please enter member data.'); return; }
+    if (bulkPasswordMode === 'shared' && !bulkSharedPassword.trim()) {
+      setError(zh ? '請輸入共用密碼。' : 'Please enter the shared password.');
+      return;
+    }
+    const members = lines.map((line) => {
+      const parts = line.split(',').map((p) => p.trim());
+      const displayName = parts[0] ?? '';
+      const second = parts[1] ?? '';
+      const isEmail = second.includes('@');
+      return { displayName, email: isEmail ? second : undefined, phone: !isEmail && second ? second : undefined };
+    }).filter((m) => m.displayName);
+
+    setBulkLoading(true);
+    try {
+      const res = await apiFetch<{ results: BulkResult[] }>(`/groups/${params.groupId}/members/bulk-create-and-add`, {
+        method: 'POST',
+        body: JSON.stringify({
+          members,
+          passwordMode: bulkPasswordMode,
+          sharedPassword: bulkPasswordMode === 'shared' ? bulkSharedPassword.trim() : undefined,
+          role: bulkRole,
+        }),
+      });
+      setBulkResults(res.results);
+      setBulkText('');
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Bulk add failed.');
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const handleRemoveMember = async (userId: string, displayName: string | null) => {
+    const name = displayName || userId;
+    if (!window.confirm(zh ? `確定要將「${name}」從群組中移除嗎？` : `Remove "${name}" from this group?`)) return;
+    setRemovingMemberId(userId);
+    try {
+      await apiFetch(`/groups/${params.groupId}/members/${userId}`, { method: 'DELETE' });
+      setMembers((prev) => prev.filter((m) => m.userId !== userId));
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to remove member.');
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
@@ -1271,12 +1341,39 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
               </select>
             </div>
+            {/* Password mode */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '密碼設定' : 'Password'}</label>
+              <div className="flex gap-3 mb-2">
+                {(['random', 'custom'] as const).map((mode) => (
+                  <label key={mode} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <input type="radio" checked={newMemberPasswordMode === mode} onChange={() => setNewMemberPasswordMode(mode)} />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {mode === 'random' ? (zh ? '自動產生隨機密碼' : 'Generate random password') : (zh ? '自訂密碼' : 'Set custom password')}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {newMemberPasswordMode === 'custom' && (
+                <input
+                  type="text"
+                  value={newMemberCustomPassword}
+                  onChange={(e) => setNewMemberCustomPassword(e.target.value)}
+                  placeholder={zh ? '至少 6 個字元' : 'Min 6 characters'}
+                  minLength={6}
+                  className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
+                />
+              )}
+              {newMemberPasswordMode === 'random' && (
+                <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '系統將產生隨機密碼並於建立後顯示供您轉告。' : 'A random password will be generated and shown after creation for you to share.'}</p>
+              )}
+            </div>
             <p className="text-xs text-gray-400 dark:text-gray-500">
               {zh ? '電話或電子郵件至少填寫一項。若此聯絡方式已有帳號，將直接加入群組。' : 'At least one of phone or email is required. If an account with that contact info already exists, they will be added directly.'}
             </p>
             <button
               type="submit"
-              disabled={newMemberLoading || !newMemberForm.displayName.trim() || (!newMemberForm.phone.trim() && !newMemberForm.email.trim())}
+              disabled={newMemberLoading || !newMemberForm.displayName.trim() || (!newMemberForm.phone.trim() && !newMemberForm.email.trim()) || (newMemberPasswordMode === 'custom' && newMemberCustomPassword.trim().length < 6)}
               className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
             >
               {newMemberLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立帳號並加入群組' : 'Create Account & Add to Group')}
@@ -1314,6 +1411,149 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             </div>
           )}
           </>
+        )}
+      </section>
+
+      {/* Bulk add section */}
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{zh ? '批量新增成員' : 'Bulk Add Members'}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          {zh
+            ? '每行一筆，格式：姓名, 電子郵件或手機號碼（例：王小明, ming@example.com）'
+            : 'One per line: Full Name, email or phone (e.g. Jane Smith, jane@example.com)'}
+        </p>
+        <form onSubmit={(e) => void handleBulkAdd(e)} className="space-y-4">
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={6}
+            placeholder={zh ? '王小明, ming@example.com\n李小華, +886900000001\n張三, three@example.com' : 'Jane Smith, jane@example.com\nJohn Doe, +886900000001\nAlex Chen, alex@example.com'}
+            className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
+          />
+
+          {/* Password mode */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '密碼設定' : 'Password'}</p>
+            <div className="flex gap-4 mb-2">
+              {(['shared', 'random'] as const).map((mode) => (
+                <label key={mode} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                  <input type="radio" checked={bulkPasswordMode === mode} onChange={() => setBulkPasswordMode(mode)} />
+                  <span className="text-gray-700 dark:text-gray-300">
+                    {mode === 'shared'
+                      ? (zh ? '所有人共用同一密碼' : 'Same password for everyone')
+                      : (zh ? '每人產生隨機密碼' : 'Random password per person')}
+                  </span>
+                </label>
+              ))}
+            </div>
+            {bulkPasswordMode === 'shared' ? (
+              <div>
+                <input
+                  type="text"
+                  value={bulkSharedPassword}
+                  onChange={(e) => setBulkSharedPassword(e.target.value)}
+                  placeholder={zh ? '輸入共用密碼（至少 6 個字元）' : 'Enter shared password (min 6 chars)'}
+                  minLength={6}
+                  className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
+                />
+                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{zh ? '全部成員使用此密碼登入，建議提醒他們登入後修改。' : 'All members will use this password. Remind them to change it after first login.'}</p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '系統為每人產生唯一隨機密碼，結果表格將顯示各自的密碼供您轉告。' : 'A unique random password is generated per person. The results table will show each password for you to distribute.'}</p>
+            )}
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
+            <select
+              value={bulkRole}
+              onChange={(e) => setBulkRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
+              className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
+              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={bulkLoading || !bulkText.trim() || (bulkPasswordMode === 'shared' && bulkSharedPassword.trim().length < 6)}
+            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+          >
+            {bulkLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '批量新增' : 'Bulk Add')}
+          </button>
+        </form>
+
+        {/* Results table */}
+        {bulkResults && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {zh
+                  ? `結果：${bulkResults.filter((r) => r.added).length} 人已加入，${bulkResults.filter((r) => r.error).length} 人失敗`
+                  : `Results: ${bulkResults.filter((r) => r.added).length} added, ${bulkResults.filter((r) => r.error).length} failed`}
+              </p>
+              {bulkPasswordMode === 'random' && bulkResults.some((r) => r.tempPassword) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = bulkResults
+                      .filter((r) => r.tempPassword)
+                      .map((r) => `${r.displayName}\t${r.email ?? r.phone ?? ''}\t${r.tempPassword}`)
+                      .join('\n');
+                    void navigator.clipboard.writeText(text);
+                  }}
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  {zh ? '複製全部密碼' : 'Copy all passwords'}
+                </button>
+              )}
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '姓名' : 'Name'}</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '聯絡方式' : 'Contact'}</th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '狀態' : 'Status'}</th>
+                    {bulkPasswordMode === 'random' && (
+                      <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '臨時密碼' : 'Temp Password'}</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                  {bulkResults.map((r, i) => (
+                    <tr key={i}>
+                      <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName}</td>
+                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400 text-xs">{r.email ?? r.phone ?? '—'}</td>
+                      <td className="px-4 py-2">
+                        {r.error
+                          ? <span className="text-red-500 text-xs">✗ {r.error}</span>
+                          : r.created
+                          ? <span className="text-green-600 text-xs">✓ {zh ? '已建立帳號' : 'Created'}</span>
+                          : <span className="text-blue-600 text-xs">→ {zh ? '已加入現有帳號' : 'Added existing'}</span>}
+                      </td>
+                      {bulkPasswordMode === 'random' && (
+                        <td className="px-4 py-2">
+                          {r.tempPassword
+                            ? <code className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded select-all">{r.tempPassword}</code>
+                            : <span className="text-gray-400 text-xs">—</span>}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBulkResults(null)}
+              className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+            >
+              {zh ? '關閉結果' : 'Dismiss'}
+            </button>
+          </div>
         )}
       </section>
 
@@ -1356,9 +1596,19 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : (zh ? '尚未加入' : 'Not joined yet')}</p>
                 </div>
-                <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                  {member.email && <p>{member.email}</p>}
-                  {member.phoneE164 && <p>{member.phoneE164}</p>}
+                <div className="flex items-center gap-3">
+                  <div className="text-right text-xs text-gray-500 dark:text-gray-400">
+                    {member.email && <p>{member.email}</p>}
+                    {member.phoneE164 && <p>{member.phoneE164}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleRemoveMember(member.userId, member.displayName)}
+                    disabled={removingMemberId === member.userId}
+                    className="shrink-0 rounded-md border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
+                  >
+                    {removingMemberId === member.userId ? '…' : (zh ? '移除' : 'Remove')}
+                  </button>
                 </div>
               </div>
             </div>

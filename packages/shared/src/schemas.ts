@@ -247,11 +247,33 @@ export const CreateAndAddMemberSchema = z
     phone: z.string().optional(),
     email: z.string().email().optional(),
     role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']).default('GROUP_MEMBER'),
+    password: z.string().min(6).optional(), // if omitted, a random password is generated
   })
   .refine((d) => d.phone || d.email, {
     message: 'At least one of phone or email is required.',
   });
 export type CreateAndAddMemberDto = z.infer<typeof CreateAndAddMemberSchema>;
+
+export const BulkCreateAndAddMembersSchema = z
+  .object({
+    members: z
+      .array(
+        z.object({
+          displayName: z.string().min(1),
+          email: z.string().email().optional(),
+          phone: z.string().optional(),
+        }).refine((d) => d.email || d.phone, { message: 'Each member needs email or phone.' }),
+      )
+      .min(1)
+      .max(200),
+    passwordMode: z.enum(['shared', 'random']),
+    sharedPassword: z.string().min(6).optional(),
+    role: z.enum(['GROUP_ADMIN', 'GROUP_MEMBER']).default('GROUP_MEMBER'),
+  })
+  .refine((d) => d.passwordMode !== 'shared' || !!d.sharedPassword, {
+    message: 'sharedPassword is required when passwordMode is shared.',
+  });
+export type BulkCreateAndAddMembersDto = z.infer<typeof BulkCreateAndAddMembersSchema>;
 
 export const CommentListQuerySchema = z.object({
   page: z.coerce.number().int().positive().default(1),

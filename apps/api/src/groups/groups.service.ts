@@ -10,6 +10,7 @@ import { randomBytes } from 'crypto';
 import { DateTime } from 'luxon';
 import type {
   AddMemberDirectlyDto,
+  BulkCreateAndAddMembersDto,
   CreateGroupRelationshipRequestDto,
   CreateAndAddMemberDto,
   CreateGroupDto,
@@ -782,7 +783,7 @@ export class GroupsService {
     }
 
     // Create brand-new user account and add to group in a transaction
-    const tempPassword = randomBytes(16).toString('hex');
+    const tempPassword = dto.password ?? randomBytes(16).toString('hex');
     const passwordHash = await bcrypt.hash(tempPassword, 12);
 
     const newUser = await this.prisma.$transaction(async (tx) => {
@@ -823,6 +824,95 @@ export class GroupsService {
     }
 
     return { created: true, added: true, userId: newUser.id, displayName: newUser.displayName, tempPassword };
+  }
+
+  async bulkCreateAndAddMembers(groupId: string, dto: BulkCreateAndAddMembersDto, user: User) {
+    await this.assertCanManageGroupSettings(groupId, user);
+    const group = await this.ensureGroupExists(groupId);
+    const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
+    const groupLink = `${webOrigin}/en/groups/${groupId}`;
+
+    const results: {
+      displayName: string;
+      email?: string;
+      phone?: string;
+      created: boolean;
+      added: boolean;
+      tempPassword?: string;
+      error?: string;
+    }[] = [];
+
+    for (const member of dto.members) {
+      try {
+        const tempPassword = dto.passwordMode === 'shared' ? dto.sharedPassword! : randomBytes(16).toString('hex');
+        const passwordHash = await bcrypt.hash(tempPassword, 12);
+
+        // Check if user already exists
+        const orConditions = [
+          ...(member.phone ? [{ phoneE164: member.phone }] : []),
+          ...(member.email ? [{ email: member.email }] : []),
+        ];
+        const existingUser = await this.prisma.user.findFirst({ where: { OR: orConditions } });
+
+        if (existingUser) {
+          await this.prisma.groupMembership.upsert({
+            where: { groupId_userId: { groupId, userId: existingUser.id } },
+            create: { groupId, userId: existingUser.id, status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
+            update: { status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
+          });
+          results.push({ displayName: existingUser.displayName ?? member.displayName, email: member.email, phone: member.phone, created: false, added: true });
+          continue;
+        }
+
+        const newUser = await this.prisma.$transaction(async (tx) => {
+          const u = await tx.user.create({
+            data: {
+              email: member.email ?? null,
+              phoneE164: member.phone ?? null,
+              displayName: member.displayName.trim() || null,
+              passwordHash,
+              hasPassword: true,
+              role: 'USER',
+              preferredLanguage: 'en',
+            },
+          });
+          await tx.groupMembership.create({
+            data: {
+              groupId,
+              userId: u.id,
+              status: 'ACCEPTED',
+              role: dto.role,
+              joinedAt: new Date(),
+              ...(user.role === 'ADMIN' ? { invitedByPlatformAdminId: user.id } : {}),
+            },
+          });
+          return u;
+        });
+
+        if (newUser.email) {
+          await this.messaging.sendEmail({
+            userId: newUser.id,
+            to: newUser.email,
+            subject: `You have been added to ${group.name} on Judien`,
+            text: `A Judien account has been created for you and you have been added to "${group.name}". Visit: ${groupLink}`,
+          }).catch(() => {});
+        }
+
+        results.push({
+          displayName: newUser.displayName ?? member.displayName,
+          email: member.email,
+          phone: member.phone,
+          created: true,
+          added: true,
+          // only expose tempPassword for random mode (shared password admin already knows)
+          tempPassword: dto.passwordMode === 'random' ? tempPassword : undefined,
+        });
+      } catch (err: any) {
+        results.push({ displayName: member.displayName, email: member.email, phone: member.phone, created: false, added: false, error: err?.message ?? 'Unknown error' });
+      }
+    }
+
+    return { results };
   }
 
   async canAccessGroup(groupId: string, userId?: string) {
