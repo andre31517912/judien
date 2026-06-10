@@ -153,8 +153,8 @@ export type UpdateNewsDto = z.infer<typeof UpdateNewsSchema>;
 // ─── Profile update ───────────────────────────────────────────────────────────
 
 export const UpdateProfileSchema = z.object({
-  phone: phoneSchema.optional(),
-  email: z.string().email().optional(),
+  phone: phoneSchema.nullable().optional(),   // null = clear the phone number
+  email: z.string().email().nullable().optional(), // null = clear the email
   displayName: z.string().max(100).optional(),
   password: z.string().min(8).max(128).optional(),
   preferredLanguage: z.enum(['en', 'zh']).optional(),

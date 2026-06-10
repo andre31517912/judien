@@ -76,11 +76,36 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       muteLinePush,
       displayName: displayName.trim(),
     };
-    // Only send phone/email if they have actually changed
-    if (phone.trim() && phone.trim() !== ((user as any)?.phoneE164 ?? '')) body.phone = phone.trim();
+    const storedPhone = (user as any)?.phoneE164 ?? '';
     const storedEmail = (user as any)?.email ?? '';
-    // Only update email if they entered a real one (ignore blank — don't overwrite fake placeholder with empty)
-    if (email.trim() && email.trim() !== storedEmail && !isLineOnlyEmail(email.trim())) body.email = email.trim();
+    const isLineEmail = isLineOnlyEmail(storedEmail);
+    // The email value the user sees in the field (blank if LINE placeholder)
+    const displayedEmail = isLineEmail ? '' : storedEmail;
+
+    // Phone: send if changed — including clearing (null) if user blanked it out
+    if (phone.trim() !== storedPhone) {
+      body.phone = phone.trim() || null;
+    }
+
+    // Email: send if changed — including clearing (null) if user blanked a real email out
+    if (email.trim() !== displayedEmail) {
+      if (email.trim() && !isLineOnlyEmail(email.trim())) {
+        body.email = email.trim();
+      } else if (!email.trim() && !isLineEmail) {
+        body.email = null; // user explicitly cleared a real email
+      }
+      // if isLineEmail and field is still blank — no change, don't send
+    }
+
+    // Client-side guard: make sure at least one real contact remains after this save
+    const resultingEmail = 'email' in body ? (body.email as string | null) : (isLineEmail ? null : storedEmail || null);
+    const resultingPhone = 'phone' in body ? (body.phone as string | null) : (storedPhone || null);
+    if (!resultingEmail && !resultingPhone) {
+      setMsg({ text: zh ? '必須至少保留一個電子郵件或手機號碼。' : 'You must keep at least one email or phone number on file.', ok: false });
+      setSaving(false);
+      return;
+    }
+
     if (password.trim()) body.password = password.trim();
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
