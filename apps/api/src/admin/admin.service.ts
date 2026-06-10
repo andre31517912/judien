@@ -1,0 +1,121 @@
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import type { User } from '../__generated__/prisma';
+
+@Injectable()
+export class AdminService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async search(q: string, type: 'user' | 'group' | 'all') {
+    const term = q.trim();
+    if (!term) return { users: [], groups: [] };
+
+    const [users, groups] = await Promise.all([
+      type !== 'group'
+        ? this.prisma.user.findMany({
+            where: {
+              OR: [
+                { displayName: { contains: term, mode: 'insensitive' } },
+                { email: { contains: term, mode: 'insensitive' } },
+                { phoneE164: { contains: term, mode: 'insensitive' } },
+              ],
+            },
+            select: {
+              id: true,
+              displayName: true,
+              email: true,
+              phoneE164: true,
+              role: true,
+              createdAt: true,
+              lineUserId: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+          })
+        : Promise.resolve([]),
+      type !== 'user'
+        ? this.prisma.group.findMany({
+            where: { name: { contains: term, mode: 'insensitive' } },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              createdAt: true,
+              _count: { select: { memberships: true } },
+              createdBy: { select: { id: true, displayName: true, email: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+          })
+        : Promise.resolve([]),
+    ]);
+
+    return { users, groups };
+  }
+
+  async listUsers(page: number, pageSize: number) {
+    const [total, users] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.user.findMany({
+        select: {
+          id: true,
+          displayName: true,
+          email: true,
+          phoneE164: true,
+          role: true,
+          createdAt: true,
+          lineUserId: true,
+          _count: { select: { groupMemberships: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+    return { total, page, pageSize, data: users };
+  }
+
+  async listGroups(page: number, pageSize: number) {
+    const [total, groups] = await Promise.all([
+      this.prisma.group.count(),
+      this.prisma.group.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          createdAt: true,
+          discoverableBySearch: true,
+          _count: { select: { memberships: true } },
+          createdBy: { select: { id: true, displayName: true, email: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+    return { total, page, pageSize, data: groups };
+  }
+
+  async deleteUser(targetUserId: string, requestingUser: User) {
+    if (targetUserId === requestingUser.id) {
+      throw new ForbiddenException('You cannot delete your own account.');
+    }
+    const target = await this.prisma.user.findUnique({ where: { id: targetUserId } });
+    if (!target) throw new NotFoundException('User not found.');
+    await this.prisma.user.delete({ where: { id: targetUserId } });
+    return { deleted: true };
+  }
+
+  async deleteGroup(groupId: string) {
+    const group = await this.prisma.group.findUnique({ where: { id: groupId } });
+    if (!group) throw new NotFoundException('Group not found.');
+    await this.prisma.$transaction([
+      this.prisma.news.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.eventSeries.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.event.updateMany({ where: { groupId }, data: { groupId: null } }),
+      this.prisma.group.updateMany({ where: { parentGroupId: groupId }, data: { parentGroupId: null } }),
+      this.prisma.group.delete({ where: { id: groupId } }),
+    ]);
+    return { deleted: true };
+  }
+}

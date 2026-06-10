@@ -164,8 +164,8 @@ export class GroupsService {
 
   async deleteGroup(groupId: string, user: User) {
     const group = await this.ensureGroupExists(groupId);
-    if (group.createdById !== user.id) {
-      throw new ForbiddenException('Only the group creator can delete this group.');
+    if (user.role !== 'ADMIN' && group.createdById !== user.id) {
+      throw new ForbiddenException('Only the group creator or a platform admin can delete this group.');
     }
     // Null out optional FK references that lack cascade on delete, then delete
     await this.prisma.$transaction([
