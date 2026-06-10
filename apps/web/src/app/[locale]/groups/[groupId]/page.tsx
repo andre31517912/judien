@@ -712,7 +712,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </div>
               </div>
             ))}
-            {members.map((member) => {
+            {[...members].sort((a, b) => {
+              if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+              const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+              const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+              return na.localeCompare(nb);
+            }).map((member) => {
               const isOwnRow = member.userId === user.id;
               const isEditingNickname = editingNicknameUserId === member.userId;
               const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;

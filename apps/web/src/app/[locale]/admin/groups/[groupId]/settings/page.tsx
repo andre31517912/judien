@@ -1487,7 +1487,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
         )}
         <div className="grid gap-3">
-          {members.map((member) => {
+          {[...members].sort((a, b) => {
+            if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+            const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+            const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+            return na.localeCompare(nb);
+          }).map((member) => {
             const isEditingNickname = editingNicknameUserId === member.userId;
             const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
             return (
