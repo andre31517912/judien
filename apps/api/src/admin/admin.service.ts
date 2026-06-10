@@ -102,7 +102,55 @@ export class AdminService {
     }
     const target = await this.prisma.user.findUnique({ where: { id: targetUserId } });
     if (!target) throw new NotFoundException('User not found.');
-    await this.prisma.user.delete({ where: { id: targetUserId } });
+
+    // Must manually clean up all FK references to this user that don't have onDelete: Cascade.
+    // Prisma defaults to Restrict for non-cascaded relations, which blocks the delete.
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Null out optional FKs that reference this user
+      await tx.eventInvite.updateMany({ where: { acceptedByUserId: targetUserId }, data: { acceptedByUserId: null } });
+      await tx.groupInvite.updateMany({ where: { invitedUserId: targetUserId }, data: { invitedUserId: null } });
+      await tx.groupMembership.updateMany({ where: { invitedByPlatformAdminId: targetUserId }, data: { invitedByPlatformAdminId: null } });
+      await tx.groupJoinRequest.updateMany({ where: { reviewedByUserId: targetUserId }, data: { reviewedByUserId: null } });
+
+      // 2. Delete records with required (non-nullable) FK to this user
+      await tx.messageLog.deleteMany({ where: { userId: targetUserId } });
+      await tx.eventInvite.deleteMany({ where: { createdById: targetUserId } });
+      await tx.groupInvite.deleteMany({ where: { invitedByPlatformAdminId: targetUserId } });
+      await tx.news.deleteMany({ where: { createdById: targetUserId } });
+
+      // 3. Unlink events from any series this user created, then delete those series
+      const userSeriesIds = (await tx.eventSeries.findMany({
+        where: { createdById: targetUserId },
+        select: { id: true },
+      })).map((s) => s.id);
+      if (userSeriesIds.length) {
+        await tx.event.updateMany({ where: { seriesId: { in: userSeriesIds } }, data: { seriesId: null } });
+        await tx.eventSeries.deleteMany({ where: { createdById: targetUserId } });
+      }
+
+      // 4. Delete events created by this user (cascades RSVP, Comment, GuestRSVP, ReminderRule, EventShareLink)
+      await tx.event.deleteMany({ where: { createdById: targetUserId } });
+
+      // 5. Delete groups created by this user — first null out group-level references
+      const userGroupIds = (await tx.group.findMany({
+        where: { createdById: targetUserId },
+        select: { id: true },
+      })).map((g) => g.id);
+      if (userGroupIds.length) {
+        await tx.news.updateMany({ where: { groupId: { in: userGroupIds } }, data: { groupId: null } });
+        await tx.eventSeries.updateMany({ where: { groupId: { in: userGroupIds } }, data: { groupId: null } });
+        await tx.event.updateMany({ where: { groupId: { in: userGroupIds } }, data: { groupId: null } });
+        await tx.group.updateMany({ where: { parentGroupId: { in: userGroupIds } }, data: { parentGroupId: null } });
+        await tx.group.deleteMany({ where: { id: { in: userGroupIds } } });
+      }
+
+      // 6. Finally delete the user — remaining relations (RSVP, Comment, GroupMembership,
+      //    GroupMessage, Notification, DonationRecord, InviteToken, GroupJoinRequest requester,
+      //    GroupRelationshipRequest requester, EventShareLink) all have onDelete: Cascade
+      await tx.user.delete({ where: { id: targetUserId } });
+    });
+
     return { deleted: true };
   }
 
