@@ -282,8 +282,9 @@ export class LineOAuthController {
         res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
         res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
         const locale = user.preferredLanguage ?? 'en';
-        const newUserParam = isNewUser ? '?line_new=1' : '';
-        return res.redirect(`${webOrigin}/${locale}/${newUserParam}`);
+        // New users go to profile so they can optionally set email+password
+        const destination = isNewUser ? `${webOrigin}/${locale}/profile?line_new=1` : `${webOrigin}/${locale}/events`;
+        return res.redirect(destination);
       }
     } catch {
       return errorRedirect('unexpected_error');

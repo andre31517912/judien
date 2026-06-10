@@ -24,6 +24,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showLineNewBanner, setShowLineNewBanner] = useState(false);
   const { theme, setTheme } = useTheme();
   type AdminInvite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
   const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
@@ -31,16 +32,19 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
 
+  const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
+
   useEffect(() => {
     if (user) {
       setDisplayName((user as any).displayName ?? '');
       setPhone((user as any)?.phoneE164 ?? '');
-      setEmail((user as any)?.email ?? '');
+      // Don't pre-fill the fake LINE placeholder email — show blank so they know to set a real one
+      const rawEmail = (user as any)?.email ?? '';
+      setEmail(isLineOnlyEmail(rawEmail) ? '' : rawEmail);
       setPassword('');
       setMuteEmail((user as any).muteEmail ?? false);
       setMuteLinePush(user.muteLinePush ?? false);
       setLineLinked(!!user.lineUserId);
-      // lang is driven by the URL locale, not the stored preference
       if (user.role === 'ADMIN') {
         apiFetch<AdminInvite[]>('/invites').then(setAdminInvites).catch(() => {});
       }
@@ -55,6 +59,9 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     } else if (lineParam === 'error') {
       const reason = searchParams.get('reason') ?? '';
       setLineMsg({ text: zh ? `LINE 連結失敗：${reason}` : `LINE link failed: ${reason}`, ok: false });
+    }
+    if (searchParams.get('line_new') === '1') {
+      setShowLineNewBanner(true);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -71,7 +78,9 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     };
     // Only send phone/email if they have actually changed
     if (phone.trim() && phone.trim() !== ((user as any)?.phoneE164 ?? '')) body.phone = phone.trim();
-    if (email.trim() && email.trim() !== ((user as any)?.email ?? '')) body.email = email.trim();
+    const storedEmail = (user as any)?.email ?? '';
+    // Only update email if they entered a real one (ignore blank — don't overwrite fake placeholder with empty)
+    if (email.trim() && email.trim() !== storedEmail && !isLineOnlyEmail(email.trim())) body.email = email.trim();
     if (password.trim()) body.password = password.trim();
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
@@ -105,6 +114,31 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           {user.role === 'ADMIN' ? (zh ? '平台管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
       </div>
+
+      {/* Welcome banner for first-time LINE login */}
+      {showLineNewBanner && (
+        <div className="mb-5 rounded-xl border border-[#06C755]/40 bg-[#06C755]/10 p-4 flex gap-3">
+          <span className="text-2xl leading-none mt-0.5">👋</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+              {zh ? '歡迎加入 Judien！' : 'Welcome to Judien!'}
+            </p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              {zh
+                ? '您的帳號已透過 LINE 建立。您可以在下方設定電子郵件與密碼，以便在 LINE 以外的裝置上也能登入。這是選填的，可以之後再設定。'
+                : 'Your account was created with your LINE profile. You can optionally set an email and password below so you can also log in without LINE. You can skip this and do it later.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowLineNewBanner(false)}
+            className="shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 mt-0.5"
+            aria-label="Dismiss"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      )}
 
       {msg && (
         <p className={`text-sm mb-4 ${msg.ok ? 'text-green-600' : 'text-red-500'}`}>
@@ -275,16 +309,32 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           <input
             type="email"
             value={email}
-            placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
+            placeholder={
+              isLineOnlyEmail((user as any)?.email ?? '')
+                ? (zh ? '設定真實電子郵件（選填）' : 'Set a real email (optional)')
+                : (zh ? '保留空白則不更新' : 'Leave blank to keep current')
+            }
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
+          {isLineOnlyEmail((user as any)?.email ?? '') && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              {zh
+                ? '您是透過 LINE 登入，目前無真實電子郵件。設定後可用電子郵件+密碼登入。'
+                : 'You signed in with LINE and have no real email set. Add one here to also be able to log in with email + password.'}
+            </p>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">
             {zh ? '密碼' : 'Password'}
           </label>
+          {isLineOnlyEmail((user as any)?.email ?? '') && (
+            <p className="mb-1 text-xs text-gray-400 dark:text-gray-500">
+              {zh ? '設定密碼後，可搭配電子郵件用於帳號登入。' : 'Set a password to go along with your email for logging in.'}
+            </p>
+          )}
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
