@@ -101,6 +101,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [groupPhotoFile, setGroupPhotoFile] = useState<File | null>(null);
   const [groupPhotoPreview, setGroupPhotoPreview] = useState<string | null>(null);
   const [currentGroupPhotoUrl, setCurrentGroupPhotoUrl] = useState<string | null>(null);
+  const [groupPhotoRemoved, setGroupPhotoRemoved] = useState(false);
 
   const [relationships, setRelationships] = useState<{
     parentGroup: { id: string; name: string } | null;
@@ -523,6 +524,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       if (groupPhotoFile) {
         const uploaded = await apiUpload(groupPhotoFile);
         photoUrl = uploaded.url;
+      } else if (groupPhotoRemoved) {
+        photoUrl = null;
       }
       const payload: Record<string, unknown> = {
         name: groupSettings.name,
@@ -536,6 +539,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       });
       setSuccess(zh ? '群組設定已儲存。' : 'Group settings saved.');
       setGroupPhotoFile(null);
+      setGroupPhotoRemoved(false);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to save settings.');
@@ -1186,7 +1190,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             {(groupPhotoPreview ?? currentGroupPhotoUrl) && (
               <button
                 type="button"
-                onClick={(ev) => { ev.stopPropagation(); setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
+                onClick={(ev) => { ev.stopPropagation(); setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); setGroupPhotoRemoved(true); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
                 className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70"
               >✕</button>
             )}
@@ -1196,6 +1200,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             if (!file) return;
             setGroupPhotoFile(file);
             setGroupPhotoPreview(URL.createObjectURL(file));
+            setGroupPhotoRemoved(false);
           }} className="hidden" />
         </div>
 

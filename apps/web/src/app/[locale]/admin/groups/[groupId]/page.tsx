@@ -310,7 +310,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
                 className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
               >
-                ⚙️ {zh ? '管理群組' : 'Manage'}
+                ⚙️ {zh ? '群組設定' : 'Settings'}
               </Link>
             </div>
           </div>
