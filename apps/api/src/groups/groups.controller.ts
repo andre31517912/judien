@@ -34,6 +34,7 @@ import {
   SetParentGroupSchema,
   CreateGroupRelationshipRequestSchema,
   ReviewGroupRelationshipRequestSchema,
+  UpdateGroupNicknameSchema,
   type ChangeGroupMemberRoleDto,
   type CreateGroupDto,
   type CreateGroupJoinRequestDto,
@@ -47,6 +48,7 @@ import {
   type SetParentGroupDto,
   type CreateGroupRelationshipRequestDto,
   type ReviewGroupRelationshipRequestDto,
+  type UpdateGroupNicknameDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { GroupsService } from './groups.service';
@@ -251,6 +253,27 @@ export class GroupsController {
     @CurrentUser() user: User,
   ) {
     return this.groupsService.removeMember(groupId, memberUserId, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':groupId/members/me/nickname')
+  updateMyGroupNickname(
+    @Param('groupId') groupId: string,
+    @Body(new ZodValidationPipe(UpdateGroupNicknameSchema)) dto: UpdateGroupNicknameDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.updateMyGroupNickname(groupId, user.id, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':groupId/members/:memberUserId/nickname')
+  updateMemberGroupNickname(
+    @Param('groupId') groupId: string,
+    @Param('memberUserId') memberUserId: string,
+    @Body(new ZodValidationPipe(UpdateGroupNicknameSchema)) dto: UpdateGroupNicknameDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.updateMemberGroupNickname(groupId, memberUserId, dto, user);
   }
 
   // ─── Subgroups ────────────────────────────────────────────────────────────

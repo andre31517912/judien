@@ -20,6 +20,7 @@ import type {
   RespondGroupInviteDto,
   ReviewGroupJoinRequestDto,
   SetParentGroupDto,
+  UpdateGroupNicknameDto,
   UpdateGroupSettingsDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
@@ -209,6 +210,7 @@ export class GroupsService {
 
     const directMembers = rows.map((m) => ({
       userId: m.user.id,
+      groupNickname: (m as any).groupNickname as string | null,
       displayName: m.user.displayName,
       role: m.role,
       userRole: m.user.role,
@@ -242,6 +244,7 @@ export class GroupsService {
         if (!directMemberIds.has(m.user.id)) {
           childMembers.push({
             userId: m.user.id,
+            groupNickname: (m as any).groupNickname as string | null,
             displayName: m.user.displayName,
             role: m.role,
             userRole: m.user.role,
@@ -256,6 +259,41 @@ export class GroupsService {
     }
 
     return [...directMembers, ...childMembers];
+  }
+
+  async updateMyGroupNickname(groupId: string, userId: string, dto: UpdateGroupNicknameDto) {
+    const membership = await this.prisma.groupMembership.findUnique({
+      where: { groupId_userId: { groupId, userId } },
+    });
+    if (!membership || membership.status !== 'ACCEPTED') {
+      throw new ForbiddenException('You are not an accepted member of this group.');
+    }
+    await (this.prisma.groupMembership as any).update({
+      where: { groupId_userId: { groupId, userId } },
+      data: { groupNickname: dto.groupNickname },
+    });
+    return { groupNickname: dto.groupNickname };
+  }
+
+  async updateMemberGroupNickname(groupId: string, targetUserId: string, dto: UpdateGroupNicknameDto, requestingUser: User) {
+    const isPlatformAdmin = requestingUser.role === 'ADMIN';
+    if (!isPlatformAdmin) {
+      const adminMembership = await this.prisma.groupMembership.findUnique({
+        where: { groupId_userId: { groupId, userId: requestingUser.id } },
+      });
+      if (!adminMembership || adminMembership.status !== 'ACCEPTED' || adminMembership.role !== 'GROUP_ADMIN') {
+        throw new ForbiddenException('Only group admins can edit other members\' nicknames.');
+      }
+    }
+    const target = await this.prisma.groupMembership.findUnique({
+      where: { groupId_userId: { groupId, userId: targetUserId } },
+    });
+    if (!target) throw new NotFoundException('Member not found in this group.');
+    await (this.prisma.groupMembership as any).update({
+      where: { groupId_userId: { groupId, userId: targetUserId } },
+      data: { groupNickname: dto.groupNickname },
+    });
+    return { groupNickname: dto.groupNickname };
   }
 
   async getGroupInviteInfo(token: string) {

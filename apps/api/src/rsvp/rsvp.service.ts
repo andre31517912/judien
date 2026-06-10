@@ -59,7 +59,7 @@ export class RsvpService {
       }
     }
 
-    const [rsvps, guestRsvps] = await Promise.all([
+    const [rsvps, guestRsvps, memberships] = await Promise.all([
       this.prisma.rSVP.findMany({
         where: { eventId },
         include: { user: { select: { email: true, displayName: true } } },
@@ -69,7 +69,15 @@ export class RsvpService {
         where: { eventId },
         orderBy: { updatedAt: 'asc' },
       }),
+      event.groupId
+        ? (this.prisma.groupMembership as any).findMany({
+            where: { groupId: event.groupId, status: 'ACCEPTED' },
+            select: { userId: true, groupNickname: true },
+          }) as Promise<{ userId: string; groupNickname: string | null }[]>
+        : Promise.resolve([] as { userId: string; groupNickname: string | null }[]),
     ]);
+
+    const nicknameByUserId = new Map(memberships.map((m: { userId: string; groupNickname: string | null }) => [m.userId, m.groupNickname]));
 
     const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; source: 'user' | 'guest' }[]> = {
       GOING: [],
@@ -79,9 +87,10 @@ export class RsvpService {
     for (const r of rsvps) {
       const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
+        const nickname = nicknameByUserId.get(r.userId) ?? null;
         groups[status].push({
           handle: this.maskIdentifier(r.user.email ?? ''),
-          displayName: (r.user as any).displayName ?? null,
+          displayName: nickname ?? (r.user as any).displayName ?? null,
           source: 'user',
         });
       }
@@ -186,7 +195,7 @@ export class RsvpService {
       throw new ForbiddenException('Only admins or the event creator can export RSVP data.');
     }
 
-    const [rsvps, guestRsvps] = await Promise.all([
+    const [rsvps, guestRsvps, exportMemberships] = await Promise.all([
       this.prisma.rSVP.findMany({
         where: { eventId },
         include: { user: { select: { email: true, displayName: true } } },
@@ -196,13 +205,22 @@ export class RsvpService {
         where: { eventId },
         orderBy: [{ status: 'asc' }, { updatedAt: 'asc' }],
       }),
+      event.groupId
+        ? (this.prisma.groupMembership as any).findMany({
+            where: { groupId: event.groupId, status: 'ACCEPTED' },
+            select: { userId: true, groupNickname: true },
+          }) as Promise<{ userId: string; groupNickname: string | null }[]>
+        : Promise.resolve([] as { userId: string; groupNickname: string | null }[]),
     ]);
+
+    const exportNicknameByUserId = new Map(exportMemberships.map((m: { userId: string; groupNickname: string | null }) => [m.userId, m.groupNickname]));
 
     const rows: { name: string; email: string | null; type: string; status: string; declineReason: string }[] = [];
 
     for (const r of rsvps) {
+      const nickname = exportNicknameByUserId.get(r.userId) ?? null;
       rows.push({
-        name: (r.user as any).displayName ?? '',
+        name: nickname ?? (r.user as any).displayName ?? '',
         email: r.user.email,
         type: 'member',
         status: r.status,

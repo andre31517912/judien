@@ -27,6 +27,7 @@ type MyGroupItem = {
 
 type GroupMember = {
   userId: string;
+  groupNickname: string | null;
   displayName: string | null;
   role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
   userRole: 'ADMIN' | 'USER';
@@ -81,6 +82,30 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
+
+  // In-group nickname edit (own row)
+  const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+
+  const handleSaveNickname = async (memberId: string) => {
+    setNicknameSaving(true);
+    setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/members/me/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
+      });
+      setMembers((prev) =>
+        prev.map((m) => m.userId === memberId ? { ...m, groupNickname: nicknameInput.trim() || null } : m),
+      );
+      setEditingNicknameUserId(null);
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to save nickname.');
+    } finally {
+      setNicknameSaving(false);
+    }
+  };
 
   // Main view tabs
   type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
@@ -687,49 +712,96 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </div>
               </div>
             ))}
-            {members.map((member) => (
+            {members.map((member) => {
+              const isOwnRow = member.userId === user.id;
+              const isEditingNickname = editingNicknameUserId === member.userId;
+              const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+              return (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                      member.role === 'GROUP_ADMIN'
-                        ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
-                    </span>
-                    {member.childGroupName && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                        {member.childGroupName}
+                <div className="min-w-0 flex-1">
+                  {isEditingNickname ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <input
+                        autoFocus
+                        className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44"
+                        placeholder={zh ? '群組暱稱（留空清除）' : 'In-group nickname (blank to clear)'}
+                        value={nicknameInput}
+                        onChange={(e) => setNicknameInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleSaveNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
+                        maxLength={100}
+                      />
+                      <button
+                        onClick={() => handleSaveNickname(member.userId)}
+                        disabled={nicknameSaving}
+                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                      >
+                        {nicknameSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                      </button>
+                      <button
+                        onClick={() => setEditingNicknameUserId(null)}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      >
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
+                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
+                      )}
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                        member.role === 'GROUP_ADMIN'
+                          ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
                       </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
-                  </p>
+                      {member.childGroupName && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                          {member.childGroupName}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {!isEditingNickname && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                    </p>
+                  )}
                   {isGroupAdmin && (member.email || member.phoneE164) && (
                     <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
                   )}
                 </div>
-                {isGroupAdmin && member.userId !== user.id && (
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  {isOwnRow && !isEditingNickname && (
                     <button
-                      onClick={() => handleChangeRole(member.userId, member.role)}
-                      className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                      onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                     >
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                      {zh ? '設定暱稱' : 'Set Nickname'}
                     </button>
-                    <button
-                      onClick={() => handleRemoveMember(member.userId)}
-                      className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                    >
-                      {zh ? '移除' : 'Remove'}
-                    </button>
-                  </div>
-                )}
+                  )}
+                  {isGroupAdmin && !isOwnRow && !isEditingNickname && (
+                    <>
+                      <button
+                        onClick={() => handleChangeRole(member.userId, member.role)}
+                        className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                      >
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                      </button>
+                      <button
+                        onClick={() => handleRemoveMember(member.userId)}
+                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                      >
+                        {zh ? '移除' : 'Remove'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

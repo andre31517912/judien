@@ -287,6 +287,7 @@ exports.Prisma.GroupMembershipScalarFieldEnum = {
   role: 'role',
   status: 'status',
   invitedByPlatformAdminId: 'invitedByPlatformAdminId',
+  groupNickname: 'groupNickname',
   joinedAt: 'joinedAt',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
@@ -312,6 +313,18 @@ exports.Prisma.GroupJoinRequestScalarFieldEnum = {
   groupId: 'groupId',
   requesterUserId: 'requesterUserId',
   note: 'note',
+  status: 'status',
+  reviewedByUserId: 'reviewedByUserId',
+  reviewedAt: 'reviewedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.GroupRelationshipRequestScalarFieldEnum = {
+  id: 'id',
+  sourceGroupId: 'sourceGroupId',
+  targetGroupId: 'targetGroupId',
+  requesterUserId: 'requesterUserId',
   status: 'status',
   reviewedByUserId: 'reviewedByUserId',
   reviewedAt: 'reviewedAt',
@@ -456,6 +469,7 @@ exports.Prisma.ModelName = {
   GroupMembership: 'GroupMembership',
   GroupInvite: 'GroupInvite',
   GroupJoinRequest: 'GroupJoinRequest',
+  GroupRelationshipRequest: 'GroupRelationshipRequest',
   DonationRecord: 'DonationRecord',
   InviteToken: 'InviteToken',
   Notification: 'Notification'

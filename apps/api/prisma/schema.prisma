@@ -377,6 +377,7 @@ model GroupMembership {
   status                 GroupMembershipStatus @default(PENDING)
   invitedByPlatformAdminId String?
   invitedByPlatformAdmin User?                 @relation("GroupMembershipInvitedBy", fields: [invitedByPlatformAdminId], references: [id])
+  groupNickname          String?
   joinedAt               DateTime?
   sortOrder              Int                   @default(0)
   createdAt              DateTime              @default(now())

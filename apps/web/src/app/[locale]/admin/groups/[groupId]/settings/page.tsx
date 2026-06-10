@@ -40,6 +40,7 @@ type GroupListItem = {
 
 type GroupMember = {
   userId: string;
+  groupNickname: string | null;
   displayName: string | null;
   role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
   joinedAt: string | null;
@@ -77,6 +78,9 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
@@ -631,13 +635,26 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setError(zh ? '請輸入共用密碼。' : 'Please enter the shared password.');
       return;
     }
-    const members = lines.map((line) => {
+
+    // Parse: Full Name, Email, Phone (all 3 columns, email and phone optional but at least one required)
+    const parseErrors: string[] = [];
+    const members = lines.map((line, idx) => {
       const parts = line.split(',').map((p) => p.trim());
       const displayName = parts[0] ?? '';
-      const second = parts[1] ?? '';
-      const isEmail = second.includes('@');
-      return { displayName, email: isEmail ? second : undefined, phone: !isEmail && second ? second : undefined };
+      const email = parts[1] && parts[1].includes('@') ? parts[1] : undefined;
+      const phone = parts[2] && parts[2].startsWith('+') ? parts[2] : undefined;
+      if (!displayName) {
+        parseErrors.push(zh ? `第 ${idx + 1} 行：缺少姓名。` : `Line ${idx + 1}: name is required.`);
+      } else if (!email && !phone) {
+        parseErrors.push(zh ? `第 ${idx + 1} 行（${displayName}）：必須填入電子郵件或手機號碼至少一項。` : `Line ${idx + 1} (${displayName}): must have at least an email or phone number.`);
+      }
+      return { displayName, email, phone };
     }).filter((m) => m.displayName);
+
+    if (parseErrors.length) {
+      setError(parseErrors.join('\n'));
+      return;
+    }
 
     setBulkLoading(true);
     try {
@@ -671,6 +688,25 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setError((err as Error).message ?? 'Failed to remove member.');
     } finally {
       setRemovingMemberId(null);
+    }
+  };
+
+  const handleSaveMemberNickname = async (targetUserId: string) => {
+    setNicknameSaving(true);
+    setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/members/${targetUserId}/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
+      });
+      setMembers((prev) =>
+        prev.map((m) => m.userId === targetUserId ? { ...m, groupNickname: nicknameInput.trim() || null } : m),
+      );
+      setEditingNicknameUserId(null);
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to save nickname.');
+    } finally {
+      setNicknameSaving(false);
     }
   };
 
@@ -1414,149 +1450,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         )}
       </section>
 
-      {/* Bulk add section */}
-      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{zh ? '批量新增成員' : 'Bulk Add Members'}</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          {zh
-            ? '每行一筆，格式：姓名, 電子郵件或手機號碼（例：王小明, ming@example.com）'
-            : 'One per line: Full Name, email or phone (e.g. Jane Smith, jane@example.com)'}
-        </p>
-        <form onSubmit={(e) => void handleBulkAdd(e)} className="space-y-4">
-          <textarea
-            value={bulkText}
-            onChange={(e) => setBulkText(e.target.value)}
-            rows={6}
-            placeholder={zh ? '王小明, ming@example.com\n李小華, +886900000001\n張三, three@example.com' : 'Jane Smith, jane@example.com\nJohn Doe, +886900000001\nAlex Chen, alex@example.com'}
-            className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
-          />
-
-          {/* Password mode */}
-          <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '密碼設定' : 'Password'}</p>
-            <div className="flex gap-4 mb-2">
-              {(['shared', 'random'] as const).map((mode) => (
-                <label key={mode} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                  <input type="radio" checked={bulkPasswordMode === mode} onChange={() => setBulkPasswordMode(mode)} />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {mode === 'shared'
-                      ? (zh ? '所有人共用同一密碼' : 'Same password for everyone')
-                      : (zh ? '每人產生隨機密碼' : 'Random password per person')}
-                  </span>
-                </label>
-              ))}
-            </div>
-            {bulkPasswordMode === 'shared' ? (
-              <div>
-                <input
-                  type="text"
-                  value={bulkSharedPassword}
-                  onChange={(e) => setBulkSharedPassword(e.target.value)}
-                  placeholder={zh ? '輸入共用密碼（至少 6 個字元）' : 'Enter shared password (min 6 chars)'}
-                  minLength={6}
-                  className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
-                />
-                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{zh ? '全部成員使用此密碼登入，建議提醒他們登入後修改。' : 'All members will use this password. Remind them to change it after first login.'}</p>
-              </div>
-            ) : (
-              <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '系統為每人產生唯一隨機密碼，結果表格將顯示各自的密碼供您轉告。' : 'A unique random password is generated per person. The results table will show each password for you to distribute.'}</p>
-            )}
-          </div>
-
-          {/* Role */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
-            <select
-              value={bulkRole}
-              onChange={(e) => setBulkRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
-              className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
-              <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            disabled={bulkLoading || !bulkText.trim() || (bulkPasswordMode === 'shared' && bulkSharedPassword.trim().length < 6)}
-            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-          >
-            {bulkLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '批量新增' : 'Bulk Add')}
-          </button>
-        </form>
-
-        {/* Results table */}
-        {bulkResults && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                {zh
-                  ? `結果：${bulkResults.filter((r) => r.added).length} 人已加入，${bulkResults.filter((r) => r.error).length} 人失敗`
-                  : `Results: ${bulkResults.filter((r) => r.added).length} added, ${bulkResults.filter((r) => r.error).length} failed`}
-              </p>
-              {bulkPasswordMode === 'random' && bulkResults.some((r) => r.tempPassword) && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = bulkResults
-                      .filter((r) => r.tempPassword)
-                      .map((r) => `${r.displayName}\t${r.email ?? r.phone ?? ''}\t${r.tempPassword}`)
-                      .join('\n');
-                    void navigator.clipboard.writeText(text);
-                  }}
-                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                >
-                  {zh ? '複製全部密碼' : 'Copy all passwords'}
-                </button>
-              )}
-            </div>
-            <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '姓名' : 'Name'}</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '聯絡方式' : 'Contact'}</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '狀態' : 'Status'}</th>
-                    {bulkPasswordMode === 'random' && (
-                      <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '臨時密碼' : 'Temp Password'}</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                  {bulkResults.map((r, i) => (
-                    <tr key={i}>
-                      <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName}</td>
-                      <td className="px-4 py-2 text-gray-500 dark:text-gray-400 text-xs">{r.email ?? r.phone ?? '—'}</td>
-                      <td className="px-4 py-2">
-                        {r.error
-                          ? <span className="text-red-500 text-xs">✗ {r.error}</span>
-                          : r.created
-                          ? <span className="text-green-600 text-xs">✓ {zh ? '已建立帳號' : 'Created'}</span>
-                          : <span className="text-blue-600 text-xs">→ {zh ? '已加入現有帳號' : 'Added existing'}</span>}
-                      </td>
-                      {bulkPasswordMode === 'random' && (
-                        <td className="px-4 py-2">
-                          {r.tempPassword
-                            ? <code className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded select-all">{r.tempPassword}</code>
-                            : <span className="text-gray-400 text-xs">—</span>}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <button
-              type="button"
-              onClick={() => setBulkResults(null)}
-              className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
-            >
-              {zh ? '關閉結果' : 'Dismiss'}
-            </button>
-          </div>
-        )}
-      </section>
-
       {/* Members list */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
@@ -1569,14 +1462,14 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             {isPlatformAdmin && (
               <>
                 <div className="relative">
-                  <button onClick={() => setShowImportModal(true)} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-                    {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📥 匯入 CSV' : '📥 Import CSV')}
+                  <button onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                    {importLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '📥 匯入' : '📥 Import')}
                   </button>
                   <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
                 </div>
                 <button onClick={() => handleExportMembers()} disabled={exportLoading} className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                    {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出 CSV' : '📤 Export CSV')}
-                  </button>
+                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出' : '📤 Export')}
+                </button>
               </>
             )}
           </div>
@@ -1589,18 +1482,62 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
         )}
         <div className="grid gap-3">
-          {members.map((member) => (
+          {members.map((member) => {
+            const isEditingNickname = editingNicknameUserId === member.userId;
+            const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+            return (
             <div key={member.userId} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  {isEditingNickname ? (
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <input
+                        autoFocus
+                        className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-900 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48"
+                        placeholder={zh ? '群組暱稱（留空清除）' : 'In-group nickname (blank to clear)'}
+                        value={nicknameInput}
+                        onChange={(e) => setNicknameInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveMemberNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
+                        maxLength={100}
+                      />
+                      <button
+                        onClick={() => void handleSaveMemberNickname(member.userId)}
+                        disabled={nicknameSaving}
+                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                      >
+                        {nicknameSaving ? '…' : (zh ? '儲存' : 'Save')}
+                      </button>
+                      <button
+                        onClick={() => setEditingNicknameUserId(null)}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                      >
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
+                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                        <span className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</span>
+                      )}
+                    </div>
+                  )}
                   <p className="text-xs text-gray-500 dark:text-gray-400">{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : (zh ? '尚未加入' : 'Not joined yet')}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   <div className="text-right text-xs text-gray-500 dark:text-gray-400">
                     {member.email && <p>{member.email}</p>}
                     {member.phoneE164 && <p>{member.phoneE164}</p>}
                   </div>
+                  {!isEditingNickname && (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                      className="shrink-0 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                    >
+                      {zh ? '設定暱稱' : 'Set Nickname'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => void handleRemoveMember(member.userId, member.displayName)}
@@ -1612,7 +1549,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -1916,31 +1854,181 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </div>
       )}
 
-      {/* CSV Import Format Modal */}
+      {/* Bulk Add Members Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {zh ? 'CSV 格式範例' : 'CSV Format'}
-            </h3>
-            <pre className="mt-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 text-xs text-gray-700 dark:text-gray-300 whitespace-pre overflow-x-auto">{`name,phone,email\nBob Smith,+886912345678,bob@example.com\n陳小明,+886987654321,ming@example.com`}</pre>
-            <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
-              {zh ? '手機需含國碼（如 +886）。' : 'Phone must include country code (e.g. +1, +886).'}
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 py-8 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl my-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {zh ? '批量新增成員' : 'Bulk Add Members'}
+              </h3>
               <button
-                onClick={() => setShowImportModal(false)}
-                className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                onClick={() => { setShowImportModal(false); setBulkResults(null); setError(''); }}
+                className="rounded-md p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
               >
-                {zh ? '取消' : 'Cancel'}
-              </button>
-              <button
-                onClick={() => { setShowImportModal(false); setTimeout(() => importFileRef.current?.click(), 50); }}
-                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-              >
-                {zh ? '選擇檔案' : 'Select File'}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
+
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+              {zh
+                ? '每行一筆，格式：全名, 電子郵件, 含國碼手機號碼'
+                : 'One per line: Full Name, Email, Phone Number With Country Code'}
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+              {zh
+                ? '範例：Jane Smith, jane@example.com, +8861234567890（電子郵件與手機至少填一項）'
+                : 'Example: Jane Smith, jane@example.com, +8861234567890 — at least one of email or phone is required'}
+            </p>
+
+            <form onSubmit={(e) => void handleBulkAdd(e)} className="space-y-4">
+              <textarea
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                rows={7}
+                placeholder={zh
+                  ? '王小明, ming@example.com, +886912345678\n李小華, , +886900000001\n張三, three@example.com,'
+                  : 'Jane Smith, jane@example.com, +886912345678\nJohn Doe, , +886900000001\nAlex Chen, alex@example.com,'}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono resize-y"
+              />
+
+              {/* Password mode */}
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '密碼設定' : 'Password'}</p>
+                <div className="flex gap-4 mb-2">
+                  {(['shared', 'random'] as const).map((mode) => (
+                    <label key={mode} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <input type="radio" checked={bulkPasswordMode === mode} onChange={() => setBulkPasswordMode(mode)} />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {mode === 'shared'
+                          ? (zh ? '所有人共用同一密碼' : 'Same password for everyone')
+                          : (zh ? '每人產生隨機密碼' : 'Random password per person')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                {bulkPasswordMode === 'shared' ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={bulkSharedPassword}
+                      onChange={(e) => setBulkSharedPassword(e.target.value)}
+                      placeholder={zh ? '輸入共用密碼（至少 6 個字元）' : 'Enter shared password (min 6 chars)'}
+                      minLength={6}
+                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
+                    />
+                    <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{zh ? '全部成員使用此密碼登入，建議提醒他們登入後修改。' : 'All members will use this password. Remind them to change it after first login.'}</p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '系統為每人產生唯一隨機密碼，結果表格將顯示各自的密碼供您轉告。' : 'A unique random password is generated per person. The results table will show each password for you to distribute.'}</p>
+                )}
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '角色' : 'Role'}</label>
+                <select
+                  value={bulkRole}
+                  onChange={(e) => setBulkRole(e.target.value as 'GROUP_MEMBER' | 'GROUP_ADMIN')}
+                  className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="GROUP_MEMBER">{zh ? '成員' : 'Member'}</option>
+                  <option value="GROUP_ADMIN">{zh ? '群組管理員' : 'Group Admin'}</option>
+                </select>
+              </div>
+
+              {error && (
+                <p className="whitespace-pre-wrap rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-2 text-xs text-red-700 dark:text-red-400">{error}</p>
+              )}
+
+              <div className="flex justify-end gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => { setShowImportModal(false); setBulkResults(null); setError(''); }}
+                  className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  {zh ? '關閉' : 'Close'}
+                </button>
+                <button
+                  type="submit"
+                  disabled={bulkLoading || !bulkText.trim() || (bulkPasswordMode === 'shared' && bulkSharedPassword.trim().length < 6)}
+                  className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {bulkLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '批量新增' : 'Bulk Add')}
+                </button>
+              </div>
+            </form>
+
+            {/* Results table */}
+            {bulkResults && (
+              <div className="mt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {zh
+                      ? `結果：${bulkResults.filter((r) => r.added).length} 人已加入，${bulkResults.filter((r) => r.error).length} 人失敗`
+                      : `Results: ${bulkResults.filter((r) => r.added).length} added, ${bulkResults.filter((r) => r.error).length} failed`}
+                  </p>
+                  {bulkPasswordMode === 'random' && bulkResults.some((r) => r.tempPassword) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const text = bulkResults
+                          .filter((r) => r.tempPassword)
+                          .map((r) => `${r.displayName}\t${r.email ?? r.phone ?? ''}\t${r.tempPassword}`)
+                          .join('\n');
+                        void navigator.clipboard.writeText(text);
+                      }}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      {zh ? '複製全部密碼' : 'Copy all passwords'}
+                    </button>
+                  )}
+                </div>
+                <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800 max-h-64 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '姓名' : 'Name'}</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '聯絡方式' : 'Contact'}</th>
+                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '狀態' : 'Status'}</th>
+                        {bulkPasswordMode === 'random' && (
+                          <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">{zh ? '臨時密碼' : 'Temp Password'}</th>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                      {bulkResults.map((r, i) => (
+                        <tr key={i}>
+                          <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName}</td>
+                          <td className="px-4 py-2 text-gray-500 dark:text-gray-400 text-xs">{r.email ?? r.phone ?? '—'}</td>
+                          <td className="px-4 py-2">
+                            {r.error
+                              ? <span className="text-red-500 text-xs">✗ {r.error}</span>
+                              : r.created
+                              ? <span className="text-green-600 text-xs">✓ {zh ? '已建立帳號' : 'Created'}</span>
+                              : <span className="text-blue-600 text-xs">→ {zh ? '已加入現有帳號' : 'Added existing'}</span>}
+                          </td>
+                          {bulkPasswordMode === 'random' && (
+                            <td className="px-4 py-2">
+                              {r.tempPassword
+                                ? <code className="text-xs font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded select-all">{r.tempPassword}</code>
+                                : <span className="text-gray-400 text-xs">—</span>}
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBulkResults(null)}
+                  className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline"
+                >
+                  {zh ? '關閉結果' : 'Dismiss results'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

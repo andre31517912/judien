@@ -340,6 +340,11 @@ export const ReviewGroupRelationshipRequestSchema = z.object({
 });
 export type ReviewGroupRelationshipRequestDto = z.infer<typeof ReviewGroupRelationshipRequestSchema>;
 
+export const UpdateGroupNicknameSchema = z.object({
+  groupNickname: z.string().max(100).nullable(),
+});
+export type UpdateGroupNicknameDto = z.infer<typeof UpdateGroupNicknameSchema>;
+
 // ─── Guest Login ──────────────────────────────────────────────────────────────
 
 export const GuestGroupJoinSchema = z.object({
