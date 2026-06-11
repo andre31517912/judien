@@ -1,3 +1,4 @@
+'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -21,6 +22,7 @@ type GroupListItem = {
     pid: string;
     name: string;
     description: string;
+    photoUrl: string | null;
   };
   membership: {
     role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
@@ -31,13 +33,16 @@ type GroupListItem = {
 
 type GroupMember = {
   userId: string;
+  groupNickname: string | null;
   displayName: string | null;
   role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
+  userRole: 'ADMIN' | 'USER';
   joinedAt: string | null;
   email: string | null;
   phoneE164: string | null;
+  childGroupId: string | null;
+  childGroupName: string | null;
 };
-
 
 type JoinRequest = {
   id: string;
@@ -84,6 +89,20 @@ export default function GroupDetailScreen() {
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
 
+  // Member search
+  const [memberSearch, setMemberSearch] = useState('');
+
+  // Inline nickname edit (own row)
+  const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+
+  // Inline group info edit (name + description)
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [infoSaving, setInfoSaving] = useState(false);
+
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
 
   const loadPage = useCallback(async () => {
@@ -92,7 +111,7 @@ export default function GroupDetailScreen() {
     try {
       const [myGroups, memberList, groupNews, groupEvents, relationshipData] = await Promise.all([
         apiFetch<GroupListItem[]>('/groups/me'),
-        apiFetch<GroupMember[]>(`/groups/${groupId}/members`),
+        apiFetch<GroupMember[]>(`/groups/${groupId}/members?includeChildGroups=true`),
         apiFetch<News[]>(`/news?groupId=${groupId}`),
         apiFetch<PaginatedResponse<EventWithCounts>>(`/events?scope=future&groupId=${groupId}&page=1&pageSize=20`),
         apiFetch<GroupRelationships>(`/groups/${groupId}/relationships`).catch(() => null),
@@ -122,9 +141,7 @@ export default function GroupDetailScreen() {
     }
   }, [groupId]);
 
-  useEffect(() => {
-    loadPage();
-  }, [loadPage]);
+  useEffect(() => { loadPage(); }, [loadPage]);
 
   const loadPastEvents = useCallback(async () => {
     if (!groupId || pastLoaded) return;
@@ -142,9 +159,7 @@ export default function GroupDetailScreen() {
     }
   }, [groupId, pastLoaded]);
 
-  useEffect(() => {
-    if (tab === 'past') loadPastEvents();
-  }, [tab, loadPastEvents]);
+  useEffect(() => { if (tab === 'past') loadPastEvents(); }, [tab, loadPastEvents]);
 
   const removeMember = (memberUserId: string) => {
     if (!groupId) return;
@@ -154,15 +169,12 @@ export default function GroupDetailScreen() {
       [
         { text: zh ? '取消' : 'Cancel', style: 'cancel' },
         {
-          text: zh ? '移除' : 'Remove',
-          style: 'destructive',
+          text: zh ? '移除' : 'Remove', style: 'destructive',
           onPress: async () => {
             try {
               await apiFetch(`/groups/${groupId}/members/${memberUserId}`, { method: 'DELETE' });
               await loadPage();
-            } catch (err: any) {
-              Alert.alert('Error', err.message ?? 'Failed to remove member');
-            }
+            } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to remove member'); }
           },
         },
       ],
@@ -172,29 +184,60 @@ export default function GroupDetailScreen() {
   const changeMemberRole = (memberUserId: string, currentRole: 'GROUP_ADMIN' | 'GROUP_MEMBER') => {
     if (!groupId) return;
     const newRole = currentRole === 'GROUP_ADMIN' ? 'GROUP_MEMBER' : 'GROUP_ADMIN';
-    const title = newRole === 'GROUP_ADMIN'
-      ? (zh ? '升為管理員' : 'Promote to Admin')
-      : (zh ? '降為成員' : 'Demote to Member');
-    const message = newRole === 'GROUP_ADMIN'
-      ? (zh ? '確定要將此成員升為群組管理員？' : 'Promote this member to Group Admin?')
-      : (zh ? '確定要將此管理員降為成員？' : 'Demote this admin to Member?');
-    Alert.alert(title, message, [
-      { text: zh ? '取消' : 'Cancel', style: 'cancel' },
-      {
-        text: zh ? '確認' : 'Confirm',
-        onPress: async () => {
-          try {
-            await apiFetch(`/groups/${groupId}/members/${memberUserId}/role`, {
-              method: 'PATCH',
-              body: JSON.stringify({ role: newRole }),
-            });
-            await loadPage();
-          } catch (err: any) {
-            Alert.alert('Error', err.message ?? 'Failed to change role');
-          }
+    Alert.alert(
+      newRole === 'GROUP_ADMIN' ? (zh ? '升為管理員' : 'Promote to Admin') : (zh ? '降為成員' : 'Demote to Member'),
+      newRole === 'GROUP_ADMIN'
+        ? (zh ? '確定要將此成員升為群組管理員？' : 'Promote this member to Group Admin?')
+        : (zh ? '確定要將此管理員降為成員？' : 'Demote this admin to Member?'),
+      [
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: zh ? '確認' : 'Confirm',
+          onPress: async () => {
+            try {
+              await apiFetch(`/groups/${groupId}/members/${memberUserId}/role`, {
+                method: 'PATCH',
+                body: JSON.stringify({ role: newRole }),
+              });
+              await loadPage();
+            } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to change role'); }
+          },
         },
-      },
-    ]);
+      ],
+    );
+  };
+
+  const handleSaveNickname = async (targetUserId: string) => {
+    if (!groupId) return;
+    setNicknameSaving(true);
+    try {
+      await apiFetch(`/groups/${groupId}/members/me/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
+      });
+      setMembers((prev) =>
+        prev.map((m) => m.userId === targetUserId ? { ...m, groupNickname: nicknameInput.trim() || null } : m),
+      );
+      setEditingNicknameFor(null);
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save nickname'); }
+    finally { setNicknameSaving(false); }
+  };
+
+  const handleSaveGroupInfo = async () => {
+    if (!groupId || !editName.trim()) {
+      Alert.alert('', zh ? '群組名稱不可為空。' : 'Group name is required.');
+      return;
+    }
+    setInfoSaving(true);
+    try {
+      await apiFetch(`/groups/${groupId}/settings`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name: editName.trim(), description: editDesc.trim() }),
+      });
+      setEditingInfo(false);
+      await loadPage();
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save'); }
+    finally { setInfoSaving(false); }
   };
 
   const sendGroupMessage = async () => {
@@ -207,19 +250,32 @@ export default function GroupDetailScreen() {
       });
       setMessages((prev) => [...prev, created]);
       setChatBody('');
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to send message');
-    } finally {
-      setChatSubmitting(false);
-    }
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to send message'); }
+    finally { setChatSubmitting(false); }
   };
 
+  const filteredMembers = useMemo(() => {
+    const term = memberSearch.trim().toLowerCase();
+    return [...members]
+      .filter((m) => {
+        if (!term) return true;
+        return (
+          (m.groupNickname ?? '').toLowerCase().includes(term) ||
+          (m.displayName ?? '').toLowerCase().includes(term) ||
+          (m.email ?? '').toLowerCase().includes(term) ||
+          (m.phoneE164 ?? '').includes(term)
+        );
+      })
+      .sort((a, b) => {
+        if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+        const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+        const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+        return na.localeCompare(nb);
+      });
+  }, [members, memberSearch]);
+
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <View style={styles.center}><ActivityIndicator /></View>;
   }
 
   if (!groupItem) {
@@ -231,46 +287,89 @@ export default function GroupDetailScreen() {
   }
 
   const TABS: { key: Tab; label: string; labelZh: string }[] = [
-    { key: 'feed',     label: 'Feed',    labelZh: '動態' },
+    { key: 'feed',     label: 'Feed',     labelZh: '動態' },
     { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
-    { key: 'past',     label: 'Past',    labelZh: '過去活動' },
-    { key: 'chat',     label: 'Chat',    labelZh: '聊天室' },
-    { key: 'members',  label: 'Members', labelZh: '成員' },
+    { key: 'past',     label: 'Past',     labelZh: '過去活動' },
+    { key: 'chat',     label: 'Chat',     labelZh: '聊天室' },
+    { key: 'members',  label: 'Members',  labelZh: '成員' },
   ];
 
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '' }} />
 
-      {/* ── Group header (Facebook-style cover) ── */}
+      {/* ── Group header ── */}
       <View style={styles.coverHeader}>
-        <View style={styles.coverContent}>
-          <View style={styles.coverLeft}>
-            <Text style={styles.groupTitle} numberOfLines={2}>{groupItem.group.name}</Text>
-            {groupItem.group.description ? (
-              <Text style={styles.groupDesc} numberOfLines={2}>{groupItem.group.description}</Text>
-            ) : null}
-            {relationships && relationships.lineage && relationships.lineage.length > 1 && (
-              <Text style={styles.breadcrumb}>
-                {relationships.lineage.map((n) => n.name).join(' › ')}
-              </Text>
+        {editingInfo ? (
+          <View style={{ gap: 8 }}>
+            <TextInput
+              style={styles.editInput}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder={zh ? '群組名稱' : 'Group name'}
+              maxLength={80}
+              autoFocus
+            />
+            <TextInput
+              style={[styles.editInput, { minHeight: 60 }]}
+              value={editDesc}
+              onChangeText={setEditDesc}
+              placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+              maxLength={500}
+              multiline
+            />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                style={[styles.infoBtn, styles.infoBtnPrimary]}
+                onPress={handleSaveGroupInfo}
+                disabled={infoSaving || !editName.trim()}
+              >
+                <Text style={styles.infoBtnPrimaryText}>{infoSaving ? '…' : (zh ? '儲存' : 'Save')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.infoBtn} onPress={() => setEditingInfo(false)}>
+                <Text style={styles.infoBtnText}>{zh ? '取消' : 'Cancel'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.coverContent}>
+            <View style={styles.coverLeft}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.groupTitle} numberOfLines={2}>{groupItem.group.name}</Text>
+                {isGroupAdmin && (
+                  <TouchableOpacity
+                    onPress={() => { setEditName(groupItem.group.name); setEditDesc(groupItem.group.description ?? ''); setEditingInfo(true); }}
+                    style={styles.pencilBtn}
+                  >
+                    <Text style={styles.pencilText}>✏️</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              {groupItem.group.description ? (
+                <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
+              ) : null}
+              {relationships?.lineage && relationships.lineage.length > 1 && (
+                <Text style={styles.breadcrumb}>
+                  {relationships.lineage.map((n) => n.name).join(' › ')}
+                </Text>
+              )}
+            </View>
+            {isGroupAdmin && (
+              <TouchableOpacity
+                style={styles.settingsBtn}
+                onPress={() => router.push(`/groups/${groupId}/settings`)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.settingsBtnText}>⚙️</Text>
+                {joinRequests.length > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{joinRequests.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             )}
           </View>
-          {isGroupAdmin && (
-            <TouchableOpacity
-              style={styles.settingsBtn}
-              onPress={() => router.push(`/groups/${groupId}/settings`)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.settingsBtnText}>⚙️</Text>
-              {joinRequests.length > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{joinRequests.length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
       </View>
 
       {/* ── Tab bar ── */}
@@ -291,7 +390,7 @@ export default function GroupDetailScreen() {
         </ScrollView>
       </View>
 
-      {/* ── Tab content ── */}
+      {/* ── Feed ── */}
       {tab === 'feed' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
           {news.length === 0 ? (
@@ -312,6 +411,7 @@ export default function GroupDetailScreen() {
         </ScrollView>
       )}
 
+      {/* ── Upcoming ── */}
       {tab === 'upcoming' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
           {events.length === 0 ? (
@@ -328,15 +428,16 @@ export default function GroupDetailScreen() {
               {(zh ? ev.location_zh : ev.location_en) ? (
                 <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
               ) : null}
-              {ev.feeAmount != null && ev.feeAmount > 0 && (
+              {ev.feeAmount != null && Number(ev.feeAmount) > 0 && (
                 <Text style={styles.feeTag}>{ev.feeAmount} {ev.feeCurrency}</Text>
               )}
-              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</Text>
+              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
+      {/* ── Past ── */}
       {tab === 'past' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
           {pastLoading ? (
@@ -355,12 +456,13 @@ export default function GroupDetailScreen() {
               {(zh ? ev.location_zh : ev.location_en) ? (
                 <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
               ) : null}
-              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ? {ev.rsvpCounts.MAYBE}  ✗ {ev.rsvpCounts.NO}</Text>
+              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       )}
 
+      {/* ── Chat ── */}
       {tab === 'chat' && (
         <View style={styles.chatScreen}>
           <ScrollView
@@ -407,34 +509,105 @@ export default function GroupDetailScreen() {
         </View>
       )}
 
+      {/* ── Members ── */}
       {tab === 'members' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
-          {members.map((m) => (
-            <View key={m.userId} style={styles.memberCard}>
-              <View style={styles.memberInfo}>
-                <Text style={styles.memberName}>{m.displayName || m.email || m.userId}</Text>
-                <Text style={styles.memberRole}>
-                  {m.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
-                </Text>
-                {isGroupAdmin && (m.email || m.phoneE164) ? (
-                  <Text style={styles.memberContact}>{[m.email, m.phoneE164].filter(Boolean).join(' · ')}</Text>
-                ) : null}
-              </View>
-              {isGroupAdmin && m.userId !== user?.id && (
-                <View style={styles.memberActions}>
-                  <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
-                    <Text style={styles.promoteBtnText}>
-                      {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
-                    <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
-                  </TouchableOpacity>
+          {/* Search */}
+          <TextInput
+            style={styles.searchInput}
+            value={memberSearch}
+            onChangeText={setMemberSearch}
+            placeholder={zh ? '搜尋成員…' : 'Search members…'}
+            placeholderTextColor="#9CA3AF"
+            clearButtonMode="while-editing"
+          />
+
+          <Text style={styles.memberCount}>
+            {members.length} {zh ? '位成員' : 'members'}
+          </Text>
+
+          {filteredMembers.length === 0 ? (
+            <Text style={styles.emptyText}>{memberSearch ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有成員。' : 'No members yet.')}</Text>
+          ) : filteredMembers.map((m) => {
+            const isOwnRow = m.userId === user?.id;
+            const isEditing = editingNicknameFor === m.userId;
+            const shownName = m.groupNickname ?? m.displayName ?? m.email ?? m.userId;
+            return (
+              <View key={m.userId} style={styles.memberCard}>
+                <View style={styles.memberInfo}>
+                  {isEditing ? (
+                    <View style={{ gap: 6 }}>
+                      <TextInput
+                        style={styles.nicknameInput}
+                        value={nicknameInput}
+                        onChangeText={setNicknameInput}
+                        placeholder={zh ? '群組暱稱（留空清除）' : 'In-group nickname (blank to clear)'}
+                        placeholderTextColor="#9CA3AF"
+                        autoFocus
+                        maxLength={100}
+                      />
+                      <View style={{ flexDirection: 'row', gap: 6 }}>
+                        <TouchableOpacity
+                          style={[styles.smallBtn, styles.smallBtnPrimary]}
+                          onPress={() => handleSaveNickname(m.userId)}
+                          disabled={nicknameSaving}
+                        >
+                          <Text style={styles.smallBtnPrimaryText}>{nicknameSaving ? '…' : (zh ? '儲存' : 'Save')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.smallBtn} onPress={() => setEditingNicknameFor(null)}>
+                          <Text style={styles.smallBtnText}>{zh ? '取消' : 'Cancel'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (
+                    <>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Text style={styles.memberName}>{shownName}</Text>
+                        {m.groupNickname && m.displayName && m.groupNickname !== m.displayName && (
+                          <Text style={styles.memberNameSub}>({m.displayName})</Text>
+                        )}
+                        <View style={[styles.rolePill, m.role === 'GROUP_ADMIN' ? styles.rolePillAdmin : styles.rolePillMember]}>
+                          <Text style={[styles.rolePillText, m.role === 'GROUP_ADMIN' ? styles.rolePillTextAdmin : styles.rolePillTextMember]}>
+                            {m.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={styles.memberRole}>
+                        {m.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                      </Text>
+                      {isGroupAdmin && (m.email || m.phoneE164) ? (
+                        <Text style={styles.memberContact}>{[m.email, m.phoneE164].filter(Boolean).join(' · ')}</Text>
+                      ) : null}
+                    </>
+                  )}
                 </View>
-              )}
-            </View>
-          ))}
-          <Text style={styles.memberCount}>{members.length} {zh ? '位成員' : 'members'}</Text>
+                {!isEditing && (
+                  <View style={{ gap: 4 }}>
+                    {isOwnRow && (
+                      <TouchableOpacity
+                        style={[styles.smallBtn, { borderColor: '#D1D5DB' }]}
+                        onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
+                      >
+                        <Text style={styles.smallBtnText}>{zh ? '暱稱' : 'Nickname'}</Text>
+                      </TouchableOpacity>
+                    )}
+                    {isGroupAdmin && !isOwnRow && (
+                      <View style={styles.memberActions}>
+                        <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
+                          <Text style={styles.promoteBtnText}>
+                            {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
+                          <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </ScrollView>
       )}
     </View>
@@ -446,7 +619,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#F9FAFB' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
 
-  // ── Cover header ──
   coverHeader: {
     backgroundColor: '#fff',
     borderBottomWidth: 1,
@@ -460,42 +632,47 @@ const styles = StyleSheet.create({
   groupTitle: { fontSize: 22, fontWeight: '800', color: '#111827', lineHeight: 28 },
   groupDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
   breadcrumb: { fontSize: 11, color: '#9CA3AF' },
+  pencilBtn: { padding: 4 },
+  pencilText: { fontSize: 14 },
   settingsBtn: {
-    width: 40, height: 40,
-    borderRadius: 20,
+    width: 40, height: 40, borderRadius: 20,
     backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
   },
   settingsBtnText: { fontSize: 18 },
   badge: {
     position: 'absolute', top: -2, right: -2,
     backgroundColor: '#EF4444', borderRadius: 999,
     minWidth: 16, height: 16,
-    alignItems: 'center', justifyContent: 'center',
-    padding: 2,
+    alignItems: 'center', justifyContent: 'center', padding: 2,
   },
   badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 
-  // ── Tab bar ──
+  editInput: {
+    borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    fontSize: 15, color: '#111827', backgroundColor: '#fff',
+  },
+  infoBtn: {
+    flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8,
+    paddingVertical: 8, alignItems: 'center',
+  },
+  infoBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
+  infoBtnText: { fontSize: 13, color: '#374151' },
+  infoBtnPrimaryText: { fontSize: 13, color: '#fff', fontWeight: '600' },
+
   tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
   tabScroll: { paddingHorizontal: 8 },
-  tabItem: {
-    paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 2, borderBottomColor: 'transparent',
-  },
+  tabItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
   tabItemActive: { borderBottomColor: INDIGO },
   tabText: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
   tabTextActive: { color: INDIGO, fontWeight: '700' },
 
-  // ── Content area ──
   tabContent: { padding: 16, gap: 12, paddingBottom: 40 },
 
-  // ── Cards ──
   card: {
     backgroundColor: '#fff', borderRadius: 14, padding: 14,
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
-    gap: 4,
+    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, gap: 4,
   },
   cardPast: { opacity: 0.75 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
@@ -505,12 +682,10 @@ const styles = StyleSheet.create({
   feeTag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '700', color: '#B45309', backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
 
-  // ── Empty state ──
   emptyBox: { alignItems: 'center', marginTop: 40, gap: 10 },
   emptyEmoji: { fontSize: 40 },
   emptyText: { color: '#9CA3AF', textAlign: 'center', fontSize: 14 },
 
-  // ── Chat ──
   chatScreen: { flex: 1 },
   chatMessages: { padding: 14, gap: 8, flexGrow: 1 },
   chatBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, maxWidth: '85%' },
@@ -537,276 +712,44 @@ const styles = StyleSheet.create({
   sendBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   disabledBtn: { opacity: 0.45 },
 
-  // ── Members ──
+  searchInput: {
+    borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10,
+    fontSize: 14, color: '#111827', backgroundColor: '#fff',
+    marginBottom: 4,
+  },
+
   memberCard: {
     backgroundColor: '#fff', borderRadius: 12, padding: 12,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
   },
   memberInfo: { flex: 1, gap: 2 },
   memberName: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  memberNameSub: { fontSize: 12, color: '#9CA3AF' },
   memberRole: { fontSize: 12, color: '#6B7280' },
   memberContact: { fontSize: 11, color: '#9CA3AF' },
-  memberActions: { flexDirection: 'row', gap: 6 },
+  memberCount: { fontSize: 12, color: '#9CA3AF', marginBottom: 4 },
+  memberActions: { flexDirection: 'row', gap: 6, marginTop: 2 },
+
+  rolePill: { borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+  rolePillAdmin: { backgroundColor: '#EEF2FF' },
+  rolePillMember: { backgroundColor: '#F3F4F6' },
+  rolePillText: { fontSize: 10, fontWeight: '700' },
+  rolePillTextAdmin: { color: '#4338CA' },
+  rolePillTextMember: { color: '#6B7280' },
+
+  nicknameInput: {
+    borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, fontSize: 13, color: '#111827',
+  },
+  smallBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  smallBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
+  smallBtnText: { fontSize: 11, fontWeight: '600', color: '#374151' },
+  smallBtnPrimaryText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+
   promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
   promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
   removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
   removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
-  memberCount: { textAlign: 'center', color: '#9CA3AF', fontSize: 12, marginTop: 8 },
-});
-
-      <View style={styles.headerCard}>
-        <Text style={styles.groupTitle}>{groupItem.group.name}</Text>
-        <Text style={styles.groupPid}>PID: {groupItem.group.pid}</Text>
-        {groupItem.group.description ? <Text style={styles.groupDesc}>{groupItem.group.description}</Text> : null}
-      </View>
-
-      {relationships && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{zh ? '群組層級' : 'Group Hierarchy'}</Text>
-          {relationships.lineage && relationships.lineage.length > 0 && (
-            <View style={styles.inlineRow}>
-              {relationships.lineage.map((node, idx) => (
-                <Text key={node.id} style={styles.inlineMeta}>
-                  {idx > 0 ? ' > ' : ''}
-                  {node.name}
-                </Text>
-              ))}
-            </View>
-          )}
-          <Text style={styles.inlineMeta}>
-            {relationships.parentGroup ? `${zh ? '上層：' : 'Parent: '}${relationships.parentGroup.name}` : (zh ? '上層：無' : 'Parent: none')}
-          </Text>
-          <Text style={styles.inlineMeta}>
-            {relationships.subgroups.length > 0
-              ? `${zh ? '下層：' : 'Children: '}${relationships.subgroups.map((g) => g.name).join(', ')}`
-              : (zh ? '下層：無' : 'Children: none')}
-          </Text>
-        </View>
-      )}
-
-      {isGroupAdmin && (
-        <TouchableOpacity
-          style={styles.settingsBtn}
-          onPress={() => router.push(`/groups/${groupId}/settings`)}
-        >
-          <Text style={styles.settingsBtnText}>
-            ⚙️ {zh ? '群組設定' : 'Group Settings'}
-            {joinRequests.length > 0 ? ` (${joinRequests.length})` : ''}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '群組公告' : 'Group News'}</Text>
-        {news.length === 0 ? (
-          <Text style={styles.emptyText}>{zh ? '目前沒有公告' : 'No news yet'}</Text>
-        ) : news.map((item) => (
-          <View key={item.id} style={styles.inlineCard}>
-            <Text style={styles.inlineTitle}>{zh ? item.title_zh : item.title_en}</Text>
-            <Text style={styles.inlineBody}>{zh ? item.body_zh : item.body_en}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '即將到來的活動' : 'Upcoming Events'}</Text>
-        {events.length === 0 ? (
-          <Text style={styles.emptyText}>{zh ? '目前沒有活動' : 'No upcoming events'}</Text>
-        ) : events.map((ev) => (
-          <TouchableOpacity key={ev.id} style={styles.inlineCard} onPress={() => router.push(`/events/${ev.id}`)}>
-            <Text style={styles.inlineTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
-            <Text style={styles.inlineMeta}>{new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US')}</Text>
-            {(zh ? ev.location_zh : ev.location_en) ? <Text style={styles.inlineBody}>{zh ? ev.location_zh : ev.location_en}</Text> : null}
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '群組聊天室' : 'Group Chat'}</Text>
-        <View style={styles.chatListCard}>
-          {messages.length === 0 ? (
-            <Text style={styles.emptyText}>{zh ? '聊天室目前沒有訊息' : 'No chat messages yet'}</Text>
-          ) : messages.map((msg) => {
-            const mine = msg.userId === user?.id;
-            return (
-              <View
-                key={msg.id}
-                style={[styles.chatBubble, mine ? styles.chatBubbleMine : styles.chatBubbleOther]}
-              >
-                <Text style={[styles.chatUser, mine && styles.chatUserMine]}>{msg.userHandle}</Text>
-                <Text style={[styles.chatBody, mine && styles.chatBodyMine]}>{msg.body}</Text>
-                <Text style={[styles.chatTime, mine && styles.chatTimeMine]}>
-                  {new Date(msg.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US')}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-
-        <View style={styles.chatInputRow}>
-          <TextInput
-            value={chatBody}
-            onChangeText={setChatBody}
-            placeholder={zh ? '輸入訊息…' : 'Type a message...'}
-            style={[styles.input, styles.chatInput]}
-            placeholderTextColor="#9CA3AF"
-            multiline
-          />
-          <TouchableOpacity
-            style={[styles.primaryBtn, styles.chatSendBtn, (!chatBody.trim() || chatSubmitting) && styles.disabledBtn]}
-            onPress={sendGroupMessage}
-            disabled={!chatBody.trim() || chatSubmitting}
-          >
-            <Text style={styles.primaryBtnText}>{chatSubmitting ? (zh ? '傳送中…' : 'Sending…') : (zh ? '送出' : 'Send')}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.sectionHeaderToggle}
-          onPress={() => setMembersOpen((v) => !v)}
-        >
-          <Text style={styles.sectionTitle}>{zh ? '成員名單' : 'Members'}</Text>
-          <Text style={styles.toggleIcon}>{membersOpen ? '▼' : '▶'}</Text>
-        </TouchableOpacity>
-        {membersOpen && (
-          <>
-            {members.map((m) => (
-              <View key={m.userId} style={styles.inlineCard}>
-                <Text style={styles.inlineTitle}>{m.displayName || m.email || m.userId}</Text>
-                <Text style={styles.inlineMeta}>{m.joinedAt ? new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}</Text>
-                {isGroupAdmin && (
-                  <View style={styles.adminMemberRow}>
-                    <Text style={styles.inlineMeta}>{m.email || ''} {m.phoneE164 || ''}</Text>
-                    {m.userId !== user?.id && (
-                      <View style={styles.actionsRow}>
-                        <TouchableOpacity
-                          style={styles.promoteBtnSmall}
-                          onPress={() => changeMemberRole(m.userId, m.role)}
-                        >
-                          <Text style={styles.promoteBtnTextSmall}>
-                            {m.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.secondaryBtnSmall} onPress={() => removeMember(m.userId)}>
-                          <Text style={styles.secondaryBtnTextSmall}>{zh ? '移除' : 'Remove'}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                )}
-              </View>
-            ))}
-          </>
-        )}
-      </View>
-    </ScrollView>
-  );
-}
-
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
-  container: { padding: 16, gap: 14, backgroundColor: '#F9FAFB', flexGrow: 1 },
-  headerCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 12,
-    gap: 4,
-  },
-  groupTitle: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  groupPid: { fontSize: 12, color: '#6B7280' },
-  groupDesc: { fontSize: 13, color: '#4B5563' },
-  section: { gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1F2937' },
-  subtleTitle: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
-  input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    color: '#111827',
-    fontSize: 14,
-  },
-  textArea: { minHeight: 70, textAlignVertical: 'top' },
-  inlineRow: { flexDirection: 'row', gap: 8 },
-  flex1: { flex: 1 },
-  flex2: { flex: 2 },
-  pillRow: { flexDirection: 'row', gap: 8 },
-  pill: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
-  pillActive: { borderColor: '#4F46E5', backgroundColor: '#EEF2FF' },
-  pillText: { color: '#4B5563', fontSize: 12, fontWeight: '600' },
-  pillTextActive: { color: '#4338CA' },
-  primaryBtn: { backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 11, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  actionsRow: { flexDirection: 'row', gap: 8 },
-  primaryBtnSmall: { backgroundColor: '#4F46E5', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
-  primaryBtnTextSmall: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  secondaryBtnSmall: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
-  secondaryBtnTextSmall: { color: '#374151', fontSize: 12, fontWeight: '700' },
-  inlineCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 10,
-    gap: 4,
-  },
-  inlineTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
-  inlineMeta: { fontSize: 12, color: '#6B7280' },
-  inlineBody: { fontSize: 13, color: '#374151' },
-  emptyText: { color: '#9CA3AF', fontSize: 13 },
-  adminMemberRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  settingsBtn: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#C7D2FE',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-  },
-  settingsBtnText: { color: '#4338CA', fontWeight: '700', fontSize: 14 },
-  promoteBtnSmall: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#EEF2FF' },
-  promoteBtnTextSmall: { color: '#4338CA', fontSize: 12, fontWeight: '700' },
-  sectionHeaderToggle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
-  toggleIcon: { fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  chatListCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 10,
-    gap: 8,
-    maxHeight: 360,
-  },
-  chatBubble: {
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    maxWidth: '88%',
-  },
-  chatBubbleMine: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#4F46E5',
-  },
-  chatBubbleOther: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#F3F4F6',
-  },
-  chatUser: { fontSize: 11, color: '#6B7280', fontWeight: '700' },
-  chatUserMine: { color: '#C7D2FE' },
-  chatBody: { fontSize: 13, color: '#111827', marginTop: 2 },
-  chatBodyMine: { color: '#fff' },
-  chatTime: { fontSize: 10, color: '#9CA3AF', marginTop: 4 },
-  chatTimeMine: { color: '#C7D2FE' },
-  chatInputRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
-  chatInput: { flex: 1, minHeight: 44, maxHeight: 120 },
-  chatSendBtn: { paddingHorizontal: 14, minWidth: 76 },
-  disabledBtn: { opacity: 0.5 },
 });

@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
 
 type GuestEntry = { handle: string; displayName: string | null };
-type Guests = { GOING: GuestEntry[]; NO: GuestEntry[] };
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] };
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -49,7 +49,8 @@ export default function EventDetailScreen() {
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [showGuests, setShowGuests] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO' | 'PENDING'>('GOING');
+  const [guestSearch, setGuestSearch] = useState('');
 
   // blast state (admin only)
   const [showBlast, setShowBlast] = useState(false);
@@ -432,29 +433,57 @@ export default function EventDetailScreen() {
       {/* Guest list modal */}
       <Modal visible={showGuests} transparent animationType="slide" onRequestClose={() => setShowGuests(false)}>
         <View style={styles.overlay}>
-          <View style={[styles.modalContent, { maxHeight: '70%' }]}>
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
             <Text style={styles.modalTitle}>{zh ? '出席名單' : 'Guest List'}</Text>
+            {/* Search */}
+            <TextInput
+              style={styles.guestSearch}
+              value={guestSearch}
+              onChangeText={setGuestSearch}
+              placeholder={zh ? '搜尋…' : 'Search…'}
+              placeholderTextColor="#9CA3AF"
+              clearButtonMode="while-editing"
+            />
+            {/* Tabs */}
             <View style={styles.guestTabRow}>
               {(['GOING', 'NO'] as const).map((tab) => (
                 <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
                   style={[styles.guestTab, activeGuestTab === tab && styles.guestTabActive]}>
                   <Text style={[styles.guestTabText, activeGuestTab === tab && styles.guestTabTextActive]}>
-                    {tab === 'GOING' ? `✓ ${zh ? '參加' : 'Going'} (${guests?.GOING.length ?? 0})` : `✗ ${zh ? '不參加' : 'Not Going'} (${guests?.NO.length ?? 0})`}
+                    {tab === 'GOING'
+                      ? `✓ ${zh ? '參加' : 'Going'} (${guests?.GOING.length ?? 0})`
+                      : `✗ ${zh ? '不參加' : 'Not Going'} (${guests?.NO.length ?? 0})`}
                   </Text>
                 </TouchableOpacity>
               ))}
+              {guests?.PENDING !== undefined && (
+                <TouchableOpacity onPress={() => setActiveGuestTab('PENDING')}
+                  style={[styles.guestTab, activeGuestTab === 'PENDING' && styles.guestTabPending]}>
+                  <Text style={[styles.guestTabText, activeGuestTab === 'PENDING' && styles.guestTabTextPending]}>
+                    {zh ? `未回覆 (${guests.PENDING.length})` : `No Reply (${guests.PENDING.length})`}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
             <ScrollView style={{ marginTop: 8 }}>
-              {(guests?.[activeGuestTab] ?? []).length === 0 ? (
-                <Text style={styles.empty}>{zh ? '暫無名單' : 'No one yet'}</Text>
-              ) : (
-                (guests?.[activeGuestTab] ?? []).map((g, i) => (
+              {(() => {
+                const term = guestSearch.trim().toLowerCase();
+                const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
+                  !term ||
+                  (g.displayName ?? '').toLowerCase().includes(term) ||
+                  g.handle.toLowerCase().includes(term),
+                );
+                return rows.length === 0 ? (
+                  <Text style={styles.empty}>
+                    {term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無名單' : 'No one yet')}
+                  </Text>
+                ) : rows.map((g, i) => (
                   <View key={i} style={styles.guestRow}>
                     <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                    <Text style={styles.guestHandle}>@{g.handle}</Text>
+                    {g.handle && <Text style={styles.guestHandle}>{g.handle}</Text>}
                   </View>
-                ))
-              )}
+                ));
+              })()}
             </ScrollView>
             <TouchableOpacity style={[styles.closeBtn, { marginTop: 12 }]} onPress={() => setShowGuests(false)}>
               <Text style={styles.closeBtnText}>{zh ? '關閉' : 'Close'}</Text>
@@ -535,11 +564,14 @@ const styles = StyleSheet.create({
   shareBtnText: { color: '#fff', fontWeight: '600', fontSize: 13, textAlign: 'center' },
   closeBtn: { backgroundColor: '#E5E7EB', borderRadius: 6, paddingHorizontal: 16, paddingVertical: 10, flex: 1 },
   closeBtnText: { color: '#374151', fontWeight: '600', fontSize: 13, textAlign: 'center' },
-  guestTabRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
-  guestTab: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, alignItems: 'center' },
+  guestSearch: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, color: '#111827', marginBottom: 8 },
+  guestTabRow: { flexDirection: 'row', gap: 6, marginBottom: 4, flexWrap: 'wrap' },
+  guestTab: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 8, alignItems: 'center' },
   guestTabActive: { backgroundColor: INDIGO, borderColor: INDIGO },
-  guestTabText: { fontSize: 13, color: '#374151' },
+  guestTabPending: { backgroundColor: '#FFFBEB', borderColor: '#F59E0B' },
+  guestTabText: { fontSize: 12, color: '#374151' },
   guestTabTextActive: { color: '#fff', fontWeight: '600' },
+  guestTabTextPending: { color: '#B45309', fontWeight: '600' },
   guestRow: { paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   guestName: { fontSize: 14, color: '#111', fontWeight: '500' },
   guestHandle: { fontSize: 12, color: '#9CA3AF' },

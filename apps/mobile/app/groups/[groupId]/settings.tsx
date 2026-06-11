@@ -8,7 +8,7 @@ import { apiFetch } from '../../../lib/api';
 type PendingInvite = { id: string; email: string | null; phoneE164: string | null; status: string; expiresAt: string };
 type JoinRequest = { id: string; status: string; note: string | null; createdAt: string; requester: { id: string; displayName: string | null; email: string } };
 type BulkResult = { displayName: string; email?: string; phone?: string; created: boolean; added: boolean; tempPassword?: string; error?: string };
-type RosterMember = { userId: string; displayName: string | null; email: string | null; phoneE164: string | null; joinedAt: string | null; role: string };
+type RosterMember = { userId: string; groupNickname: string | null; displayName: string | null; email: string | null; phoneE164: string | null; joinedAt: string | null; role: string };
 
 type Tab = 'general' | 'invite' | 'members' | 'roster' | 'news' | 'event' | 'requests';
 
@@ -19,6 +19,8 @@ export default function GroupSettingsScreen() {
 
   const [tab, setTab] = useState<Tab>('general');
   const [discoverableBySearch, setDiscoverableBySearch] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [groupDescription, setGroupDescription] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
 
   // Invite tab
@@ -67,6 +69,10 @@ export default function GroupSettingsScreen() {
   const [rosterLoaded, setRosterLoaded] = useState(false);
   const [rosterLoading, setRosterLoading] = useState(false);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [rosterSearch, setRosterSearch] = useState('');
+  const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
 
   const loadData = async () => {
     if (!groupId) return;
@@ -77,7 +83,11 @@ export default function GroupSettingsScreen() {
         apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => []),
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
-      if (current) setDiscoverableBySearch(current.group.discoverableBySearch);
+      if (current) {
+        setDiscoverableBySearch(current.group.discoverableBySearch);
+        setGroupName((current.group as any).name ?? '');
+        setGroupDescription((current.group as any).description ?? '');
+      }
       setPendingInvites((invData ?? []).filter((inv) => inv.status === 'PENDING'));
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
     } catch {
@@ -150,13 +160,18 @@ export default function GroupSettingsScreen() {
     if (bulkPasswordMode === 'shared' && bulkSharedPassword.trim().length < 6) {
       Alert.alert(zh ? '密碼太短' : 'Password too short', zh ? '共用密碼至少 6 個字元' : 'Min 6 characters.'); return;
     }
-    const members = lines.map((line) => {
+    // 3-column format: Full Name, Email, Phone
+    const parseErrors: string[] = [];
+    const members = lines.map((line, idx) => {
       const parts = line.split(',').map((p) => p.trim());
       const displayName = parts[0] ?? '';
-      const second = parts[1] ?? '';
-      const isEmail = second.includes('@');
-      return { displayName, email: isEmail ? second : undefined, phone: !isEmail && second ? second : undefined };
+      const email = parts[1] && parts[1].includes('@') ? parts[1] : undefined;
+      const phone = parts[2] && parts[2].startsWith('+') ? parts[2] : undefined;
+      if (!displayName) parseErrors.push(zh ? `第 ${idx + 1} 行：缺少姓名。` : `Line ${idx + 1}: name required.`);
+      else if (!email && !phone) parseErrors.push(zh ? `第 ${idx + 1} 行（${displayName}）：必須填入電子郵件或手機至少一項。` : `Line ${idx + 1} (${displayName}): email or phone required.`);
+      return { displayName, email, phone };
     }).filter((m) => m.displayName);
+    if (parseErrors.length) { Alert.alert(zh ? '格式錯誤' : 'Format Error', parseErrors.slice(0, 5).join('\n')); return; }
 
     setBulkSubmitting(true);
     setBulkResults(null);
@@ -214,12 +229,30 @@ export default function GroupSettingsScreen() {
 
   const saveSettings = async () => {
     if (!groupId) return;
+    if (!groupName.trim()) { Alert.alert('', zh ? '群組名稱不可為空。' : 'Group name is required.'); return; }
     setSettingsSaving(true);
     try {
-      await apiFetch(`/groups/${groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ discoverableBySearch }) });
+      await apiFetch(`/groups/${groupId}/settings`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name: groupName.trim(), description: groupDescription.trim(), discoverableBySearch }),
+      });
       Alert.alert('✓', zh ? '設定已儲存' : 'Settings saved.');
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save settings'); }
     finally { setSettingsSaving(false); }
+  };
+
+  const handleSaveNickname = async (targetUserId: string) => {
+    if (!groupId) return;
+    setNicknameSaving(true);
+    try {
+      await apiFetch(`/groups/${groupId}/members/${targetUserId}/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
+      });
+      setRoster((prev) => prev.map((m) => m.userId === targetUserId ? { ...m, groupNickname: nicknameInput.trim() || null } : m));
+      setEditingNicknameFor(null);
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed'); }
+    finally { setNicknameSaving(false); }
   };
 
   const loadRoster = async () => {
@@ -287,6 +320,25 @@ export default function GroupSettingsScreen() {
       {tab === 'general' && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{zh ? '群組設定' : 'Group Settings'}</Text>
+          <Text style={styles.fieldLabel}>{zh ? '群組名稱' : 'Group Name'}</Text>
+          <TextInput
+            style={styles.input}
+            value={groupName}
+            onChangeText={setGroupName}
+            placeholder={zh ? '群組名稱' : 'Group name'}
+            placeholderTextColor="#9CA3AF"
+            maxLength={80}
+          />
+          <Text style={styles.fieldLabel}>{zh ? '描述（選填）' : 'Description (optional)'}</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={groupDescription}
+            onChangeText={setGroupDescription}
+            placeholder={zh ? '群組描述' : 'Group description'}
+            placeholderTextColor="#9CA3AF"
+            multiline
+            maxLength={500}
+          />
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Text style={styles.settingLabel}>{zh ? '允許搜尋及申請加入' : 'Discoverable by search'}</Text>
@@ -391,11 +443,11 @@ export default function GroupSettingsScreen() {
           {/* Bulk add */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '批量新增成員' : 'Bulk Add Members'}</Text>
-            <Text style={styles.muted}>{zh ? '每行格式：姓名, 電子郵件或電話' : 'One per line: Full Name, email or phone'}</Text>
+            <Text style={styles.muted}>{zh ? '每行：全名, 電子郵件, 含國碼手機號碼（電郵或手機至少填一項）' : 'One per line: Full Name, Email, Phone With Country Code (at least one of email/phone required)'}</Text>
             <TextInput
               value={bulkText}
               onChangeText={setBulkText}
-              placeholder={zh ? '王小明, ming@example.com\n李小華, +886900000001' : 'Jane Smith, jane@example.com\nJohn Doe, +886900000001'}
+              placeholder={zh ? '王小明, ming@example.com, +886912345678\n李小華, , +886900000001\n張三, three@example.com,' : 'Jane Smith, jane@example.com, +886912345678\nJohn Doe, , +886900000001\nAlex Chen, alex@example.com,'}
               style={[styles.input, styles.textArea]}
               placeholderTextColor="#9CA3AF"
               multiline
@@ -488,32 +540,96 @@ export default function GroupSettingsScreen() {
               <Text style={styles.copyBtn}>{rosterLoading ? (zh ? '載入中…' : 'Loading…') : (zh ? '重新整理' : 'Refresh')}</Text>
             </TouchableOpacity>
           </View>
-          {rosterLoading && !rosterLoaded && (
-            <Text style={styles.muted}>{zh ? '載入中…' : 'Loading…'}</Text>
-          )}
-          {rosterLoaded && roster.length === 0 && (
-            <Text style={styles.muted}>{zh ? '目前沒有成員' : 'No members yet.'}</Text>
-          )}
-          {roster.map((member) => (
-            <View key={member.userId} style={styles.rosterRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.reqPrimary}>{member.displayName || member.email || member.userId}</Text>
-                {member.email && <Text style={styles.reqMeta}>{member.email}</Text>}
-                {member.phoneE164 && <Text style={styles.reqMeta}>{member.phoneE164}</Text>}
-                <Text style={styles.muted}>
-                  {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '一般成員' : 'Member')}
-                  {member.joinedAt ? ` · ${new Date(member.joinedAt).toLocaleDateString()}` : ''}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleRemoveMember(member.userId, member.displayName)}
-                disabled={removingMemberId === member.userId}
-                style={[styles.removeBtn, removingMemberId === member.userId && { opacity: 0.5 }]}
-              >
-                <Text style={styles.removeBtnText}>{removingMemberId === member.userId ? '…' : (zh ? '移除' : 'Remove')}</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
+          <TextInput
+            style={styles.input}
+            value={rosterSearch}
+            onChangeText={setRosterSearch}
+            placeholder={zh ? '搜尋成員姓名、電郵、手機…' : 'Search name, email, phone…'}
+            placeholderTextColor="#9CA3AF"
+            clearButtonMode="while-editing"
+          />
+          {rosterLoading && !rosterLoaded && <Text style={styles.muted}>{zh ? '載入中…' : 'Loading…'}</Text>}
+          {rosterLoaded && roster.length === 0 && <Text style={styles.muted}>{zh ? '目前沒有成員' : 'No members yet.'}</Text>}
+          {roster
+            .filter((m) => {
+              const term = rosterSearch.trim().toLowerCase();
+              if (!term) return true;
+              return (
+                (m.groupNickname ?? '').toLowerCase().includes(term) ||
+                (m.displayName ?? '').toLowerCase().includes(term) ||
+                (m.email ?? '').toLowerCase().includes(term) ||
+                (m.phoneE164 ?? '').includes(term)
+              );
+            })
+            .sort((a, b) => {
+              if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+              const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+              const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+              return na.localeCompare(nb);
+            })
+            .map((member) => {
+              const isEditing = editingNicknameFor === member.userId;
+              const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+              return (
+                <View key={member.userId} style={styles.rosterRow}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    {isEditing ? (
+                      <View style={{ gap: 6 }}>
+                        <TextInput
+                          style={styles.input}
+                          value={nicknameInput}
+                          onChangeText={setNicknameInput}
+                          placeholder={zh ? '群組暱稱（留空清除）' : 'Nickname (blank to clear)'}
+                          placeholderTextColor="#9CA3AF"
+                          autoFocus
+                          maxLength={100}
+                        />
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <TouchableOpacity style={[styles.primaryBtn, { flex: 1, paddingVertical: 8 }]} onPress={() => handleSaveNickname(member.userId)} disabled={nicknameSaving}>
+                            <Text style={styles.primaryBtnText}>{nicknameSaving ? '…' : (zh ? '儲存' : 'Save')}</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={[styles.rejectBtn, { flex: 1, paddingVertical: 8, alignItems: 'center' }]} onPress={() => setEditingNicknameFor(null)}>
+                            <Text style={styles.rejectBtnText}>{zh ? '取消' : 'Cancel'}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ) : (
+                      <>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <Text style={styles.reqPrimary}>{shownName}</Text>
+                          {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                            <Text style={styles.muted}>({member.displayName})</Text>
+                          )}
+                        </View>
+                        {member.email && <Text style={styles.reqMeta}>{member.email}</Text>}
+                        {member.phoneE164 && <Text style={styles.reqMeta}>{member.phoneE164}</Text>}
+                        <Text style={styles.muted}>
+                          {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '一般成員' : 'Member')}
+                          {member.joinedAt ? ` · ${new Date(member.joinedAt).toLocaleDateString()}` : ''}
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                  {!isEditing && (
+                    <View style={{ gap: 6 }}>
+                      <TouchableOpacity
+                        style={[styles.removeBtn, { borderColor: '#C7D2FE', backgroundColor: '#EEF2FF' }]}
+                        onPress={() => { setEditingNicknameFor(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                      >
+                        <Text style={[styles.removeBtnText, { color: '#4338CA' }]}>{zh ? '暱稱' : 'Nickname'}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleRemoveMember(member.userId, member.displayName)}
+                        disabled={removingMemberId === member.userId}
+                        style={[styles.removeBtn, removingMemberId === member.userId && { opacity: 0.5 }]}
+                      >
+                        <Text style={styles.removeBtnText}>{removingMemberId === member.userId ? '…' : (zh ? '移除' : 'Remove')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
         </View>
       )}
 
