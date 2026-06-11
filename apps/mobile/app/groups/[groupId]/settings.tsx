@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Switch, Clipboard, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,7 +20,6 @@ export default function GroupSettingsScreen() {
   const zh = i18n.language === 'zh';
 
   const [tab, setTab] = useState<Tab>('general');
-  const [discoverableBySearch, setDiscoverableBySearch] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -66,7 +65,6 @@ export default function GroupSettingsScreen() {
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
       if (current) {
-        setDiscoverableBySearch(current.group.discoverableBySearch);
         setGroupName((current.group as any).name ?? '');
         setGroupDescription((current.group as any).description ?? '');
         setPhotoUrl((current.group as any).photoUrl ?? null);
@@ -215,7 +213,7 @@ export default function GroupSettingsScreen() {
     try {
       await apiFetch(`/groups/${groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify({ name: groupName.trim(), description: groupDescription.trim(), discoverableBySearch, photoUrl }),
+        body: JSON.stringify({ name: groupName.trim(), description: groupDescription.trim(), photoUrl }),
       });
       Alert.alert('✓', zh ? '設定已儲存' : 'Settings saved.');
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save settings'); }
@@ -290,12 +288,6 @@ export default function GroupSettingsScreen() {
             multiline
             maxLength={500}
           />
-          <View style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingLabel}>{zh ? '允許搜尋及申請加入' : 'Discoverable by search'}</Text>
-            </View>
-            <Switch value={discoverableBySearch} onValueChange={setDiscoverableBySearch} trackColor={{ true: '#4F46E5' }} />
-          </View>
           <TouchableOpacity style={styles.primaryBtn} onPress={saveSettings} disabled={settingsSaving}>
             <Text style={styles.primaryBtnText}>{settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}</Text>
           </TouchableOpacity>
@@ -386,7 +378,7 @@ export default function GroupSettingsScreen() {
 
           {/* Bulk add */}
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{zh ? '批量新增成員' : 'Bulk Add Members'}</Text>
+            <Text style={styles.sectionTitle}>{zh ? '批量匯入' : 'Bulk Import'}</Text>
             <Text style={styles.muted}>{zh ? '每行：全名, 電子郵件, 含國碼手機號碼（電郵或手機至少填一項）' : 'One per line: Full Name, Email, Phone With Country Code (at least one of email/phone required)'}</Text>
             <TextInput
               value={bulkText}
@@ -531,9 +523,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     approveBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
     rejectBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: colors.card },
     rejectBtnText: { color: colors.text, fontSize: 12, fontWeight: '700' },
-    settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingVertical: 4 },
-    settingInfo: { flex: 1 },
-    settingLabel: { fontSize: 14, fontWeight: '600', color: colors.text },
     resultBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FCD34D', borderRadius: 8, padding: 12, gap: 6 },
     resultTitle: { fontSize: 13, fontWeight: '700', color: '#92400E' },
     resultSubtitle: { fontSize: 12, color: '#B45309' },

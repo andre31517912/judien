@@ -568,7 +568,7 @@ export default function GroupDetailScreen() {
                 </View>
                 {!isEditing && (
                   <View style={{ gap: 4 }}>
-                    {isOwnRow && (
+                    {isGroupAdmin && isOwnRow && (
                       <TouchableOpacity
                         style={styles.smallBtn}
                         onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}

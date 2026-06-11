@@ -7,6 +7,12 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
+const PencilIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+    <path d="M2.695 14.763l-1.262 3.154a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
+  </svg>
+);
+
 type AdminGroupItem = {
   group: {
     id: string;
@@ -25,6 +31,7 @@ type AdminGroupItem = {
 
 type GroupMember = {
   userId: string;
+  groupNickname: string | null;
   displayName: string | null;
   role: 'GROUP_ADMIN' | 'GROUP_MEMBER';
   joinedAt: string | null;
@@ -81,6 +88,76 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
   const [relationshipsLoading, setRelationshipsLoading] = useState(false);
   const [showRelationships, setShowRelationships] = useState(false);
+
+  // Group info inline edit
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [infoSaving, setInfoSaving] = useState(false);
+
+  // Group photo edit
+  const photoFileRef = useRef<HTMLInputElement>(null);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const photoMenuRef = useRef<HTMLDivElement>(null);
+
+  // Member search + nickname
+  const [memberSearch, setMemberSearch] = useState('');
+  const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+
+  useEffect(() => {
+    if (!showPhotoMenu) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (photoMenuRef.current && !photoMenuRef.current.contains(e.target as Node)) setShowPhotoMenu(false);
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [showPhotoMenu]);
+
+  const handleSaveGroupInfo = async () => {
+    if (!editName.trim()) { setError(zh ? '群組名稱不可為空。' : 'Group name is required.'); return; }
+    setInfoSaving(true); setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() }) });
+      setEditingInfo(false);
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to save.'); }
+    finally { setInfoSaving(false); }
+  };
+
+  const handlePhotoRemove = async () => {
+    setShowPhotoMenu(false); setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to remove photo.'); }
+  };
+
+  const handlePhotoReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setShowPhotoMenu(false); setError('');
+    try {
+      const { url } = await apiUpload(file);
+      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to upload photo.'); }
+    finally { if (photoFileRef.current) photoFileRef.current.value = ''; }
+  };
+
+  const handleSaveNickname = async (memberId: string) => {
+    setNicknameSaving(true); setError('');
+    try {
+      const endpoint = memberId === user?.id
+        ? `/groups/${params.groupId}/members/me/nickname`
+        : `/groups/${params.groupId}/members/${memberId}/nickname`;
+      await apiFetch(endpoint, { method: 'PATCH', body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }) });
+      setMembers((prev) => prev.map((m) => m.userId === memberId ? { ...m, groupNickname: nicknameInput.trim() || null } : m));
+      setEditingNicknameUserId(null);
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to save nickname.'); }
+    finally { setNicknameSaving(false); }
+  };
 
   const loadRelationships = async () => {
     setRelationshipsLoading(true);
@@ -261,32 +338,86 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950">
-        {group.photoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={resolveImageUrl(group.photoUrl) ?? ''}
-            alt={group.name}
-            className="w-full h-40 sm:h-56 object-cover"
-          />
-        ) : (
-          <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-            <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-            </svg>
+        <div className="relative">
+          {group.photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} className="w-full h-40 sm:h-56 object-cover" />
+          ) : (
+            <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
+              <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+              </svg>
+            </div>
+          )}
+          {/* Photo edit — admin only */}
+          <div ref={photoMenuRef} className="absolute top-3 right-3">
+            <button
+              onClick={() => setShowPhotoMenu((v) => !v)}
+              className="flex items-center gap-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm px-2.5 py-1.5 text-white text-xs font-medium transition"
+              title={zh ? '編輯封面' : 'Edit photo'}
+            >
+              <PencilIcon />
+              {zh ? '封面' : 'Photo'}
+            </button>
+            {showPhotoMenu && (
+              <div className="absolute right-0 top-full mt-1 z-20 min-w-[150px] rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
+                <button onClick={() => { setShowPhotoMenu(false); photoFileRef.current?.click(); }} className="w-full px-4 py-2.5 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  {zh ? '更換照片' : 'Replace photo'}
+                </button>
+                {group.photoUrl && (
+                  <button onClick={() => void handlePhotoRemove()} className="w-full px-4 py-2.5 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                    {zh ? '移除照片' : 'Remove photo'}
+                  </button>
+                )}
+              </div>
+            )}
+            <input ref={photoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handlePhotoReplace(e)} />
           </div>
-        )}
+        </div>
         <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-1">
-              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
-              </div>
+            <div className="space-y-1 flex-1 min-w-0">
+              {editingInfo ? (
+                <div className="space-y-2">
+                  <input autoFocus value={editName} onChange={(e) => setEditName(e.target.value)}
+                    className="w-full rounded-lg border border-indigo-300 dark:border-indigo-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder={zh ? '群組名稱' : 'Group name'} maxLength={80} />
+                  <textarea rows={2} value={editDescription} onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    placeholder={zh ? '描述（選填）' : 'Description (optional)'} maxLength={500} />
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => void handleSaveGroupInfo()} disabled={infoSaving || !editName.trim()}
+                      className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
+                      {infoSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                    </button>
+                    <button onClick={() => setEditingInfo(false)}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                      {zh ? '取消' : 'Cancel'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
+                    <button
+                      onClick={() => { setEditName(group.name); setEditDescription(group.description ?? ''); setEditingInfo(true); }}
+                      className="shrink-0 rounded-full p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                      title={zh ? '編輯名稱與描述' : 'Edit name & description'}
+                    >
+                      <PencilIcon />
+                    </button>
+                  </div>
+                  {group.description && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{group.description}</p>
+                  )}
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={async () => {
-                  if (!relationships) await loadRelationships();
+                  await loadRelationships();
                   setShowRelationships(true);
                 }}
                 disabled={relationshipsLoading}
@@ -535,41 +666,96 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {/* Members */}
         {viewTab === 'members' && (
           <div className="space-y-2">
-            {members.map((member) => (
+            <input
+              value={memberSearch}
+              onChange={(e) => setMemberSearch(e.target.value)}
+              placeholder={zh ? '搜尋成員…' : 'Search members…'}
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
+              {members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}
+            </p>
+            {members.filter((m) => {
+              const term = memberSearch.trim().toLowerCase();
+              if (!term) return true;
+              return (
+                (m.groupNickname ?? '').toLowerCase().includes(term) ||
+                (m.displayName ?? '').toLowerCase().includes(term) ||
+                (m.email ?? '').toLowerCase().includes(term)
+              );
+            }).map((member) => {
+              const isOwnRow = member.userId === user?.id;
+              const isEditingNickname = editingNicknameUserId === member.userId;
+              const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+              return (
               <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900 dark:text-white">{member.displayName || (member.email ?? member.userId)}</p>
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${member.role === 'GROUP_ADMIN' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.joinedAt ? `${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  {isEditingNickname ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <input autoFocus
+                        className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44"
+                        placeholder={zh ? '群組暱稱（留空清除）' : 'Nickname (blank to clear)'}
+                        value={nicknameInput}
+                        onChange={(e) => setNicknameInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
+                        maxLength={100}
+                      />
+                      <button onClick={() => void handleSaveNickname(member.userId)} disabled={nicknameSaving}
+                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
+                        {nicknameSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                      </button>
+                      <button onClick={() => setEditingNicknameUserId(null)}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        {zh ? '取消' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
+                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
+                      )}
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${member.role === 'GROUP_ADMIN' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+                      </span>
+                    </div>
+                  )}
+                  {!isEditingNickname && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}
+                    </p>
+                  )}
                   {(member.email || member.phoneE164) && (
                     <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
                   )}
                 </div>
-                {user && member.userId !== user.id && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleChangeRole(member.userId, member.role)}
-                      className="rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition"
-                    >
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                <div className="flex items-center gap-2 shrink-0">
+                  {isOwnRow && !isEditingNickname && (
+                    <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                      {zh ? '設定暱稱' : 'Set Nickname'}
                     </button>
-                    <button
-                      onClick={() => handleRemoveMember(member.userId)}
-                      className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 transition"
-                    >
-                      {zh ? '移除' : 'Remove'}
-                    </button>
-                  </div>
-                )}
+                  )}
+                  {!isOwnRow && !isEditingNickname && (
+                    <>
+                      <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        {zh ? '改名' : 'Rename'}
+                      </button>
+                      <button onClick={() => handleChangeRole(member.userId, member.role)}
+                        className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                      </button>
+                      <button onClick={() => handleRemoveMember(member.userId)}
+                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                        {zh ? '移除' : 'Remove'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            ))}
-            <p className="pt-2 text-center text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</p>
+              );
+            })}
             {joinRequests.length > 0 && (
               <div className="mt-4 space-y-2">
                 <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">

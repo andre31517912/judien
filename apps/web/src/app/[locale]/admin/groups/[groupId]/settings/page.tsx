@@ -408,18 +408,18 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   };
 
   const handleLinkChildGroup = async (childId: string, childName: string) => {
-    if (!confirm(zh ? `送出申請，將「${childName}」設為此群組的子群組？` : `Submit request to link "${childName}" as a child group?`)) return;
+    if (!confirm(zh ? `確定要將「${childName}」設為此群組的子群組？` : `Set "${childName}" as a child group?`)) return;
     setChildLinking(true);
     setError('');
     setSuccess('');
     try {
-      await apiFetch(`/groups/${childId}/relationship-requests`, {
-        method: 'POST',
+      await apiFetch(`/groups/${childId}/parent`, {
+        method: 'PATCH',
         body: JSON.stringify({ parentGroupId: params.groupId }),
       });
       setChildSearchQuery('');
       setChildSearchResults([]);
-      setSuccess(zh ? `已送出子群組連結申請：${childName}` : `Relationship request submitted for ${childName}.`);
+      setSuccess(zh ? `「${childName}」已設為子群組。` : `"${childName}" set as child group.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed.');
@@ -444,13 +444,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           description: newParentForm.description.trim() || undefined,
         }),
       });
-      await apiFetch(`/groups/${params.groupId}/relationship-requests`, {
-        method: 'POST',
+      await apiFetch(`/groups/${params.groupId}/parent`, {
+        method: 'PATCH',
         body: JSON.stringify({ parentGroupId: created.id }),
       });
       const createdName = newParentForm.name.trim();
       setNewParentForm({ name: '', description: '' });
-      setSuccess(zh ? `父群組「${createdName}」已建立，並送出連結申請。` : `Parent group "${createdName}" created and relationship request submitted.`);
+      setSuccess(zh ? `父群組「${createdName}」已建立並連結。` : `Parent group "${createdName}" created and linked.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create parent group.');
@@ -477,13 +477,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         }),
       });
       const createdName = newChildForm.name.trim();
-      await apiFetch(`/groups/${created.id}/relationship-requests`, {
-        method: 'POST',
+      await apiFetch(`/groups/${created.id}/parent`, {
+        method: 'PATCH',
         body: JSON.stringify({ parentGroupId: params.groupId }),
       });
       setNewChildForm({ name: '', description: '' });
       setChildInitialMemberIds([]);
-      setSuccess(zh ? `子群組「${createdName}」已建立，並送出連結申請。` : `Child group "${createdName}" created and relationship request submitted.`);
+      setSuccess(zh ? `子群組「${createdName}」已建立並連結。` : `Child group "${createdName}" created and linked.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to create child group.');
@@ -801,6 +801,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {isPlatformAdmin && (
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組層級' : 'Group Hierarchy'}</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '設定此群組的上層父群組，或在其下建立、連結子群組。' : 'Set a parent group this one sits under, or create and link child groups beneath it.'}</p>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             {/* ── Parent Group Column ── */}
@@ -839,7 +840,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   </button>
                 </div>
               ) : (
-                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '無（頂層群組）' : 'None — this is a top-level group'}</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無父群組。' : 'No parent group yet.'}</p>
               )}
 
               {/* Search to set parent */}
@@ -1071,23 +1072,51 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {/* Add Member */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '新增成員' : 'Add Member'}</h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {zh ? '搜尋平台上的現有用戶，或為尚未註冊者建立新帳號並直接加入。' : 'Find an existing platform user or create a new account for someone not yet registered.'}
+        </p>
 
-        {/* Mode toggle */}
-        <div className="mt-4 flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden w-fit">
-          <button
-            type="button"
-            onClick={() => setMemberAddMode('search')}
-            className={`px-4 py-2 text-sm font-medium transition ${memberAddMode === 'search' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-            {zh ? '搜尋現有用戶' : 'Search Existing User'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMemberAddMode('new')}
-            className={`px-4 py-2 text-sm font-medium transition border-l border-gray-200 dark:border-gray-700 ${memberAddMode === 'new' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-            {zh ? '建立新帳號並加入' : 'Create New Account & Add'}
-          </button>
+        {/* Mode toggle + bulk buttons on same row */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setMemberAddMode('search')}
+              className={`px-4 py-2 text-sm font-medium transition ${memberAddMode === 'search' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+            >
+              {zh ? '搜尋現有用戶' : 'Search Existing User'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMemberAddMode('new')}
+              className={`px-4 py-2 text-sm font-medium transition border-l border-gray-200 dark:border-gray-700 ${memberAddMode === 'new' ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+            >
+              {zh ? '建立新帳號並加入' : 'Create New Account & Add'}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }}
+              disabled={importLoading}
+              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '批量匯入' : 'Bulk Import')}
+            </button>
+            {isPlatformAdmin && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleExportMembers()}
+                  disabled={exportLoading}
+                  className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '批量匯出' : 'Bulk Export')}
+                </button>
+                <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Search mode */}
@@ -1267,40 +1296,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </>
         )}
 
-        {/* ── Bulk operations ── */}
-        <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
-          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '批量操作' : 'Bulk Operations'}</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }}
-              disabled={importLoading}
-              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-            >
-              {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📋 批量匯入' : '📋 Bulk Import')}
-            </button>
-            {isPlatformAdmin && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => void handleExportMembers()}
-                  disabled={exportLoading}
-                  className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 批量匯出' : '📤 Bulk Export')}
-                </button>
-                <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
-              </>
-            )}
+        {importResult && (
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
+            {zh
+              ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
+              : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
           </div>
-          {importResult && (
-            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
-              {zh
-                ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
-                : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
-            </div>
-          )}
-        </div>
+        )}
       </section>
 
       <div className="space-y-6">
@@ -1309,7 +1311,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '捐款記錄' : 'Donation Records'}</h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400"></p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '記錄並追蹤成員的捐款歷史（新台幣或美金）。' : 'Record and track member donations in NTD or USD with a running history.'}</p>
             </div>
             {!donationsLoaded && (
               <button onClick={loadDonations} disabled={donationsLoading} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
@@ -1426,6 +1428,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         {/* ─── Annual Report ─────────────────────────────────────────────── */}
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '年度報告' : 'Annual Report'}</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '查看每位成員的年度出席率與捐款統計。' : 'View per-member attendance and donation stats for any given year.'}</p>
 
           <div className="mt-4 flex items-center gap-3 flex-wrap">
             <input
