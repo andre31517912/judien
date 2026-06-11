@@ -37,6 +37,7 @@ export default function EventDetailPage() {
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO' | 'PENDING'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
+  const [guestSearch, setGuestSearch] = useState('');
 
   const loadGuests = async () => {
     if (guests) return; // already loaded
@@ -582,32 +583,50 @@ export default function EventDetailPage() {
               )}
             </div>
 
+            {/* search */}
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+              <input
+                value={guestSearch}
+                onChange={(e) => setGuestSearch(e.target.value)}
+                placeholder={zh ? '搜尋…' : 'Search…'}
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
             {/* guest rows */}
             <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-52 overflow-y-auto">
               {guestsLoading ? (
                 <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
-              ) : (guests?.[activeGuestTab] ?? []).length === 0 ? (
-                <p className="text-xs text-gray-400 px-4 py-4 text-center">
-                  {activeGuestTab === 'PENDING'
-                    ? (zh ? '所有成員都已回覆。' : 'All members have replied.')
-                    : (zh ? '目前沒有人。' : 'Nobody yet.')}
-                </p>
-              ) : (
-                (guests?.[activeGuestTab] ?? []).map((g, i) => (
+              ) : (() => {
+                const term = guestSearch.trim().toLowerCase();
+                const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
+                  !term ||
+                  (g.displayName ?? '').toLowerCase().includes(term) ||
+                  g.handle.toLowerCase().includes(term),
+                );
+                return rows.length === 0 ? (
+                  <p className="text-xs text-gray-400 px-4 py-4 text-center">
+                    {term
+                      ? (zh ? '找不到符合結果。' : 'No matches.')
+                      : activeGuestTab === 'PENDING'
+                        ? (zh ? '所有成員都已回覆。' : 'All members have replied.')
+                        : (zh ? '目前沒有人。' : 'Nobody yet.')}
+                  </p>
+                ) : rows.map((g, i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
                       activeGuestTab === 'PENDING'
                         ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
                         : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'
                     }`}>
-                      {(g.displayName ?? g.handle || '?').charAt(0).toUpperCase()}
+                      {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
                     </div>
                     <span className="text-sm text-gray-800 dark:text-gray-200">
                       {g.displayName ?? g.handle}
                     </span>
                   </div>
-                ))
-              )}
+                ));
+              })()}
             </div>
           </div>
         )}

@@ -78,6 +78,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const [memberSearch, setMemberSearch] = useState('');
   const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSaving, setNicknameSaving] = useState(false);
@@ -1402,6 +1403,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             )}
           </div>
         </div>
+        <input
+          value={memberSearch}
+          onChange={(e) => setMemberSearch(e.target.value)}
+          placeholder={zh ? '搜尋成員姓名、電子郵件、手機…' : 'Search by name, email, phone…'}
+          className="mb-4 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
         {importResult && (
           <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {zh
@@ -1410,7 +1417,16 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
         )}
         <div className="grid gap-3">
-          {[...members].sort((a, b) => {
+          {[...members].filter((m) => {
+            const term = memberSearch.trim().toLowerCase();
+            if (!term) return true;
+            return (
+              (m.groupNickname ?? '').toLowerCase().includes(term) ||
+              (m.displayName ?? '').toLowerCase().includes(term) ||
+              (m.email ?? '').toLowerCase().includes(term) ||
+              (m.phoneE164 ?? '').includes(term)
+            );
+          }).sort((a, b) => {
             if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
             const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
             const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
