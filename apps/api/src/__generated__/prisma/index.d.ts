@@ -196,7 +196,9 @@ export const NotificationType: {
   EVENT_REMINDER: 'EVENT_REMINDER',
   EVENT_INVITE: 'EVENT_INVITE',
   GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED',
-  NEWS_PUBLISHED: 'NEWS_PUBLISHED'
+  NEWS_PUBLISHED: 'NEWS_PUBLISHED',
+  NEW_EVENT: 'NEW_EVENT',
+  EVENT_BLAST: 'EVENT_BLAST'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]

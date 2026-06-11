@@ -68,6 +68,8 @@ enum NotificationType {
   EVENT_INVITE
   GROUP_INVITE_RECEIVED
   NEWS_PUBLISHED
+  NEW_EVENT
+  EVENT_BLAST
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -377,6 +379,7 @@ model GroupMembership {
   status                   GroupMembershipStatus @default(PENDING)
   invitedByPlatformAdminId String?
   invitedByPlatformAdmin   User?                 @relation("GroupMembershipInvitedBy", fields: [invitedByPlatformAdminId], references: [id])
+  groupNickname            String?
   joinedAt                 DateTime?
   sortOrder                Int                   @default(0)
   createdAt                DateTime              @default(now())

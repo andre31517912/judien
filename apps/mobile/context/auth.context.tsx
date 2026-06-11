@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>(
       '/auth/login',
-      { method: 'POST', body: JSON.stringify({ email, password }) },
+      { method: 'POST', body: JSON.stringify({ identifier: email, password }) },
     );
     if (data.accessToken) await SecureStore.setItemAsync('access_token', data.accessToken);
     if (data.refreshToken) await SecureStore.setItemAsync('refresh_token', data.refreshToken);
