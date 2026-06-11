@@ -72,8 +72,7 @@ export class RsvpService {
       event.groupId
         ? (this.prisma.groupMembership as any).findMany({
             where: { groupId: event.groupId, status: 'ACCEPTED' },
-            include: { user: { select: { id: true, displayName: true } } },
-            select: { userId: true, groupNickname: true, user: true },
+            select: { userId: true, groupNickname: true, user: { select: { id: true, displayName: true } } },
           }) as Promise<{ userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]>
         : Promise.resolve([] as { userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]),
     ]);

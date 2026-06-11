@@ -164,14 +164,13 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [donationForm, setDonationForm] = useState({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
   const [donationSaving, setDonationSaving] = useState(false);
-  const [donationsLoaded, setDonationsLoaded] = useState(false);
+  const [showDonationModal, setShowDonationModal] = useState(false);
 
   const loadDonations = async () => {
     setDonationsLoading(true);
     try {
       const data = await apiFetch<DonationRecord[]>(`/groups/${params.groupId}/donations`);
       setDonations(data);
-      setDonationsLoaded(true);
     } catch { /* ignore */ } finally { setDonationsLoading(false); }
   };
 
@@ -187,6 +186,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         body: JSON.stringify({ forUserId: donationForm.forUserId, amount: parseFloat(donationForm.amount), currency: donationForm.currency, date: donationForm.date, note: donationForm.note || undefined }),
       });
       setDonationForm({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
+      setShowDonationModal(false);
       setSuccess(zh ? '捐款記錄已新增。' : 'Donation recorded.');
       await loadDonations();
     } catch (err: unknown) {
@@ -367,6 +367,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setOutgoingRelationshipRequests((relationRequests?.outgoing ?? []).filter((r) => r.status === 'PENDING'));
 
       if (!current) setError(zh ? '找不到此群組。' : 'Group not found.');
+      void loadDonations();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to load group.');
     } finally {
@@ -1322,114 +1323,112 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '捐款記錄' : 'Donation Records'}</h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '記錄並追蹤成員的捐款歷史（新台幣或美金）。' : 'Record and track member donations in NTD or USD with a running history.'}</p>
             </div>
-            {!donationsLoaded && (
-              <button onClick={loadDonations} disabled={donationsLoading} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
-                {donationsLoading ? (zh ? '載入中…' : 'Loading…') : (zh ? '載入捐款記錄' : 'Load Records')}
-              </button>
+            <button onClick={() => setShowDonationModal(true)} className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition">
+              {zh ? '+ 新增記錄' : '+ Add Record'}
+            </button>
+          </div>
+
+          {/* Donation list */}
+          <div className="mt-6 space-y-2">
+            {donationsLoading ? (
+              <p className="text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : donations.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無捐款記錄。' : 'No donation records yet.'}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
+                      <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '金額' : 'Amount'}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '日期' : 'Date'}</th>
+                      <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '備註' : 'Note'}</th>
+                      <th className="pb-2"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                    {donations.map((d) => (
+                      <tr key={d.id}>
+                        <td className="py-2 pr-4 text-gray-900 dark:text-white">{d.forUser.displayName ?? d.forUser.email}</td>
+                        <td className="py-2 pr-4 font-mono text-gray-900 dark:text-white">{Number(d.amount).toLocaleString()} {d.currency}</td>
+                        <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{new Date(d.date).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}</td>
+                        <td className="py-2 pr-4 text-gray-400 dark:text-gray-500">{d.note ?? '—'}</td>
+                        <td className="py-2">
+                          <button onClick={() => handleDeleteDonation(d.id)} className="text-xs text-red-400 hover:text-red-600">{zh ? '刪除' : 'Delete'}</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
-          {/* Add donation form */}
-          <form onSubmit={handleCreateDonation} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '成員' : 'Member'}</label>
-              <select
-                required
-                value={donationForm.forUserId}
-                onChange={(e) => setDonationForm((f) => ({ ...f, forUserId: e.target.value }))}
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              >
-                <option value="">{zh ? '選擇成員…' : 'Select member…'}</option>
-                {members.map((m) => (
-                  <option key={m.userId} value={m.userId}>{m.displayName ?? m.email ?? m.userId}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '金額' : 'Amount'}</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                value={donationForm.amount}
-                onChange={(e) => setDonationForm((f) => ({ ...f, amount: e.target.value }))}
-                placeholder="0.00"
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-              <select
-                value={donationForm.currency}
-                onChange={(e) => setDonationForm((f) => ({ ...f, currency: e.target.value }))}
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              >
-                <option value="NTD">NTD (新台幣)</option>
-                <option value="USD">USD (美金)</option>
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '日期' : 'Date'}</label>
-              <input
-                type="date"
-                required
-                value={donationForm.date}
-                onChange={(e) => setDonationForm((f) => ({ ...f, date: e.target.value }))}
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-2">
-              <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '備註（選填）' : 'Note (optional)'}</label>
-              <input
-                value={donationForm.note}
-                onChange={(e) => setDonationForm((f) => ({ ...f, note: e.target.value }))}
-                placeholder={zh ? '例：巾要天特款捐' : 'e.g. Monthly tithe'}
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-            </div>
-            <div className="flex items-end">
-              <button type="submit" disabled={donationSaving || !donationForm.forUserId || !donationForm.amount} className="w-full rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-                {donationSaving ? (zh ? '新增中…' : 'Saving…') : (zh ? '+ 新增捐款' : '+ Add Donation')}
-              </button>
-            </div>
-          </form>
-
-          {/* Donation list */}
-          {donationsLoaded && (
-            <div className="mt-6 space-y-2">
-              {donationsLoading ? (
-                <p className="text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
-              ) : donations.length === 0 ? (
-                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚無捐款記錄。' : 'No donation records yet.'}</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '金額' : 'Amount'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '日期' : 'Date'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '備註' : 'Note'}</th>
-                        <th className="pb-2"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                      {donations.map((d) => (
-                        <tr key={d.id}>
-                          <td className="py-2 pr-4 text-gray-900 dark:text-white">{d.forUser.displayName ?? d.forUser.email}</td>
-                          <td className="py-2 pr-4 font-mono text-gray-900 dark:text-white">{Number(d.amount).toLocaleString()} {d.currency}</td>
-                          <td className="py-2 pr-4 text-gray-500 dark:text-gray-400">{new Date(d.date).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}</td>
-                          <td className="py-2 pr-4 text-gray-400 dark:text-gray-500">{d.note ?? '—'}</td>
-                          <td className="py-2">
-                            <button onClick={() => handleDeleteDonation(d.id)} className="text-xs text-red-400 hover:text-red-600">{zh ? '刪除' : 'Delete'}</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {/* Add donation modal */}
+          {showDonationModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowDonationModal(false); }}>
+              <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white">{zh ? '新增捐款記錄' : 'Add Donation Record'}</h3>
+                  <button onClick={() => setShowDonationModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg leading-none">✕</button>
                 </div>
-              )}
+                <div className="mb-4 rounded-lg bg-gray-50 dark:bg-gray-800 px-3 py-2.5 text-xs text-gray-500 dark:text-gray-400">
+                  <p className="font-medium mb-1">{zh ? '格式說明' : 'Format'}</p>
+                  <p className="font-mono">{zh ? '成員 · 金額 · 幣別（NTD / USD）· 日期 · 備註（選填）' : 'Member · Amount · Currency (NTD / USD) · Date · Note (optional)'}</p>
+                  <p className="font-mono mt-0.5 text-gray-400 dark:text-gray-500">{zh ? '例：王小明 · 1000 · NTD · 2024-03-15 · 春季奉獻' : 'e.g. Jane Smith · 500 · USD · 2024-03-15 · Spring offering'}</p>
+                </div>
+                <form onSubmit={handleCreateDonation} className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '成員' : 'Member'}</label>
+                    <select required value={donationForm.forUserId} onChange={(e) => setDonationForm((f) => ({ ...f, forUserId: e.target.value }))}
+                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                      <option value="">{zh ? '選擇成員…' : 'Select member…'}</option>
+                      {members.map((m) => (
+                        <option key={m.userId} value={m.userId}>{m.displayName ?? m.email ?? m.userId}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '金額' : 'Amount'}</label>
+                      <input type="number" min="0" step="0.01" required value={donationForm.amount}
+                        onChange={(e) => setDonationForm((f) => ({ ...f, amount: e.target.value }))}
+                        placeholder="0.00"
+                        className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
+                      <select value={donationForm.currency} onChange={(e) => setDonationForm((f) => ({ ...f, currency: e.target.value }))}
+                        className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                        <option value="NTD">NTD 新台幣</option>
+                        <option value="USD">USD 美金</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '日期' : 'Date'}</label>
+                    <input type="date" required value={donationForm.date}
+                      onChange={(e) => setDonationForm((f) => ({ ...f, date: e.target.value }))}
+                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-400">{zh ? '備註（選填）' : 'Note (optional)'}</label>
+                    <input value={donationForm.note} onChange={(e) => setDonationForm((f) => ({ ...f, note: e.target.value }))}
+                      placeholder={zh ? '例：春季奉獻' : 'e.g. Spring offering'}
+                      className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div className="flex gap-3 pt-1">
+                    <button type="button" onClick={() => setShowDonationModal(false)}
+                      className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      {zh ? '取消' : 'Cancel'}
+                    </button>
+                    <button type="submit" disabled={donationSaving || !donationForm.forUserId || !donationForm.amount}
+                      className="flex-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                      {donationSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '新增捐款' : 'Add Donation')}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
         </section>
