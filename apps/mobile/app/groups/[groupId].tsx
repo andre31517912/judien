@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,7 +11,8 @@ import {
   View,
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { apiFetch } from '../../lib/api';
+import * as ImagePicker from 'expo-image-picker';
+import { apiFetch, apiUpload } from '../../lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/auth.context';
@@ -200,7 +202,10 @@ export default function GroupDetailScreen() {
     if (!groupId) return;
     setNicknameSaving(true);
     try {
-      await apiFetch(`/groups/${groupId}/members/me/nickname`, {
+      const endpoint = targetUserId === user?.id
+        ? `/groups/${groupId}/members/me/nickname`
+        : `/groups/${groupId}/members/${targetUserId}/nickname`;
+      await apiFetch(endpoint, {
         method: 'PATCH',
         body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
       });
@@ -210,6 +215,40 @@ export default function GroupDetailScreen() {
       setEditingNicknameFor(null);
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save nickname'); }
     finally { setNicknameSaving(false); }
+  };
+
+  const handleEditPhoto = () => {
+    if (!groupId) return;
+    const options: Parameters<typeof Alert.alert>[2] = [
+      {
+        text: zh ? '更換照片' : 'Replace Photo',
+        onPress: async () => {
+          const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
+          const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, quality: 0.8 });
+          if (result.canceled) return;
+          try {
+            const { url } = await apiUpload(result.assets[0].uri);
+            await apiFetch(`/groups/${groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
+            await loadPage();
+          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to upload photo'); }
+        },
+      },
+      { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+    ];
+    if (groupItem?.group.photoUrl) {
+      options.splice(1, 0, {
+        text: zh ? '移除照片' : 'Remove Photo',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await apiFetch(`/groups/${groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
+            await loadPage();
+          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed'); }
+        },
+      });
+    }
+    Alert.alert(zh ? '封面照片' : 'Cover Photo', '', options);
   };
 
   const handleSaveGroupInfo = async () => {
@@ -271,6 +310,24 @@ export default function GroupDetailScreen() {
   return (
     <View style={styles.screen}>
       <Stack.Screen options={{ title: '', headerLeft: () => null, gestureEnabled: true }} />
+
+      {/* ── Group photo banner ── */}
+      {(groupItem.group.photoUrl || isGroupAdmin) && (
+        <View style={{ position: 'relative' }}>
+          {groupItem.group.photoUrl ? (
+            <Image source={{ uri: groupItem.group.photoUrl }} style={styles.photoBanner} resizeMode="cover" />
+          ) : (
+            <View style={styles.photoBannerPlaceholder}>
+              <Text style={{ color: colors.placeholder, fontSize: 12 }}>{zh ? '點擊新增封面照片' : 'Tap to add cover photo'}</Text>
+            </View>
+          )}
+          {isGroupAdmin && (
+            <TouchableOpacity style={styles.photoEditOverlay} onPress={handleEditPhoto}>
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>✏️ {zh ? '封面' : 'Photo'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {/* ── Group header ── */}
       <View style={styles.coverHeader}>
@@ -520,15 +577,23 @@ export default function GroupDetailScreen() {
                       </TouchableOpacity>
                     )}
                     {isGroupAdmin && !isOwnRow && (
-                      <View style={styles.memberActions}>
-                        <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
-                          <Text style={styles.promoteBtnText}>
-                            {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
-                          </Text>
+                      <View style={{ gap: 4 }}>
+                        <TouchableOpacity
+                          style={[styles.smallBtn, { borderColor: '#C7D2FE', backgroundColor: '#EEF2FF' }]}
+                          onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
+                        >
+                          <Text style={[styles.smallBtnText, { color: '#4338CA' }]}>{zh ? '改名' : 'Rename'}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
-                          <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
-                        </TouchableOpacity>
+                        <View style={styles.memberActions}>
+                          <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
+                            <Text style={styles.promoteBtnText}>
+                              {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                            </Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
+                            <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     )}
                   </View>
@@ -548,6 +613,19 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
+
+    photoBanner: { width: '100%', height: 130 },
+    photoBannerPlaceholder: {
+      width: '100%', height: 60,
+      backgroundColor: colors.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    photoEditOverlay: {
+      position: 'absolute', top: 8, right: 8,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      borderRadius: 16,
+      paddingHorizontal: 10, paddingVertical: 5,
+    },
 
     coverHeader: {
       backgroundColor: colors.card,

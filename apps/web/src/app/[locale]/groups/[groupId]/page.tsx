@@ -172,7 +172,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     setNicknameSaving(true);
     setError('');
     try {
-      await apiFetch(`/groups/${params.groupId}/members/me/nickname`, {
+      const endpoint = memberId === user.id
+        ? `/groups/${params.groupId}/members/me/nickname`
+        : `/groups/${params.groupId}/members/${memberId}/nickname`;
+      await apiFetch(endpoint, {
         method: 'PATCH',
         body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
       });
@@ -614,9 +617,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     ))}
                   </p>
                 )}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-xs text-gray-400 dark:text-gray-500">{members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}</span>
-                </div>
               </>
             )}
           </div>
@@ -1103,6 +1103,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   )}
                   {isGroupAdmin && !isOwnRow && !isEditingNickname && (
                     <>
+                      <button
+                        onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      >
+                        {zh ? '改名' : 'Rename'}
+                      </button>
                       <button
                         onClick={() => handleChangeRole(member.userId, member.role)}
                         className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"

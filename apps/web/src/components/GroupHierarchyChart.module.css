@@ -157,13 +157,13 @@
   position: absolute;
   top: 0;
   left: 50%;
-  border-left: 2px solid #e5e7eb;
+  border-left: 2px solid #374151;
   width: 0;
   height: 28px;
 }
 
 :global(.dark) .tree ul::before {
-  border-left-color: #374151;
+  border-left-color: #9ca3af;
 }
 
 .tree li {
@@ -183,25 +183,25 @@
   position: absolute;
   top: 0;
   right: 50%;
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid #374151;
   width: 50%;
   height: 28px;
 }
 
 :global(.dark) .tree li::before,
 :global(.dark) .tree li::after {
-  border-top-color: #374151;
+  border-top-color: #9ca3af;
 }
 
 .tree li::after {
   right: auto;
   left: 50%;
-  border-left: 2px solid #e5e7eb;
+  border-left: 2px solid #374151;
   border-top: none;
 }
 
 :global(.dark) .tree li::after {
-  border-left-color: #374151;
+  border-left-color: #9ca3af;
 }
 
 /* Only child: no horizontal lines */
@@ -226,12 +226,12 @@
 
 /* Cap corners */
 .tree li:last-child::before {
-  border-right: 2px solid #e5e7eb;
+  border-right: 2px solid #374151;
   border-radius: 0 5px 0 0;
 }
 
 :global(.dark) .tree li:last-child::before {
-  border-right-color: #374151;
+  border-right-color: #9ca3af;
 }
 
 .tree li:first-child::after {

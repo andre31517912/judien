@@ -77,11 +77,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
-  const [memberSearch, setMemberSearch] = useState('');
-  const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
-  const [nicknameInput, setNicknameInput] = useState('');
-  const [nicknameSaving, setNicknameSaving] = useState(false);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
@@ -667,38 +662,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     }
   };
 
-  const handleRemoveMember = async (userId: string, displayName: string | null) => {
-    const name = displayName || userId;
-    if (!window.confirm(zh ? `確定要將「${name}」從群組中移除嗎？` : `Remove "${name}" from this group?`)) return;
-    setRemovingMemberId(userId);
-    try {
-      await apiFetch(`/groups/${params.groupId}/members/${userId}`, { method: 'DELETE' });
-      setMembers((prev) => prev.filter((m) => m.userId !== userId));
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to remove member.');
-    } finally {
-      setRemovingMemberId(null);
-    }
-  };
-
-  const handleSaveMemberNickname = async (targetUserId: string) => {
-    setNicknameSaving(true);
-    setError('');
-    try {
-      await apiFetch(`/groups/${params.groupId}/members/${targetUserId}/nickname`, {
-        method: 'PATCH',
-        body: JSON.stringify({ groupNickname: nicknameInput.trim() || null }),
-      });
-      setMembers((prev) =>
-        prev.map((m) => m.userId === targetUserId ? { ...m, groupNickname: nicknameInput.trim() || null } : m),
-      );
-      setEditingNicknameUserId(null);
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to save nickname.');
-    } finally {
-      setNicknameSaving(false);
-    }
-  };
 
   const handleReviewRequest = async (requestId: string, action: 'approve' | 'reject') => {
     setError('');
@@ -1377,129 +1340,45 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           )}
           </>
         )}
-      </section>
 
-      {/* Members list */}
-      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組成員' : 'Members'}</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '目前此群組內可見的成員名單。' : 'Current visible members in this group.'}</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <span className="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs text-gray-600 dark:text-gray-400">{members.length} {zh ? '位成員' : 'members'}</span>
+        {/* ── Bulk operations ── */}
+        <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '批量操作' : 'Bulk Operations'}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+            {zh
+              ? '批量新增：每行輸入「全名, 電子郵件, 含國碼手機」，為尚未加入 Judien 的人建立帳號並直接加入群組。'
+              : 'Bulk add: one person per line as "Full Name, Email, Phone with Country Code" — creates accounts and adds them.'}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }}
+              disabled={importLoading}
+              className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {importLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '📋 批量新增成員' : '📋 Bulk Add Members')}
+            </button>
             {isPlatformAdmin && (
               <>
-                <div className="relative">
-                  <button onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }} disabled={importLoading} className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-                    {importLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '📥 匯入' : '📥 Import')}
-                  </button>
-                  <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
-                </div>
-                <button onClick={() => handleExportMembers()} disabled={exportLoading} className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
-                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出' : '📤 Export')}
+                <button
+                  type="button"
+                  onClick={() => void handleExportMembers()}
+                  disabled={exportLoading}
+                  className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出成員名單' : '📤 Export Members')}
                 </button>
+                <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
               </>
             )}
           </div>
-        </div>
-        <input
-          value={memberSearch}
-          onChange={(e) => setMemberSearch(e.target.value)}
-          placeholder={zh ? '搜尋成員姓名、電子郵件、手機…' : 'Search by name, email, phone…'}
-          className="mb-4 w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        {importResult && (
-          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            {zh
-              ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
-              : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
-          </div>
-        )}
-        <div className="grid gap-3">
-          {[...members].filter((m) => {
-            const term = memberSearch.trim().toLowerCase();
-            if (!term) return true;
-            return (
-              (m.groupNickname ?? '').toLowerCase().includes(term) ||
-              (m.displayName ?? '').toLowerCase().includes(term) ||
-              (m.email ?? '').toLowerCase().includes(term) ||
-              (m.phoneE164 ?? '').includes(term)
-            );
-          }).sort((a, b) => {
-            if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
-            const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
-            const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
-            return na.localeCompare(nb);
-          }).map((member) => {
-            const isEditingNickname = editingNicknameUserId === member.userId;
-            const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
-            return (
-            <div key={member.userId} className="rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 px-4 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  {isEditingNickname ? (
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <input
-                        autoFocus
-                        className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-900 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48"
-                        placeholder={zh ? '群組暱稱（留空清除）' : 'In-group nickname (blank to clear)'}
-                        value={nicknameInput}
-                        onChange={(e) => setNicknameInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveMemberNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
-                        maxLength={100}
-                      />
-                      <button
-                        onClick={() => void handleSaveMemberNickname(member.userId)}
-                        disabled={nicknameSaving}
-                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                      >
-                        {nicknameSaving ? '…' : (zh ? '儲存' : 'Save')}
-                      </button>
-                      <button
-                        onClick={() => setEditingNicknameUserId(null)}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                      >
-                        {zh ? '取消' : 'Cancel'}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
-                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
-                        <span className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</span>
-                      )}
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : (zh ? '尚未加入' : 'Not joined yet')}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                  <div className="text-right text-xs text-gray-500 dark:text-gray-400">
-                    {member.email && <p>{member.email}</p>}
-                    {member.phoneE164 && <p>{member.phoneE164}</p>}
-                  </div>
-                  {!isEditingNickname && (
-                    <button
-                      type="button"
-                      onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
-                      className="shrink-0 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                    >
-                      {zh ? '設定暱稱' : 'Set Nickname'}
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => void handleRemoveMember(member.userId, member.displayName)}
-                    disabled={removingMemberId === member.userId}
-                    className="shrink-0 rounded-md border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
-                  >
-                    {removingMemberId === member.userId ? '…' : (zh ? '移除' : 'Remove')}
-                  </button>
-                </div>
-              </div>
+          {importResult && (
+            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-800 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300">
+              {zh
+                ? `匯入結果：新增 ${importResult.added} 人，已是成員 ${importResult.already_member} 人，未找到 ${importResult.not_found} 人。`
+                : `Import result: ${importResult.added} added, ${importResult.already_member} already members, ${importResult.not_found} not found.`}
             </div>
-            );
-          })}
+          )}
         </div>
       </section>
 
