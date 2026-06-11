@@ -126,7 +126,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   if (!user) return <p>{zh ? '請先登入。' : 'Please log in.'}</p>;
 
   return (
-    <div className="max-w-md mx-auto mt-8">
+    <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold dark:text-white">{zh ? '個人資料' : 'Profile'}</h1>
         <span

@@ -1,5 +1,4 @@
-'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -12,9 +11,10 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch } from '../../lib/api';
-import type { EventWithCounts, GroupMessage, News, PaginatedResponse } from '@judien/shared';
+import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/auth.context';
+import { useTheme } from '../../context/theme.context';
 
 type GroupListItem = {
   group: {
@@ -69,9 +69,10 @@ export default function GroupDetailScreen() {
   const router = useRouter();
   const { i18n } = useTranslation();
   const { user } = useAuth();
+  const { colors } = useTheme();
   const zh = i18n.language === 'zh';
 
-  type Tab = 'feed' | 'upcoming' | 'past' | 'chat' | 'members';
+  type Tab = 'feed' | 'upcoming' | 'past' | 'members';
 
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('feed');
@@ -82,28 +83,20 @@ export default function GroupDetailScreen() {
   const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
   const [pastLoaded, setPastLoaded] = useState(false);
   const [pastLoading, setPastLoading] = useState(false);
-  const [messages, setMessages] = useState<GroupMessage[]>([]);
-  const [chatBody, setChatBody] = useState('');
-  const [chatSubmitting, setChatSubmitting] = useState(false);
-  const chatScrollRef = useRef<ScrollView>(null);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
 
-  // Member search
   const [memberSearch, setMemberSearch] = useState('');
-
-  // Inline nickname edit (own row)
   const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSaving, setNicknameSaving] = useState(false);
-
-  // Inline group info edit (name + description)
   const [editingInfo, setEditingInfo] = useState(false);
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [infoSaving, setInfoSaving] = useState(false);
 
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const loadPage = useCallback(async () => {
     if (!groupId) return;
@@ -123,10 +116,6 @@ export default function GroupDetailScreen() {
       setNews(groupNews);
       setEvents(groupEvents.data);
       setRelationships(relationshipData);
-      const messageRes = await apiFetch<PaginatedResponse<GroupMessage>>(
-        `/groups/${groupId}/messages?page=1&pageSize=100`,
-      ).catch(() => ({ data: [] as GroupMessage[] } as PaginatedResponse<GroupMessage>));
-      setMessages(messageRes.data);
 
       if (current?.membership.role === 'GROUP_ADMIN') {
         const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => [] as JoinRequest[]);
@@ -240,20 +229,6 @@ export default function GroupDetailScreen() {
     finally { setInfoSaving(false); }
   };
 
-  const sendGroupMessage = async () => {
-    if (!groupId || !chatBody.trim()) return;
-    setChatSubmitting(true);
-    try {
-      const created = await apiFetch<GroupMessage>(`/groups/${groupId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ body: chatBody.trim() }),
-      });
-      setMessages((prev) => [...prev, created]);
-      setChatBody('');
-    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to send message'); }
-    finally { setChatSubmitting(false); }
-  };
-
   const filteredMembers = useMemo(() => {
     const term = memberSearch.trim().toLowerCase();
     return [...members]
@@ -275,7 +250,7 @@ export default function GroupDetailScreen() {
   }, [members, memberSearch]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.subtext} /></View>;
   }
 
   if (!groupItem) {
@@ -290,13 +265,12 @@ export default function GroupDetailScreen() {
     { key: 'feed',     label: 'Feed',     labelZh: '動態' },
     { key: 'upcoming', label: 'Upcoming', labelZh: '即將到來' },
     { key: 'past',     label: 'Past',     labelZh: '過去活動' },
-    { key: 'chat',     label: 'Chat',     labelZh: '聊天室' },
     { key: 'members',  label: 'Members',  labelZh: '成員' },
   ];
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: '' }} />
+      <Stack.Screen options={{ title: '', headerLeft: () => null, gestureEnabled: true }} />
 
       {/* ── Group header ── */}
       <View style={styles.coverHeader}>
@@ -307,6 +281,7 @@ export default function GroupDetailScreen() {
               value={editName}
               onChangeText={setEditName}
               placeholder={zh ? '群組名稱' : 'Group name'}
+              placeholderTextColor={colors.placeholder}
               maxLength={80}
               autoFocus
             />
@@ -315,6 +290,7 @@ export default function GroupDetailScreen() {
               value={editDesc}
               onChangeText={setEditDesc}
               placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+              placeholderTextColor={colors.placeholder}
               maxLength={500}
               multiline
             />
@@ -441,7 +417,7 @@ export default function GroupDetailScreen() {
       {tab === 'past' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
           {pastLoading ? (
-            <ActivityIndicator style={{ marginTop: 40 }} />
+            <ActivityIndicator style={{ marginTop: 40 }} color={colors.subtext} />
           ) : pastEvents.length === 0 ? (
             <View style={styles.emptyBox}>
               <Text style={styles.emptyEmoji}>🕐</Text>
@@ -462,63 +438,15 @@ export default function GroupDetailScreen() {
         </ScrollView>
       )}
 
-      {/* ── Chat ── */}
-      {tab === 'chat' && (
-        <View style={styles.chatScreen}>
-          <ScrollView
-            ref={chatScrollRef}
-            contentContainerStyle={styles.chatMessages}
-            onContentSizeChange={() => chatScrollRef.current?.scrollToEnd({ animated: false })}
-          >
-            {messages.length === 0 ? (
-              <View style={styles.emptyBox}>
-                <Text style={styles.emptyEmoji}>💬</Text>
-                <Text style={styles.emptyText}>{zh ? '聊天室目前沒有訊息' : 'No chat messages yet'}</Text>
-              </View>
-            ) : messages.map((msg) => {
-              const mine = msg.userId === user?.id;
-              return (
-                <View key={msg.id} style={[styles.chatBubble, mine ? styles.chatBubbleMine : styles.chatBubbleOther]}>
-                  <Text style={[styles.chatUser, mine && styles.chatUserMine]}>{msg.userHandle}</Text>
-                  <Text style={[styles.chatBody, mine && styles.chatBodyMine]}>{msg.body}</Text>
-                  <Text style={[styles.chatTime, mine && styles.chatTimeMine]}>
-                    {new Date(msg.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short', timeStyle: 'short' })}
-                  </Text>
-                </View>
-              );
-            })}
-          </ScrollView>
-          <View style={styles.chatInputRow}>
-            <TextInput
-              value={chatBody}
-              onChangeText={setChatBody}
-              placeholder={zh ? '輸入訊息…' : 'Type a message...'}
-              style={styles.chatInput}
-              placeholderTextColor="#9CA3AF"
-              multiline
-            />
-            <TouchableOpacity
-              style={[styles.sendBtn, (!chatBody.trim() || chatSubmitting) && styles.disabledBtn]}
-              onPress={sendGroupMessage}
-              disabled={!chatBody.trim() || chatSubmitting}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.sendBtnText}>{zh ? '送出' : 'Send'}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
       {/* ── Members ── */}
       {tab === 'members' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
-          {/* Search */}
           <TextInput
             style={styles.searchInput}
             value={memberSearch}
             onChangeText={setMemberSearch}
             placeholder={zh ? '搜尋成員…' : 'Search members…'}
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={colors.placeholder}
             clearButtonMode="while-editing"
           />
 
@@ -542,7 +470,7 @@ export default function GroupDetailScreen() {
                         value={nicknameInput}
                         onChangeText={setNicknameInput}
                         placeholder={zh ? '群組暱稱（留空清除）' : 'In-group nickname (blank to clear)'}
-                        placeholderTextColor="#9CA3AF"
+                        placeholderTextColor={colors.placeholder}
                         autoFocus
                         maxLength={100}
                       />
@@ -585,7 +513,7 @@ export default function GroupDetailScreen() {
                   <View style={{ gap: 4 }}>
                     {isOwnRow && (
                       <TouchableOpacity
-                        style={[styles.smallBtn, { borderColor: '#D1D5DB' }]}
+                        style={styles.smallBtn}
                         onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
                       >
                         <Text style={styles.smallBtnText}>{zh ? '暱稱' : 'Nickname'}</Text>
@@ -615,141 +543,118 @@ export default function GroupDetailScreen() {
 }
 
 const INDIGO = '#4F46E5';
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#F9FAFB' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16 },
 
-  coverHeader: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 12,
-  },
-  coverContent: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  coverLeft: { flex: 1, gap: 4 },
-  groupTitle: { fontSize: 22, fontWeight: '800', color: '#111827', lineHeight: 28 },
-  groupDesc: { fontSize: 13, color: '#6B7280', lineHeight: 18 },
-  breadcrumb: { fontSize: 11, color: '#9CA3AF' },
-  pencilBtn: { padding: 4 },
-  pencilText: { fontSize: 14 },
-  settingsBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  settingsBtnText: { fontSize: 18 },
-  badge: {
-    position: 'absolute', top: -2, right: -2,
-    backgroundColor: '#EF4444', borderRadius: 999,
-    minWidth: 16, height: 16,
-    alignItems: 'center', justifyContent: 'center', padding: 2,
-  },
-  badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
+function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors']) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bg },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
-  editInput: {
-    borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 8,
-    fontSize: 15, color: '#111827', backgroundColor: '#fff',
-  },
-  infoBtn: {
-    flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8,
-    paddingVertical: 8, alignItems: 'center',
-  },
-  infoBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
-  infoBtnText: { fontSize: 13, color: '#374151' },
-  infoBtnPrimaryText: { fontSize: 13, color: '#fff', fontWeight: '600' },
+    coverHeader: {
+      backgroundColor: colors.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingHorizontal: 16,
+      paddingTop: 14,
+      paddingBottom: 12,
+    },
+    coverContent: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+    coverLeft: { flex: 1, gap: 4 },
+    groupTitle: { fontSize: 22, fontWeight: '800', color: colors.text, lineHeight: 28 },
+    groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
+    breadcrumb: { fontSize: 11, color: colors.placeholder },
+    pencilBtn: { padding: 4 },
+    pencilText: { fontSize: 14 },
+    settingsBtn: {
+      width: 40, height: 40, borderRadius: 20,
+      backgroundColor: colors.border,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    settingsBtnText: { fontSize: 18 },
+    badge: {
+      position: 'absolute', top: -2, right: -2,
+      backgroundColor: '#EF4444', borderRadius: 999,
+      minWidth: 16, height: 16,
+      alignItems: 'center', justifyContent: 'center', padding: 2,
+    },
+    badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 
-  tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-  tabScroll: { paddingHorizontal: 8 },
-  tabItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabItemActive: { borderBottomColor: INDIGO },
-  tabText: { fontSize: 14, color: '#6B7280', fontWeight: '500' },
-  tabTextActive: { color: INDIGO, fontWeight: '700' },
+    editInput: {
+      borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 10,
+      paddingHorizontal: 12, paddingVertical: 8,
+      fontSize: 15, color: colors.inputText, backgroundColor: colors.input,
+    },
+    infoBtn: {
+      flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 8,
+      paddingVertical: 8, alignItems: 'center',
+    },
+    infoBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
+    infoBtnText: { fontSize: 13, color: colors.text },
+    infoBtnPrimaryText: { fontSize: 13, color: '#fff', fontWeight: '600' },
 
-  tabContent: { padding: 16, gap: 12, paddingBottom: 40 },
+    tabBar: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border },
+    tabScroll: { paddingHorizontal: 8 },
+    tabItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+    tabItemActive: { borderBottomColor: INDIGO },
+    tabText: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
+    tabTextActive: { color: INDIGO, fontWeight: '700' },
 
-  card: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 14,
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, gap: 4,
-  },
-  cardPast: { opacity: 0.75 },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  cardTitlePast: { color: '#6B7280' },
-  cardBody: { fontSize: 14, color: '#374151', lineHeight: 20 },
-  cardMeta: { fontSize: 12, color: '#9CA3AF' },
-  feeTag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '700', color: '#B45309', backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
-  rsvpRow: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+    tabContent: { padding: 16, gap: 12, paddingBottom: 40 },
 
-  emptyBox: { alignItems: 'center', marginTop: 40, gap: 10 },
-  emptyEmoji: { fontSize: 40 },
-  emptyText: { color: '#9CA3AF', textAlign: 'center', fontSize: 14 },
+    card: {
+      backgroundColor: colors.card, borderRadius: 14, padding: 14,
+      shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2, gap: 4,
+    },
+    cardPast: { opacity: 0.75 },
+    cardTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+    cardTitlePast: { color: colors.subtext },
+    cardBody: { fontSize: 14, color: colors.text, lineHeight: 20 },
+    cardMeta: { fontSize: 12, color: colors.placeholder },
+    feeTag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '700', color: '#B45309', backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+    rsvpRow: { fontSize: 12, color: colors.placeholder, marginTop: 2 },
 
-  chatScreen: { flex: 1 },
-  chatMessages: { padding: 14, gap: 8, flexGrow: 1 },
-  chatBubble: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, maxWidth: '85%' },
-  chatBubbleMine: { alignSelf: 'flex-end', backgroundColor: INDIGO },
-  chatBubbleOther: { alignSelf: 'flex-start', backgroundColor: '#F3F4F6' },
-  chatUser: { fontSize: 11, fontWeight: '700', color: '#6B7280' },
-  chatUserMine: { color: '#C7D2FE' },
-  chatBody: { fontSize: 14, color: '#111827', marginTop: 2 },
-  chatBodyMine: { color: '#fff' },
-  chatTime: { fontSize: 10, color: '#9CA3AF', marginTop: 3 },
-  chatTimeMine: { color: '#C7D2FE' },
-  chatInputRow: {
-    flexDirection: 'row', gap: 8, alignItems: 'flex-end',
-    borderTopWidth: 1, borderTopColor: '#E5E7EB',
-    backgroundColor: '#fff', padding: 10,
-  },
-  chatInput: {
-    flex: 1, borderWidth: 1, borderColor: '#D1D5DB',
-    borderRadius: 20, paddingHorizontal: 14, paddingVertical: 10,
-    backgroundColor: '#F9FAFB', color: '#111827', fontSize: 14,
-    minHeight: 42, maxHeight: 120,
-  },
-  sendBtn: { backgroundColor: INDIGO, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, minHeight: 42, justifyContent: 'center' },
-  sendBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  disabledBtn: { opacity: 0.45 },
+    emptyBox: { alignItems: 'center', marginTop: 40, gap: 10 },
+    emptyEmoji: { fontSize: 40 },
+    emptyText: { color: colors.placeholder, textAlign: 'center', fontSize: 14 },
 
-  searchInput: {
-    borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10,
-    fontSize: 14, color: '#111827', backgroundColor: '#fff',
-    marginBottom: 4,
-  },
+    searchInput: {
+      borderWidth: 1, borderColor: colors.border, borderRadius: 10,
+      paddingHorizontal: 12, paddingVertical: 10,
+      fontSize: 14, color: colors.inputText, backgroundColor: colors.input,
+      marginBottom: 4,
+    },
 
-  memberCard: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 12,
-    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
-    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
-  },
-  memberInfo: { flex: 1, gap: 2 },
-  memberName: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  memberNameSub: { fontSize: 12, color: '#9CA3AF' },
-  memberRole: { fontSize: 12, color: '#6B7280' },
-  memberContact: { fontSize: 11, color: '#9CA3AF' },
-  memberCount: { fontSize: 12, color: '#9CA3AF', marginBottom: 4 },
-  memberActions: { flexDirection: 'row', gap: 6, marginTop: 2 },
+    memberCard: {
+      backgroundColor: colors.card, borderRadius: 12, padding: 12,
+      flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
+      shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+    },
+    memberInfo: { flex: 1, gap: 2 },
+    memberName: { fontSize: 14, fontWeight: '600', color: colors.text },
+    memberNameSub: { fontSize: 12, color: colors.placeholder },
+    memberRole: { fontSize: 12, color: colors.subtext },
+    memberContact: { fontSize: 11, color: colors.placeholder },
+    memberCount: { fontSize: 12, color: colors.placeholder, marginBottom: 4 },
+    memberActions: { flexDirection: 'row', gap: 6, marginTop: 2 },
 
-  rolePill: { borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
-  rolePillAdmin: { backgroundColor: '#EEF2FF' },
-  rolePillMember: { backgroundColor: '#F3F4F6' },
-  rolePillText: { fontSize: 10, fontWeight: '700' },
-  rolePillTextAdmin: { color: '#4338CA' },
-  rolePillTextMember: { color: '#6B7280' },
+    rolePill: { borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+    rolePillAdmin: { backgroundColor: '#EEF2FF' },
+    rolePillMember: { backgroundColor: colors.border },
+    rolePillText: { fontSize: 10, fontWeight: '700' },
+    rolePillTextAdmin: { color: '#4338CA' },
+    rolePillTextMember: { color: colors.subtext },
 
-  nicknameInput: {
-    borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8,
-    paddingHorizontal: 10, paddingVertical: 6, fontSize: 13, color: '#111827',
-  },
-  smallBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  smallBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
-  smallBtnText: { fontSize: 11, fontWeight: '600', color: '#374151' },
-  smallBtnPrimaryText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+    nicknameInput: {
+      borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8,
+      paddingHorizontal: 10, paddingVertical: 6, fontSize: 13, color: colors.inputText, backgroundColor: colors.input,
+    },
+    smallBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+    smallBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
+    smallBtnText: { fontSize: 11, fontWeight: '600', color: colors.text },
+    smallBtnPrimaryText: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
-  promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
-  promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
-  removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
-  removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
-});
+    promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
+    promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
+    removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
+    removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
+  });
+}

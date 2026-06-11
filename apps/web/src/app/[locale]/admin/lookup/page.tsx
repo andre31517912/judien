@@ -146,8 +146,7 @@ export default function AdminLookupPage({ params }: { params: { locale: string }
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">{zh ? '平台管理 — 查詢' : 'Platform Lookup'}</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '搜尋或瀏覽所有用戶與群組。' : 'Search or browse all users and groups in the platform.'}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '平台管理 — 查詢' : 'Platform Lookup'}</h1>
       </div>
 
       {error && <p className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-2 text-sm text-red-700 dark:text-red-400">{error}</p>}
@@ -229,9 +228,6 @@ export default function AdminLookupPage({ params }: { params: { locale: string }
             </div>
           )}
 
-          {!query.trim() && !searchResults && (
-            <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '輸入關鍵字以搜尋。' : 'Type to search.'}</p>
-          )}
         </div>
       )}
 

@@ -2,7 +2,9 @@ import '../lib/i18n';
 import { useEffect } from 'react';
 import { Linking } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/auth.context';
+import { ThemeProvider, useTheme } from '../context/theme.context';
 
 function DeepLinkHandler() {
   const { loginWithTokens } = useAuth();
@@ -37,20 +39,35 @@ function DeepLinkHandler() {
   return null;
 }
 
+function AppShell() {
+  const { isDark, colors } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <AuthProvider>
+        <DeepLinkHandler />
+        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text }}>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="groups/[groupId]" options={{ title: 'Group', gestureEnabled: true }} />
+          <Stack.Screen name="groups/[groupId]/settings" options={{ title: 'Settings', gestureEnabled: true }} />
+          <Stack.Screen name="events/[id]" options={{ title: 'Event', gestureEnabled: true }} />
+          <Stack.Screen name="admin/groups/new" options={{ title: 'Create Group' }} />
+          <Stack.Screen name="admin/events/new" options={{ title: 'Create Event' }} />
+          <Stack.Screen name="admin/events/[id]/edit" options={{ title: 'Edit Event' }} />
+          <Stack.Screen name="admin/invites" options={{ title: 'Invite Links' }} />
+        </Stack>
+      </AuthProvider>
+    </>
+  );
+}
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <DeepLinkHandler />
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="groups/[groupId]" options={{ title: 'Group' }} />
-        <Stack.Screen name="events/[id]" options={{ title: 'Event' }} />
-        <Stack.Screen name="admin/groups/new" options={{ title: 'Create Group' }} />
-        <Stack.Screen name="admin/events/new" options={{ title: 'Create Event' }} />
-        <Stack.Screen name="admin/events/[id]/edit" options={{ title: 'Edit Event' }} />
-      </Stack>
-    </AuthProvider>
+    <ThemeProvider>
+      <AppShell />
+    </ThemeProvider>
   );
 }
