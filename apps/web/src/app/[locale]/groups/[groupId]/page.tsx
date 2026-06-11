@@ -172,7 +172,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     setNicknameSaving(true);
     setError('');
     try {
-      const endpoint = memberId === user.id
+      const endpoint = memberId === user?.id
         ? `/groups/${params.groupId}/members/me/nickname`
         : `/groups/${params.groupId}/members/${memberId}/nickname`;
       await apiFetch(endpoint, {
