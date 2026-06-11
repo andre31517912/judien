@@ -14,12 +14,28 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
 async function geocode(query: string): Promise<[number, number] | null> {
   if (!query.trim()) return null;
+
+  // Google Geocoding — best multilingual accuracy, any country
+  if (GOOGLE_MAPS_API_KEY) {
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`,
+      );
+      const data = await res.json();
+      const loc = data?.results?.[0]?.geometry?.location;
+      if (loc && typeof loc.lat === 'number') return [loc.lat, loc.lng];
+    } catch { /* fall through to Nominatim */ }
+  }
+
+  // Nominatim fallback — no country or language restrictions, globally inclusive
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-      { headers: { 'Accept-Language': 'en' } },
+      { headers: { 'User-Agent': 'JudienApp/1.0' } },
     );
     const data = await res.json();
     if (!data.length) return null;

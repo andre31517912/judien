@@ -5,7 +5,6 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix default icon paths broken by webpack
 const DefaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -15,7 +14,7 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// ─── Geocoding helpers (Google Maps for Taiwan + Nominatim fallback) ───────────
+// ─── Geocoding helpers ────────────────────────────────────────────────────────
 
 interface GeocodeResult {
   lat: number;
@@ -25,19 +24,13 @@ interface GeocodeResult {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-function normalizeTaiwanQuery(query: string): string {
-  const q = query.trim();
-  if (!q) return q;
-  const hasTaiwanKeyword = /taiwan|台灣|臺灣|taipei|台北|臺北/i.test(q);
-  return hasTaiwanKeyword ? q : `${q}, Taiwan`;
-}
-
+// Google Places autocomplete — no country restriction, returns results in the
+// language closest to the query text so any language input works globally.
 async function searchSuggestionsGoogle(query: string): Promise<GeocodeResult[]> {
-  if (!GOOGLE_MAPS_API_KEY) return [];
+  if (!GOOGLE_MAPS_API_KEY || !query.trim()) return [];
   try {
-    const input = normalizeTaiwanQuery(query);
     const placeRes = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&language=zh-TW&components=country:tw&key=${GOOGLE_MAPS_API_KEY}`,
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${GOOGLE_MAPS_API_KEY}`,
     );
     const placeData = await placeRes.json();
     const predictions = Array.isArray(placeData?.predictions) ? placeData.predictions.slice(0, 5) : [];
@@ -47,7 +40,7 @@ async function searchSuggestionsGoogle(query: string): Promise<GeocodeResult[]> 
       predictions.map(async (p: { place_id?: string; description?: string }) => {
         if (!p.place_id) return null;
         const detailRes = await fetch(
-          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(p.place_id)}&fields=geometry/location,formatted_address&language=zh-TW&key=${GOOGLE_MAPS_API_KEY}`,
+          `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(p.place_id)}&fields=geometry/location,formatted_address&key=${GOOGLE_MAPS_API_KEY}`,
         );
         const detailData = await detailRes.json();
         const loc = detailData?.result?.geometry?.location;
@@ -70,7 +63,7 @@ async function reverseGeocodeGoogle(lat: number, lng: number): Promise<string | 
   if (!GOOGLE_MAPS_API_KEY) return null;
   try {
     const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&language=zh-TW&region=TW&key=${GOOGLE_MAPS_API_KEY}`,
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`,
     );
     const data = await res.json();
     const first = Array.isArray(data?.results) ? data.results[0] : null;
@@ -80,11 +73,13 @@ async function reverseGeocodeGoogle(lat: number, lng: number): Promise<string | 
   }
 }
 
+// Nominatim fallback — globally inclusive, no country/language restrictions
 async function searchSuggestionsNominatim(query: string): Promise<GeocodeResult[]> {
   if (!query.trim()) return [];
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(normalizeTaiwanQuery(query))}&limit=5&countrycodes=tw&accept-language=zh-TW`,
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+      { headers: { 'User-Agent': 'JudienApp/1.0' } },
     );
     const data = await res.json();
     return data.map((item: { lat: string; lon: string; display_name: string }) => ({
@@ -106,7 +101,8 @@ async function searchSuggestions(query: string): Promise<GeocodeResult[]> {
 async function reverseGeocodeNominatim(lat: number, lng: number): Promise<string> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=zh-TW`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+      { headers: { 'User-Agent': 'JudienApp/1.0' } },
     );
     const data = await res.json();
     const a = data.address ?? {};
@@ -127,14 +123,12 @@ async function reverseGeocode(lat: number, lng: number): Promise<string> {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-/** Flies the map viewport to a new center whenever `center` changes */
 function FlyTo({ center }: { center: [number, number] }) {
   const map = useMap();
   map.flyTo(center, 15, { duration: 0.8 });
   return null;
 }
 
-/** Draggable marker that calls onDrag when released */
 function DraggableMarker({
   position,
   onDrag,
@@ -230,7 +224,6 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
           onChange={(e) => {
             const next = e.target.value;
             if (showMapPreview && lastSelectedLabelRef.current && next !== lastSelectedLabelRef.current) {
-              // User edited the address text after selecting a location; clear stale map preview.
               setPos(null);
             }
             onChange(next);
@@ -246,7 +239,7 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
           onBlur={() => {
             setTimeout(() => setShowSuggestions(false), 150);
           }}
-          placeholder={placeholder ?? "e.g. Da'an Park, Taipei"}
+          placeholder={placeholder ?? 'Search any address in any language…'}
         />
         {showSuggestions && suggestions.length > 0 && (
           <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">

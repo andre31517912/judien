@@ -10,6 +10,8 @@ import {
   Image,
   Share,
   Modal,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch, resolveImageUrl } from '../../lib/api';
@@ -255,7 +257,19 @@ export default function EventDetailScreen() {
         <Text style={styles.title}>{title}</Text>
         {event.groupName && <Text style={styles.groupBadge}>👥 {event.groupName}</Text>}
         <Text style={styles.meta}>📅 {dateStr} ({event.timezone})</Text>
-        {location ? <Text style={styles.meta}>📍 {location}</Text> : null}
+        {location ? (
+          <TouchableOpacity onPress={() => {
+            const q = encodeURIComponent(location);
+            const url = Platform.OS === 'ios'
+              ? `maps://q=${q}`
+              : `geo:0,0?q=${q}`;
+            Linking.openURL(url).catch(() =>
+              Linking.openURL(`https://maps.google.com/?q=${q}`)
+            );
+          }}>
+            <Text style={[styles.meta, { textDecorationLine: 'underline' }]}>📍 {location}</Text>
+          </TouchableOpacity>
+        ) : null}
         <Text style={styles.meta}>💰 {fee}</Text>
         {desc ? <Text style={styles.desc}>{desc}</Text> : null}
 
