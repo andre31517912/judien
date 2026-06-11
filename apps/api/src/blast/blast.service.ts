@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessagingService } from '../messaging/messaging.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import type { BlastDto } from '@judien/shared';
 import { getDict, t } from '@judien/shared';
 
@@ -9,6 +10,7 @@ export class BlastService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly messaging: MessagingService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async send(eventId: string, dto: BlastDto) {
@@ -75,6 +77,24 @@ export class BlastService {
       // }
 
       sent++;
+    }
+
+    // Create in-app notifications for all recipients
+    if (users.length) {
+      const title_en = event.title_en || event.title_zh;
+      const title_zh = event.title_zh || event.title_en;
+      await this.notifications.createMany(
+        users.map((user) => ({
+          userId: user.id,
+          type: 'EVENT_BLAST' as const,
+          title_en: `Message from ${title_en}`,
+          title_zh: `來自「${title_zh}」的訊息`,
+          body_en: dto.messageEn,
+          body_zh: dto.messageZh,
+          actionUrl: `/events/${eventId}`,
+          eventId,
+        })),
+      );
     }
 
     return { sent };

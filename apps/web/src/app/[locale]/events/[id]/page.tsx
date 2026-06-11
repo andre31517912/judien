@@ -32,10 +32,10 @@ export default function EventDetailPage() {
 
   // guest list
   type GuestEntry = { handle: string; displayName: string | null };
-  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[] };
+  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO' | 'PENDING'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
 
   const loadGuests = async () => {
@@ -567,6 +567,19 @@ export default function EventDetailPage() {
                   </button>
                 );
               })}
+              {/* No Response tab — only shown for group admins (backend populates PENDING only for them) */}
+              {guests?.PENDING !== undefined && (
+                <button
+                  onClick={() => setActiveGuestTab('PENDING')}
+                  className={`flex-1 py-2.5 text-xs font-medium transition ${
+                    activeGuestTab === 'PENDING'
+                      ? 'text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 dark:border-amber-400 -mb-px'
+                      : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}
+                >
+                  {zh ? '未回覆' : 'No Reply'} ({guests.PENDING.length})
+                </button>
+              )}
             </div>
 
             {/* guest rows */}
@@ -575,15 +588,21 @@ export default function EventDetailPage() {
                 <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
               ) : (guests?.[activeGuestTab] ?? []).length === 0 ? (
                 <p className="text-xs text-gray-400 px-4 py-4 text-center">
-                  {zh ? '目前沒有人。' : 'Nobody yet.'}
+                  {activeGuestTab === 'PENDING'
+                    ? (zh ? '所有成員都已回覆。' : 'All members have replied.')
+                    : (zh ? '目前沒有人。' : 'Nobody yet.')}
                 </p>
               ) : (
                 (guests?.[activeGuestTab] ?? []).map((g, i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                    <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
-                      {(g.displayName ?? g.handle).charAt(0).toUpperCase()}
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      activeGuestTab === 'PENDING'
+                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                        : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'
+                    }`}>
+                      {(g.displayName ?? g.handle || '?').charAt(0).toUpperCase()}
                     </div>
-                      <span className="text-sm text-gray-800 dark:text-gray-200">
+                    <span className="text-sm text-gray-800 dark:text-gray-200">
                       {g.displayName ?? g.handle}
                     </span>
                   </div>

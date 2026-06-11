@@ -72,12 +72,13 @@ export class RsvpService {
       event.groupId
         ? (this.prisma.groupMembership as any).findMany({
             where: { groupId: event.groupId, status: 'ACCEPTED' },
-            select: { userId: true, groupNickname: true },
-          }) as Promise<{ userId: string; groupNickname: string | null }[]>
-        : Promise.resolve([] as { userId: string; groupNickname: string | null }[]),
+            include: { user: { select: { id: true, displayName: true } } },
+            select: { userId: true, groupNickname: true, user: true },
+          }) as Promise<{ userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]>
+        : Promise.resolve([] as { userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]),
     ]);
 
-    const nicknameByUserId = new Map(memberships.map((m: { userId: string; groupNickname: string | null }) => [m.userId, m.groupNickname]));
+    const nicknameByUserId = new Map(memberships.map((m) => [m.userId, m.groupNickname]));
 
     const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; source: 'user' | 'guest' }[]> = {
       GOING: [],
@@ -107,7 +108,36 @@ export class RsvpService {
       }
     }
 
-    return groups;
+    // For group admins and platform admins: add PENDING bucket (members who haven't replied)
+    let pending: { handle: string; displayName: string | null; source: 'user' }[] | undefined;
+    if (event.groupId && userId) {
+      const [requestingUser, adminMembership] = await Promise.all([
+        this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
+        this.prisma.groupMembership.findUnique({
+          where: { groupId_userId: { groupId: event.groupId, userId } },
+          select: { role: true, status: true },
+        }),
+      ]);
+      const isAdmin =
+        requestingUser?.role === 'ADMIN' ||
+        (adminMembership?.status === 'ACCEPTED' && adminMembership?.role === 'GROUP_ADMIN');
+
+      if (isAdmin) {
+        const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
+        pending = memberships
+          .filter((m) => !rsvpUserIds.has(m.userId))
+          .map((m) => ({
+            handle: '',
+            displayName: m.groupNickname ?? m.user.displayName ?? null,
+            source: 'user' as const,
+          }));
+      }
+    }
+
+    return {
+      ...groups,
+      ...(pending !== undefined ? { PENDING: pending } : {}),
+    };
   }
 
   async guestsByShareToken(token: string, userId?: string) {

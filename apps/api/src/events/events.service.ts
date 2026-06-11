@@ -221,7 +221,7 @@ export class EventsService {
       throw new ForbiddenException('Only platform admins can create global events.');
     }
 
-    return this.prisma.event.create({
+    const event = await this.prisma.event.create({
       data: {
         ...dto,
         endAt: dto.endAt ?? null,
@@ -230,6 +230,37 @@ export class EventsService {
         createdById: creator.id,
       },
     });
+
+    // Notify all accepted group members (except the creator) about the new event
+    if (dto.groupId) {
+      const members = await this.prisma.groupMembership.findMany({
+        where: { groupId: dto.groupId, status: 'ACCEPTED', userId: { not: creator.id } },
+        select: { userId: true },
+      });
+      if (members.length) {
+        const title_en = event.title_en || event.title_zh;
+        const title_zh = event.title_zh || event.title_en;
+        await this.notifications.createMany(
+          members.map(({ userId }) => ({
+            userId,
+            type: 'NEW_EVENT' as const,
+            title_en: `New event: ${title_en}`,
+            title_zh: `新活動：${title_zh}`,
+            body_en: event.location_en
+              ? `${new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })} · ${event.location_en}`
+              : new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
+            body_zh: event.location_zh
+              ? `${new Date(event.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' })} · ${event.location_zh}`
+              : new Date(event.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
+            actionUrl: `/events/${event.id}`,
+            groupId: dto.groupId,
+            eventId: event.id,
+          })),
+        );
+      }
+    }
+
+    return event;
   }
 
   async update(id: string, dto: UpdateEventDto, actor?: User) {

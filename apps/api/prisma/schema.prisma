@@ -68,6 +68,8 @@ enum NotificationType {
   EVENT_INVITE
   GROUP_INVITE_RECEIVED
   NEWS_PUBLISHED
+  NEW_EVENT
+  EVENT_BLAST
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
