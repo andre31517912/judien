@@ -408,18 +408,18 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   };
 
   const handleLinkChildGroup = async (childId: string, childName: string) => {
-    if (!confirm(zh ? `確定要將「${childName}」設為此群組的子群組？` : `Set "${childName}" as a child group?`)) return;
+    if (!confirm(zh ? `送出申請，將「${childName}」設為此群組的子群組？對方管理員核准後生效。` : `Submit a request to link "${childName}" as a child group? The other group's admin must approve.`)) return;
     setChildLinking(true);
     setError('');
     setSuccess('');
     try {
-      await apiFetch(`/groups/${childId}/parent`, {
-        method: 'PATCH',
+      await apiFetch(`/groups/${childId}/relationship-requests`, {
+        method: 'POST',
         body: JSON.stringify({ parentGroupId: params.groupId }),
       });
       setChildSearchQuery('');
       setChildSearchResults([]);
-      setSuccess(zh ? `「${childName}」已設為子群組。` : `"${childName}" set as child group.`);
+      setSuccess(zh ? `已送出子群組連結申請，待「${childName}」管理員核准。` : `Request sent — awaiting approval from "${childName}"'s admin.`);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed.');
@@ -444,9 +444,14 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           description: newParentForm.description.trim() || undefined,
         }),
       });
-      await apiFetch(`/groups/${params.groupId}/parent`, {
-        method: 'PATCH',
+      // Source = current group, target = new group. Current user just created new group so can approve as target creator.
+      const req = await apiFetch<{ id: string }>(`/groups/${params.groupId}/relationship-requests`, {
+        method: 'POST',
         body: JSON.stringify({ parentGroupId: created.id }),
+      });
+      await apiFetch(`/groups/relationship-requests/${req.id}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approve' }),
       });
       const createdName = newParentForm.name.trim();
       setNewParentForm({ name: '', description: '' });
@@ -476,11 +481,16 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           initialMemberIds: childInitialMemberIds,
         }),
       });
-      const createdName = newChildForm.name.trim();
-      await apiFetch(`/groups/${created.id}/parent`, {
-        method: 'PATCH',
+      // Source = new group, target = current group. Current user is creator of current group so can approve.
+      const req = await apiFetch<{ id: string }>(`/groups/${created.id}/relationship-requests`, {
+        method: 'POST',
         body: JSON.stringify({ parentGroupId: params.groupId }),
       });
+      await apiFetch(`/groups/relationship-requests/${req.id}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approve' }),
+      });
+      const createdName = newChildForm.name.trim();
       setNewChildForm({ name: '', description: '' });
       setChildInitialMemberIds([]);
       setSuccess(zh ? `子群組「${createdName}」已建立並連結。` : `Child group "${createdName}" created and linked.`);
@@ -873,15 +883,15 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                         </div>
                         <button
                           onClick={async () => {
-                            if (!confirm(zh ? `確定要將「${g.name}」設為父群組嗎？` : `Set "${g.name}" as parent?`)) return;
+                            if (!confirm(zh ? `送出申請，將「${g.name}」設為父群組？對方管理員核准後生效。` : `Submit a request to set "${g.name}" as parent? Their admin must approve.`)) return;
                             setParentSaving(true);
                             setError('');
                             setSuccess('');
                             try {
-                              await apiFetch(`/groups/${params.groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: g.id }) });
+                              await apiFetch(`/groups/${params.groupId}/relationship-requests`, { method: 'POST', body: JSON.stringify({ parentGroupId: g.id }) });
                               setParentSearchQuery('');
                               setParentSearchResults([]);
-                              setSuccess(zh ? `父群組已設為「${g.name}」。` : `Parent set to "${g.name}".`);
+                              setSuccess(zh ? `已送出父群組連結申請，待「${g.name}」管理員核准。` : `Request sent — awaiting approval from "${g.name}"'s admin.`);
                               await loadPage();
                             } catch (err: unknown) {
                               setError((err as Error).message ?? 'Failed.');
@@ -892,7 +902,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                           disabled={parentSaving}
                           className="shrink-0 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                         >
-                          {zh ? '設為父群組' : 'Set as Parent'}
+                          {zh ? '送出申請' : 'Send Request'}
                         </button>
                       </div>
                     ))}
