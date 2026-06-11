@@ -70,6 +70,8 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
           </label>
           <input
             type="text"
+            name="username"
+            autoComplete="username"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
             placeholder=""
@@ -91,6 +93,8 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
           </div>
           <input
             type="password"
+            name="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

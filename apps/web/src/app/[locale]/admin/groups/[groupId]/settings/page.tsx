@@ -520,26 +520,11 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     setError('');
     setSuccess('');
     try {
-      let photoUrl: string | null | undefined = undefined;
-      if (groupPhotoFile) {
-        const uploaded = await apiUpload(groupPhotoFile);
-        photoUrl = uploaded.url;
-      } else if (groupPhotoRemoved) {
-        photoUrl = null;
-      }
-      const payload: Record<string, unknown> = {
-        name: groupSettings.name,
-        description: groupSettings.description,
-        discoverableBySearch: groupSettings.discoverableBySearch,
-      };
-      if (photoUrl !== undefined) payload.photoUrl = photoUrl;
       await apiFetch(`/groups/${params.groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ discoverableBySearch: groupSettings.discoverableBySearch }),
       });
       setSuccess(zh ? '群組設定已儲存。' : 'Group settings saved.');
-      setGroupPhotoFile(null);
-      setGroupPhotoRemoved(false);
       await loadPage();
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to save settings.');
@@ -1162,69 +1147,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {/* Group Settings */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組設定' : 'Group Settings'}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性。' : 'Control group discoverability.'}</p>
-
-        {/* Group photo */}
-        <div className="mt-4">
-          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片' : 'Group Photo'}</label>
-          <div
-            onClick={() => groupPhotoFileRef.current?.click()}
-            className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
-          >
-            {(groupPhotoPreview ?? currentGroupPhotoUrl) ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={groupPhotoPreview ?? (currentGroupPhotoUrl ? `${process.env.NEXT_PUBLIC_API_URL ?? ''}${currentGroupPhotoUrl}` : '')}
-                alt="group"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
-                <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span className="text-xs">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
-              </div>
-            )}
-            {(groupPhotoPreview ?? currentGroupPhotoUrl) && (
-              <button
-                type="button"
-                onClick={(ev) => { ev.stopPropagation(); setGroupPhotoFile(null); setGroupPhotoPreview(null); setCurrentGroupPhotoUrl(null); setGroupPhotoRemoved(true); if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = ''; }}
-                className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70"
-              >✕</button>
-            )}
-          </div>
-          <input ref={groupPhotoFileRef} type="file" accept="image/*" onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setGroupPhotoFile(file);
-            setGroupPhotoPreview(URL.createObjectURL(file));
-            setGroupPhotoRemoved(false);
-          }} className="hidden" />
-        </div>
-
-        {/* Name & description edit */}
-        <div className="mt-4 space-y-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組名稱' : 'Group Name'}</label>
-            <input
-              value={groupSettings.name}
-              onChange={(e) => setGroupSettings((s) => ({ ...s, name: e.target.value }))}
-              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '描述' : 'Description'}</label>
-            <textarea
-              value={groupSettings.description}
-              onChange={(e) => setGroupSettings((s) => ({ ...s, description: e.target.value }))}
-              rows={3}
-              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-          </div>
-
-        </div>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性。名稱、描述與封面照片可在群組頁面直接編輯。' : 'Control group discoverability. Name, description, and cover photo can be edited directly on the group page.'}</p>
 
         {/* Discoverability toggle */}
         <div className="mt-5 flex items-start gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">

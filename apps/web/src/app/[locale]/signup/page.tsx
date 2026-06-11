@@ -69,11 +69,20 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
     }
   };
 
+  const autoCompleteHint: Record<string, string> = {
+    displayName: 'name',
+    email: 'email',
+    phone: 'tel',
+    password: 'new-password',
+  };
+
   const field = (label: string, key: keyof typeof form, type = 'text', isRequired = true) => (
     <div>
       <label className="block text-sm font-medium mb-1 dark:text-gray-300">{label}</label>
       <input
         type={type}
+        name={key}
+        autoComplete={autoCompleteHint[key] ?? 'off'}
         value={form[key] as string}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         required={isRequired}
