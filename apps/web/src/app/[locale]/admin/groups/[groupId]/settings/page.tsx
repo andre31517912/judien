@@ -951,7 +951,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   {relationships.subgroups.map((sg) => (
                     <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm">
                       <Link href={`/${params.locale}/admin/groups/${sg.id}`} className="flex-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate">{sg.name}</Link>
-                      {sg.description && <span className="text-gray-400 dark:text-gray-500 truncate max-w-[160px] hidden sm:block">{sg.description}</span>}
                       <button
                         onClick={async () => {
                           if (!confirm(zh ? `確定要將「${sg.name}」從子群組中移除嗎？` : `Remove "${sg.name}" as a child group?`)) return;

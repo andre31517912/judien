@@ -573,7 +573,7 @@ export default function GroupDetailScreen() {
                         style={styles.smallBtn}
                         onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
                       >
-                        <Text style={styles.smallBtnText}>{zh ? '暱稱' : 'Nickname'}</Text>
+                        <Text style={styles.smallBtnText}>{zh ? '改名' : 'Rename'}</Text>
                       </TouchableOpacity>
                     )}
                     {isGroupAdmin && !isOwnRow && (

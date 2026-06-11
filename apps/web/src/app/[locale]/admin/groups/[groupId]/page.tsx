@@ -675,7 +675,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
             <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
               {members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}
             </p>
-            {members.filter((m) => {
+            {[...members].filter((m) => {
               const term = memberSearch.trim().toLowerCase();
               if (!term) return true;
               return (
@@ -683,6 +683,11 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 (m.displayName ?? '').toLowerCase().includes(term) ||
                 (m.email ?? '').toLowerCase().includes(term)
               );
+            }).sort((a, b) => {
+              if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+              const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+              const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+              return na.localeCompare(nb);
             }).map((member) => {
               const isOwnRow = member.userId === user?.id;
               const isEditingNickname = editingNicknameUserId === member.userId;
@@ -733,7 +738,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   {isOwnRow && !isEditingNickname && (
                     <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
                       className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                      {zh ? '設定暱稱' : 'Set Nickname'}
+                      {zh ? '改名' : 'Rename'}
                     </button>
                   )}
                   {!isOwnRow && !isEditingNickname && (
