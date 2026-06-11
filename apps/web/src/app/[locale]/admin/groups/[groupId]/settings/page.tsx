@@ -801,9 +801,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {isPlatformAdmin && (
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組層級' : 'Group Hierarchy'}</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {zh ? '管理此群組的父群組與子群組。' : 'Manage this group\'s parent and child groups.'}
-          </p>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             {/* ── Parent Group Column ── */}
@@ -1074,9 +1071,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {/* Add Member */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '新增成員' : 'Add Member'}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          {zh ? '搜尋現有 Judien 用戶，或為尚未加入的人建立新帳號。' : 'Search for an existing Judien user, or create a new account for someone not yet on Judien.'}
-        </p>
 
         {/* Mode toggle */}
         <div className="mt-4 flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden w-fit">
@@ -1276,11 +1270,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         {/* ── Bulk operations ── */}
         <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
           <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '批量操作' : 'Bulk Operations'}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
-            {zh
-              ? '批量新增：每行輸入「全名, 電子郵件, 含國碼手機」，為尚未加入 Judien 的人建立帳號並直接加入群組。'
-              : 'Bulk add: one person per line as "Full Name, Email, Phone with Country Code" — creates accounts and adds them.'}
-          </p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -1288,7 +1277,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               disabled={importLoading}
               className="rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
-              {importLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '📋 批量新增成員' : '📋 Bulk Add Members')}
+              {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '📋 批量匯入' : '📋 Bulk Import')}
             </button>
             {isPlatformAdmin && (
               <>
@@ -1298,7 +1287,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   disabled={exportLoading}
                   className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 匯出成員名單' : '📤 Export Members')}
+                  {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '📤 批量匯出' : '📤 Bulk Export')}
                 </button>
                 <input ref={importFileRef} type="file" accept=".csv" onChange={handleImportMembers} className="hidden" />
               </>
@@ -1320,7 +1309,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '捐款記錄' : 'Donation Records'}</h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '記錄成員捐款金額（USD 或 NTD）。' : 'Record member donations in USD or NTD.'}</p>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400"></p>
             </div>
             {!donationsLoaded && (
               <button onClick={loadDonations} disabled={donationsLoading} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
@@ -1437,7 +1426,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         {/* ─── Annual Report ─────────────────────────────────────────────── */}
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '年度報告' : 'Annual Report'}</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '查看每年活動出席率與捐款統計。' : 'View per-year attendance and donation stats for each member.'}</p>
 
           <div className="mt-4 flex items-center gap-3 flex-wrap">
             <input
@@ -1620,7 +1608,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           <div className="w-full max-w-xl rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-xl my-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {zh ? '批量新增成員' : 'Bulk Add Members'}
+                {zh ? '批量匯入成員' : 'Bulk Import Members'}
               </h3>
               <button
                 onClick={() => { setShowImportModal(false); setBulkResults(null); setError(''); }}
