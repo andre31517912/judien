@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,12 +13,13 @@ type BulkResult = { displayName: string; email?: string; phone?: string; created
 type RosterMember = { userId: string; groupNickname: string | null; displayName: string | null; email: string | null; phoneE164: string | null; joinedAt: string | null; role: string };
 type GroupRelationships = { parentGroup: { id: string; name: string } | null; subgroups: { id: string; name: string; description: string }[] };
 type GroupSearchResult = { id: string; name: string; description: string };
+type DonationRecord = { id: string; forUserId: string; amount: string; currency: string; date: string; note: string | null; forUser: { id: string; displayName: string | null; email: string } };
 
 function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'invite' | 'roster' | 'requests' | 'hierarchy';
+type Tab = 'general' | 'invite' | 'roster' | 'requests' | 'hierarchy' | 'donations';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -80,6 +81,15 @@ export default function GroupSettingsScreen() {
   const [childSearching, setChildSearching] = useState(false);
   const [childLinking, setChildLinking] = useState(false);
 
+  // Donations
+  const [donations, setDonations] = useState<DonationRecord[]>([]);
+  const [donationsLoading, setDonationsLoading] = useState(false);
+  const [showDonationModal, setShowDonationModal] = useState(false);
+  const [donationForm, setDonationForm] = useState({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
+  const [donationSaving, setDonationSaving] = useState(false);
+  const [groupMembers, setGroupMembers] = useState<RosterMember[]>([]);
+  const [showMemberPicker, setShowMemberPicker] = useState(false);
+
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const loadData = async () => {
@@ -118,6 +128,64 @@ export default function GroupSettingsScreen() {
   };
 
   useEffect(() => { if (tab === 'hierarchy') loadHierarchy(); }, [tab, groupId]);
+
+  const loadDonations = async () => {
+    if (!groupId) return;
+    setDonationsLoading(true);
+    try {
+      const [data, mems] = await Promise.all([
+        apiFetch<DonationRecord[]>(`/groups/${groupId}/donations`),
+        groupMembers.length === 0 ? apiFetch<RosterMember[]>(`/groups/${groupId}/members`) : Promise.resolve(groupMembers),
+      ]);
+      setDonations(data);
+      if (groupMembers.length === 0) setGroupMembers(mems);
+    } catch { /* ignore */ } finally { setDonationsLoading(false); }
+  };
+
+  useEffect(() => { if (tab === 'donations') loadDonations(); }, [tab, groupId]);
+
+  const handleCreateDonation = async () => {
+    if (!groupId) return;
+    if (!donationForm.forUserId || !donationForm.amount || !donationForm.date) {
+      Alert.alert('', zh ? '請填寫必填欄位' : 'Please fill in all required fields.');
+      return;
+    }
+    setDonationSaving(true);
+    try {
+      await apiFetch(`/groups/${groupId}/donations`, {
+        method: 'POST',
+        body: JSON.stringify({
+          forUserId: donationForm.forUserId,
+          amount: parseFloat(donationForm.amount),
+          currency: donationForm.currency,
+          date: donationForm.date,
+          note: donationForm.note || undefined,
+        }),
+      });
+      setDonationForm({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
+      setShowDonationModal(false);
+      await loadDonations();
+      Alert.alert('✓', zh ? '捐款記錄已新增。' : 'Donation recorded.');
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed.');
+    } finally { setDonationSaving(false); }
+  };
+
+  const handleDeleteDonation = (id: string) => {
+    Alert.alert(
+      zh ? '刪除記錄' : 'Delete Record',
+      zh ? '確定要刪除此捐款記錄嗎？' : 'Delete this donation record?',
+      [
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: zh ? '刪除' : 'Delete', style: 'destructive', onPress: async () => {
+          try {
+            await apiFetch(`/groups/${groupId}/donations/${id}`, { method: 'DELETE' });
+            setDonations((prev) => prev.filter((d) => d.id !== id));
+          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+        }},
+      ]
+    );
+  };
 
   const pickPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -391,12 +459,14 @@ export default function GroupSettingsScreen() {
     { key: 'invite', label: zh ? '邀請' : 'Invite' },
     { key: 'roster', label: zh ? '新增成員' : 'Add Members' },
     { key: 'requests', label: joinRequests.length > 0 ? `${zh ? '申請' : 'Requests'} (${joinRequests.length})` : (zh ? '申請' : 'Requests') },
+    { key: 'donations' as Tab, label: zh ? '捐款' : 'Donations' },
     ...(isPlatformAdmin ? [{ key: 'hierarchy' as Tab, label: zh ? '群組架構' : 'Hierarchy' }] : []),
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
 
   return (
+    <>
     <ScrollView contentContainerStyle={styles.container}>
       <Stack.Screen options={{ title: headerTitle, headerLeft: () => null, gestureEnabled: true }} />
 
@@ -780,7 +850,132 @@ export default function GroupSettingsScreen() {
           </View>
         </View>
       )}
+
+      {/* Donations */}
+      {tab === 'donations' && (
+        <View style={{ gap: 12 }}>
+          <View style={styles.card}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sectionTitle}>{zh ? '捐款記錄' : 'Donation Records'}</Text>
+                <Text style={styles.muted}>{zh ? '記錄並追蹤成員捐款歷史（新台幣或美金）。' : 'Record and track member donations in NTD or USD.'}</Text>
+              </View>
+              <TouchableOpacity style={styles.donationAddBtn} onPress={() => setShowDonationModal(true)}>
+                <Text style={styles.donationAddBtnText}>{zh ? '+ 新增' : '+ Add'}</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ marginTop: 8, gap: 6 }}>
+              {donationsLoading ? (
+                <Text style={styles.muted}>{zh ? '載入中…' : 'Loading…'}</Text>
+              ) : donations.length === 0 ? (
+                <Text style={styles.reqMeta}>{zh ? '尚無捐款記錄。' : 'No donation records yet.'}</Text>
+              ) : donations.map((d) => (
+                <View key={d.id} style={styles.donationRow}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={styles.reqPrimary}>{d.forUser.displayName ?? d.forUser.email}</Text>
+                    <Text style={styles.donationAmount}>{Number(d.amount).toLocaleString()} {d.currency}</Text>
+                    <Text style={styles.reqMeta}>{new Date(d.date).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}{d.note ? `  ·  ${d.note}` : ''}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => handleDeleteDonation(d.id)}>
+                    <Text style={styles.deleteDonationBtn}>{zh ? '刪除' : 'Delete'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
     </ScrollView>
+
+    {/* Add Donation Modal */}
+    <Modal visible={showDonationModal} animationType="slide" transparent onRequestClose={() => setShowDonationModal(false)}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={() => setShowDonationModal(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalSheet}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={styles.sectionTitle}>{zh ? '新增捐款記錄' : 'Add Donation Record'}</Text>
+              <TouchableOpacity onPress={() => setShowDonationModal(false)}>
+                <Text style={{ fontSize: 18, color: colors.subtext }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Format hint */}
+            <View style={styles.donationHint}>
+              <Text style={styles.donationHintTitle}>{zh ? '格式說明' : 'Format'}</Text>
+              <Text style={styles.donationHintText}>{zh ? '成員 · 金額 · 幣別（NTD / USD）· 日期 · 備註（選填）' : 'Member · Amount · Currency (NTD / USD) · Date · Note (optional)'}</Text>
+              <Text style={styles.donationHintExample}>{zh ? '例：王小明 · 1000 · NTD · 2024-03-15 · 春季奉獻' : 'e.g. Jane Smith · 500 · USD · 2024-03-15 · Spring offering'}</Text>
+            </View>
+
+            <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
+              {/* Member picker */}
+              <Text style={styles.fieldLabel}>{zh ? '成員 *' : 'Member *'}</Text>
+              {showMemberPicker ? (
+                <View style={[styles.card, { marginBottom: 8, gap: 4 }]}>
+                  {groupMembers.map((m) => (
+                    <TouchableOpacity key={m.userId} style={[styles.reqRow, donationForm.forUserId === m.userId && { borderColor: INDIGO, backgroundColor: '#EEF2FF' }]}
+                      onPress={() => { setDonationForm((f) => ({ ...f, forUserId: m.userId })); setShowMemberPicker(false); }}>
+                      <Text style={styles.reqPrimary}>{m.groupNickname ?? m.displayName ?? m.email ?? m.userId}</Text>
+                      {m.email ? <Text style={styles.reqMeta}>{m.email}</Text> : null}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ) : (
+                <TouchableOpacity style={[styles.input, { justifyContent: 'center', marginBottom: 8 }]} onPress={() => setShowMemberPicker(true)}>
+                  <Text style={{ color: donationForm.forUserId ? colors.text : colors.placeholder, fontSize: 14 }}>
+                    {donationForm.forUserId
+                      ? (groupMembers.find((m) => m.userId === donationForm.forUserId)?.groupNickname ?? groupMembers.find((m) => m.userId === donationForm.forUserId)?.displayName ?? donationForm.forUserId)
+                      : (zh ? '選擇成員…' : 'Select member…')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Amount + Currency */}
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fieldLabel}>{zh ? '金額 *' : 'Amount *'}</Text>
+                  <TextInput style={styles.input} value={donationForm.amount} onChangeText={(v) => setDonationForm((f) => ({ ...f, amount: v }))}
+                    placeholder="0" placeholderTextColor={colors.placeholder} keyboardType="numeric" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fieldLabel}>{zh ? '幣別' : 'Currency'}</Text>
+                  <View style={styles.roleRow}>
+                    {(['NTD', 'USD'] as const).map((c) => (
+                      <TouchableOpacity key={c} style={[styles.roleBtn, { flex: 1 }, donationForm.currency === c && styles.roleBtnActive]}
+                        onPress={() => setDonationForm((f) => ({ ...f, currency: c }))}>
+                        <Text style={[styles.roleBtnText, donationForm.currency === c && styles.roleBtnTextActive]}>{c}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              </View>
+
+              {/* Date */}
+              <Text style={styles.fieldLabel}>{zh ? '日期 *（YYYY-MM-DD）' : 'Date * (YYYY-MM-DD)'}</Text>
+              <TextInput style={[styles.input, { marginBottom: 8 }]} value={donationForm.date}
+                onChangeText={(v) => setDonationForm((f) => ({ ...f, date: v }))}
+                placeholder="2024-01-15" placeholderTextColor={colors.placeholder} keyboardType="numbers-and-punctuation" />
+
+              {/* Note */}
+              <Text style={styles.fieldLabel}>{zh ? '備註（選填）' : 'Note (optional)'}</Text>
+              <TextInput style={[styles.input, { marginBottom: 16 }]} value={donationForm.note}
+                onChangeText={(v) => setDonationForm((f) => ({ ...f, note: v }))}
+                placeholder={zh ? '例：春季奉獻' : 'e.g. Spring offering'} placeholderTextColor={colors.placeholder} />
+
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity style={[styles.roleBtn, { flex: 1, paddingVertical: 12 }]} onPress={() => setShowDonationModal(false)}>
+                  <Text style={styles.roleBtnText}>{zh ? '取消' : 'Cancel'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.primaryBtn, { flex: 1, opacity: donationSaving ? 0.5 : 1 }]} onPress={handleCreateDonation} disabled={donationSaving}>
+                  <Text style={styles.primaryBtnText}>{donationSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '新增捐款' : 'Add Donation')}</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </Modal>
+    </>
   );
 }
 
@@ -840,5 +1035,16 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     unlinkBtnText: { color: '#DC2626', fontSize: 12, fontWeight: '600' },
     hierarchyError: { color: '#DC2626', fontSize: 13, backgroundColor: '#FFF5F5', borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, padding: 10 },
     hierarchySuccess: { color: '#16A34A', fontSize: 13, backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#86EFAC', borderRadius: 8, padding: 10 },
+    donationAddBtn: { backgroundColor: '#059669', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+    donationAddBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+    donationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10 },
+    donationAmount: { fontSize: 14, fontWeight: '700', color: '#059669', fontVariant: ['tabular-nums'] },
+    deleteDonationBtn: { color: '#EF4444', fontSize: 12, fontWeight: '600' },
+    modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+    modalSheet: { backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 36 },
+    donationHint: { backgroundColor: colors.bg, borderRadius: 8, padding: 10, marginBottom: 12, gap: 2 },
+    donationHintTitle: { fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase', letterSpacing: 0.5 },
+    donationHintText: { fontSize: 11, color: colors.subtext },
+    donationHintExample: { fontSize: 11, color: colors.placeholder, fontStyle: 'italic' },
   });
 }

@@ -135,7 +135,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         location_en: form.location,
         location_zh: form.location,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
-        endAt: form.endAt || null,
+        endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency,
