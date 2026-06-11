@@ -90,14 +90,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [showExportModal, setShowExportModal] = useState(false);
   const [pendingImportType, setPendingImportType] = useState<'csv' | null>(null);
 
-  const [groupSettings, setGroupSettings] = useState({ name: '', description: '', discoverableBySearch: true });
-  const [settingsSaving, setSettingsSaving] = useState(false);
-
-  const groupPhotoFileRef = useRef<HTMLInputElement>(null);
-  const [groupPhotoFile, setGroupPhotoFile] = useState<File | null>(null);
-  const [groupPhotoPreview, setGroupPhotoPreview] = useState<string | null>(null);
-  const [currentGroupPhotoUrl, setCurrentGroupPhotoUrl] = useState<string | null>(null);
-  const [groupPhotoRemoved, setGroupPhotoRemoved] = useState(false);
 
   const [relationships, setRelationships] = useState<{
     parentGroup: { id: string; name: string } | null;
@@ -360,17 +352,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       ]);
       const current = groups.find((item) => item.group.id === params.groupId) ?? null;
       setGroupItem(current);
-      if (current) {
-        setGroupSettings({
-          name: current.group.name,
-          description: current.group.description ?? '',
-          discoverableBySearch: current.group.discoverableBySearch ?? true,
-        });
-        const photoUrl = (current.group as { photoUrl?: string | null }).photoUrl ?? null;
-        setCurrentGroupPhotoUrl(photoUrl);
-        setGroupPhotoPreview(null);
-        setGroupPhotoFile(null);
-      }
       setMembers(memberList);
 
       const reqRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);
@@ -508,24 +489,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setError((err as Error).message ?? 'Failed to create child group.');
     } finally {
       setChildCreating(false);
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    setSettingsSaving(true);
-    setError('');
-    setSuccess('');
-    try {
-      await apiFetch(`/groups/${params.groupId}/settings`, {
-        method: 'PATCH',
-        body: JSON.stringify({ discoverableBySearch: groupSettings.discoverableBySearch }),
-      });
-      setSuccess(zh ? '群組設定已儲存。' : 'Group settings saved.');
-      await loadPage();
-    } catch (err: unknown) {
-      setError((err as Error).message ?? 'Failed to save settings.');
-    } finally {
-      setSettingsSaving(false);
     }
   };
 
@@ -1107,37 +1070,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
         </section>
       )}
-
-      {/* Group Settings */}
-      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組設定' : 'Group Settings'}</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '控制此群組的公開性。名稱、描述與封面照片可在群組頁面直接編輯。' : 'Control group discoverability. Name, description, and cover photo can be edited directly on the group page.'}</p>
-
-        {/* Discoverability toggle */}
-        <div className="mt-5 flex items-start gap-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
-          <input
-            id="discoverableBySearch"
-            type="checkbox"
-            checked={!groupSettings.discoverableBySearch}
-            onChange={(e) => setGroupSettings((s) => ({ ...s, discoverableBySearch: !e.target.checked }))}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 accent-indigo-600"
-          />
-          <label htmlFor="discoverableBySearch" className="cursor-pointer select-none">
-            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-              {zh ? '停用搜尋探索（設為私密群組）' : 'Disable search discovery (make group private)'}
-            </p>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              {zh
-                ? '勾選後，用戶將無法搜尋此群組或送出加入申請。預設為可搜尋。'
-                : 'When checked, users cannot search for this group or submit join requests. Groups are searchable by default.'}
-            </p>
-          </label>
-        </div>
-
-        <button onClick={handleSaveSettings} disabled={settingsSaving} className="mt-4 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-          {settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}
-        </button>
-      </section>
 
       {/* Add Member */}
       <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
