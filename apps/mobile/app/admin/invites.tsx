@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Clipboard } from 'react-native';
 import { Stack } from 'expo-router';
-import { apiFetch } from '../../../lib/api';
-import { useAuth } from '../../../context/auth.context';
+import { apiFetch } from '../../lib/api';
+import { useAuth } from '../../context/auth.context';
 import { useTranslation } from 'react-i18next';
 import type { InviteToken } from '@judien/shared';
 

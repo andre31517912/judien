@@ -15,7 +15,7 @@
     "queue:worker": "pnpm --filter @judien/api worker",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "push": "git add . && git commit -m \"update\" && git push",
+    "push": "git add . && git commit -m \"update\" && git push && pnpm --filter @judien/mobile update \"update\"",
     "save": "git add . && git commit -m"
   },
   "pnpm": {

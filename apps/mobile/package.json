@@ -8,7 +8,12 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.tsx"
+    "lint": "eslint src --ext .ts,.tsx",
+    "update": "eas update --branch production --message",
+    "build": "eas build --platform all --profile production",
+    "build:ios": "eas build --platform ios --profile production",
+    "build:android": "eas build --platform android --profile production",
+    "submit": "eas submit --platform all"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
@@ -16,6 +21,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.4.4",
     "expo": "~54.0.33",
+    "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
     "expo-image-picker": "~17.0.10",
     "expo-linking": "~8.0.11",
