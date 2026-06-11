@@ -16,6 +16,10 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "push": "git add . && git commit -m \"update\" && git push && pnpm --filter @judien/mobile update \"update\"",
+    "mobile": "pnpm --filter @judien/mobile build",
+    "mobile:ios": "pnpm --filter @judien/mobile build:ios",
+    "mobile:android": "pnpm --filter @judien/mobile build:android",
+    "mobile:submit": "pnpm --filter @judien/mobile submit",
     "save": "git add . && git commit -m"
   },
   "pnpm": {
