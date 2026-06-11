@@ -510,6 +510,9 @@ export class GroupsService {
       });
     });
 
+    // Fire-and-forget: notify the new member of any upcoming events they missed
+    this.notifyMemberOfUpcomingEvents(invite.groupId, user.id).catch(() => {});
+
     return { status: 'ACCEPTED' };
   }
 
@@ -660,6 +663,8 @@ export class GroupsService {
         groupId: req.groupId,
         requestId,
       });
+      // Fire-and-forget: surface upcoming events for the newly-approved member
+      this.notifyMemberOfUpcomingEvents(req.groupId, req.requesterUserId).catch(() => {});
       return updated;
     });
   }
@@ -769,6 +774,9 @@ export class GroupsService {
         text: `You have been added to the group "${group.name}" on Judien. Click here to view: ${groupLink}`,
       });
     }
+
+    // Fire-and-forget: surface upcoming events for the newly-added member
+    this.notifyMemberOfUpcomingEvents(groupId, targetUser.id).catch(() => {});
 
     return { added: true, userId: targetUser.id, displayName: targetUser.displayName };
   }
@@ -898,6 +906,7 @@ export class GroupsService {
             create: { groupId, userId: existingUser.id, status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
             update: { status: 'ACCEPTED', role: dto.role, joinedAt: new Date() },
           });
+          this.notifyMemberOfUpcomingEvents(groupId, existingUser.id).catch(() => {});
           results.push({ displayName: existingUser.displayName ?? member.displayName, email: member.email, phone: member.phone, created: false, added: true });
           continue;
         }
@@ -935,6 +944,8 @@ export class GroupsService {
             text: `A Judien account has been created for you and you have been added to "${group.name}". Visit: ${groupLink}`,
           }).catch(() => {});
         }
+
+        this.notifyMemberOfUpcomingEvents(groupId, newUser.id).catch(() => {});
 
         results.push({
           displayName: newUser.displayName ?? member.displayName,
@@ -1008,6 +1019,32 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group not found.');
     return group;
+  }
+
+  // Notify a newly-added member of upcoming events they may have missed (up to 5, next 60 days).
+  // Called fire-and-forget after membership is set to ACCEPTED.
+  private async notifyMemberOfUpcomingEvents(groupId: string, userId: string) {
+    const now = new Date();
+    const cutoff = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const events = await this.prisma.event.findMany({
+      where: { groupId, startAt: { gte: now, lte: cutoff } },
+      orderBy: { startAt: 'asc' },
+      take: 5,
+    });
+    if (!events.length) return;
+    await this.notifications.createMany(
+      events.map((ev) => ({
+        userId,
+        type: 'NEW_EVENT' as const,
+        title_en: `Upcoming: ${ev.title_en || ev.title_zh}`,
+        title_zh: `即將到來：${ev.title_zh || ev.title_en}`,
+        body_en: new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
+        body_zh: new Date(ev.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
+        actionUrl: `/events/${ev.id}`,
+        groupId,
+        eventId: ev.id,
+      })),
+    );
   }
 
   // ─── Subgroups ───────────────────────────────────────────────────────────────
