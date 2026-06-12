@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch, resolveImageUrl } from '@/lib/api';
+import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 
 type AdminGroupItem = {
