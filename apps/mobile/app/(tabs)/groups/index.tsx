@@ -11,11 +11,13 @@ import {
   View,
   RefreshControl,
 } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../context/theme.context';
 import JLogo from '../../../components/JLogo';
+
+const INDIGO = '#4F46E5';
 
 type GroupListItem = {
   group: {
@@ -54,9 +56,26 @@ type GroupSearchResult = {
 
 export default function GroupsTab() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { i18n } = useTranslation();
   const { colors } = useTheme();
   const zh = i18n.language === 'zh';
+
+  // ── Configure Tabs header (same style as Home/Notifications/Profile) ─────
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ marginRight: 16 }}>
+          <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
+        </TouchableOpacity>
+      ),
+      headerLeft: undefined,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zh, colors.headerBg]));
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -141,14 +160,6 @@ export default function GroupsTab() {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
     >
-      <Stack.Screen options={{
-        headerTitle: () => <JLogo />,
-        headerRight: () => (
-          <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立群組' : 'Create group'}>
-            <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
-          </TouchableOpacity>
-        ),
-      }} />
 
       {invites.length > 0 && (
         <View style={styles.section}>

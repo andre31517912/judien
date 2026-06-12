@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl,
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import JLogo from '../../../components/JLogo';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../../context/auth.context';
@@ -13,8 +13,11 @@ import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, PaginatedResponse, Event } from '@judien/shared';
 import DateTimeField from '../../../components/DateTimeField';
 
+const INDIGO = '#4F46E5';
+
 export default function EventsTab() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { user } = useAuth();
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
@@ -42,6 +45,26 @@ export default function EventsTab() {
 
   // ── Create form state ───────────────────────────────────────────────────
   const [creating, setCreating] = useState(false);
+
+  // ── Configure Tabs header (same style as Home/Notifications/Profile) ─────
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: creating ? (zh ? '建立活動' : 'Create Event') : () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerLeft: creating ? () => (
+        <TouchableOpacity onPress={() => { setCreating(false); resetForm(); }} activeOpacity={1} style={{ marginLeft: 16 }}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+      ) : undefined,
+      headerRight: !creating && user ? () => (
+        <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
+          <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
+        </TouchableOpacity>
+      ) : undefined,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [creating, zh, colors.headerBg, user]));
   const [form, setForm] = useState({
     title: '', description: '', location: '',
     startAt: '', endAt: '', timezone: 'Asia/Taipei',
@@ -129,19 +152,6 @@ export default function EventsTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <Stack.Screen options={{
-        headerTitle: creating ? (zh ? '建立活動' : 'Create Event') : () => <JLogo />,
-        headerLeft: creating ? () => (
-          <TouchableOpacity onPress={() => { setCreating(false); resetForm(); }} activeOpacity={1} style={{ marginLeft: 16 }}>
-            <Text style={styles.backBtn}>‹ {zh ? '返回' : 'Back'}</Text>
-          </TouchableOpacity>
-        ) : undefined,
-        headerRight: !creating ? () => (
-          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立活動' : 'Create event'}>
-            <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
-          </TouchableOpacity>
-        ) : undefined,
-      }} />
 
       {/* ── Upcoming / Past tabs (hidden while creating) ── */}
       {!creating && (

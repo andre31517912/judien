@@ -4,6 +4,7 @@ import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../lib/api';
+import JLogo from '../../components/JLogo';
 
 function useUnreadCount() {
   const [count, setCount] = useState(0);
@@ -43,6 +44,8 @@ export default function TabsLayout() {
         name="events"
         options={{
           title: 'Events',
+          headerTitle: () => <JLogo />,
+          headerStyle: { backgroundColor: colors.headerBg },
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
         }}
       />
@@ -50,6 +53,8 @@ export default function TabsLayout() {
         name="groups"
         options={{
           title: 'Groups',
+          headerTitle: () => <JLogo />,
+          headerStyle: { backgroundColor: colors.headerBg },
           tabBarIcon: ({ color, size }) => <Ionicons name="people-outline" size={size} color={color} />,
         }}
       />

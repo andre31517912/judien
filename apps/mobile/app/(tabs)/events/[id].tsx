@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import {
   KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { apiFetch, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
@@ -40,6 +40,12 @@ export default function EventDetailScreen() {
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const scrollRef = useRef<ScrollView>(null);
+  const navigation = useNavigation();
+
+  // Hide the Tabs header so only the inner Stack header (with back button) shows
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({ headerShown: false });
+  }, []));
 
   const [event, setEvent] = useState<EventWithCounts | null>(null);
   const [fetchFailed, setFetchFailed] = useState(false);

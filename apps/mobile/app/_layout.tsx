@@ -1,10 +1,11 @@
 import '../lib/i18n';
 import { useEffect } from 'react';
-import { Linking } from 'react-native';
+import { Linking, TouchableOpacity, Text } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/auth.context';
 import { ThemeProvider, useTheme } from '../context/theme.context';
+import { useTranslation } from 'react-i18next';
 
 function DeepLinkHandler() {
   const { loginWithTokens } = useAuth();
@@ -39,15 +40,28 @@ function DeepLinkHandler() {
   return null;
 }
 
+const INDIGO = '#4F46E5';
+
 function AppShell() {
   const { isDark, colors } = useTheme();
+  const router = useRouter();
+  const { i18n } = useTranslation();
+  const zh = i18n.language === 'zh';
 
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.headerBg} />
       <AuthProvider>
         <DeepLinkHandler />
-        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text }}>
+        <Stack screenOptions={{
+          headerStyle: { backgroundColor: colors.headerBg },
+          headerTintColor: colors.text,
+          headerLeft: ({ canGoBack }) => canGoBack ? (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={0.7}>
+              <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+            </TouchableOpacity>
+          ) : undefined,
+        }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

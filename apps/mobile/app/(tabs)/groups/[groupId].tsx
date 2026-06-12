@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import JLogo from '../../../components/JLogo';
 import { apiFetch } from '../../../lib/api';
@@ -70,10 +70,16 @@ type GroupRelationships = {
 export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const router = useRouter();
+  const navigation = useNavigation();
   const { i18n } = useTranslation();
   const { user } = useAuth();
   const { colors } = useTheme();
   const zh = i18n.language === 'zh';
+
+  // Hide the Tabs header so only the inner Stack header (with back button) shows
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({ headerShown: false });
+  }, []));
 
   type Tab = 'feed' | 'upcoming' | 'past' | 'members';
 
@@ -281,16 +287,15 @@ export default function GroupDetailScreen() {
           <TouchableOpacity
             onPress={() => router.push(`/groups/${groupId}/settings`)}
             style={{ marginRight: 16 }}
+            activeOpacity={0.7}
             accessibilityLabel={zh ? '群組設定' : 'Group settings'}
           >
-            <View>
-              <Ionicons name="settings-outline" size={22} color={colors.text} />
-              {joinRequests.length > 0 && (
-                <View style={{ position: 'absolute', top: -3, right: -3, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 13, height: 13, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#fff', fontSize: 7, fontWeight: '800' }}>{joinRequests.length}</Text>
-                </View>
-              )}
-            </View>
+            <Ionicons name="settings-outline" size={22} color={colors.text} />
+            {joinRequests.length > 0 && (
+              <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         ) : undefined,
       }} />
