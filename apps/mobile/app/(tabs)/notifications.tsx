@@ -3,7 +3,8 @@ import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl,
 } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, Stack } from 'expo-router';
+import JLogo from '../../components/JLogo';
 import { apiFetch } from '../../lib/api';
 import { useTheme } from '../../context/theme.context';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +72,7 @@ export default function NotificationsTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
+      <Stack.Screen options={{ title: '', headerLeft: () => <JLogo /> }} />
       {notifications.some((n) => !n.read) && (
         <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={markAllRead}>
           <Text style={styles.markAllText}>{zh ? '全部標為已讀' : 'Mark all as read'}</Text>

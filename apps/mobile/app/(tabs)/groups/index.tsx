@@ -15,6 +15,7 @@ import { Stack, useRouter } from 'expo-router';
 import { apiFetch } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../context/theme.context';
+import JLogo from '../../../components/JLogo';
 
 type GroupListItem = {
   group: {
@@ -140,14 +141,15 @@ export default function GroupsTab() {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
     >
-      <Stack.Screen options={{ title: zh ? '我的群組' : 'My Groups' }} />
-
-      <View style={styles.headerRow}>
-        <Text style={styles.title}>{zh ? '我的群組' : 'My Groups'}</Text>
-        <TouchableOpacity style={styles.createGroupBtn} onPress={() => router.push('/admin/groups/new')}>
-          <Text style={styles.createGroupBtnText}>{zh ? '+ 建立群組' : '+ Create Group'}</Text>
-        </TouchableOpacity>
-      </View>
+      <Stack.Screen options={{
+        title: '',
+        headerLeft: () => <JLogo />,
+        headerRight: () => (
+          <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立群組' : 'Create group'}>
+            <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
+          </TouchableOpacity>
+        ),
+      }} />
 
       {invites.length > 0 && (
         <View style={styles.section}>
@@ -234,10 +236,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
   return StyleSheet.create({
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
     container: { padding: 16, gap: 16, backgroundColor: colors.bg, flexGrow: 1 },
-    headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    title: { fontSize: 24, fontWeight: '700', color: colors.text },
-    createGroupBtn: { backgroundColor: '#4F46E5', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-    createGroupBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
     section: { gap: 10 },
     sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
     card: {

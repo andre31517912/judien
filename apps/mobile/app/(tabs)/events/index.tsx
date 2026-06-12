@@ -4,6 +4,7 @@ import {
   StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl,
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
+import JLogo from '../../../components/JLogo';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
@@ -129,15 +130,15 @@ export default function EventsTab() {
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{
-        title: creating ? (zh ? '建立活動' : 'Create Event') : (zh ? '活動' : 'Events'),
-        headerRight: isAdmin && !creating ? () => (
-          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立活動' : 'Create event'}>
-            <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
-          </TouchableOpacity>
-        ) : undefined,
+        title: creating ? (zh ? '建立活動' : 'Create Event') : '',
         headerLeft: creating ? () => (
           <TouchableOpacity onPress={() => { setCreating(false); resetForm(); }} activeOpacity={1} style={{ marginLeft: 16 }}>
             <Text style={styles.backBtn}>‹ {zh ? '返回' : 'Back'}</Text>
+          </TouchableOpacity>
+        ) : () => <JLogo />,
+        headerRight: !creating ? () => (
+          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立活動' : 'Create event'}>
+            <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
           </TouchableOpacity>
         ) : undefined,
       }} />

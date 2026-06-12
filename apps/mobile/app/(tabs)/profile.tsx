@@ -4,14 +4,15 @@ import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
+import JLogo from '../../components/JLogo';
 import i18n from '../../lib/i18n';
 
 export default function ProfileScreen() {
   const { user, logout, refresh } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors, theme, setTheme, isDark } = useTheme();
+  const { colors, theme, setTheme } = useTheme();
   const zh = i18n.language === 'zh';
 
   const [displayName, setDisplayName] = useState('');
@@ -20,6 +21,7 @@ export default function ProfileScreen() {
   const [password, setPassword] = useState('');
   const [muteEmail, setMuteEmail] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
+  const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
 
   const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
 
@@ -61,6 +63,7 @@ export default function ProfileScreen() {
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
       i18n.changeLanguage(lang);
+      setTheme(pendingTheme);
       await refresh();
       setPassword('');
       Alert.alert('', zh ? '已儲存' : 'Saved');
@@ -77,6 +80,7 @@ export default function ProfileScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <Stack.Screen options={{ title: '', headerLeft: () => <JLogo /> }} />
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>{t('profile.title')}</Text>
@@ -87,12 +91,12 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Text style={styles.label}>{t('auth.displayName')}</Text>
+      <Text style={styles.label}>{zh ? '全名' : 'Full Name'}</Text>
       <TextInput
         style={styles.input}
         value={displayName}
         onChangeText={setDisplayName}
-        placeholder={(user as any).displayName || (zh ? '輸入顯示名稱' : 'Enter display name')}
+        placeholder={(user as any).displayName || (zh ? '輸入全名' : 'Enter full name')}
         placeholderTextColor={colors.placeholder}
       />
 
@@ -111,9 +115,9 @@ export default function ProfileScreen() {
       <Text style={styles.label}>{zh ? '主題' : 'Theme'}</Text>
       <View style={styles.rowGroup}>
         {(['light', 'dark'] as const).map((th) => (
-          <TouchableOpacity key={th} onPress={() => setTheme(th)}
-            style={[styles.optBtn, theme === th && styles.optBtnActive]}>
-            <Text style={[styles.optBtnText, theme === th && styles.optBtnTextActive]}>
+          <TouchableOpacity key={th} onPress={() => setPendingTheme(th)}
+            style={[styles.optBtn, pendingTheme === th && styles.optBtnActive]}>
+            <Text style={[styles.optBtnText, pendingTheme === th && styles.optBtnTextActive]}>
               {th === 'light' ? (zh ? '☀️ 淺色' : '☀️ Light') : (zh ? '🌙 深色' : '🌙 Dark')}
             </Text>
           </TouchableOpacity>

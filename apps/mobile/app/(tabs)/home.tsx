@@ -5,6 +5,7 @@ import {
   KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Stack } from 'expo-router';
+import JLogo from '../../components/JLogo';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch } from '../../lib/api';
@@ -90,15 +91,15 @@ export default function HomeTab() {
         keyboardShouldPersistTaps="handled"
       >
         <Stack.Screen options={{
-          title: composing ? (zh ? '發布公告' : 'Create Post') : (zh ? '動態' : 'Feed'),
-          headerRight: user && !composing ? () => (
-            <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
-              <Text style={styles.headerBtn}>＋</Text>
-            </TouchableOpacity>
-          ) : undefined,
+          title: composing ? (zh ? '發布公告' : 'Create Post') : '',
           headerLeft: composing ? () => (
             <TouchableOpacity onPress={() => setComposing(false)} activeOpacity={1} style={{ marginLeft: 16 }}>
               <Text style={styles.backBtn}>‹ {zh ? '返回' : 'Back'}</Text>
+            </TouchableOpacity>
+          ) : () => <JLogo />,
+          headerRight: user && !composing ? () => (
+            <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
+              <Text style={styles.headerBtn}>＋</Text>
             </TouchableOpacity>
           ) : undefined,
         }} />
