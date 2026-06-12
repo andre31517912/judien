@@ -60,10 +60,13 @@ export default function EventDetailPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteLink, setInviteLink] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [copyDone, setCopyDone] = useState(false);
 
   const handleCreateInvite = async () => {
     if (!user) return;
     setInviteLoading(true);
+    setInviteError('');
     try {
       const res = await apiFetch<{ token: string }>(`/events/${params.id}/share-link`, {
         method: 'POST',
@@ -73,7 +76,7 @@ export default function EventDetailPage() {
       setInviteLink(link);
       setShowInviteModal(true);
     } catch (err) {
-      alert(zh ? '無法生成分享連結' : 'Failed to generate share link');
+      setInviteError(zh ? '無法生成分享連結，請稍後再試。' : 'Failed to generate share link. Please try again.');
     } finally {
       setInviteLoading(false);
     }
@@ -81,7 +84,8 @@ export default function EventDetailPage() {
 
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(inviteLink);
-    alert(zh ? '已複製到剪貼簿' : 'Copied to clipboard');
+    setCopyDone(true);
+    setTimeout(() => setCopyDone(false), 2000);
   };
 
   // invitees state (admin only)
@@ -280,7 +284,11 @@ export default function EventDetailPage() {
     }
   };
 
-  if (loading) return <p className="text-gray-500 mt-8">{zh ? '載入中…' : 'Loading…'}</p>;
+  if (loading) return (
+    <div className="flex justify-center py-16">
+      <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  );
   if (!event) return <p className="text-red-500 mt-8">Event not found.</p>;
 
   const title = zh ? event.title_zh : event.title_en;
@@ -505,6 +513,9 @@ export default function EventDetailPage() {
           >
             {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
           </button>
+          )}
+          {inviteError && (
+            <p className="text-sm text-red-500 dark:text-red-400 w-full mt-1">{inviteError}</p>
           )}
           {user?.role === 'ADMIN' && (
             <button
@@ -888,8 +899,8 @@ export default function EventDetailPage() {
 
       {/* Invite Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowInviteModal(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4 text-center dark:text-white">{zh ? '活動分享連結' : 'Event Share Link'}</h3>
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4 break-all">
               <p className="text-sm font-mono text-indigo-600 dark:text-indigo-400">{inviteLink}</p>
@@ -899,7 +910,7 @@ export default function EventDetailPage() {
                 onClick={handleCopyInviteLink}
                 className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm"
               >
-                {zh ? '複製' : 'Copy'}
+                {copyDone ? (zh ? '✓ 已複製' : '✓ Copied!') : (zh ? '複製' : 'Copy')}
               </button>
               <button
                 onClick={() => setShowInviteModal(false)}

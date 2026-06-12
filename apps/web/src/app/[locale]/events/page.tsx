@@ -272,7 +272,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
 
           {newsError && <p className="text-sm text-red-500 dark:text-red-400">{newsError}</p>}
           {newsLoading ? (
-            <p className="text-gray-500 dark:text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 rounded-full animate-spin" /></div>
           ) : news.length === 0 && !composing ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-3">🎉</p>
@@ -432,7 +432,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
       {scope !== 'home' && (
         <>
           {eventLoading ? (
-            <p className="text-gray-500 dark:text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
+            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 rounded-full animate-spin" /></div>
           ) : events.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-3">📅</p>

@@ -402,9 +402,9 @@ export default function EventDetailScreen() {
       </View>
 
       {/* Share link modal */}
-      {showInviteModal && (
-        <View style={styles.overlay}>
-          <View style={styles.modalContent}>
+      <Modal visible={showInviteModal} transparent animationType="fade" onRequestClose={() => setShowInviteModal(false)}>
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowInviteModal(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
             <Text style={styles.modalTitle}>{zh ? '活動分享連結' : 'Event Share Link'}</Text>
             <Text style={styles.inviteLinkText}>{inviteLink}</Text>
             <View style={styles.modalActions}>
@@ -415,14 +415,14 @@ export default function EventDetailScreen() {
                 <Text style={styles.closeBtnText}>{zh ? '關閉' : 'Close'}</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      )}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Decline reason modal */}
       <Modal visible={showNoReason} transparent animationType="fade" onRequestClose={() => setShowNoReason(false)}>
-        <View style={styles.overlay}>
-          <View style={styles.modalContent}>
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowNoReason(false)}>
+          <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
             <Text style={styles.modalTitle}>{zh ? '無法參加的原因（選填）' : 'Reason for declining (optional)'}</Text>
             <TextInput
               style={[styles.commentInput, { marginBottom: 16 }]}
@@ -440,14 +440,14 @@ export default function EventDetailScreen() {
                 <Text style={styles.closeBtnText}>{zh ? '取消' : 'Cancel'}</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Guest list modal */}
       <Modal visible={showGuests} transparent animationType="slide" onRequestClose={() => setShowGuests(false)}>
-        <View style={styles.overlay}>
-          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+        <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowGuests(false)}>
+          <TouchableOpacity activeOpacity={1} style={[styles.modalContent, { maxHeight: '80%' }]}>
             <Text style={styles.modalTitle}>{zh ? '出席名單' : 'Guest List'}</Text>
             {/* Search */}
             <TextInput
@@ -502,8 +502,8 @@ export default function EventDetailScreen() {
             <TouchableOpacity style={[styles.closeBtn, { marginTop: 12 }]} onPress={() => setShowGuests(false)}>
               <Text style={styles.closeBtnText}>{zh ? '關閉' : 'Close'}</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ScrollView>
   );
