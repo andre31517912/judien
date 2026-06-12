@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/auth.context';
@@ -34,6 +34,7 @@ export default function SignupScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
         <Text style={[styles.title, { color: colors.text }]}>{t('auth.signup')}</Text>
         <TextInput style={inputStyle} placeholder={t('auth.displayName') || 'Display Name (nickname)'}
@@ -57,6 +58,7 @@ export default function SignupScreen() {
           <Text style={styles.link}>{t('auth.hasAccount')}</Text>
         </TouchableOpacity>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

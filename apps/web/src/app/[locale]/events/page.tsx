@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { apiFetch, apiUpload, resolveImageUrl } from '../../../lib/api';
@@ -492,12 +493,9 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
         className="flex gap-4 p-4"
       >
         {resolveImageUrl(event.coverImageUrl) && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={resolveImageUrl(event.coverImageUrl)!}
-            alt={title}
-            className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-          />
+          <div className="relative w-24 h-24 rounded-lg flex-shrink-0 overflow-hidden">
+            <Image src={resolveImageUrl(event.coverImageUrl)!} alt={title} fill className="object-cover" />
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-lg truncate text-gray-900 dark:text-white">{title}</h2>

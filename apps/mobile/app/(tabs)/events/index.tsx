@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, FlatList, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Image, Alert, Platform,
+  StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl,
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../../context/auth.context';
+import { useTheme } from '../../../context/theme.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, PaginatedResponse, Event } from '@judien/shared';
@@ -14,6 +15,7 @@ import DateTimeField from '../../../components/DateTimeField';
 export default function EventsTab() {
   const router = useRouter();
   const { user } = useAuth();
+  const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const zh = i18n.language === 'zh';
   const isAdmin = user?.role === 'ADMIN';
@@ -22,16 +24,17 @@ export default function EventsTab() {
   const [scope, setScope] = useState<'future' | 'past'>('future');
   const [events, setEvents] = useState<EventWithCounts[]>([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const pageSize = 20;
 
-  const loadEvents = (s = scope, p = page) => {
-    setLoading(true);
+  const loadEvents = (s = scope, p = page, silent = false) => {
+    if (!silent) setLoading(true);
     apiFetch<PaginatedResponse<EventWithCounts>>(
       `/events?scope=${s}&page=${p}&pageSize=${pageSize}`,
     ).then((res) => { setEvents(res.data); setTotal(res.total); })
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); setRefreshing(false); });
   };
 
   useEffect(() => { loadEvents(); }, [scope, page]);
@@ -123,7 +126,7 @@ export default function EventsTab() {
   const tabStyle = (active: boolean) => [styles.tab, active && styles.activeTab];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{
         title: creating ? (zh ? '建立活動' : 'Create Event') : (zh ? '活動' : 'Events'),
         headerRight: isAdmin && !creating ? () => (
@@ -140,7 +143,7 @@ export default function EventsTab() {
 
       {/* ── Upcoming / Past tabs (hidden while creating) ── */}
       {!creating && (
-        <View style={styles.tabs}>
+        <View style={[styles.tabs, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TouchableOpacity style={tabStyle(scope === 'future')} onPress={() => { setScope('future'); setPage(1); }}>
             <Text style={[styles.tabText, scope === 'future' && styles.activeTabText]}>{t('events.future')}</Text>
           </TouchableOpacity>
@@ -224,16 +227,20 @@ export default function EventsTab() {
           <FlatList
             data={events}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: 16, gap: 12 }}
-            ListEmptyComponent={<Text style={styles.empty}>{t('events.noEvents')}</Text>}
+            contentContainerStyle={{ padding: 16, gap: 12, backgroundColor: colors.bg }}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadEvents(scope, page, true); }} tintColor={colors.subtext} />}
+            ListEmptyComponent={<Text style={[styles.empty, { color: colors.placeholder }]}>{t('events.noEvents')}</Text>}
             renderItem={({ item }) => {
               const title = zh ? item.title_zh : item.title_en;
               const location = zh ? item.location_zh : item.location_en;
               const date = new Date(item.startAt).toLocaleDateString();
+              const coverUri = resolveImageUrl(item.coverImageUrl);
               return (
-                <TouchableOpacity style={styles.card} onPress={() => router.push(`/events/${item.id}`)}>
-                  {resolveImageUrl(item.coverImageUrl) && (
-                    <Image source={{ uri: resolveImageUrl(item.coverImageUrl)! }} style={styles.thumbnail} />
+                <TouchableOpacity style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => router.push(`/events/${item.id}`)}>
+                  {coverUri && (
+                    <View style={[styles.thumbnail, { backgroundColor: colors.border }]}>
+                      <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                    </View>
                   )}
                   <View style={styles.cardBody}>
                     {(item as any).seriesTitle && (
@@ -243,11 +250,11 @@ export default function EventsTab() {
                         </Text>
                       </View>
                     )}
-                    <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
+                    <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={2}>{title}</Text>
                     {item.groupName && <Text style={styles.cardGroup}>👥 {item.groupName}</Text>}
-                    <Text style={styles.cardMeta}>{date}</Text>
-                    {location ? <Text style={styles.cardMeta} numberOfLines={1}>{location}</Text> : null}
-                    <Text style={styles.rsvpRow}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>
+                    <Text style={[styles.cardMeta, { color: colors.subtext }]}>{date}</Text>
+                    {location ? <Text style={[styles.cardMeta, { color: colors.subtext }]} numberOfLines={1}>{location}</Text> : null}
+                    <Text style={[styles.rsvpRow, { color: colors.placeholder }]}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -269,7 +276,7 @@ const styles = StyleSheet.create({
   empty: { textAlign: 'center', color: '#9CA3AF', marginTop: 40 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, flexDirection: 'row', gap: 12,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
-  thumbnail: { width: 80, height: 80, borderRadius: 8 },
+  thumbnail: { width: 80, height: 80, borderRadius: 8, overflow: 'hidden' },
   cardBody: { flex: 1 },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 },
   cardGroup: { fontSize: 12, color: '#4F46E5', fontWeight: '500', marginBottom: 4 },

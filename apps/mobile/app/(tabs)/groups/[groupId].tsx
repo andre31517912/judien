@@ -256,7 +256,9 @@ export default function GroupDetailScreen() {
 
       {/* ── Group photo banner ── */}
       {groupItem.group.photoUrl && (
-        <Image source={{ uri: groupItem.group.photoUrl }} style={styles.photoBanner} resizeMode="cover" />
+        <View style={[styles.photoBanner, { backgroundColor: colors.border }]}>
+          <Image source={{ uri: groupItem.group.photoUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+        </View>
       )}
 
       {/* ── Group header ── */}

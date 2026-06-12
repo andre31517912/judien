@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { apiFetch, resolveImageUrl } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import ConfirmModal from '../../../../components/ConfirmModal';
@@ -111,6 +112,28 @@ export default function EventDetailPage() {
       apiFetch<EventSeries>(`/event-series/${event.seriesId}`).then(setEventSeries).catch(() => {});
     }
   }, [event?.seriesId]);
+
+  const anyModalOpen = showInviteModal || showNoReason || showGuests || showInvitees;
+  useEffect(() => {
+    if (anyModalOpen) {
+      document.body.style.overflow = 'hidden';
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setShowInviteModal(false);
+          setShowNoReason(false);
+          setShowGuests(false);
+          setShowInvitees(false);
+        }
+      };
+      document.addEventListener('keydown', onKey);
+      return () => {
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', onKey);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [anyModalOpen]);
 
   useEffect(() => {
     Promise.all([
@@ -361,12 +384,9 @@ export default function EventDetailPage() {
       ) : null}
 
       {resolveImageUrl(event.coverImageUrl) ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={resolveImageUrl(event.coverImageUrl)!}
-          alt={title}
-          className="w-full h-60 object-cover rounded-xl"
-        />
+        <div className="relative w-full h-60 rounded-xl overflow-hidden">
+          <Image src={resolveImageUrl(event.coverImageUrl)!} alt={title} fill className="object-cover" />
+        </div>
       ) : (
         <div className="w-full h-60 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-3 select-none">
           <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
@@ -843,13 +863,13 @@ export default function EventDetailPage() {
 
                 {/* Reply form */}
                 {isReplying && (
-                  <div className="ml-4 mt-2 bg-indigo-50 rounded-lg p-3">
+                  <div className="ml-4 mt-2 bg-indigo-50 dark:bg-gray-800 rounded-lg p-3">
                     <form onSubmit={(e) => handleReply(e, c.id)} className="flex gap-2">
                       <input
                         value={replyBody}
                         onChange={(e) => setReplyBody(e.target.value)}
                         placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
-                        className="flex-1 border border-indigo-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         autoFocus
                       />
                       <button

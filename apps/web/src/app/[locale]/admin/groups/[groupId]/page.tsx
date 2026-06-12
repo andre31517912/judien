@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, resolveImageUrl } from '@/lib/api';
@@ -283,8 +284,9 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950">
         <div className="relative">
           {group.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} className="w-full h-40 sm:h-56 object-cover" />
+            <div className="relative w-full h-40 sm:h-56">
+              <Image src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} fill className="object-cover" />
+            </div>
           ) : (
             <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
               <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

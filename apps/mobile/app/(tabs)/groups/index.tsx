@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { apiFetch } from '../../../lib/api';
@@ -57,6 +58,7 @@ export default function GroupsTab() {
   const zh = i18n.language === 'zh';
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [invites, setInvites] = useState<InviteItem[]>([]);
 
@@ -76,7 +78,8 @@ export default function GroupsTab() {
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to load groups');
     } finally {
-      if (showSpinner) setLoading(false);
+      setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -133,7 +136,10 @@ export default function GroupsTab() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
+    >
       <Stack.Screen options={{ title: zh ? '我的群組' : 'My Groups' }} />
 
       <View style={styles.headerRow}>

@@ -16,6 +16,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
+import { useTheme } from '../../../context/theme.context';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
 
@@ -25,6 +26,7 @@ type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] };
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const zh = i18n.language === 'zh';
@@ -229,7 +231,9 @@ export default function EventDetailScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {resolveImageUrl(event.coverImageUrl) && (
-        <Image source={{ uri: resolveImageUrl(event.coverImageUrl)! }} style={styles.cover} />
+        <View style={[styles.coverWrapper, { backgroundColor: colors.border }]}>
+          <Image source={{ uri: resolveImageUrl(event.coverImageUrl)! }} style={styles.cover} />
+        </View>
       )}
       <View style={styles.body}>
 
@@ -512,6 +516,7 @@ export default function EventDetailScreen() {
 const INDIGO = '#4F46E5';
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
+  coverWrapper: { width: '100%', height: 220 },
   cover: { width: '100%', height: 220 },
   body: { padding: 16 },
   adminBar: { flexDirection: 'row', gap: 10, marginBottom: 14 },

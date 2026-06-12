@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { apiFetch, resolveImageUrl } from '../../../../../lib/api';
 import { useAuth } from '../../../../../context/auth.context';
@@ -165,8 +166,9 @@ export default function SharedEventPage() {
       </div>
 
       {resolveImageUrl(event.coverImageUrl) ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={resolveImageUrl(event.coverImageUrl)!} alt={title} className="w-full h-56 rounded-xl object-cover" />
+        <div className="relative w-full h-56 rounded-xl overflow-hidden">
+          <Image src={resolveImageUrl(event.coverImageUrl)!} alt={title} fill className="object-cover" />
+        </div>
       ) : null}
 
       <div>
