@@ -4,14 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import GroupHierarchyChart from '@/components/GroupHierarchyChart';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
+import { apiFetch, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
-
-const PencilIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-    <path d="M2.695 14.763l-1.262 3.154a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.885L17.5 5.5a2.121 2.121 0 0 0-3-3L3.58 13.42a4 4 0 0 0-.885 1.343Z" />
-  </svg>
-);
 
 type AdminGroupItem = {
   group: {
@@ -89,62 +83,11 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [relationshipsLoading, setRelationshipsLoading] = useState(false);
   const [showRelationships, setShowRelationships] = useState(false);
 
-  // Group info inline edit
-  const [editingInfo, setEditingInfo] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [infoSaving, setInfoSaving] = useState(false);
-
-  // Group photo edit
-  const photoFileRef = useRef<HTMLInputElement>(null);
-  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
-  const photoMenuRef = useRef<HTMLDivElement>(null);
-
   // Member search + nickname
   const [memberSearch, setMemberSearch] = useState('');
   const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSaving, setNicknameSaving] = useState(false);
-
-  useEffect(() => {
-    if (!showPhotoMenu) return;
-    const handleOutside = (e: MouseEvent) => {
-      if (photoMenuRef.current && !photoMenuRef.current.contains(e.target as Node)) setShowPhotoMenu(false);
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, [showPhotoMenu]);
-
-  const handleSaveGroupInfo = async () => {
-    if (!editName.trim()) { setError(zh ? '群組名稱不可為空。' : 'Group name is required.'); return; }
-    setInfoSaving(true); setError('');
-    try {
-      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ name: editName.trim(), description: editDescription.trim() }) });
-      setEditingInfo(false);
-      await loadPage();
-    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to save.'); }
-    finally { setInfoSaving(false); }
-  };
-
-  const handlePhotoRemove = async () => {
-    setShowPhotoMenu(false); setError('');
-    try {
-      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
-      await loadPage();
-    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to remove photo.'); }
-  };
-
-  const handlePhotoReplace = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setShowPhotoMenu(false); setError('');
-    try {
-      const { url } = await apiUpload(file);
-      await apiFetch(`/groups/${params.groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
-      await loadPage();
-    } catch (err: unknown) { setError((err as Error).message ?? 'Failed to upload photo.'); }
-    finally { if (photoFileRef.current) photoFileRef.current.value = ''; }
-  };
 
   const handleSaveNickname = async (memberId: string) => {
     setNicknameSaving(true); setError('');
@@ -349,69 +292,13 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               </svg>
             </div>
           )}
-          {/* Photo edit — admin only */}
-          <div ref={photoMenuRef} className="absolute top-3 right-3">
-            <button
-              onClick={() => setShowPhotoMenu((v) => !v)}
-              className="flex items-center gap-1.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm px-2.5 py-1.5 text-white text-xs font-medium transition"
-              title={zh ? '編輯封面' : 'Edit photo'}
-            >
-              <PencilIcon />
-              {zh ? '封面' : 'Photo'}
-            </button>
-            {showPhotoMenu && (
-              <div className="absolute right-0 top-full mt-1 z-20 min-w-[150px] rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg overflow-hidden">
-                <button onClick={() => { setShowPhotoMenu(false); photoFileRef.current?.click(); }} className="w-full px-4 py-2.5 text-sm text-left text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                  {zh ? '更換照片' : 'Replace photo'}
-                </button>
-                {group.photoUrl && (
-                  <button onClick={() => void handlePhotoRemove()} className="w-full px-4 py-2.5 text-sm text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                    {zh ? '移除照片' : 'Remove photo'}
-                  </button>
-                )}
-              </div>
-            )}
-            <input ref={photoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handlePhotoReplace(e)} />
-          </div>
         </div>
         <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-1 flex-1 min-w-0">
-              {editingInfo ? (
-                <div className="space-y-2">
-                  <input autoFocus value={editName} onChange={(e) => setEditName(e.target.value)}
-                    className="w-full rounded-lg border border-indigo-300 dark:border-indigo-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xl font-extrabold tracking-tight text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder={zh ? '群組名稱' : 'Group name'} maxLength={80} />
-                  <textarea rows={2} value={editDescription} onChange={(e) => setEditDescription(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                    placeholder={zh ? '描述（選填）' : 'Description (optional)'} maxLength={500} />
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => void handleSaveGroupInfo()} disabled={infoSaving || !editName.trim()}
-                      className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
-                      {infoSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
-                    </button>
-                    <button onClick={() => setEditingInfo(false)}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                      {zh ? '取消' : 'Cancel'}
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
-                    <button
-                      onClick={() => { setEditName(group.name); setEditDescription(group.description ?? ''); setEditingInfo(true); }}
-                      className="shrink-0 rounded-full p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                      title={zh ? '編輯名稱與描述' : 'Edit name & description'}
-                    >
-                      <PencilIcon />
-                    </button>
-                  </div>
-                  {group.description && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{group.description}</p>
-                  )}
-                </>
+              <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
+              {group.description && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{group.description}</p>
               )}
             </div>
             <div className="flex items-center gap-2">

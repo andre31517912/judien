@@ -14,8 +14,8 @@ import {
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { apiFetch, resolveImageUrl } from '../../lib/api';
-import { useAuth } from '../../context/auth.context';
+import { apiFetch, resolveImageUrl } from '../../../lib/api';
+import { useAuth } from '../../../context/auth.context';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, PaginatedResponse } from '@judien/shared';
 

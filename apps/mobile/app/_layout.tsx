@@ -44,16 +44,13 @@ function AppShell() {
 
   return (
     <>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.headerBg} />
       <AuthProvider>
         <DeepLinkHandler />
-        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text }}>
+        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text, headerBackVisible: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="groups/[groupId]" options={{ title: 'Group', gestureEnabled: true }} />
-          <Stack.Screen name="groups/[groupId]/settings" options={{ title: 'Settings', gestureEnabled: true }} />
-          <Stack.Screen name="events/[id]" options={{ title: 'Event', gestureEnabled: true }} />
           <Stack.Screen name="admin/groups/new" options={{ title: 'Create Group' }} />
           <Stack.Screen name="admin/events/new" options={{ title: 'Create Event' }} />
           <Stack.Screen name="admin/events/[id]/edit" options={{ title: 'Edit Event' }} />

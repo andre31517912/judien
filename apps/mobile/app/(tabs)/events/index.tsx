@@ -5,11 +5,11 @@ import {
 } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '../../context/auth.context';
-import { apiFetch, apiUpload, resolveImageUrl } from '../../lib/api';
+import { useAuth } from '../../../context/auth.context';
+import { apiFetch, apiUpload, resolveImageUrl } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, PaginatedResponse, Event } from '@judien/shared';
-import DateTimeField from '../../components/DateTimeField';
+import DateTimeField from '../../../components/DateTimeField';
 
 export default function EventsTab() {
   const router = useRouter();

@@ -3,9 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView,
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
-import { apiFetch, apiUpload } from '../../../lib/api';
-import { useTheme } from '../../../context/theme.context';
-import { useAuth } from '../../../context/auth.context';
+import { apiFetch, apiUpload } from '../../../../lib/api';
+import { useTheme } from '../../../../context/theme.context';
+import { useAuth } from '../../../../context/auth.context';
 
 type PendingInvite = { id: string; email: string | null; phoneE164: string | null; status: string; expiresAt: string };
 type JoinRequest = { id: string; status: string; note: string | null; createdAt: string; requester: { id: string; displayName: string | null; email: string } };
@@ -725,7 +725,6 @@ export default function GroupSettingsScreen() {
           {hierarchySuccess ? <Text style={styles.hierarchySuccess}>{hierarchySuccess}</Text> : null}
           {hierarchyLoading && <Text style={styles.muted}>{zh ? '載入中…' : 'Loading…'}</Text>}
 
-          {/* Current parent */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '父群組' : 'Parent Group'}</Text>
             <Text style={styles.muted}>{zh ? '設定此群組所屬的上層群組。' : 'Set the parent group this one sits under.'}</Text>
@@ -741,35 +740,19 @@ export default function GroupSettingsScreen() {
             )}
           </View>
 
-          {/* Create new parent */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '建立新父群組' : 'Create New Parent Group'}</Text>
-            <TextInput
-              style={styles.input}
-              value={createParentName}
-              onChangeText={setCreateParentName}
-              placeholder={zh ? '新父群組名稱' : 'New parent group name'}
-              placeholderTextColor={colors.placeholder}
-            />
+            <TextInput style={styles.input} value={createParentName} onChangeText={setCreateParentName} placeholder={zh ? '新父群組名稱' : 'New parent group name'} placeholderTextColor={colors.placeholder} />
             <TouchableOpacity style={styles.primaryBtn} onPress={handleCreateParentGroup} disabled={createParentSubmitting}>
               <Text style={styles.primaryBtnText}>{createParentSubmitting ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立並連結' : 'Create & Link')}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Link existing group as parent */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '連結現有父群組' : 'Link Existing Parent Group'}</Text>
-            <Text style={styles.muted}>{zh ? '送出申請，待對方管理員核准後生效。' : "Submit a request — the other group’s admin must approve."}</Text>
+            <Text style={styles.muted}>{zh ? '送出申請，待對方管理員核准後生效。' : "Submit a request — the other group's admin must approve."}</Text>
             <View style={styles.searchRow}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                value={parentSearchQuery}
-                onChangeText={setParentSearchQuery}
-                placeholder={zh ? '搜尋群組名稱' : 'Search group name'}
-                placeholderTextColor={colors.placeholder}
-                onSubmitEditing={handleSearchParent}
-                returnKeyType="search"
-              />
+              <TextInput style={[styles.input, { flex: 1 }]} value={parentSearchQuery} onChangeText={setParentSearchQuery} placeholder={zh ? '搜尋群組名稱' : 'Search group name'} placeholderTextColor={colors.placeholder} onSubmitEditing={handleSearchParent} returnKeyType="search" />
               <TouchableOpacity style={styles.searchBtn} onPress={handleSearchParent} disabled={parentSearching}>
                 <Text style={styles.searchBtnText}>{parentSearching ? '…' : (zh ? '搜尋' : 'Search')}</Text>
               </TouchableOpacity>
@@ -787,7 +770,6 @@ export default function GroupSettingsScreen() {
             ))}
           </View>
 
-          {/* Current children */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '子群組' : 'Child Groups'}</Text>
             <Text style={styles.muted}>{zh ? '此群組下的子群組。' : 'Groups that sit beneath this one.'}</Text>
@@ -803,35 +785,19 @@ export default function GroupSettingsScreen() {
             ))}
           </View>
 
-          {/* Create new child */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '建立新子群組' : 'Create New Child Group'}</Text>
-            <TextInput
-              style={styles.input}
-              value={createChildName}
-              onChangeText={setCreateChildName}
-              placeholder={zh ? '新子群組名稱' : 'New child group name'}
-              placeholderTextColor={colors.placeholder}
-            />
+            <TextInput style={styles.input} value={createChildName} onChangeText={setCreateChildName} placeholder={zh ? '新子群組名稱' : 'New child group name'} placeholderTextColor={colors.placeholder} />
             <TouchableOpacity style={styles.primaryBtn} onPress={handleCreateChildGroup} disabled={createChildSubmitting}>
               <Text style={styles.primaryBtnText}>{createChildSubmitting ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立並連結' : 'Create & Link')}</Text>
             </TouchableOpacity>
           </View>
 
-          {/* Link existing group as child */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '連結現有子群組' : 'Link Existing Child Group'}</Text>
-            <Text style={styles.muted}>{zh ? '送出申請，待對方管理員核准後生效。' : "Submit a request — the other group’s admin must approve."}</Text>
+            <Text style={styles.muted}>{zh ? '送出申請，待對方管理員核准後生效。' : "Submit a request — the other group's admin must approve."}</Text>
             <View style={styles.searchRow}>
-              <TextInput
-                style={[styles.input, { flex: 1 }]}
-                value={childSearchQuery}
-                onChangeText={setChildSearchQuery}
-                placeholder={zh ? '搜尋群組名稱' : 'Search group name'}
-                placeholderTextColor={colors.placeholder}
-                onSubmitEditing={handleSearchChild}
-                returnKeyType="search"
-              />
+              <TextInput style={[styles.input, { flex: 1 }]} value={childSearchQuery} onChangeText={setChildSearchQuery} placeholder={zh ? '搜尋群組名稱' : 'Search group name'} placeholderTextColor={colors.placeholder} onSubmitEditing={handleSearchChild} returnKeyType="search" />
               <TouchableOpacity style={styles.searchBtn} onPress={handleSearchChild} disabled={childSearching}>
                 <Text style={styles.searchBtnText}>{childSearching ? '…' : (zh ? '搜尋' : 'Search')}</Text>
               </TouchableOpacity>
@@ -900,7 +866,6 @@ export default function GroupSettingsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Format hint */}
             <View style={styles.donationHint}>
               <Text style={styles.donationHintTitle}>{zh ? '格式說明' : 'Format'}</Text>
               <Text style={styles.donationHintText}>{zh ? '成員 · 金額 · 幣別（NTD / USD）· 日期 · 備註（選填）' : 'Member · Amount · Currency (NTD / USD) · Date · Note (optional)'}</Text>
@@ -908,7 +873,6 @@ export default function GroupSettingsScreen() {
             </View>
 
             <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
-              {/* Member picker */}
               <Text style={styles.fieldLabel}>{zh ? '成員 *' : 'Member *'}</Text>
               {showMemberPicker ? (
                 <View style={[styles.card, { marginBottom: 8, gap: 4 }]}>
@@ -930,7 +894,6 @@ export default function GroupSettingsScreen() {
                 </TouchableOpacity>
               )}
 
-              {/* Amount + Currency */}
               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.fieldLabel}>{zh ? '金額 *' : 'Amount *'}</Text>
@@ -950,13 +913,11 @@ export default function GroupSettingsScreen() {
                 </View>
               </View>
 
-              {/* Date */}
               <Text style={styles.fieldLabel}>{zh ? '日期 *（YYYY-MM-DD）' : 'Date * (YYYY-MM-DD)'}</Text>
               <TextInput style={[styles.input, { marginBottom: 8 }]} value={donationForm.date}
                 onChangeText={(v) => setDonationForm((f) => ({ ...f, date: v }))}
                 placeholder="2024-01-15" placeholderTextColor={colors.placeholder} keyboardType="numbers-and-punctuation" />
 
-              {/* Note */}
               <Text style={styles.fieldLabel}>{zh ? '備註（選填）' : 'Note (optional)'}</Text>
               <TextInput style={[styles.input, { marginBottom: 16 }]} value={donationForm.note}
                 onChangeText={(v) => setDonationForm((f) => ({ ...f, note: v }))}
@@ -981,7 +942,7 @@ export default function GroupSettingsScreen() {
 
 const INDIGO = '#4F46E5';
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
     container: { padding: 16, gap: 12, backgroundColor: colors.bg },
     tabBar: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },

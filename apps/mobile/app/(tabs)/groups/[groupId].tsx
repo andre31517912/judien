@@ -11,12 +11,11 @@ import {
   View,
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { apiFetch, apiUpload } from '../../lib/api';
+import { apiFetch } from '../../../lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/auth.context';
-import { useTheme } from '../../context/theme.context';
+import { useAuth } from '../../../context/auth.context';
+import { useTheme } from '../../../context/theme.context';
 
 type GroupListItem = {
   group: {
@@ -92,11 +91,6 @@ export default function GroupDetailScreen() {
   const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSaving, setNicknameSaving] = useState(false);
-  const [editingInfo, setEditingInfo] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editDesc, setEditDesc] = useState('');
-  const [infoSaving, setInfoSaving] = useState(false);
-
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -217,57 +211,6 @@ export default function GroupDetailScreen() {
     finally { setNicknameSaving(false); }
   };
 
-  const handleEditPhoto = () => {
-    if (!groupId) return;
-    const options: Parameters<typeof Alert.alert>[2] = [
-      {
-        text: zh ? '更換照片' : 'Replace Photo',
-        onPress: async () => {
-          const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
-          const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, quality: 0.8 });
-          if (result.canceled) return;
-          try {
-            const { url } = await apiUpload(result.assets[0].uri);
-            await apiFetch(`/groups/${groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
-            await loadPage();
-          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to upload photo'); }
-        },
-      },
-      { text: zh ? '取消' : 'Cancel', style: 'cancel' },
-    ];
-    if (groupItem?.group.photoUrl) {
-      options.splice(1, 0, {
-        text: zh ? '移除照片' : 'Remove Photo',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await apiFetch(`/groups/${groupId}/settings`, { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
-            await loadPage();
-          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed'); }
-        },
-      });
-    }
-    Alert.alert(zh ? '封面照片' : 'Cover Photo', '', options);
-  };
-
-  const handleSaveGroupInfo = async () => {
-    if (!groupId || !editName.trim()) {
-      Alert.alert('', zh ? '群組名稱不可為空。' : 'Group name is required.');
-      return;
-    }
-    setInfoSaving(true);
-    try {
-      await apiFetch(`/groups/${groupId}/settings`, {
-        method: 'PATCH',
-        body: JSON.stringify({ name: editName.trim(), description: editDesc.trim() }),
-      });
-      setEditingInfo(false);
-      await loadPage();
-    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save'); }
-    finally { setInfoSaving(false); }
-  };
-
   const filteredMembers = useMemo(() => {
     const term = memberSearch.trim().toLowerCase();
     return [...members]
@@ -312,97 +255,39 @@ export default function GroupDetailScreen() {
       <Stack.Screen options={{ title: '', headerLeft: () => null, gestureEnabled: true }} />
 
       {/* ── Group photo banner ── */}
-      {(groupItem.group.photoUrl || isGroupAdmin) && (
-        <View style={{ position: 'relative' }}>
-          {groupItem.group.photoUrl ? (
-            <Image source={{ uri: groupItem.group.photoUrl }} style={styles.photoBanner} resizeMode="cover" />
-          ) : (
-            <View style={styles.photoBannerPlaceholder}>
-              <Text style={{ color: colors.placeholder, fontSize: 12 }}>{zh ? '點擊新增封面照片' : 'Tap to add cover photo'}</Text>
-            </View>
-          )}
-          {isGroupAdmin && (
-            <TouchableOpacity style={styles.photoEditOverlay} onPress={handleEditPhoto}>
-              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>✏️ {zh ? '封面' : 'Photo'}</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+      {groupItem.group.photoUrl && (
+        <Image source={{ uri: groupItem.group.photoUrl }} style={styles.photoBanner} resizeMode="cover" />
       )}
 
       {/* ── Group header ── */}
       <View style={styles.coverHeader}>
-        {editingInfo ? (
-          <View style={{ gap: 8 }}>
-            <TextInput
-              style={styles.editInput}
-              value={editName}
-              onChangeText={setEditName}
-              placeholder={zh ? '群組名稱' : 'Group name'}
-              placeholderTextColor={colors.placeholder}
-              maxLength={80}
-              autoFocus
-            />
-            <TextInput
-              style={[styles.editInput, { minHeight: 60 }]}
-              value={editDesc}
-              onChangeText={setEditDesc}
-              placeholder={zh ? '描述（選填）' : 'Description (optional)'}
-              placeholderTextColor={colors.placeholder}
-              maxLength={500}
-              multiline
-            />
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity
-                style={[styles.infoBtn, styles.infoBtnPrimary]}
-                onPress={handleSaveGroupInfo}
-                disabled={infoSaving || !editName.trim()}
-              >
-                <Text style={styles.infoBtnPrimaryText}>{infoSaving ? '…' : (zh ? '儲存' : 'Save')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.infoBtn} onPress={() => setEditingInfo(false)}>
-                <Text style={styles.infoBtnText}>{zh ? '取消' : 'Cancel'}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.coverContent}>
-            <View style={styles.coverLeft}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.groupTitle} numberOfLines={2}>{groupItem.group.name}</Text>
-                {isGroupAdmin && (
-                  <TouchableOpacity
-                    onPress={() => { setEditName(groupItem.group.name); setEditDesc(groupItem.group.description ?? ''); setEditingInfo(true); }}
-                    style={styles.pencilBtn}
-                  >
-                    <Text style={styles.pencilText}>✏️</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              {groupItem.group.description ? (
-                <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
-              ) : null}
-              {relationships?.lineage && relationships.lineage.length > 1 && (
-                <Text style={styles.breadcrumb}>
-                  {relationships.lineage.map((n) => n.name).join(' › ')}
-                </Text>
-              )}
-            </View>
-            {isGroupAdmin && (
-              <TouchableOpacity
-                style={styles.settingsBtn}
-                onPress={() => router.push(`/groups/${groupId}/settings`)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.settingsBtnText}>⚙️</Text>
-                {joinRequests.length > 0 && (
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{joinRequests.length}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
+        <View style={styles.coverContent}>
+          <View style={styles.coverLeft}>
+            <Text style={styles.groupTitle} numberOfLines={2}>{groupItem.group.name}</Text>
+            {groupItem.group.description ? (
+              <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
+            ) : null}
+            {relationships?.lineage && relationships.lineage.length > 1 && (
+              <Text style={styles.breadcrumb}>
+                {relationships.lineage.map((n) => n.name).join(' › ')}
+              </Text>
             )}
           </View>
-        )}
+          {isGroupAdmin && (
+            <TouchableOpacity
+              style={styles.settingsBtn}
+              onPress={() => router.push(`/groups/${groupId}/settings`)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.settingsBtnText}>⚙️</Text>
+              {joinRequests.length > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{joinRequests.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* ── Tab bar ── */}
@@ -609,23 +494,12 @@ export default function GroupDetailScreen() {
 
 const INDIGO = '#4F46E5';
 
-function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
     photoBanner: { width: '100%', height: 130 },
-    photoBannerPlaceholder: {
-      width: '100%', height: 60,
-      backgroundColor: colors.border,
-      alignItems: 'center', justifyContent: 'center',
-    },
-    photoEditOverlay: {
-      position: 'absolute', top: 8, right: 8,
-      backgroundColor: 'rgba(0,0,0,0.45)',
-      borderRadius: 16,
-      paddingHorizontal: 10, paddingVertical: 5,
-    },
 
     coverHeader: {
       backgroundColor: colors.card,
@@ -640,8 +514,6 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     groupTitle: { fontSize: 22, fontWeight: '800', color: colors.text, lineHeight: 28 },
     groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
     breadcrumb: { fontSize: 11, color: colors.placeholder },
-    pencilBtn: { padding: 4 },
-    pencilText: { fontSize: 14 },
     settingsBtn: {
       width: 40, height: 40, borderRadius: 20,
       backgroundColor: colors.border,
@@ -655,19 +527,6 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
       alignItems: 'center', justifyContent: 'center', padding: 2,
     },
     badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
-
-    editInput: {
-      borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 10,
-      paddingHorizontal: 12, paddingVertical: 8,
-      fontSize: 15, color: colors.inputText, backgroundColor: colors.input,
-    },
-    infoBtn: {
-      flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 8,
-      paddingVertical: 8, alignItems: 'center',
-    },
-    infoBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
-    infoBtnText: { fontSize: 13, color: colors.text },
-    infoBtnPrimaryText: { fontSize: 13, color: '#fff', fontWeight: '600' },
 
     tabBar: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border },
     tabScroll: { paddingHorizontal: 8 },

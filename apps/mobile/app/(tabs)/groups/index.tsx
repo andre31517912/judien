@@ -11,9 +11,9 @@ import {
   View,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { apiFetch } from '../../lib/api';
+import { apiFetch } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/theme.context';
+import { useTheme } from '../../../context/theme.context';
 
 type GroupListItem = {
   group: {
@@ -171,7 +171,6 @@ export default function GroupsTab() {
         ) : groups.map((item) => (
           <TouchableOpacity key={item.group.id} style={styles.card} onPress={() => router.push(`/groups/${item.group.id}`)}>
             <View style={styles.cardRow}>
-              {/* Group avatar */}
               {item.group.photoUrl ? (
                 <Image source={{ uri: item.group.photoUrl }} style={styles.avatar} />
               ) : (
@@ -225,7 +224,7 @@ export default function GroupsTab() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
     container: { padding: 16, gap: 16, backgroundColor: colors.bg, flexGrow: 1 },
