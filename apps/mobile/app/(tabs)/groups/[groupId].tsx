@@ -280,6 +280,7 @@ export default function GroupDetailScreen() {
               style={styles.settingsBtn}
               onPress={() => router.push(`/groups/${groupId}/settings`)}
               activeOpacity={0.7}
+              accessibilityLabel={zh ? '群組設定' : 'Group settings'}
             >
               <Text style={styles.settingsBtnText}>⚙️</Text>
               {joinRequests.length > 0 && (

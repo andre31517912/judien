@@ -11,16 +11,21 @@ export default function LoginScreen() {
   const { login } = useAuth();
   const { colors } = useTheme();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const zh = i18n.language === 'zh';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
       await login(email, password);
       router.replace('/(tabs)/events');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Login failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,12 +60,12 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           secureTextEntry
         />
-        <TouchableOpacity style={styles.btn} onPress={handleLogin}>
-          <Text style={styles.btnText}>{t('auth.login')}</Text>
+        <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
+          <Text style={styles.btnText}>{loading ? (zh ? '登入中…' : 'Logging in…') : t('auth.login')}</Text>
         </TouchableOpacity>
         <View style={styles.dividerRow}>
           <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-          <Text style={[styles.dividerText, { color: colors.placeholder }]}>or</Text>
+          <Text style={[styles.dividerText, { color: colors.placeholder }]}>{zh ? '或' : 'or'}</Text>
           <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
         <TouchableOpacity style={styles.lineBtn} onPress={handleLineLogin}>

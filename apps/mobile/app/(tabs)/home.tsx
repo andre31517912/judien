@@ -87,11 +87,12 @@ export default function HomeTab() {
       <ScrollView
         contentContainerStyle={styles.container}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.subtext} />}
+        keyboardShouldPersistTaps="handled"
       >
         <Stack.Screen options={{
           title: composing ? (zh ? '發布公告' : 'Create Post') : (zh ? '動態' : 'Feed'),
           headerRight: user && !composing ? () => (
-            <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
+            <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
               <Text style={styles.headerBtn}>＋</Text>
             </TouchableOpacity>
           ) : undefined,
@@ -110,6 +111,8 @@ export default function HomeTab() {
               value={form.title}
               onChangeText={(v) => setForm({ ...form, title: v })}
               placeholderTextColor={colors.placeholder}
+              maxLength={200}
+              returnKeyType="next"
             />
             <Text style={styles.formLabel}>{zh ? '內容' : 'Body'}</Text>
             <TextInput
@@ -118,9 +121,10 @@ export default function HomeTab() {
               onChangeText={(v) => setForm({ ...form, body: v })}
               multiline
               placeholderTextColor={colors.placeholder}
+              maxLength={5000}
             />
             <TouchableOpacity style={[styles.submitBtn, saving && { opacity: 0.5 }]} onPress={handleCreate} disabled={saving}>
-              <Text style={styles.submitBtnText}>{t('home.createPost')}</Text>
+              <Text style={styles.submitBtnText}>{saving ? (zh ? '發布中…' : 'Posting…') : t('home.createPost')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -148,7 +152,7 @@ export default function HomeTab() {
                     {zh ? item.title_zh : item.title_en}
                   </Text>
                   {(isAdmin || item.createdById === user?.id) && (
-                    <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+                    <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn} accessibilityLabel={zh ? '刪除公告' : 'Delete post'}>
                       <Text style={styles.deleteBtnText}>🗑</Text>
                     </TouchableOpacity>
                   )}

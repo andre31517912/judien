@@ -82,6 +82,7 @@ export default function NotificationsTab() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.subtext} />}
         ListEmptyComponent={
           <View style={styles.center}>
+            <Text style={styles.emptyIcon}>🔔</Text>
             <Text style={styles.empty}>{zh ? '目前沒有通知。' : 'No notifications yet.'}</Text>
           </View>
         }
@@ -117,6 +118,7 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
   return StyleSheet.create({
     container: { flex: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 80 },
+    emptyIcon: { fontSize: 40, marginBottom: 12, opacity: 0.4 },
     empty: { fontSize: 14, color: colors.placeholder },
     markAllBtn: {
       paddingHorizontal: 16, paddingVertical: 10,

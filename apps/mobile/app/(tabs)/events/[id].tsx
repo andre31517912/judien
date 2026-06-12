@@ -435,6 +435,7 @@ export default function EventDetailScreen() {
               onChangeText={setNoReason}
               multiline
               numberOfLines={3}
+              maxLength={500}
             />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.shareBtn} onPress={handleDeclineSubmit}>

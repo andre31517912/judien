@@ -707,6 +707,7 @@ export default function EventDetailPage() {
                 value={blastMsg}
                 onChange={(e) => setBlastMsg(e.target.value)}
                 rows={3}
+                maxLength={2000}
                 placeholder={zh ? '您的訊息（中英文相同）…' : 'Your message (used for both English and Chinese)…'}
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
@@ -767,6 +768,7 @@ export default function EventDetailPage() {
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder={zh ? '寫下留言…' : 'Write a comment…'}
+              maxLength={1000}
               className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <button
@@ -801,6 +803,7 @@ export default function EventDetailPage() {
                           <button
                             onClick={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }}
                             title={zh ? '編輯' : 'Edit'}
+                            aria-label={zh ? '編輯留言' : 'Edit comment'}
                             className="text-gray-400 hover:text-indigo-500 transition"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -812,6 +815,7 @@ export default function EventDetailPage() {
                           <button
                             onClick={() => handleDeleteComment(c.id)}
                             title={zh ? '刪除' : 'Delete'}
+                            aria-label={zh ? '刪除留言' : 'Delete comment'}
                             className="text-gray-400 hover:text-red-500 transition text-xs leading-none"
                           >
                             ✕
@@ -826,6 +830,7 @@ export default function EventDetailPage() {
                         value={editCommentBody}
                         onChange={(e) => setEditCommentBody(e.target.value)}
                         rows={2}
+                        maxLength={1000}
                         className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                       <div className="flex gap-2">
@@ -869,6 +874,7 @@ export default function EventDetailPage() {
                         value={replyBody}
                         onChange={(e) => setReplyBody(e.target.value)}
                         placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
+                        maxLength={1000}
                         className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         autoFocus
                       />
@@ -896,6 +902,7 @@ export default function EventDetailPage() {
                               <button
                                 onClick={() => handleDeleteComment(reply.id)}
                                 title={zh ? '刪除' : 'Delete'}
+                                aria-label={zh ? '刪除回覆' : 'Delete reply'}
                                 className="text-gray-400 hover:text-red-500 transition text-xs"
                               >
                                 ✕
@@ -920,7 +927,7 @@ export default function EventDetailPage() {
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowInviteModal(false)}>
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" aria-label={zh ? '活動分享連結' : 'Event share link'} className="bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-md w-full mx-4 p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4 text-center dark:text-white">{zh ? '活動分享連結' : 'Event Share Link'}</h3>
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 mb-4 break-all">
               <p className="text-sm font-mono text-indigo-600 dark:text-indigo-400">{inviteLink}</p>

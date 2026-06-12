@@ -10,23 +10,28 @@ export default function SignupScreen() {
   const { signup } = useAuth();
   const { colors } = useTheme();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const zh = i18n.language === 'zh';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [inviteToken, setInviteToken] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSignup = async () => {
     if (!inviteToken.trim()) {
       Alert.alert('Error', t('auth.inviteTokenRequired'));
       return;
     }
+    setLoading(true);
     try {
       await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: 'en', inviteToken: inviteToken.trim() });
       router.replace('/(tabs)/events');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Sign-up failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,14 +50,14 @@ export default function SignupScreen() {
         <TextInput style={inputStyle} placeholder={t('auth.password')}
           placeholderTextColor={colors.placeholder} value={password}
           onChangeText={setPassword} secureTextEntry />
-        <TextInput style={inputStyle} placeholder="+886912345678"
+        <TextInput style={inputStyle} placeholder={zh ? '+886912345678' : '+1 / +44 / +886…'}
           placeholderTextColor={colors.placeholder} value={phone}
           onChangeText={setPhone} keyboardType="phone-pad" />
         <TextInput style={inputStyle} placeholder={t('auth.inviteTokenPlaceholder') || 'Invite Code'}
           placeholderTextColor={colors.placeholder} value={inviteToken}
           onChangeText={setInviteToken} autoCapitalize="none" autoCorrect={false} />
-        <TouchableOpacity style={styles.btn} onPress={handleSignup}>
-          <Text style={styles.btnText}>{t('auth.signup')}</Text>
+        <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={handleSignup} disabled={loading}>
+          <Text style={styles.btnText}>{loading ? (zh ? '建立中…' : 'Creating account…') : t('auth.signup')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
           <Text style={styles.link}>{t('auth.hasAccount')}</Text>

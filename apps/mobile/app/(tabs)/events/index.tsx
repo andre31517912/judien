@@ -108,9 +108,9 @@ export default function EventsTab() {
     }
   };
 
-  const Field = ({ label, value, onChange, placeholder, multiline, keyboardType }: {
+  const Field = ({ label, value, onChange, placeholder, multiline, keyboardType, maxLength }: {
     label: string; value: string; onChange: (v: string) => void;
-    placeholder?: string; multiline?: boolean; keyboardType?: any;
+    placeholder?: string; multiline?: boolean; keyboardType?: any; maxLength?: number;
   }) => (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -119,6 +119,7 @@ export default function EventsTab() {
         value={value} onChangeText={onChange} placeholder={placeholder}
         placeholderTextColor="#9CA3AF" keyboardType={keyboardType ?? 'default'}
         multiline={multiline} textAlignVertical={multiline ? 'top' : 'center'}
+        maxLength={maxLength}
       />
     </View>
   );
@@ -130,7 +131,7 @@ export default function EventsTab() {
       <Stack.Screen options={{
         title: creating ? (zh ? '建立活動' : 'Create Event') : (zh ? '活動' : 'Events'),
         headerRight: isAdmin && !creating ? () => (
-          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
+          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立活動' : 'Create event'}>
             <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>
           </TouchableOpacity>
         ) : undefined,
@@ -159,7 +160,7 @@ export default function EventsTab() {
           <Field label={zh ? '名稱' : 'Title'} value={form.title} onChange={setF('title')} placeholder="Event name" />
           <Field label={zh ? '地點' : 'Location'} value={form.location} onChange={setF('location')} placeholder="e.g. Taipei, Da'an Park" />
           <Field label={zh ? '描述' : 'Description'} value={form.description} onChange={setF('description')}
-            placeholder="What's this event about?" multiline />
+            placeholder="What's this event about?" multiline maxLength={5000} />
           <View style={styles.row}>
             <View style={styles.half}>
               <DateTimeField
