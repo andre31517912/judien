@@ -39,7 +39,6 @@ interface GroupMember {
 
 const REMINDER_PRESETS = [
   { label: '1 week before', minutes: 10080 },
-  { label: '3 days before', minutes: 4320 },
   { label: '1 day before', minutes: 1440 },
   { label: '2 hours before', minutes: 120 },
   { label: '1 hour before', minutes: 60 },
@@ -55,7 +54,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [event, setEvent] = useState<Event | null>(null);
   const [form, setForm] = useState<Record<string, string>>({});
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
-  const [customReminderHours, setCustomReminderHours] = useState('');
+  const [customReminderValue, setCustomReminderValue] = useState('');
+  const [customReminderUnit, setCustomReminderUnit] = useState<'hours' | 'days'>('hours');
   const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [messagingEnabled, setMessagingEnabled] = useState(true);
 
@@ -454,27 +454,40 @@ export default function EditEventPage({ params }: { params: { locale: string; id
           })}
         </div>
 
-        {/* Custom hours input */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Custom reminder input */}
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
           <input
             type="number"
             min="1"
-            max="8760"
-            value={customReminderHours}
-            onChange={(e) => setCustomReminderHours(e.target.value)}
-            placeholder={zh ? '自訂時數' : 'Custom hours'}
-            className="w-32 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            max="365"
+            value={customReminderValue}
+            onChange={(e) => setCustomReminderValue(e.target.value)}
+            placeholder={zh ? '數量' : 'Amount'}
+            className="w-24 rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
-          <span className="text-sm text-gray-500 dark:text-gray-400">{zh ? '小時前' : 'hours before'}</span>
+          <div className="flex rounded-md border border-gray-300 dark:border-gray-700 overflow-hidden text-sm">
+            {(['hours', 'days'] as const).map((u) => (
+              <button
+                key={u}
+                type="button"
+                onClick={() => setCustomReminderUnit(u)}
+                className={`px-3 py-1.5 transition ${customReminderUnit === u ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+              >
+                {u === 'hours' ? (zh ? '小時' : 'Hours') : (zh ? '天' : 'Days')}
+              </button>
+            ))}
+          </div>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{zh ? '之前' : 'before'}</span>
           <button
             type="button"
             onClick={() => {
-              const h = parseInt(customReminderHours, 10);
-              if (!h || h < 1) return;
-              addPresetReminder(h * 60);
-              setCustomReminderHours('');
+              const v = parseInt(customReminderValue, 10);
+              if (!v || v < 1) return;
+              const minutes = customReminderUnit === 'days' ? v * 1440 : v * 60;
+              addPresetReminder(minutes);
+              setCustomReminderValue('');
             }}
-            disabled={!customReminderHours || parseInt(customReminderHours, 10) < 1}
+            disabled={!customReminderValue || parseInt(customReminderValue, 10) < 1}
             className="rounded-md bg-indigo-600 text-white px-3 py-1.5 text-sm hover:bg-indigo-700 disabled:opacity-50 transition"
           >
             + {zh ? '新增' : 'Add'}

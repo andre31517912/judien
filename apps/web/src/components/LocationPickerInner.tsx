@@ -24,6 +24,73 @@ interface GeocodeResult {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+// ─── Taiwan address normalizer ────────────────────────────────────────────────
+// Taiwan addresses are officially big-to-small: 台北市大安區瑞安街208巷2號
+// but people often type small-to-big:           瑞安街208巷2號大安區台北市
+// Detect the reversed pattern and reorder so geocoders can find it.
+
+const TW_CITIES = [
+  '台北市','臺北市','新北市','桃園市','台中市','臺中市','台南市','臺南市',
+  '高雄市','基隆市','新竹市','嘉義市','宜蘭縣','花蓮縣','台東縣','臺東縣',
+  '苗栗縣','彰化縣','南投縣','雲林縣','嘉義縣','屏東縣','澎湖縣','金門縣',
+  '連江縣','新竹縣',
+];
+
+function normalizeTaiwanAddress(q: string): string | null {
+  if (!/[一-鿿]/.test(q)) return null;
+  // Find a city name at the END — that signals reversed order
+  const city = TW_CITIES.find((c) => q.endsWith(c));
+  if (!city) return null; // city at start = already correct order
+  const withoutCity = q.slice(0, q.length - city.length).trim();
+  // Try to pull out a district (ends with 區/鄉/鎮) from the tail of the remainder
+  const districtMatch = withoutCity.match(/([一-鿿]+(區|鄉|鎮))$/);
+  if (districtMatch) {
+    const district = districtMatch[0];
+    const street = withoutCity.slice(0, withoutCity.length - district.length).trim();
+    return `${city}${district}${street}`;
+  }
+  return `${city}${withoutCity}`;
+}
+
+// Strip the most granular Taiwan address token from the tail so we can retry
+// with progressively broader queries when exact addresses aren't in OSM.
+// Order: floor/sub-unit → house number → alley → lane
+const TW_STRIP_PATTERNS = [
+  /\d+(?:樓|F|之\d+)\s*$/,  // e.g. 2樓, 3F, 1之2
+  /\d+號\s*$/,               // e.g. 2號
+  /\d+弄\s*$/,               // e.g. 3弄
+  /\d+巷\s*$/,               // e.g. 208巷
+];
+
+function stripTaiwanAddressTail(q: string): string | null {
+  const trimmed = q.trim();
+  for (const p of TW_STRIP_PATTERNS) {
+    if (p.test(trimmed)) return trimmed.replace(p, '').trim();
+  }
+  return null;
+}
+
+// Build a list of progressively broader address variants to try in order
+function addressVariants(query: string): string[] {
+  const normalized = normalizeTaiwanAddress(query);
+  const seen = new Set<string>();
+  const variants: string[] = [];
+  const add = (s: string) => { if (s && !seen.has(s)) { seen.add(s); variants.push(s); } };
+
+  add(query);
+  if (normalized) add(normalized);
+
+  // Strip specificity from the normalized (correct-order) form
+  let current = normalized ?? query;
+  for (let i = 0; i < 4; i++) {
+    const stripped = stripTaiwanAddressTail(current);
+    if (!stripped) break;
+    add(stripped);
+    current = stripped;
+  }
+  return variants;
+}
+
 // Google Places autocomplete — no country restriction, returns results in the
 // language closest to the query text so any language input works globally.
 async function searchSuggestionsGoogle(query: string): Promise<GeocodeResult[]> {
@@ -74,15 +141,14 @@ async function reverseGeocodeGoogle(lat: number, lng: number): Promise<string | 
 }
 
 // Nominatim fallback — globally inclusive, no country/language restrictions
-async function searchSuggestionsNominatim(query: string): Promise<GeocodeResult[]> {
-  if (!query.trim()) return [];
+async function nominatimSearch(q: string): Promise<GeocodeResult[]> {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&addressdetails=1`,
       { headers: { 'User-Agent': 'JudienApp/1.0' } },
     );
     const data = await res.json();
-    return data.map((item: { lat: string; lon: string; display_name: string }) => ({
+    return (data as { lat: string; lon: string; display_name: string }[]).map((item) => ({
       lat: parseFloat(item.lat),
       lng: parseFloat(item.lon),
       label: item.display_name,
@@ -92,9 +158,22 @@ async function searchSuggestionsNominatim(query: string): Promise<GeocodeResult[
   }
 }
 
+async function searchSuggestionsNominatim(query: string): Promise<GeocodeResult[]> {
+  if (!query.trim()) return [];
+  // Try progressively broader address variants until Nominatim finds something
+  for (const variant of addressVariants(query)) {
+    const results = await nominatimSearch(variant);
+    if (results.length > 0) return results;
+  }
+  return [];
+}
+
 async function searchSuggestions(query: string): Promise<GeocodeResult[]> {
-  const googleResults = await searchSuggestionsGoogle(query);
+  // Try Google with the normalized (correct-order) query first, then original
+  const normalized = normalizeTaiwanAddress(query);
+  const googleResults = await searchSuggestionsGoogle(normalized ?? query);
   if (googleResults.length > 0) return googleResults;
+  // Fall back to Nominatim with progressive address broadening
   return searchSuggestionsNominatim(query);
 }
 

@@ -3,12 +3,28 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert,
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { apiFetch } from '../../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import type { Event } from '@judien/shared';
+import type { Event, ReminderRule } from '@judien/shared';
+
+const REMINDER_PRESETS = [
+  { label: '1 week before', labelZh: '1 週前', minutes: 10080 },
+  { label: '1 day before', labelZh: '1 天前', minutes: 1440 },
+  { label: '2 hours before', labelZh: '2 小時前', minutes: 120 },
+  { label: '1 hour before', labelZh: '1 小時前', minutes: 60 },
+  { label: '15 min before', labelZh: '15 分鐘前', minutes: 15 },
+];
+
+function minutesToLabel(m: number) {
+  if (m >= 10080 && m % 10080 === 0) return `${m / 10080} week${m / 10080 > 1 ? 's' : ''} before`;
+  if (m >= 1440) return `${m / 1440} day${m / 1440 > 1 ? 's' : ''} before`;
+  if (m >= 60) return `${m / 60} hour${m / 60 > 1 ? 's' : ''} before`;
+  return `${m} min before`;
+}
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const zh = i18n.language === 'zh';
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     title_en: '', title_zh: '',
@@ -22,8 +38,16 @@ export default function EditEventScreen() {
     coverImageUrl: '',
   });
 
+  const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
+  const [customValue, setCustomValue] = useState('');
+  const [customUnit, setCustomUnit] = useState<'hours' | 'days'>('hours');
+  const [savingReminders, setSavingReminders] = useState(false);
+
   useEffect(() => {
-    apiFetch<Event>(`/events/${id}`).then((ev) => {
+    Promise.all([
+      apiFetch<Event>(`/events/${id}`),
+      apiFetch<ReminderRule[]>(`/events/${id}/reminders`).catch(() => [] as ReminderRule[]),
+    ]).then(([ev, rules]) => {
       setForm({
         title_en: ev.title_en,
         title_zh: ev.title_zh,
@@ -38,11 +62,19 @@ export default function EditEventScreen() {
         feeCurrency: ev.feeCurrency,
         coverImageUrl: ev.coverImageUrl ?? '',
       });
+      setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
       setLoading(false);
     });
   }, [id]);
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
+
+  const addReminder = (minutes: number) => {
+    if (reminders.some((r) => r.offsetMinutes === minutes)) return;
+    setReminders((r) => [...r, { offsetMinutes: minutes, channels: ['EMAIL'], enabled: true }]);
+  };
+
+  const removeReminder = (i: number) => setReminders((r) => r.filter((_, j) => j !== i));
 
   const handleSave = async () => {
     try {
@@ -65,6 +97,21 @@ export default function EditEventScreen() {
       router.replace(`/events/${id}`);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to save.');
+    }
+  };
+
+  const handleSaveReminders = async () => {
+    setSavingReminders(true);
+    try {
+      await apiFetch(`/events/${id}/reminders`, {
+        method: 'POST',
+        body: JSON.stringify({ rules: reminders.map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })) }),
+      });
+      Alert.alert('✓', zh ? '提醒已儲存' : 'Reminders saved.');
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed.');
+    } finally {
+      setSavingReminders(false);
     }
   };
 
@@ -109,15 +156,121 @@ export default function EditEventScreen() {
       <TouchableOpacity style={styles.btn} onPress={handleSave}>
         <Text style={styles.btnText}>{t('common.save')}</Text>
       </TouchableOpacity>
+
+      {/* ── Automatic Reminders ── */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{zh ? '自動提醒' : 'Automatic Reminders'}</Text>
+        <Text style={styles.muted}>{zh ? '活動前自動發送提醒給已回覆的用戶。' : 'Sent automatically to RSVPed users before the event.'}</Text>
+
+        {/* Presets */}
+        <View style={styles.presetRow}>
+          {REMINDER_PRESETS.map((p) => {
+            const active = reminders.some((r) => r.offsetMinutes === p.minutes);
+            return (
+              <TouchableOpacity
+                key={p.minutes}
+                style={[styles.presetBtn, active && styles.presetBtnActive]}
+                onPress={() => active ? removeReminder(reminders.findIndex((r) => r.offsetMinutes === p.minutes)) : addReminder(p.minutes)}
+              >
+                <Text style={[styles.presetBtnText, active && styles.presetBtnTextActive]}>
+                  {active ? '✓ ' : '+ '}{zh ? p.labelZh : p.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Custom input */}
+        <View style={styles.customRow}>
+          <TextInput
+            style={styles.customInput}
+            value={customValue}
+            onChangeText={setCustomValue}
+            keyboardType="number-pad"
+            placeholder={zh ? '數量' : 'Amount'}
+            placeholderTextColor="#9CA3AF"
+          />
+          <View style={styles.unitToggle}>
+            {(['hours', 'days'] as const).map((u) => (
+              <TouchableOpacity
+                key={u}
+                style={[styles.unitBtn, customUnit === u && styles.unitBtnActive]}
+                onPress={() => setCustomUnit(u)}
+              >
+                <Text style={[styles.unitBtnText, customUnit === u && styles.unitBtnTextActive]}>
+                  {u === 'hours' ? (zh ? '小時' : 'Hrs') : (zh ? '天' : 'Days')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={styles.muted}>{zh ? '前' : 'before'}</Text>
+          <TouchableOpacity
+            style={[styles.addBtn, (!customValue || parseInt(customValue, 10) < 1) && { opacity: 0.4 }]}
+            disabled={!customValue || parseInt(customValue, 10) < 1}
+            onPress={() => {
+              const v = parseInt(customValue, 10);
+              if (!v || v < 1) return;
+              addReminder(customUnit === 'days' ? v * 1440 : v * 60);
+              setCustomValue('');
+            }}
+          >
+            <Text style={styles.addBtnText}>+ {zh ? '新增' : 'Add'}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Active reminders list */}
+        {reminders.length === 0 ? (
+          <Text style={styles.muted}>{zh ? '尚無提醒。點選上方選項新增。' : 'No reminders set. Tap a preset above to add one.'}</Text>
+        ) : reminders.map((r, i) => (
+          <View key={i} style={styles.reminderRow}>
+            <Text style={styles.reminderLabel}>{minutesToLabel(r.offsetMinutes)}</Text>
+            <TouchableOpacity onPress={() => removeReminder(i)}>
+              <Text style={styles.removeBtn}>{zh ? '移除' : 'Remove'}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+
+        {reminders.length > 0 && (
+          <TouchableOpacity style={[styles.btn, { marginTop: 8, opacity: savingReminders ? 0.6 : 1 }]} onPress={handleSaveReminders} disabled={savingReminders}>
+            <Text style={styles.btnText}>{savingReminders ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存提醒' : 'Save Reminders')}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </ScrollView>
   );
 }
+
+const INDIGO = '#4F46E5';
 
 const styles = StyleSheet.create({
   container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#111' },
   label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 4 },
-  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 15 },
-  btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 20 },
+  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 15, color: '#111827' },
+  btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 20 },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+
+  section: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 20, marginTop: 4, gap: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111' },
+  muted: { fontSize: 12, color: '#9CA3AF' },
+
+  presetRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  presetBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 },
+  presetBtnActive: { backgroundColor: INDIGO, borderColor: INDIGO },
+  presetBtnText: { fontSize: 12, color: '#374151', fontWeight: '600' },
+  presetBtnTextActive: { color: '#fff' },
+
+  customRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  customInput: { width: 72, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 14, color: '#111827' },
+  unitToggle: { flexDirection: 'row', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, overflow: 'hidden' },
+  unitBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
+  unitBtnActive: { backgroundColor: INDIGO },
+  unitBtnText: { fontSize: 13, color: '#374151', fontWeight: '600' },
+  unitBtnTextActive: { color: '#fff' },
+  addBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  addBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+
+  reminderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#F9FAFB', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: '#E5E7EB' },
+  reminderLabel: { fontSize: 14, fontWeight: '500', color: '#111827' },
+  removeBtn: { fontSize: 12, color: '#EF4444', fontWeight: '600' },
 });

@@ -411,11 +411,11 @@ export default function EventDetailPage() {
             <span>{location}</span>
           </div>
         )}
-        {location && <EventMap location={location} title={title} />}
         <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '費用' : 'Price'}</span>
           <span>{fee}</span>
         </div>
+        {location && <EventMap location={location} title={title} />}
         {event.commentsEnabled === false && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '留言' : 'Comments'}</span>
