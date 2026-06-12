@@ -66,7 +66,6 @@ export default function ProfileScreen() {
       setTheme(pendingTheme);
       await refresh();
       setPassword('');
-      Alert.alert('', zh ? '已儲存' : 'Saved');
     } catch (err: any) {
       Alert.alert('Error', err.message);
     }
@@ -80,7 +79,7 @@ export default function ProfileScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <Stack.Screen options={{ title: '', headerLeft: () => <JLogo /> }} />
+    <Stack.Screen options={{ headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleRow}>
         <Text style={styles.title}>{t('profile.title')}</Text>

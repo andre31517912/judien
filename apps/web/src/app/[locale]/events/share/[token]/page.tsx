@@ -32,6 +32,7 @@ export default function SharedEventPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showJoinNudge, setShowJoinNudge] = useState(false);
   const [guest, setGuest] = useState<GuestIdentity>({ name: '', phoneE164: '', email: '' });
 
   const shareUrl = useMemo(() => {
@@ -108,6 +109,7 @@ export default function SharedEventPage() {
             email: guest.email.trim(),
           }),
         );
+        setShowJoinNudge(true);
       }
 
       await refresh();
@@ -221,6 +223,34 @@ export default function SharedEventPage() {
 
         {error ? <p className="text-sm text-red-500">{error}</p> : null}
       </div>
+
+      {showJoinNudge && (
+        <div className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 p-4 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">
+              {zh ? '你已回覆成功！🎉' : "You're in! 🎉"}
+            </p>
+            <p className="text-sm text-indigo-700 dark:text-indigo-400 mt-0.5">
+              {zh
+                ? '想追蹤所有活動和社群嗎？立即免費建立帳號。'
+                : 'Want to track all your events and groups? Create a free account.'}
+            </p>
+            <Link
+              href={`/${locale}/signup`}
+              className="inline-block mt-2 text-sm font-medium bg-indigo-600 text-white px-4 py-1.5 rounded-md hover:bg-indigo-700 transition"
+            >
+              {zh ? '建立帳號 →' : 'Create Account →'}
+            </Link>
+          </div>
+          <button
+            onClick={() => setShowJoinNudge(false)}
+            className="text-indigo-400 hover:text-indigo-600 text-lg leading-none shrink-0"
+            aria-label={zh ? '關閉' : 'Dismiss'}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {guests && (
         <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">

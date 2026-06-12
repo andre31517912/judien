@@ -26,6 +26,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [showPassword, setShowPassword] = useState(false);
   const [showLineNewBanner, setShowLineNewBanner] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   type AdminInvite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
   const [adminInvites, setAdminInvites] = useState<AdminInvite[]>([]);
   const [inviteGenerating, setInviteGenerating] = useState(false);
@@ -109,6 +110,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
     if (password.trim()) body.password = password.trim();
     try {
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
+      setTheme(pendingTheme);
       await refresh();
       setPassword('');
       setMsg({ text: lang === 'zh' ? '資料已更新。' : 'Profile updated.', ok: true });
@@ -188,7 +190,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">
-            {zh ? '顯示語言' : 'Display Language'}
+            {zh ? '語言' : 'Language'}
           </label>
           <div className="flex gap-2">
             {(['en', 'zh'] as const).map((l) => (
@@ -217,9 +219,9 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
               <button
                 key={t}
                 type="button"
-                onClick={() => setTheme(t)}
+                onClick={() => setPendingTheme(t)}
                 className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  theme === t
+                  pendingTheme === t
                     ? 'bg-indigo-600 border-indigo-600 text-white'
                     : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'
                 }`}

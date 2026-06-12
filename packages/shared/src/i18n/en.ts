@@ -68,7 +68,7 @@ const en = {
   },
   profile: {
     title: 'Profile',
-    language: 'Display Language',
+    language: 'Language',
     muteEmail: 'Mute email notifications',
     updateProfile: 'Update Profile',
     updateSuccess: 'Profile updated.',

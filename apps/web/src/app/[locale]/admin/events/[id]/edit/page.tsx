@@ -56,9 +56,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
   const [customReminderValue, setCustomReminderValue] = useState('');
   const [customReminderUnit, setCustomReminderUnit] = useState<'hours' | 'days'>('hours');
-  const [commentsEnabled, setCommentsEnabled] = useState(true);
-  const [messagingEnabled, setMessagingEnabled] = useState(true);
-
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -86,8 +83,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   useEffect(() => {
     apiFetch<Event>(`/events/${params.id}`).then((ev) => {
       setEvent(ev);
-      setCommentsEnabled(ev.commentsEnabled !== false);
-      setMessagingEnabled(ev.messagingEnabled !== false);
       setForm({
         title: ev.title_en,
         description: ev.description_en,
@@ -140,8 +135,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency,
         coverImageUrl: form.coverImageUrl || null,
-        commentsEnabled,
-        messagingEnabled,
       };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
       // Redirect back to event detail after saving
@@ -300,26 +293,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             <Field label="Currency">
               <input value={form.feeCurrency ?? ''} onChange={set('feeCurrency')} className={inp} />
             </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input
-                type="checkbox"
-                checked={commentsEnabled}
-                onChange={(e) => setCommentsEnabled(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '開放留言' : 'Comments enabled'}</span>
-            </label>
-            <label className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800">
-              <input
-                type="checkbox"
-                checked={messagingEnabled}
-                onChange={(e) => setMessagingEnabled(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '開放訊息' : 'Messaging enabled'}</span>
-            </label>
           </div>
           <Field label="Cover Photo">
             {/* Show current cover with remove button */}

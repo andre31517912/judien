@@ -7,7 +7,6 @@ import { apiFetch, apiUpload } from '../../../../lib/api';
 import { useTheme } from '../../../../context/theme.context';
 import { useAuth } from '../../../../context/auth.context';
 
-type PendingInvite = { id: string; email: string | null; phoneE164: string | null; status: string; expiresAt: string };
 type JoinRequest = { id: string; status: string; note: string | null; createdAt: string; requester: { id: string; displayName: string | null; email: string } };
 type BulkResult = { displayName: string; email?: string; phone?: string; created: boolean; added: boolean; tempPassword?: string; error?: string };
 type RosterMember = { userId: string; groupNickname: string | null; displayName: string | null; email: string | null; phoneE164: string | null; joinedAt: string | null; role: string };
@@ -19,7 +18,7 @@ function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'invite' | 'roster' | 'requests' | 'hierarchy' | 'donations';
+type Tab = 'general' | 'roster' | 'requests' | 'hierarchy' | 'donations';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -35,13 +34,6 @@ export default function GroupSettingsScreen() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
-
-  // Invite tab
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [invitePhone, setInvitePhone] = useState('');
-  const [inviteRole, setInviteRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
-  const [inviteSubmitting, setInviteSubmitting] = useState(false);
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
 
   // Add member
   const [newName, setNewName] = useState('');
@@ -95,9 +87,8 @@ export default function GroupSettingsScreen() {
   const loadData = async () => {
     if (!groupId) return;
     try {
-      const [myGroups, invData, reqData] = await Promise.all([
+      const [myGroups, reqData] = await Promise.all([
         apiFetch<Array<{ group: { discoverableBySearch: boolean; photoUrl?: string | null } }>>('/groups/me'),
-        apiFetch<PendingInvite[]>(`/groups/${groupId}/invites`).catch(() => []),
         apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => []),
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
@@ -106,10 +97,8 @@ export default function GroupSettingsScreen() {
         setGroupDescription((current.group as any).description ?? '');
         setPhotoUrl((current.group as any).photoUrl ?? null);
       }
-      setPendingInvites((invData ?? []).filter((inv) => inv.status === 'PENDING'));
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
     } catch {
-      setPendingInvites([]);
       setJoinRequests([]);
     }
   };
@@ -209,28 +198,6 @@ export default function GroupSettingsScreen() {
       Alert.alert('Error', err.message ?? 'Upload failed');
     } finally {
       setPhotoUploading(false);
-    }
-  };
-
-  const submitInvite = async () => {
-    if (!groupId) return;
-    if (!inviteEmail.trim() && !invitePhone.trim()) {
-      Alert.alert(zh ? '必填' : 'Required', zh ? '請輸入 email 或電話' : 'Please provide email or phone.');
-      return;
-    }
-    setInviteSubmitting(true);
-    try {
-      const payload: Record<string, unknown> = { role: inviteRole };
-      if (inviteEmail.trim()) payload.email = inviteEmail.trim();
-      if (invitePhone.trim()) payload.phoneE164 = invitePhone.trim();
-      await apiFetch(`/groups/${groupId}/invites`, { method: 'POST', body: JSON.stringify({ invites: [payload] }) });
-      setInviteEmail(''); setInvitePhone(''); setInviteRole('GROUP_MEMBER');
-      await loadData();
-      Alert.alert('✓', zh ? '邀請已送出' : 'Invitation sent.');
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to send invite');
-    } finally {
-      setInviteSubmitting(false);
     }
   };
 
@@ -456,7 +423,6 @@ export default function GroupSettingsScreen() {
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'general', label: zh ? '設定' : 'Settings' },
-    { key: 'invite', label: zh ? '邀請' : 'Invite' },
     { key: 'roster', label: zh ? '新增成員' : 'Add Members' },
     { key: 'requests', label: joinRequests.length > 0 ? `${zh ? '申請' : 'Requests'} (${joinRequests.length})` : (zh ? '申請' : 'Requests') },
     { key: 'donations' as Tab, label: zh ? '捐款' : 'Donations' },
@@ -468,7 +434,7 @@ export default function GroupSettingsScreen() {
   return (
     <>
     <ScrollView contentContainerStyle={styles.container}>
-      <Stack.Screen options={{ title: headerTitle, headerLeft: () => null, gestureEnabled: true }} />
+      <Stack.Screen options={{ headerTitle, gestureEnabled: true }} />
 
       <View style={styles.tabBar}>
         {TABS.map((t) => (
@@ -527,37 +493,6 @@ export default function GroupSettingsScreen() {
           <TouchableOpacity style={styles.primaryBtn} onPress={saveSettings} disabled={settingsSaving}>
             <Text style={styles.primaryBtnText}>{settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}</Text>
           </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Invite */}
-      {tab === 'invite' && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{zh ? '邀請成員' : 'Invite Member'}</Text>
-          <TextInput value={inviteEmail} onChangeText={setInviteEmail} placeholder="member@example.com" style={styles.input} autoCapitalize="none" keyboardType="email-address" placeholderTextColor={colors.placeholder} />
-          <TextInput value={invitePhone} onChangeText={setInvitePhone} placeholder="+886900000123" style={styles.input} keyboardType="phone-pad" placeholderTextColor={colors.placeholder} />
-          <View style={styles.roleRow}>
-            <TouchableOpacity style={[styles.roleBtn, inviteRole === 'GROUP_MEMBER' && styles.roleBtnActive]} onPress={() => setInviteRole('GROUP_MEMBER')}>
-              <Text style={[styles.roleBtnText, inviteRole === 'GROUP_MEMBER' && styles.roleBtnTextActive]}>{zh ? '一般成員' : 'Member'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.roleBtn, inviteRole === 'GROUP_ADMIN' && styles.roleBtnActive]} onPress={() => setInviteRole('GROUP_ADMIN')}>
-              <Text style={[styles.roleBtnText, inviteRole === 'GROUP_ADMIN' && styles.roleBtnTextActive]}>{zh ? '群組管理員' : 'Group Admin'}</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.primaryBtn} onPress={submitInvite} disabled={inviteSubmitting}>
-            <Text style={styles.primaryBtnText}>{inviteSubmitting ? (zh ? '傳送中…' : 'Sending…') : (zh ? '送出邀請' : 'Send Invite')}</Text>
-          </TouchableOpacity>
-          {pendingInvites.length > 0 && (
-            <>
-              <Text style={[styles.sectionTitle, { marginTop: 8 }]}>{zh ? '待回覆邀請' : 'Pending Invites'}</Text>
-              {pendingInvites.map((inv) => (
-                <View key={inv.id} style={styles.reqRow}>
-                  <Text style={styles.reqPrimary}>{inv.email || inv.phoneE164 || inv.id}</Text>
-                  <Text style={styles.reqMeta}>{zh ? '到期：' : 'Expires: '}{new Date(inv.expiresAt).toLocaleDateString()}</Text>
-                </View>
-              ))}
-            </>
-          )}
         </View>
       )}
 

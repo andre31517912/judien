@@ -47,7 +47,7 @@ function AppShell() {
       <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={colors.headerBg} />
       <AuthProvider>
         <DeepLinkHandler />
-        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text, headerBackVisible: false }}>
+        <Stack screenOptions={{ headerStyle: { backgroundColor: colors.headerBg }, headerTintColor: colors.text }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

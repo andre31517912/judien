@@ -130,12 +130,12 @@ export default function EventsTab() {
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
       <Stack.Screen options={{
-        title: creating ? (zh ? '建立活動' : 'Create Event') : '',
+        headerTitle: creating ? (zh ? '建立活動' : 'Create Event') : () => <JLogo />,
         headerLeft: creating ? () => (
           <TouchableOpacity onPress={() => { setCreating(false); resetForm(); }} activeOpacity={1} style={{ marginLeft: 16 }}>
             <Text style={styles.backBtn}>‹ {zh ? '返回' : 'Back'}</Text>
           </TouchableOpacity>
-        ) : () => <JLogo />,
+        ) : undefined,
         headerRight: !creating ? () => (
           <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立活動' : 'Create event'}>
             <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>

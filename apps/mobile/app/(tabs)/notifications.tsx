@@ -72,7 +72,7 @@ export default function NotificationsTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <Stack.Screen options={{ title: '', headerLeft: () => <JLogo /> }} />
+      <Stack.Screen options={{ headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
       {notifications.some((n) => !n.read) && (
         <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={markAllRead}>
           <Text style={styles.markAllText}>{zh ? '全部標為已讀' : 'Mark all as read'}</Text>

@@ -56,9 +56,10 @@ export default function EventDetailScreen() {
   const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO' | 'PENDING'>('GOING');
   const [guestSearch, setGuestSearch] = useState('');
 
-  // blast state (admin only)
+  // blast state (admin or event creator)
   const [showBlast, setShowBlast] = useState(false);
   const [blastMsg, setBlastMsg] = useState('');
+  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL', 'IN_APP']);
   const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('rsvped');
   const [blastSending, setBlastSending] = useState(false);
   const [blastResult, setBlastResult] = useState('');
@@ -168,7 +169,7 @@ export default function EventDetailScreen() {
     try {
       const res = await apiFetch<{ sent: number }>(`/events/${id}/blast`, {
         method: 'POST',
-        body: JSON.stringify({ messageEn: blastMsg, messageZh: blastMsg, channels: ['EMAIL'], audience: blastAudience }),
+        body: JSON.stringify({ message: blastMsg, channels: blastChannels, audience: blastAudience }),
       });
       setBlastResult(zh ? `已發送給 ${res.sent} 人` : `Sent to ${res.sent} people`);
       setBlastMsg('');
@@ -238,13 +239,10 @@ export default function EventDetailScreen() {
       <View style={styles.body}>
 
         {/* Admin toolbar */}
-        {isAdmin && (
+        {(isAdmin || event.createdById === user?.id) && (
           <View style={styles.adminBar}>
             <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
-              <Text style={styles.editBtnText}>✏️ {t('events.editEvent')}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteBtn} onPress={handleDelete}>
-              <Text style={styles.deleteBtnText}>🗑 {t('events.deleteEvent')}</Text>
+              <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -305,14 +303,25 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Admin blast */}
-        {isAdmin && (
+        {/* Blast (admin or event creator) */}
+        {(isAdmin || event.createdById === user?.id) && (
           <View style={styles.blastSection}>
             <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
               <Text style={styles.blastToggleText}>📣 {zh ? '發送訊息給出席者' : 'Message attendees'}</Text>
             </TouchableOpacity>
             {showBlast && (
               <View style={styles.blastForm}>
+                <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
+                <View style={styles.blastAudienceRow}>
+                  {([['EMAIL', zh ? '✉️ Email' : '✉️ Email'], ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App']] as const).map(([ch, label]) => (
+                    <TouchableOpacity key={ch}
+                      onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
+                      style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
+                      <Text style={[styles.audienceBtnText, blastChannels.includes(ch) && styles.audienceBtnTextActive]}>{label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
                 <View style={styles.blastAudienceRow}>
                   {(['rsvped', 'invited'] as const).map((a) => (
                     <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
@@ -332,11 +341,11 @@ export default function EventDetailScreen() {
                   numberOfLines={3}
                 />
                 <TouchableOpacity
-                  style={[styles.blastSendBtn, blastSending && { opacity: 0.6 }]}
+                  style={[styles.blastSendBtn, (blastSending || !blastMsg.trim() || blastChannels.length === 0) && { opacity: 0.5 }]}
                   onPress={handleBlastSend}
-                  disabled={blastSending}
+                  disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
                 >
-                  <Text style={styles.blastSendBtnText}>{blastSending ? (zh ? '發送中…' : 'Sending…') : (zh ? '發送 Email' : 'Send Email')}</Text>
+                  <Text style={styles.blastSendBtnText}>{blastSending ? (zh ? '發送中…' : 'Sending…') : (zh ? '立即發送' : 'Send Now')}</Text>
                 </TouchableOpacity>
                 {!!blastResult && <Text style={styles.blastResult}>{blastResult}</Text>}
               </View>
@@ -546,6 +555,7 @@ const styles = StyleSheet.create({
   blastToggle: { padding: 14, backgroundColor: '#F9FAFB' },
   blastToggleText: { fontSize: 14, fontWeight: '600', color: '#374151' },
   blastForm: { padding: 14, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  blastLabel: { fontSize: 12, fontWeight: '600', color: '#6B7280', marginBottom: 8 },
   blastAudienceRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   audienceBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   audienceBtnActive: { backgroundColor: INDIGO, borderColor: INDIGO },

@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import JLogo from '../../../components/JLogo';
 import { apiFetch } from '../../../lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
@@ -91,6 +93,11 @@ export default function GroupDetailScreen() {
   const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
   const [nicknameSaving, setNicknameSaving] = useState(false);
+
+  const [composingNews, setComposingNews] = useState(false);
+  const [newsTitle, setNewsTitle] = useState('');
+  const [newsBody, setNewsBody] = useState('');
+  const [newsSubmitting, setNewsSubmitting] = useState(false);
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -211,6 +218,21 @@ export default function GroupDetailScreen() {
     finally { setNicknameSaving(false); }
   };
 
+  const submitNews = async () => {
+    if (!newsTitle.trim()) { Alert.alert('', zh ? '請輸入標題' : 'Please enter a title.'); return; }
+    if (!newsBody.trim()) { Alert.alert('', zh ? '請輸入內容' : 'Please enter content.'); return; }
+    setNewsSubmitting(true);
+    try {
+      const created = await apiFetch<News>('/news', {
+        method: 'POST',
+        body: JSON.stringify({ title_en: newsTitle.trim(), title_zh: newsTitle.trim(), body_en: newsBody.trim(), body_zh: newsBody.trim(), groupId }),
+      });
+      setNews((prev) => [created, ...prev]);
+      setNewsTitle(''); setNewsBody(''); setComposingNews(false);
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to post.'); }
+    finally { setNewsSubmitting(false); }
+  };
+
   const filteredMembers = useMemo(() => {
     const term = memberSearch.trim().toLowerCase();
     return [...members]
@@ -252,12 +274,35 @@ export default function GroupDetailScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{ title: '', headerLeft: () => null, gestureEnabled: true }} />
+      <Stack.Screen options={{
+        headerTitle: () => <JLogo />,
+        gestureEnabled: true,
+        headerRight: isGroupAdmin ? () => (
+          <TouchableOpacity
+            onPress={() => router.push(`/groups/${groupId}/settings`)}
+            style={{ marginRight: 16 }}
+            accessibilityLabel={zh ? '群組設定' : 'Group settings'}
+          >
+            <View>
+              <Ionicons name="settings-outline" size={22} color={colors.text} />
+              {joinRequests.length > 0 && (
+                <View style={{ position: 'absolute', top: -3, right: -3, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 13, height: 13, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#fff', fontSize: 7, fontWeight: '800' }}>{joinRequests.length}</Text>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        ) : undefined,
+      }} />
 
       {/* ── Group photo banner ── */}
-      {groupItem.group.photoUrl && (
+      {groupItem.group.photoUrl ? (
         <View style={[styles.photoBanner, { backgroundColor: colors.border }]}>
           <Image source={{ uri: groupItem.group.photoUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+        </View>
+      ) : (
+        <View style={[styles.photoBanner, styles.photoBannerPlaceholder]}>
+          <Text style={styles.photoBannerIcon}>👥</Text>
         </View>
       )}
 
@@ -269,33 +314,13 @@ export default function GroupDetailScreen() {
             {groupItem.group.description ? (
               <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
             ) : null}
-            {relationships?.lineage && relationships.lineage.length > 1 && (
-              <Text style={styles.breadcrumb}>
-                {relationships.lineage.map((n) => n.name).join(' › ')}
-              </Text>
-            )}
           </View>
-          {isGroupAdmin && (
-            <TouchableOpacity
-              style={styles.settingsBtn}
-              onPress={() => router.push(`/groups/${groupId}/settings`)}
-              activeOpacity={0.7}
-              accessibilityLabel={zh ? '群組設定' : 'Group settings'}
-            >
-              <Text style={styles.settingsBtnText}>⚙️</Text>
-              {joinRequests.length > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{joinRequests.length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
         </View>
       </View>
 
       {/* ── Tab bar ── */}
-      <View style={styles.tabBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+      <View style={[styles.tabBar, { flexDirection: 'row', alignItems: 'center' }]}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll} style={{ flex: 1 }}>
           {TABS.map((t) => (
             <TouchableOpacity
               key={t.key}
@@ -309,11 +334,58 @@ export default function GroupDetailScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        {isGroupAdmin && (tab === 'feed' || tab === 'upcoming' || tab === 'past') && (
+          <TouchableOpacity
+            style={styles.tabAddBtn}
+            onPress={() => {
+              if (tab === 'feed') { setComposingNews(true); }
+              else { router.push('/(tabs)/events' as any); }
+            }}
+            accessibilityLabel={zh ? '新增' : 'Add'}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.tabAddBtnText}>＋</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ── Feed ── */}
       {tab === 'feed' && (
-        <ScrollView contentContainerStyle={styles.tabContent}>
+        <ScrollView contentContainerStyle={styles.tabContent} keyboardShouldPersistTaps="handled">
+          {composingNews && (
+            <View style={styles.composeBox}>
+              <TextInput
+                style={styles.composeTitle}
+                value={newsTitle}
+                onChangeText={setNewsTitle}
+                placeholder={zh ? '標題' : 'Title'}
+                placeholderTextColor={colors.placeholder}
+                maxLength={200}
+              />
+              <TextInput
+                style={styles.composeBody}
+                value={newsBody}
+                onChangeText={setNewsBody}
+                placeholder={zh ? '內容…' : 'Content…'}
+                placeholderTextColor={colors.placeholder}
+                multiline
+                textAlignVertical="top"
+                maxLength={5000}
+              />
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                <TouchableOpacity
+                  style={[styles.composeBtn, newsSubmitting && { opacity: 0.6 }]}
+                  onPress={submitNews}
+                  disabled={newsSubmitting}
+                >
+                  <Text style={styles.composeBtnText}>{newsSubmitting ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.composeCancelBtn} onPress={() => { setComposingNews(false); setNewsTitle(''); setNewsBody(''); }}>
+                  <Text style={styles.composeCancelText}>{zh ? '取消' : 'Cancel'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
           {news.length === 0 ? (
             <View style={styles.emptyBox}>
               <Text style={styles.emptyEmoji}>📢</Text>
@@ -503,6 +575,28 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
     photoBanner: { width: '100%', height: 130 },
+    photoBannerPlaceholder: { backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+    photoBannerIcon: { fontSize: 40, opacity: 0.5 },
+
+    tabAddBtn: { paddingHorizontal: 14, paddingVertical: 10, marginRight: 4 },
+    tabAddBtnText: { color: INDIGO, fontSize: 22, fontWeight: '700', lineHeight: 26 },
+
+    composeBox: {
+      backgroundColor: colors.card, borderRadius: 12, padding: 14,
+      borderWidth: 1, borderColor: colors.border, gap: 6,
+    },
+    composeTitle: {
+      borderBottomWidth: 1, borderColor: colors.border,
+      paddingVertical: 6, fontSize: 15, fontWeight: '600', color: colors.text,
+    },
+    composeBody: {
+      minHeight: 80, fontSize: 14, color: colors.text,
+      paddingTop: 6,
+    },
+    composeBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+    composeBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+    composeCancelBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+    composeCancelText: { color: colors.subtext, fontSize: 13 },
 
     coverHeader: {
       backgroundColor: colors.card,
@@ -517,19 +611,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     groupTitle: { fontSize: 22, fontWeight: '800', color: colors.text, lineHeight: 28 },
     groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
     breadcrumb: { fontSize: 11, color: colors.placeholder },
-    settingsBtn: {
-      width: 40, height: 40, borderRadius: 20,
-      backgroundColor: colors.border,
-      alignItems: 'center', justifyContent: 'center',
-    },
-    settingsBtnText: { fontSize: 18 },
-    badge: {
-      position: 'absolute', top: -2, right: -2,
-      backgroundColor: '#EF4444', borderRadius: 999,
-      minWidth: 16, height: 16,
-      alignItems: 'center', justifyContent: 'center', padding: 2,
-    },
-    badgeText: { color: '#fff', fontSize: 9, fontWeight: '800' },
 
     tabBar: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border },
     tabScroll: { paddingHorizontal: 8 },

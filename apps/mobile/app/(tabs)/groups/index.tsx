@@ -142,8 +142,7 @@ export default function GroupsTab() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
     >
       <Stack.Screen options={{
-        title: '',
-        headerLeft: () => <JLogo />,
+        headerTitle: () => <JLogo />,
         headerRight: () => (
           <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立群組' : 'Create group'}>
             <Text style={{ color: '#4F46E5', fontSize: 24 }}>＋</Text>

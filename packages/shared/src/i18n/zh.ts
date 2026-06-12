@@ -70,7 +70,7 @@ const zh: I18nDict = {
   },
   profile: {
     title: '個人資料',
-    language: '顯示語言',
+    language: '語言',
     muteEmail: '靜音電子郵件通知',
     updateProfile: '更新資料',
     updateSuccess: '資料已更新。',

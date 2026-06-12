@@ -7,9 +7,18 @@ import Image from 'next/image';
 import { apiFetch, resolveImageUrl } from '../../../../lib/api';
 import { useAuth } from '../../../../context/auth.context';
 import ConfirmModal from '../../../../components/ConfirmModal';
-import type { EventWithCounts, Comment, PaginatedResponse, EventSeries, EventInvitee } from '@judien/shared';
+import type { EventWithCounts, EventSeries, EventInvitee } from '@judien/shared';
 
 const EventMap = dynamic(() => import('../../../../components/EventMapInner'), { ssr: false });
+
+type Comment = {
+  id: string;
+  userId: string;
+  userHandle: string;
+  body: string;
+  createdAt: string;
+  replies?: Comment[];
+};
 
 export default function EventDetailPage() {
   const params = useParams<{ locale: string; id: string }>();
@@ -19,12 +28,6 @@ export default function EventDetailPage() {
   const { user } = useAuth();
 
   const [event, setEvent] = useState<EventWithCounts | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [commentBody, setCommentBody] = useState('');
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editCommentBody, setEditCommentBody] = useState('');
-  const [replyingToId, setReplyingToId] = useState<string | null>(null);
-  const [replyBody, setReplyBody] = useState('');
   const [rsvpStatus, setRsvpStatus] = useState<string | null>(null);
   const [showNoReason, setShowNoReason] = useState(false);
   const [noReason, setNoReason] = useState('');
@@ -51,11 +54,36 @@ export default function EventDetailPage() {
     }
   };
 
-  // blast state (admin only)
+  // blast state
   const [blastMsg, setBlastMsg] = useState('');
   const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
   const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('rsvped');
   const [blastResult, setBlastResult] = useState('');
+
+  const toggleBlastChannel = (ch: string) =>
+    setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch]);
+
+  const handleBlast = async () => {
+    if (!blastMsg.trim()) return;
+    try {
+      await apiFetch(`/events/${params.id}/blast`, {
+        method: 'POST',
+        body: JSON.stringify({ message: blastMsg.trim(), channels: blastChannels, audience: blastAudience }),
+      });
+      setBlastResult(zh ? '✓ 訊息已發送' : '✓ Message sent');
+      setBlastMsg('');
+    } catch (err: unknown) {
+      setBlastResult(zh ? '發送失敗，請稍後再試。' : 'Failed to send. Please try again.');
+    }
+  };
+
+  // comments state
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentBody, setCommentBody] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentBody, setEditCommentBody] = useState('');
+  const [replyingToId, setReplyingToId] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState('');
 
   // invite state
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -138,13 +166,12 @@ export default function EventDetailPage() {
   useEffect(() => {
     Promise.all([
       apiFetch<EventWithCounts>(`/events/${params.id}`),
-      apiFetch<PaginatedResponse<Comment>>(`/events/${params.id}/comments`),
-    ]).then(([ev, comms]) => {
+      apiFetch<Comment[]>(`/events/${params.id}/comments`).catch(() => [] as Comment[]),
+    ]).then(([ev, commentsData]) => {
       setEvent(ev);
       setRsvpStatus(ev.myRsvp);
-      setComments(comms.data);
+      setComments(Array.isArray(commentsData) ? commentsData : []);
       setLoading(false);
-      // Auto-show guest list for past events
       if (ev.isPast) {
         setShowGuests(true);
       }
@@ -203,53 +230,46 @@ export default function EventDetailPage() {
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentBody.trim()) return;
-    const c = await apiFetch<Comment>(`/events/${params.id}/comments`, {
+    const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ body: commentBody }),
+      body: JSON.stringify({ body: commentBody.trim() }),
     });
-    setComments((prev) => [...prev, { ...c, replies: [] }]);
+    setComments((prev) => [...prev, created]);
     setCommentBody('');
   };
 
-  const handleReply = async (e: React.FormEvent, parentCommentId: string) => {
+  const handleReply = async (e: React.FormEvent, parentId: string) => {
     e.preventDefault();
     if (!replyBody.trim()) return;
-    const reply = await apiFetch<Comment>(`/events/${params.id}/comments`, {
+    const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
       method: 'POST',
-      body: JSON.stringify({ body: replyBody, replyToId: parentCommentId }),
+      body: JSON.stringify({ body: replyBody.trim(), parentId }),
     });
     setComments((prev) =>
       prev.map((c) =>
-        c.id === parentCommentId
-          ? { ...c, replies: [...(c.replies ?? []), reply] }
-          : c
-      )
+        c.id === parentId ? { ...c, replies: [...(c.replies ?? []), created] } : c,
+      ),
     );
     setReplyBody('');
     setReplyingToId(null);
   };
 
-  const handleDeleteComment = async (id: string) => {
-    await apiFetch(`/comments/${id}`, { method: 'DELETE' });
+  const handleDeleteComment = async (commentId: string) => {
+    await apiFetch(`/events/${params.id}/comments/${commentId}`, { method: 'DELETE' });
     setComments((prev) =>
       prev
-        .filter((c) => c.id !== id)
-        .map((c) => ({
-          ...c,
-          replies: (c.replies ?? []).filter((r) => r.id !== id),
-        }))
+        .filter((c) => c.id !== commentId)
+        .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) })),
     );
   };
 
-  const handleEditComment = async (id: string) => {
+  const handleEditComment = async (commentId: string) => {
     if (!editCommentBody.trim()) return;
-    const updated = await apiFetch<Comment>(`/comments/${id}`, {
+    const updated = await apiFetch<Comment>(`/events/${params.id}/comments/${commentId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ body: editCommentBody }),
+      body: JSON.stringify({ body: editCommentBody.trim() }),
     });
-    setComments((prev) =>
-      prev.map((c) => (c.id === id ? { ...updated, replies: c.replies ?? [] } : c))
-    );
+    setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, body: updated.body } : c)));
     setEditingCommentId(null);
     setEditCommentBody('');
   };
@@ -257,54 +277,6 @@ export default function EventDetailPage() {
   const handleDeleteEvent = async () => {
     await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
     router.push(`/${locale}/events`);
-  };
-
-  const handleExportRsvps = async () => {
-    type ExportRow = { name: string; email: string; type: string; status: string; declineReason: string };
-    const data = await apiFetch<{ eventTitle: string; rows: ExportRow[] }>(`/events/${params.id}/rsvp/export`);
-    const { eventTitle, rows } = data;
-    const csvEscape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const header = ['Name', 'Email', 'Type', 'Status', 'Decline Reason'].map(csvEscape).join(',');
-    const lines = rows.map((r) =>
-      [r.name, r.email, r.type, r.status, r.declineReason].map(csvEscape).join(',')
-    );
-    const content = [header, ...lines].join('\r\n');
-    const blob = new Blob([content], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rsvp-${eventTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // ── blast (admin only) ────────────────────────────────────────────────────────
-  const toggleBlastChannel = (ch: string) =>
-    setBlastChannels((prev) =>
-      prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch],
-    );
-
-  const handleBlast = async () => {
-    if (!blastMsg.trim()) { setBlastResult(zh ? '請輸入訊息。' : 'Please enter a message.'); return; }
-    if (blastChannels.length === 0) { setBlastResult(zh ? '請選擇至少一種發送方式。' : 'Select at least one channel.'); return; }
-    setBlastResult(zh ? '發送中…' : 'Sending…');
-    try {
-      const res = await apiFetch<{ sent: number }>(`/events/${params.id}/blast`, {
-        method: 'POST',
-        body: JSON.stringify({
-          channels: blastChannels,
-          audience: blastAudience,
-          messageEn: blastMsg,
-          messageZh: blastMsg,
-        }),
-      });
-      const msg = zh ? `✓ 已發送給 ${res.sent} 位用戶。` : `✓ Sent to ${res.sent} user${res.sent !== 1 ? 's' : ''}.`;
-      setBlastResult(msg);
-      setBlastMsg('');
-      setTimeout(() => setBlastResult(''), 4000);
-    } catch (err: unknown) {
-      setBlastResult((err as Error).message ?? (zh ? '發送失敗。' : 'Failed to send.'));
-    }
   };
 
   if (loading) return (
@@ -360,28 +332,16 @@ export default function EventDetailPage() {
         />
       )}
       {/* Admin toolbar */}
-      {user?.role === 'ADMIN' ? (
+      {(user?.role === 'ADMIN' || event.createdById === user?.id) && (
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
             className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
           >
-            ✏️ {zh ? '編輯活動' : 'Edit Event'}
+            {zh ? '編輯活動' : 'Edit Event'}
           </a>
-          <button
-            onClick={() => setShowDeleteModal(true)}
-            className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
-          >
-            🗑 {zh ? '刪除活動' : 'Delete Event'}
-          </button>
-          <button
-            onClick={() => handleExportRsvps()}
-            className="text-sm bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700"
-          >
-            ⬇️ {zh ? '匯出 CSV' : 'Export CSV'}
-          </button>
         </div>
-      ) : null}
+      )}
 
       {resolveImageUrl(event.coverImageUrl) ? (
         <div className="relative w-full h-60 rounded-xl overflow-hidden">
@@ -444,18 +404,6 @@ export default function EventDetailPage() {
           <span>{fee}</span>
         </div>
         {location && <EventMap location={location} title={title} />}
-        {event.commentsEnabled === false && (
-          <div className="flex gap-2">
-            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '留言' : 'Comments'}</span>
-            <span className="text-orange-500 text-sm">{zh ? '已關閉' : 'Disabled'}</span>
-          </div>
-        )}
-        {event.messagingEnabled === false && (
-          <div className="flex gap-2">
-            <span className="w-24 shrink-0 font-medium text-gray-400">{zh ? '訊息' : 'Messaging'}</span>
-            <span className="text-orange-500 text-sm">{zh ? '已關閉' : 'Disabled'}</span>
-          </div>
-        )}
       </div>
 
       {description && (
@@ -695,8 +643,8 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      {/* Send Message Blast (admin only) */}
-      {user?.role === 'ADMIN' && (
+      {/* Send Message Blast (admin or event creator) */}
+      {(user?.role === 'ADMIN' || event.createdById === user?.id) && (
         <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
           <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>
@@ -715,21 +663,26 @@ export default function EventDetailPage() {
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送方式' : 'Send via'}</p>
               <div className="flex gap-3 flex-wrap">
-                {/* SMS + LINE disabled — re-enable when those channels are active */}
-                {(['EMAIL'] as const).map((ch) => (
+                {([
+                  ['EMAIL', zh ? '✉️ 電子郵件' : '✉️ Email'],
+                  ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App Notification'],
+                ] as const).map(([ch, label]) => (
                   <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
-                    {'✉️ Email'}
+                    {label}
                   </label>
                 ))}
               </div>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送對象' : 'Send to'}</p>
-              <div className="flex gap-3">
-                {([['rsvped', zh ? '已回覆的用戶' : 'RSVPed Only'], ['invited', zh ? '所有受邀者' : 'All Invited']] as const).map(([val, label]) => (
+              <div className="flex gap-3 flex-wrap">
+                {([
+                  ['rsvped', zh ? '已回覆的用戶' : 'RSVPed Only'],
+                  ['invited', zh ? '所有受邀者' : 'All Invited'],
+                ] as [typeof blastAudience, string][]).map(([val, label]) => (
                   <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
@@ -742,7 +695,8 @@ export default function EventDetailPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleBlast}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
+                disabled={!blastMsg.trim() || blastChannels.length === 0}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
                 {zh ? '立即發送' : 'Send Now'}
               </button>
@@ -760,9 +714,7 @@ export default function EventDetailPage() {
       <section>
         <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '留言' : 'Comments'}</h2>
 
-        {event.commentsEnabled === false ? (
-          <p className="text-sm text-gray-400 italic mb-4">{zh ? '此活動已關閉留言功能。' : 'Comments are disabled for this event.'}</p>
-        ) : user && (
+        {user && (
           <form onSubmit={handleComment} className="flex gap-2 mb-4">
             <input
               value={commentBody}
@@ -793,7 +745,6 @@ export default function EventDetailPage() {
             const isReplying = replyingToId === c.id;
             return (
               <div key={c.id}>
-                {/* Main comment */}
                 <div className="bg-white dark:bg-gray-900 rounded-lg p-3 shadow-sm border border-gray-100 dark:border-gray-800">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{c.userHandle}</p>
@@ -866,7 +817,6 @@ export default function EventDetailPage() {
                   </div>
                 </div>
 
-                {/* Reply form */}
                 {isReplying && (
                   <div className="ml-4 mt-2 bg-indigo-50 dark:bg-gray-800 rounded-lg p-3">
                     <form onSubmit={(e) => handleReply(e, c.id)} className="flex gap-2">
@@ -888,14 +838,13 @@ export default function EventDetailPage() {
                   </div>
                 )}
 
-                {/* Replies */}
                 {c.replies && c.replies.length > 0 && (
                   <div className="ml-4 mt-2 flex flex-col gap-2">
                     {c.replies.map((reply) => {
                       const isOwnReply = user?.id === reply.userId;
                       const canDeleteReply = isOwnReply || user?.role === 'ADMIN';
                       return (
-                        <div key={reply.id} className="bg-gray-50 rounded-lg p-2.5">
+                        <div key={reply.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-xs text-gray-500 font-medium">{reply.userHandle}</p>
                             {canDeleteReply && (
@@ -909,7 +858,7 @@ export default function EventDetailPage() {
                               </button>
                             )}
                           </div>
-                          <p className="text-sm text-gray-700 mt-1">{reply.body}</p>
+                          <p className="text-sm text-gray-700 dark:text-gray-200 mt-1">{reply.body}</p>
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(reply.createdAt).toLocaleString()}
                           </p>
