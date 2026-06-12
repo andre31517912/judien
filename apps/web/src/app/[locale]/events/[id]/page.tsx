@@ -36,19 +36,27 @@ export default function EventDetailPage() {
 
   // guest list
   type GuestEntry = { handle: string; displayName: string | null };
-  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] };
+  type InvitedEntry = { name: string; email?: string };
+  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'GOING' | 'NO' | 'PENDING'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
   const [guestSearch, setGuestSearch] = useState('');
 
   const loadGuests = async () => {
-    if (guests) return; // already loaded
+    if (guests) return;
     setGuestsLoading(true);
     try {
-      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
-      setGuests(data);
+      const [rsvpData, inviteesData] = await Promise.all([
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
+        apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`).catch(() => [] as EventInvitee[]),
+      ]);
+      setGuests({
+        GOING: rsvpData.GOING,
+        NO: rsvpData.NO,
+        INVITED: inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+      });
     } finally {
       setGuestsLoading(false);
     }
@@ -117,21 +125,6 @@ export default function EventDetailPage() {
     setTimeout(() => setCopyDone(false), 2000);
   };
 
-  // invitees state (admin only)
-  const [invitees, setInvitees] = useState<EventInvitee[]>([]);
-  const [inviteesLoading, setInviteesLoading] = useState(false);
-  const [showInvitees, setShowInvitees] = useState(false);
-
-  const loadInvitees = async () => {
-    setInviteesLoading(true);
-    try {
-      const data = await apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`);
-      setInvitees(data);
-    } finally {
-      setInviteesLoading(false);
-    }
-  };
-
   // event series state
   const [eventSeries, setEventSeries] = useState<EventSeries | null>(null);
 
@@ -141,7 +134,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason || showGuests || showInvitees;
+  const anyModalOpen = showInviteModal || showNoReason || showGuests;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -150,7 +143,6 @@ export default function EventDetailPage() {
           setShowInviteModal(false);
           setShowNoReason(false);
           setShowGuests(false);
-          setShowInvitees(false);
         }
       };
       document.addEventListener('keydown', onKey);
@@ -419,15 +411,29 @@ export default function EventDetailPage() {
         <span>✕ {event.rsvpCounts.NO} {zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going')}</span>
       </div>
 
-      {/* RSVP buttons (requires login, hidden for past events) */}
-      {user ? (
-        <div className="flex flex-col gap-3">
-        {!isPast && (
+      {/* RSVP + actions row */}
+      <div className="flex flex-col gap-3">
         <div className="flex gap-3 items-center flex-wrap">
-          {rsvpBtn('GOING', zh ? '參加' : 'Going')}
-          {rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
+          {user && !isPast && rsvpBtn('GOING', zh ? '參加' : 'Going')}
+          {user && !isPast && rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
+          <button
+            onClick={() => { setShowGuests(!showGuests); if (!showGuests) loadGuests(); }}
+            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
+          >
+            {zh ? '賓客名單' : 'Guest List'}
+          </button>
+          {!isPast && (
+            <button
+              onClick={handleCreateInvite}
+              disabled={inviteLoading}
+              className="px-4 py-2 rounded-full text-sm font-medium border bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 transition disabled:opacity-50"
+            >
+              {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
+            </button>
+          )}
+          {inviteError && <p className="text-sm text-red-500 dark:text-red-400 w-full mt-1">{inviteError}</p>}
+          {!user && <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}</p>}
         </div>
-        )}
         {showNoReason && (
           <div className="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-4">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -459,186 +465,77 @@ export default function EventDetailPage() {
             </div>
           </div>
         )}
-        <div className="flex gap-3 items-center flex-wrap">
-          <button
-            onClick={() => {
-              if (showGuests) {
-                setShowGuests(false);
-              } else {
-                setShowGuests(true);
-                loadGuests();
-              }
-            }}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
-          >
-            {zh ? '賓客名單' : 'Guest List'}
-          </button>
-          {!isPast && (
-          <button
-            onClick={handleCreateInvite}
-            disabled={inviteLoading}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 transition disabled:opacity-50"
-          >
-            {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
-          </button>
-          )}
-          {inviteError && (
-            <p className="text-sm text-red-500 dark:text-red-400 w-full mt-1">{inviteError}</p>
-          )}
-          {user?.role === 'ADMIN' && (
-            <button
-              onClick={() => {
-                if (showInvitees) {
-                  setShowInvitees(false);
-                } else {
-                  setShowInvitees(true);
-                  loadInvitees();
-                }
-              }}
-              className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-purple-400 transition"
-            >
-              {zh ? '受邀名單' : 'Invitees'}
-            </button>
-          )}
-        </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-3">
-          <p className="text-sm text-gray-400 dark:text-gray-500">
-            {zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}
-          </p>
-          <button
-            onClick={() => {
-              if (showGuests) {
-                setShowGuests(false);
-              } else {
-                setShowGuests(true);
-                loadGuests();
-              }
-            }}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
-          >
-            {zh ? '賓客名單' : 'Guest List'}
-          </button>
-        </div>
-      )}
+      </div>
 
-      {/* Guest list panel */}
+      {/* Guest list panel — 3 tabs: Invited, Going, Not Going */}
       {showGuests && (
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-            {/* tab header */}
-            <div className="flex border-b border-gray-100 dark:border-gray-800">
-              {(['GOING', 'NO'] as const).map((s) => {
-                const labels = {
-                  GOING: zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'),
-                  NO: zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'),
-                };
-                return (
-                  <button
-                    key={s}
-                    onClick={() => setActiveGuestTab(s)}
-                    className={`flex-1 py-2.5 text-xs font-medium transition ${
-                      activeGuestTab === s
-                        ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 -mb-px'
-                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
-                    }`}
-                  >
-                    {labels[s]} ({event.rsvpCounts[s]})
-                  </button>
-                );
-              })}
-              {/* No Response tab — only shown for group admins (backend populates PENDING only for them) */}
-              {guests?.PENDING !== undefined && (
-                <button
-                  onClick={() => setActiveGuestTab('PENDING')}
-                  className={`flex-1 py-2.5 text-xs font-medium transition ${
-                    activeGuestTab === 'PENDING'
-                      ? 'text-amber-600 dark:text-amber-400 border-b-2 border-amber-500 dark:border-amber-400 -mb-px'
-                      : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
-                  }`}
-                >
-                  {zh ? '未回覆' : 'No Reply'} ({guests.PENDING.length})
-                </button>
-              )}
-            </div>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+          <div className="flex border-b border-gray-100 dark:border-gray-800">
+            {([
+              ['INVITED', zh ? '已邀請' : 'Invited', guests?.INVITED.length ?? 0],
+              ['GOING',   zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), event.rsvpCounts.GOING],
+              ['NO',      zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'), event.rsvpCounts.NO],
+            ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
+              <button
+                key={tab}
+                onClick={() => setActiveGuestTab(tab)}
+                className={`flex-1 py-2.5 text-xs font-medium transition ${
+                  activeGuestTab === tab
+                    ? 'text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 -mb-px'
+                    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
+          </div>
 
-            {/* search */}
-            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
-              <input
-                value={guestSearch}
-                onChange={(e) => setGuestSearch(e.target.value)}
-                placeholder={zh ? '搜尋…' : 'Search…'}
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
+          <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
+            <input
+              value={guestSearch}
+              onChange={(e) => setGuestSearch(e.target.value)}
+              placeholder={zh ? '搜尋…' : 'Search…'}
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
 
-            {/* guest rows */}
-            <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-52 overflow-y-auto">
-              {guestsLoading ? (
-                <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
-              ) : (() => {
-                const term = guestSearch.trim().toLowerCase();
-                const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
-                  !term ||
-                  (g.displayName ?? '').toLowerCase().includes(term) ||
-                  g.handle.toLowerCase().includes(term),
+          <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-52 overflow-y-auto">
+            {guestsLoading ? (
+              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : (() => {
+              const term = guestSearch.trim().toLowerCase();
+              if (activeGuestTab === 'INVITED') {
+                const rows = (guests?.INVITED ?? []).filter((g) =>
+                  !term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
                 );
-                return rows.length === 0 ? (
-                  <p className="text-xs text-gray-400 px-4 py-4 text-center">
-                    {term
-                      ? (zh ? '找不到符合結果。' : 'No matches.')
-                      : activeGuestTab === 'PENDING'
-                        ? (zh ? '所有成員都已回覆。' : 'All members have replied.')
-                        : (zh ? '目前沒有人。' : 'Nobody yet.')}
-                  </p>
-                ) : rows.map((g, i) => (
+                return rows.length === 0
+                  ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有受邀者。' : 'No invitees yet.')}</p>
+                  : rows.map((g, i) => (
+                    <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                      <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
+                        {(g.name || '?').charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
+                        {g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                      </div>
+                    </div>
+                  ));
+              }
+              const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
+                !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term)
+              );
+              return rows.length === 0
+                ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有人。' : 'Nobody yet.')}</p>
+                : rows.map((g, i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      activeGuestTab === 'PENDING'
-                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                        : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'
-                    }`}>
+                    <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                       {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm text-gray-800 dark:text-gray-200">
-                      {g.displayName ?? g.handle}
-                    </span>
+                    <span className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</span>
                   </div>
                 ));
-              })()}
-            </div>
-          </div>
-        )}
-
-      {/* Invitees panel (admin only) */}
-      {showInvitees && user?.role === 'ADMIN' && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-100 dark:border-purple-900/50 shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-purple-50 dark:border-purple-900/30">
-            <h3 className="text-sm font-semibold text-purple-700 dark:text-purple-300">{zh ? '受邀名單' : 'Invitees'}</h3>
-          </div>
-          <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-64 overflow-y-auto">
-            {inviteesLoading ? (
-              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
-            ) : invitees.length === 0 ? (
-              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '尚無受邀用戶。' : 'No invitees yet.'}</p>
-            ) : (
-              invitees.map((inv) => (
-                <div key={inv.inviteId} className="flex items-center gap-3 px-4 py-2.5">
-                  <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-xs font-bold text-purple-500 shrink-0">
-                    {(inv.guestName ?? inv.displayName ?? '?').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{inv.guestName ?? inv.displayName ?? (zh ? '未知' : 'Unknown')}</p>
-                    {inv.email && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{inv.email}</p>}
-                  </div>
-                  {inv.acceptedAt ? (
-                    <span className="text-xs text-green-600 shrink-0">{zh ? '已接受' : 'Accepted'}</span>
-                  ) : (
-                    <span className="text-xs text-gray-400 shrink-0">{zh ? '待接受' : 'Pending'}</span>
-                  )}
-                </div>
-              ))
-            )}
+            })()}
           </div>
         </div>
       )}

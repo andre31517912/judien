@@ -157,6 +157,29 @@ export default function EditEventScreen() {
         <Text style={styles.btnText}>{t('common.save')}</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.deleteBtn}
+        onPress={() =>
+          Alert.alert(
+            t('events.deleteEvent'),
+            t('events.deleteConfirm'),
+            [
+              { text: t('common.cancel'), style: 'cancel' },
+              {
+                text: t('common.delete'),
+                style: 'destructive',
+                onPress: async () => {
+                  await apiFetch(`/events/${id}`, { method: 'DELETE' });
+                  router.replace('/(tabs)/events');
+                },
+              },
+            ],
+          )
+        }
+      >
+        <Text style={styles.deleteBtnText}>{t('events.deleteEvent')}</Text>
+      </TouchableOpacity>
+
       {/* ── Automatic Reminders ── */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{zh ? '自動提醒' : 'Automatic Reminders'}</Text>
@@ -247,8 +270,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#111' },
   label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 4 },
   input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 10, fontSize: 15, color: '#111827' },
-  btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 20 },
+  btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 8 },
   btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  deleteBtn: { borderWidth: 1, borderColor: '#EF4444', borderRadius: 10, padding: 16, alignItems: 'center', marginBottom: 20 },
+  deleteBtnText: { color: '#EF4444', fontWeight: '600', fontSize: 16 },
 
   section: { borderTopWidth: 1, borderTopColor: '#E5E7EB', paddingTop: 20, marginTop: 4, gap: 12 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: '#111' },
