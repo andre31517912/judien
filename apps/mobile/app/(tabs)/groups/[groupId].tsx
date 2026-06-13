@@ -548,35 +548,25 @@ export default function GroupDetailScreen() {
                     </>
                   )}
                 </View>
-                {!isEditing && (
-                  <View style={{ gap: 4 }}>
-                    {isGroupAdmin && isOwnRow && (
-                      <TouchableOpacity
-                        style={styles.smallBtn}
-                        onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
-                      >
-                        <Text style={styles.smallBtnText}>{zh ? '改名' : 'Rename'}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {isGroupAdmin && !isOwnRow && (
-                      <View style={{ gap: 4 }}>
-                        <TouchableOpacity
-                          style={[styles.smallBtn, { borderColor: '#C7D2FE', backgroundColor: '#EEF2FF' }]}
-                          onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
-                        >
-                          <Text style={[styles.smallBtnText, { color: '#4338CA' }]}>{zh ? '改名' : 'Rename'}</Text>
+                {!isEditing && isGroupAdmin && (
+                  <View style={styles.memberActions}>
+                    <TouchableOpacity
+                      style={styles.renameBtn}
+                      onPress={() => { setEditingNicknameFor(m.userId); setNicknameInput(m.groupNickname ?? ''); }}
+                    >
+                      <Text style={styles.renameBtnText}>{zh ? '改名' : 'Rename'}</Text>
+                    </TouchableOpacity>
+                    {!isOwnRow && (
+                      <>
+                        <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
+                          <Text style={styles.promoteBtnText}>
+                            {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                          </Text>
                         </TouchableOpacity>
-                        <View style={styles.memberActions}>
-                          <TouchableOpacity style={styles.promoteBtn} onPress={() => changeMemberRole(m.userId, m.role)}>
-                            <Text style={styles.promoteBtnText}>
-                              {m.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
-                            </Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
-                            <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
+                        <TouchableOpacity style={styles.removeBtn} onPress={() => removeMember(m.userId)}>
+                          <Text style={styles.removeBtnText}>{zh ? '移除' : 'Remove'}</Text>
+                        </TouchableOpacity>
+                      </>
                     )}
                   </View>
                 )}
@@ -695,6 +685,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     smallBtnText: { fontSize: 11, fontWeight: '600', color: colors.text },
     smallBtnPrimaryText: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
+    renameBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.card },
+    renameBtnText: { fontSize: 11, fontWeight: '700', color: colors.text },
     promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
     promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
     removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
