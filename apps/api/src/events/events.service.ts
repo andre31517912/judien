@@ -103,7 +103,7 @@ export class EventsService {
       include: {
         rsvps: { select: { status: true } },
         guestRsvps: { select: { status: true } },
-        createdBy: { select: { email: true } },
+        createdBy: { select: { email: true, displayName: true } },
         group: { select: { name: true } },
         shareLink: { select: { token: true } },
       },
@@ -175,7 +175,7 @@ export class EventsService {
           include: {
             rsvps: { select: { status: true } },
             guestRsvps: { select: { status: true } },
-            createdBy: { select: { email: true } },
+            createdBy: { select: { email: true, displayName: true } },
             group: { select: { name: true } },
             shareLink: { select: { token: true } },
           },
