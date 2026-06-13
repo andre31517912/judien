@@ -76,6 +76,32 @@ export default function GroupDetailScreen() {
   const { colors } = useTheme();
   const zh = i18n.language === 'zh';
 
+  type Tab = 'feed' | 'upcoming' | 'past' | 'members';
+
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<Tab>('feed');
+  const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [news, setNews] = useState<News[]>([]);
+  const [events, setEvents] = useState<EventWithCounts[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
+  const [pastLoaded, setPastLoaded] = useState(false);
+  const [pastLoading, setPastLoading] = useState(false);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
+
+  const [memberSearch, setMemberSearch] = useState('');
+  const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
+
+  const [composingNews, setComposingNews] = useState(false);
+  const [newsTitle, setNewsTitle] = useState('');
+  const [newsBody, setNewsBody] = useState('');
+  const [newsSubmitting, setNewsSubmitting] = useState(false);
+  const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   // Build the Tabs JS header (no system tap-highlight). Re-runs when isGroupAdmin or badge count changes.
   const configureHeader = useCallback(() => {
     navigation.getParent()?.setOptions({
@@ -115,32 +141,6 @@ export default function GroupDetailScreen() {
   useEffect(() => {
     configureHeader();
   }, [configureHeader]);
-
-  type Tab = 'feed' | 'upcoming' | 'past' | 'members';
-
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<Tab>('feed');
-  const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
-  const [members, setMembers] = useState<GroupMember[]>([]);
-  const [news, setNews] = useState<News[]>([]);
-  const [events, setEvents] = useState<EventWithCounts[]>([]);
-  const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
-  const [pastLoaded, setPastLoaded] = useState(false);
-  const [pastLoading, setPastLoading] = useState(false);
-  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
-  const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
-
-  const [memberSearch, setMemberSearch] = useState('');
-  const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
-  const [nicknameInput, setNicknameInput] = useState('');
-  const [nicknameSaving, setNicknameSaving] = useState(false);
-
-  const [composingNews, setComposingNews] = useState(false);
-  const [newsTitle, setNewsTitle] = useState('');
-  const [newsBody, setNewsBody] = useState('');
-  const [newsSubmitting, setNewsSubmitting] = useState(false);
-  const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
-  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const loadPage = useCallback(async () => {
     if (!groupId) return;
