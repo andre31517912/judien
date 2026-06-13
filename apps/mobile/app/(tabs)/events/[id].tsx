@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
+import JLogo from '../../../components/JLogo';
 import { apiFetch, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
@@ -42,10 +43,23 @@ export default function EventDetailScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
 
-  // Hide the Tabs header so only the inner Stack header (with back button) shows
+  // Use the Tabs JS header (no system tap-highlight) instead of the native Stack header
   useFocusEffect(useCallback(() => {
-    navigation.getParent()?.setOptions({ headerShown: false });
-  }, []));
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+      ),
+      headerRight: undefined,
+    });
+    return () => {
+      navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
+    };
+  }, [zh, colors.headerBg]));
 
   const [event, setEvent] = useState<EventWithCounts | null>(null);
   const [fetchFailed, setFetchFailed] = useState(false);

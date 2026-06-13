@@ -24,9 +24,9 @@ export default function GroupsLayout() {
       ) : undefined,
     }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[groupId]" options={{ gestureEnabled: true }} />
-      <Stack.Screen name="[groupId]/settings" options={{ gestureEnabled: true }} />
-      <Stack.Screen name="[groupId]/events/[id]" options={{ gestureEnabled: true }} />
+      <Stack.Screen name="[groupId]" options={{ gestureEnabled: true, headerShown: false }} />
+      <Stack.Screen name="[groupId]/settings" options={{ gestureEnabled: true, headerShown: false }} />
+      <Stack.Screen name="[groupId]/events/[id]" options={{ gestureEnabled: true, headerShown: false }} />
     </Stack>
   );
 }

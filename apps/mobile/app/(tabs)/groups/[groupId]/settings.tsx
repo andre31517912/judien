@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter, useFocusEffect } from 'expo-router';
+import JLogo from '../../../../components/JLogo';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { apiFetch, apiUpload } from '../../../../lib/api';
@@ -13,6 +14,8 @@ type RosterMember = { userId: string; groupNickname: string | null; displayName:
 type GroupRelationships = { parentGroup: { id: string; name: string } | null; subgroups: { id: string; name: string; description: string }[] };
 type GroupSearchResult = { id: string; name: string; description: string };
 type DonationRecord = { id: string; forUserId: string; amount: string; currency: string; date: string; note: string | null; forUser: { id: string; displayName: string | null; email: string } };
+
+const INDIGO = '#4F46E5';
 
 function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
@@ -27,6 +30,25 @@ export default function GroupSettingsScreen() {
   const { user } = useAuth();
   const zh = i18n.language === 'zh';
   const isPlatformAdmin = user?.role === 'ADMIN';
+  const navigation = useNavigation();
+  const router = useRouter();
+
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+      ),
+      headerRight: undefined,
+    });
+    return () => {
+      navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
+    };
+  }, [zh, colors.headerBg]));
 
   const [tab, setTab] = useState<Tab>('general');
   const [groupName, setGroupName] = useState('');
@@ -434,7 +456,7 @@ export default function GroupSettingsScreen() {
   return (
     <>
     <ScrollView contentContainerStyle={styles.container}>
-      <Stack.Screen options={{ headerTitle, gestureEnabled: true }} />
+      <Stack.Screen options={{ gestureEnabled: true }} />
 
       <View style={styles.tabBar}>
         {TABS.map((t) => (
@@ -874,8 +896,6 @@ export default function GroupSettingsScreen() {
     </>
   );
 }
-
-const INDIGO = '#4F46E5';
 
 function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({

@@ -76,10 +76,45 @@ export default function GroupDetailScreen() {
   const { colors } = useTheme();
   const zh = i18n.language === 'zh';
 
-  // Hide the Tabs header so only the inner Stack header (with back button) shows
+  // Build the Tabs JS header (no system tap-highlight). Re-runs when isGroupAdmin or badge count changes.
+  const configureHeader = useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+      ),
+      headerRight: isGroupAdmin ? () => (
+        <TouchableOpacity
+          onPress={() => router.push(`/groups/${groupId}/settings`)}
+          style={{ marginRight: 16 }}
+          activeOpacity={1}
+        >
+          <Ionicons name="settings-outline" size={22} color={colors.text} />
+          {joinRequests.length > 0 && (
+            <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      ) : undefined,
+    });
+  }, [zh, colors.headerBg, colors.text, isGroupAdmin, joinRequests.length, groupId]);
+
   useFocusEffect(useCallback(() => {
-    navigation.getParent()?.setOptions({ headerShown: false });
-  }, []));
+    configureHeader();
+    return () => {
+      navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
+    };
+  }, [configureHeader]));
+
+  // Re-configure when async data loads while screen is already focused
+  useEffect(() => {
+    configureHeader();
+  }, [configureHeader]);
 
   type Tab = 'feed' | 'upcoming' | 'past' | 'members';
 
@@ -280,25 +315,7 @@ export default function GroupDetailScreen() {
 
   return (
     <View style={styles.screen}>
-      <Stack.Screen options={{
-        headerTitle: () => <JLogo />,
-        gestureEnabled: true,
-        headerRight: isGroupAdmin ? () => (
-          <TouchableOpacity
-            onPress={() => router.push(`/groups/${groupId}/settings`)}
-            style={{ marginRight: 16 }}
-            activeOpacity={0.7}
-            accessibilityLabel={zh ? '群組設定' : 'Group settings'}
-          >
-            <Ionicons name="settings-outline" size={22} color={colors.text} />
-            {joinRequests.length > 0 && (
-              <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        ) : undefined,
-      }} />
+      <Stack.Screen options={{ gestureEnabled: true }} />
 
       {/* ── Group photo banner ── */}
       {groupItem.group.photoUrl ? (

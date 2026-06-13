@@ -24,7 +24,7 @@ export default function EventsLayout() {
       ) : undefined,
     }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="[id]" options={{ gestureEnabled: true }} />
+      <Stack.Screen name="[id]" options={{ gestureEnabled: true, headerShown: false }} />
     </Stack>
   );
 }
