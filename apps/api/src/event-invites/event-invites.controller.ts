@@ -37,8 +37,7 @@ export class EventInvitesController {
     @Body(new ZodValidationPipe(CreateEventInviteSchema)) dto: CreateEventInviteDto,
     @CurrentUser() user: User,
   ) {
-    // TODO: verify user is event creator or admin
-    return this.eventInvitesService.createInvite(dto.eventId, user.id);
+    return this.eventInvitesService.createInvite(dto.eventId, user);
   }
 
   // GET /api/event-invites/:token/info – get invite info without accepting (public)
@@ -64,7 +63,7 @@ export class EventInvitesController {
     @Param('eventId') eventId: string,
     @CurrentUser() user: User,
   ) {
-    return this.eventInvitesService.getEventInvites(eventId);
+    return this.eventInvitesService.getEventInvites(eventId, user);
   }
 
   // GET /api/event-invites/event/:eventId/invitees – list who accepted invites
@@ -72,9 +71,9 @@ export class EventInvitesController {
   @Get('event/:eventId/invitees')
   async getEventInvitees(
     @Param('eventId') eventId: string,
-    @CurrentUser() _user: User,
+    @CurrentUser() user: User,
   ) {
-    return this.eventInvitesService.getEventInvitees(eventId);
+    return this.eventInvitesService.getEventInvitees(eventId, user);
   }
 
   // DELETE /api/event-invites/:inviteId – revoke invite (creator/admin only)
@@ -84,6 +83,6 @@ export class EventInvitesController {
     @Param('inviteId') inviteId: string,
     @CurrentUser() user: User,
   ) {
-    return this.eventInvitesService.revokeInvite(inviteId);
+    return this.eventInvitesService.revokeInvite(inviteId, user);
   }
 }

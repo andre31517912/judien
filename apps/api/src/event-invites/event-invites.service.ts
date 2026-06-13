@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcryptjs';
@@ -19,10 +19,12 @@ export class EventInvitesService {
     return { eventId: invite.event.id, title_en: invite.event.title_en, title_zh: invite.event.title_zh };
   }
 
-  async createInvite(eventId: string, createdById: string) {
-    // Verify event exists
+  async createInvite(eventId: string, user: User) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
+    if (event.createdById !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only the event creator or admin can create invite links.');
+    }
 
     // Generate unique token
     const token = randomBytes(32).toString('hex');
@@ -36,7 +38,7 @@ export class EventInvitesService {
         eventId,
         token,
         expiresAt,
-        createdById,
+        createdById: user.id,
       },
     });
 
@@ -129,7 +131,12 @@ export class EventInvitesService {
   /**
    * List invitees (accepted + pending) for an event
    */
-  async getEventInvitees(eventId: string) {
+  async getEventInvitees(eventId: string, user: User) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+    if (event.createdById !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only the event creator or admin can view invitees.');
+    }
     const invites = await this.prisma.eventInvite.findMany({
       where: { eventId },
       include: {
@@ -152,7 +159,12 @@ export class EventInvitesService {
   /**
    * Get all invites for an event (admin/creator only)
    */
-  async getEventInvites(eventId: string) {
+  async getEventInvites(eventId: string, user: User) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+    if (event.createdById !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only the event creator or admin can view invite links.');
+    }
     return this.prisma.eventInvite.findMany({
       where: { eventId },
       orderBy: { createdAt: 'desc' },
@@ -162,7 +174,15 @@ export class EventInvitesService {
   /**
    * Invalidate/revoke an invite
    */
-  async revokeInvite(inviteId: string) {
+  async revokeInvite(inviteId: string, user: User) {
+    const invite = await this.prisma.eventInvite.findUnique({
+      where: { id: inviteId },
+      include: { event: { select: { createdById: true } } },
+    });
+    if (!invite) throw new NotFoundException('Invite not found.');
+    if (invite.event.createdById !== user.id && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only the event creator or admin can revoke invite links.');
+    }
     return this.prisma.eventInvite.update({
       where: { id: inviteId },
       data: { expiresAt: new Date() },
