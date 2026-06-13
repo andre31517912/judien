@@ -375,10 +375,10 @@ export default function EventDetailPage() {
             <span className="text-indigo-600 font-medium">👥 {event.groupName}</span>
           </div>
         )}
-        {(event as any).createdByEmail && (
+        {(event as any).createdByName && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦人' : 'Host'}</span>
-            <span>{(event as any).createdByEmail}</span>
+            <span>{(event as any).createdByName}</span>
           </div>
         )}
         <div className="flex gap-2">

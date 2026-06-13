@@ -4,9 +4,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch, apiUpload } from '../../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../../context/theme.context';
+import JLogo from '../../../../components/JLogo';
 import type { Event, ReminderRule } from '@judien/shared';
 
 const INDIGO = '#4F46E5';
@@ -34,6 +36,7 @@ export default function EditEventScreen() {
   const zh = i18n.language === 'zh';
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { top: safeTop } = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
@@ -148,12 +151,6 @@ export default function EditEventScreen() {
     }
   };
 
-  if (loading) return (
-    <View style={[styles.center, { backgroundColor: colors.bg }]}>
-      <ActivityIndicator color={INDIGO} />
-    </View>
-  );
-
   const F = ({
     label, k, keyboard = 'default', multi,
   }: { label: string; k: keyof typeof form; keyboard?: any; multi?: boolean }) => (
@@ -171,6 +168,21 @@ export default function EditEventScreen() {
   );
 
   return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
+        <View style={[styles.customHeader, { borderBottomColor: colors.border }]}>
+          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
+            <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+          </TouchableOpacity>
+          <JLogo />
+          <View style={{ minWidth: 60 }} />
+        </View>
+      </View>
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator color={INDIGO} />
+        </View>
+      ) : (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
       <Text style={styles.pageTitle}>{t('events.editEvent')}</Text>
 
@@ -316,10 +328,20 @@ export default function EditEventScreen() {
         )}
       </View>
     </ScrollView>
+      )}
+    </View>
   );
 }
 
 const makeStyles = (colors: any) => StyleSheet.create({
+  customHeader: {
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scroll: { flex: 1, backgroundColor: colors.bg },
   container: { padding: 20, paddingBottom: 40 },

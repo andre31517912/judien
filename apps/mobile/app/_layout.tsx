@@ -67,7 +67,7 @@ function AppShell() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="admin/groups/new" options={{ title: 'Create Group' }} />
           <Stack.Screen name="admin/events/new" options={{ title: 'Create Event' }} />
-          <Stack.Screen name="admin/events/[id]/edit" options={{ title: 'Edit Event' }} />
+          <Stack.Screen name="admin/events/[id]/edit" options={{ headerShown: false }} />
           <Stack.Screen name="admin/invites" options={{ title: 'Invite Links' }} />
         </Stack>
       </AuthProvider>

@@ -135,7 +135,7 @@ export class EventsService {
       shareToken: event.shareLink?.token ?? null,
       rsvpCounts: counts,
       myRsvp,
-      createdByEmail: event.createdBy?.email ?? null,
+      createdByName: event.createdBy?.displayName ?? null,
       createdBy: undefined,
       isPast: new Date(event.startAt) < new Date(),
     };
@@ -205,7 +205,7 @@ export class EventsService {
       shareToken: event.shareLink?.token ?? token,
       rsvpCounts: counts,
       myRsvp,
-      createdByEmail: event.createdBy?.email ?? null,
+      createdByName: event.createdBy?.displayName ?? null,
       createdBy: undefined,
       isPast: new Date(event.startAt) < new Date(),
     };

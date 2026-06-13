@@ -320,8 +320,8 @@ export default function EventDetailScreen() {
           {event.groupName && <Text style={styles.groupBadge}>👥 {event.groupName}</Text>}
 
           <View style={styles.metaBlock}>
-            {(event as any).createdByEmail && (
-              <Text style={styles.meta}>👤 {(event as any).createdByEmail}</Text>
+            {(event as any).createdByName && (
+              <Text style={styles.meta}>👤 {(event as any).createdByName}</Text>
             )}
             <Text style={styles.meta}>📅 {dateStr} ({event.timezone})</Text>
             {location ? (
