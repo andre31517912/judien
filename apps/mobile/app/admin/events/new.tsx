@@ -1,16 +1,26 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback,
+  View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, Alert, Image, Platform,
 } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch, apiUpload } from '../../../lib/api';
+import { useTheme } from '../../../context/theme.context';
+import { useTranslation } from 'react-i18next';
+import JLogo from '../../../components/JLogo';
 import type { Event } from '@judien/shared';
 import DateTimeField from '../../../components/DateTimeField';
 
+const INDIGO = '#4F46E5';
+
 export default function NewEventScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const { i18n } = useTranslation();
+  const zh = i18n.language === 'zh';
+  const { top: safeTop } = useSafeAreaInsets();
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -90,6 +100,8 @@ export default function NewEventScreen() {
     }
   };
 
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const Field = ({
     label, value, onChangeText, placeholder, multiline, keyboardType,
   }: {
@@ -103,7 +115,7 @@ export default function NewEventScreen() {
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor={colors.placeholder}
         keyboardType={keyboardType ?? 'default'}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
@@ -112,18 +124,17 @@ export default function NewEventScreen() {
   );
 
   return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
+        <View style={styles.customHeader}>
+          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
+            <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+          </TouchableOpacity>
+          <JLogo />
+          <View style={{ minWidth: 60 }} />
+        </View>
+      </View>
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Stack.Screen options={{
-        title: 'Create Event',
-        headerBackVisible: false,
-        headerLeft: () => (
-          <TouchableWithoutFeedback onPress={() => router.back()}>
-            <View style={{ marginLeft: 16 }}>
-              <Text style={{ color: '#4F46E5', fontSize: 17 }}>‹ Back</Text>
-            </View>
-          </TouchableWithoutFeedback>
-        ),
-      }} />
 
       <Field label="Title" value={form.title} onChangeText={set('title')} placeholder="Event name" />
       <Field label="Location" value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
@@ -191,29 +202,33 @@ export default function NewEventScreen() {
         <Text style={styles.btnText}>{submitting ? 'Creating…' : 'Create Event'}</Text>
       </TouchableOpacity>
     </ScrollView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#fff', flexGrow: 1 },
-  field: { marginBottom: 14 },
-  label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 4 },
-  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 9, fontSize: 15, color: '#111827' },
-  inputMulti: { height: 88, paddingTop: 9 },
-  row: { flexDirection: 'row', gap: 10 },
-  half: { flex: 1 },
-  photoPicker: {
-    width: '100%', height: 160, borderRadius: 12,
-    borderWidth: 2, borderColor: '#E5E7EB', borderStyle: 'dashed',
-    backgroundColor: '#F9FAFB', overflow: 'hidden',
-  },
-  photoPreview: { width: '100%', height: '100%', resizeMode: 'cover' },
-  photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  photoIcon: { fontSize: 36 },
-  photoHint: { fontSize: 13, color: '#9CA3AF' },
-  removePhoto: { marginTop: 6 },
-  removePhotoText: { fontSize: 13, color: '#EF4444' },
-  btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
-  btnDisabled: { opacity: 0.6 },
-  btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-});
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+  return StyleSheet.create({
+    customHeader: { height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+    container: { padding: 20, backgroundColor: colors.bg, flexGrow: 1 },
+    field: { marginBottom: 14 },
+    label: { fontSize: 13, fontWeight: '500', color: colors.text, marginBottom: 4 },
+    input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 9, fontSize: 15, color: colors.inputText, backgroundColor: colors.input },
+    inputMulti: { height: 88, paddingTop: 9 },
+    row: { flexDirection: 'row', gap: 10 },
+    half: { flex: 1 },
+    photoPicker: {
+      width: '100%', height: 160, borderRadius: 12,
+      borderWidth: 2, borderColor: colors.border, borderStyle: 'dashed',
+      backgroundColor: colors.bg, overflow: 'hidden',
+    },
+    photoPreview: { width: '100%', height: '100%', resizeMode: 'cover' },
+    photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+    photoIcon: { fontSize: 36 },
+    photoHint: { fontSize: 13, color: colors.placeholder },
+    removePhoto: { marginTop: 6 },
+    removePhotoText: { fontSize: 13, color: '#EF4444' },
+    btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
+    btnDisabled: { opacity: 0.6 },
+    btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  });
+}

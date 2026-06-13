@@ -198,7 +198,7 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     roleBadgeText: { fontSize: 12, fontWeight: '600' },
     roleBadgeTextAdmin: { color: '#4338CA' },
     roleBadgeTextUser: { color: '#16A34A' },
-    label: { fontSize: 14, fontWeight: '500', color: colors.subtext, marginBottom: 6, marginTop: 14 },
+    label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 6, marginTop: 14 },
     rowGroup: { flexDirection: 'row', gap: 10 },
     optBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: colors.card },
     optBtnActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },

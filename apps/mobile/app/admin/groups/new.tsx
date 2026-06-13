@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch, apiUpload } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../context/theme.context';
+import JLogo from '../../../components/JLogo';
 
 function slugifyPid(input: string) {
   return input
@@ -33,6 +35,7 @@ export default function NewGroupScreen() {
 
   const suggestedPid = useMemo(() => slugifyPid(name), [name]);
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { top: safeTop } = useSafeAreaInsets();
 
   const pickPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -84,28 +87,44 @@ export default function NewGroupScreen() {
     }
   };
 
+  const CustomHeader = () => (
+    <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
+      <View style={styles.customHeader}>
+        <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+        <JLogo />
+        <View style={{ minWidth: 60 }} />
+      </View>
+    </View>
+  );
+
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.subtext} />
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <CustomHeader />
+        <View style={styles.center}><ActivityIndicator color={colors.subtext} /></View>
       </View>
     );
   }
 
   if (!user) {
     return (
-      <View style={styles.centerWrap}>
-        <Stack.Screen options={{ title: zh ? '建立群組' : 'Create Group' }} />
-        <View style={styles.errorCard}>
-          <Text style={styles.errorText}>{zh ? '請先登入。' : 'Please log in first.'}</Text>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <CustomHeader />
+        <View style={styles.centerWrap}>
+          <View style={styles.errorCard}>
+            <Text style={styles.errorText}>{zh ? '請先登入。' : 'Please log in first.'}</Text>
+          </View>
         </View>
       </View>
     );
   }
 
   return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <CustomHeader />
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Stack.Screen options={{ title: zh ? '建立群組' : 'Create Group' }} />
 
       <View style={styles.section}>
         <Text style={styles.title}>{zh ? '建立群組' : 'Create Group'}</Text>
@@ -194,11 +213,15 @@ export default function NewGroupScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </View>
   );
 }
 
+const INDIGO = '#4F46E5';
+
 function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
+    customHeader: { height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
     centerWrap: { flex: 1, backgroundColor: colors.bg, padding: 20 },
     container: { padding: 20, gap: 16, backgroundColor: colors.bg, flexGrow: 1 },
