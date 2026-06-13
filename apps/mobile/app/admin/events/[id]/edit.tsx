@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { apiFetch } from '../../../../lib/api';
+import * as ImagePicker from 'expo-image-picker';
+import { apiFetch, apiUpload } from '../../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../../context/theme.context';
 import type { Event, ReminderRule } from '@judien/shared';
@@ -47,6 +48,7 @@ export default function EditEventScreen() {
     coverImageUrl: '',
   });
 
+  const [coverUploading, setCoverUploading] = useState(false);
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
   const [customValue, setCustomValue] = useState('');
   const [customUnit, setCustomUnit] = useState<'hours' | 'days'>('hours');
@@ -74,6 +76,31 @@ export default function EditEventScreen() {
   }, [id]);
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
+
+  const pickCover = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const uri = result.assets[0].uri;
+    setCoverUploading(true);
+    try {
+      const { url } = await apiUpload(uri);
+      setForm((f) => ({ ...f, coverImageUrl: url }));
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Upload failed');
+    } finally {
+      setCoverUploading(false);
+    }
+  };
 
   const addReminder = (minutes: number) => {
     if (reminders.some((r) => r.offsetMinutes === minutes)) return;
@@ -155,7 +182,31 @@ export default function EditEventScreen() {
       <F label={zh ? '時區' : 'Timezone'} k="timezone" />
       <F label={zh ? '費用' : 'Fee'} k="feeAmount" keyboard="numeric" />
       <F label={zh ? '幣別' : 'Currency'} k="feeCurrency" />
-      <F label={zh ? '封面圖 URL' : 'Cover Image URL'} k="coverImageUrl" />
+      <View style={styles.field}>
+        <Text style={styles.label}>{zh ? '封面圖' : 'Cover Image'}</Text>
+        {form.coverImageUrl ? (
+          <Image source={{ uri: form.coverImageUrl }} style={{ width: '100%', height: 180, borderRadius: 10, marginBottom: 8 }} resizeMode="cover" />
+        ) : null}
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity
+            style={[styles.input, { justifyContent: 'center', alignItems: 'center', flex: 1 }]}
+            onPress={pickCover}
+            disabled={coverUploading}
+          >
+            <Text style={{ color: INDIGO, fontWeight: '600', fontSize: 14 }}>
+              {coverUploading ? (zh ? '上傳中…' : 'Uploading…') : (form.coverImageUrl ? (zh ? '更換圖片' : 'Change Photo') : (zh ? '上傳封面圖' : 'Upload Cover Photo'))}
+            </Text>
+          </TouchableOpacity>
+          {form.coverImageUrl ? (
+            <TouchableOpacity
+              style={[styles.input, { justifyContent: 'center', alignItems: 'center' }]}
+              onPress={() => setForm((f) => ({ ...f, coverImageUrl: '' }))}
+            >
+              <Text style={{ color: '#EF4444', fontWeight: '600', fontSize: 14 }}>{zh ? '移除' : 'Remove'}</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
 
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
         <Text style={styles.saveBtnText}>{t('common.save')}</Text>

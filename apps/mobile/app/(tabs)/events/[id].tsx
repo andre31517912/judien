@@ -331,7 +331,7 @@ export default function EventDetailScreen() {
                   Platform.OS === 'ios' ? `maps://q=${q}` : `geo:0,0?q=${q}`
                 ).catch(() => Linking.openURL(`https://maps.google.com/?q=${q}`));
               }}>
-                <Text style={[styles.meta, { textDecorationLine: 'underline' }]}>📍 {location}</Text>
+                <Text style={styles.meta}>📍 {location}</Text>
               </TouchableOpacity>
             ) : null}
             <Text style={styles.meta}>💰 {fee}</Text>
