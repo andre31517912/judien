@@ -183,30 +183,7 @@ export default function GroupsTab() {
       )}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '我的群組' : 'My Groups'}</Text>
-        {groups.length === 0 ? (
-          <Text style={styles.emptyText}>{zh ? '目前尚未加入任何群組。' : 'You have not joined any groups yet.'}</Text>
-        ) : groups.map((item) => (
-          <TouchableOpacity key={item.group.id} style={styles.card} onPress={() => router.push(`/groups/${item.group.id}`)}>
-            <View style={styles.cardRow}>
-              {item.group.photoUrl ? (
-                <Image source={{ uri: item.group.photoUrl }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarLetter}>{item.group.name.charAt(0).toUpperCase()}</Text>
-                </View>
-              )}
-              <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{item.group.name}</Text>
-                {item.group.description ? <Text style={styles.cardSub} numberOfLines={1}>{item.group.description}</Text> : null}
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '搜尋群組' : 'Search Group'}</Text>
+        <Text style={styles.sectionTitle}>{zh ? '搜尋群組' : 'Search Groups'}</Text>
         <View style={styles.searchRow}>
           <TextInput
             value={searchQuery}
@@ -237,6 +214,32 @@ export default function GroupsTab() {
             </View>
           );
         })}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{zh ? '我的群組' : 'My Groups'}</Text>
+        {groups.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>👥</Text>
+            <Text style={styles.emptyText}>{zh ? '目前沒有加入的群組。' : 'No groups yet.'}</Text>
+          </View>
+        ) : groups.map((item) => (
+          <TouchableOpacity key={item.group.id} style={styles.card} onPress={() => router.push(`/groups/${item.group.id}`)}>
+            <View style={styles.cardRow}>
+              {item.group.photoUrl ? (
+                <Image source={{ uri: item.group.photoUrl }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarLetter}>{item.group.name.charAt(0).toUpperCase()}</Text>
+                </View>
+              )}
+              <View style={styles.cardContent}>
+                <Text style={styles.cardTitle}>{item.group.name}</Text>
+                {item.group.description ? <Text style={styles.cardSub} numberOfLines={1}>{item.group.description}</Text> : null}
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
     </ScrollView>
   );
@@ -285,6 +288,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       color: colors.inputText,
       fontSize: 14,
     },
+    emptyState: { alignItems: 'center', paddingVertical: 24 },
+    emptyEmoji: { fontSize: 36, marginBottom: 8, opacity: 0.5 },
     emptyText: { color: colors.placeholder, fontSize: 14 },
     okText: { color: '#047857', fontSize: 12, fontWeight: '600' },
   });

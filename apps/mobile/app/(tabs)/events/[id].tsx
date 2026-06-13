@@ -630,6 +630,7 @@ export default function EventDetailScreen() {
             value={commentBody}
             onChangeText={setCommentBody}
             multiline
+            numberOfLines={1}
             maxLength={2000}
           />
           <TouchableOpacity
@@ -738,11 +739,11 @@ const makeStyles = (colors: any) => StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 22,
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 10,
+    paddingVertical: 9,
     fontSize: 15,
     color: colors.inputText,
     backgroundColor: colors.input,
+    minHeight: 38,
     maxHeight: 120,
   },
   inputBarSend: {

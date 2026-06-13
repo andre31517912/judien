@@ -18,7 +18,7 @@ export default function GroupsLayout() {
       headerTintColor: colors.text,
       headerTitle: () => <JLogo />,
       headerLeft: ({ canGoBack }) => canGoBack ? (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
           <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ) : undefined,
@@ -26,6 +26,7 @@ export default function GroupsLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[groupId]" options={{ gestureEnabled: true }} />
       <Stack.Screen name="[groupId]/settings" options={{ gestureEnabled: true }} />
+      <Stack.Screen name="[groupId]/events/[id]" options={{ gestureEnabled: true }} />
     </Stack>
   );
 }

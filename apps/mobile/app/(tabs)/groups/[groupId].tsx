@@ -418,7 +418,7 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyText}>{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</Text>
             </View>
           ) : events.map((ev) => (
-            <TouchableOpacity key={ev.id} style={styles.card} onPress={() => router.push(`/events/${ev.id}`)}>
+            <TouchableOpacity key={ev.id} style={styles.card} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
               <Text style={styles.cardTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
               <Text style={styles.cardMeta}>
                 {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -446,7 +446,7 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyText}>{zh ? '沒有過去的活動記錄' : 'No past events'}</Text>
             </View>
           ) : pastEvents.map((ev) => (
-            <TouchableOpacity key={ev.id} style={[styles.card, styles.cardPast]} onPress={() => router.push(`/events/${ev.id}`)}>
+            <TouchableOpacity key={ev.id} style={[styles.card, styles.cardPast]} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
               <Text style={[styles.cardTitle, styles.cardTitlePast]}>{zh ? ev.title_zh : ev.title_en}</Text>
               <Text style={styles.cardMeta}>
                 {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}

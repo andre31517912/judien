@@ -57,7 +57,7 @@ function AppShell() {
           headerStyle: { backgroundColor: colors.headerBg },
           headerTintColor: colors.text,
           headerLeft: ({ canGoBack }) => canGoBack ? (
-            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
               <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
             </TouchableOpacity>
           ) : undefined,

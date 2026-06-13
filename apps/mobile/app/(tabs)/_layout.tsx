@@ -31,7 +31,7 @@ export default function TabsLayout() {
       tabBarStyle: { backgroundColor: colors.tabBar, borderTopColor: colors.border },
       tabBarActiveTintColor: '#4F46E5',
       tabBarInactiveTintColor: colors.subtext,
-      tabBarItemStyle: { paddingVertical: 4 },
+      tabBarItemStyle: { paddingTop: 10, paddingBottom: 0 },
     }}>
       <Tabs.Screen
         name="home"

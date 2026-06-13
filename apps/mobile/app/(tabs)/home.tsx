@@ -143,8 +143,8 @@ export default function HomeTab() {
             </View>
           ) : news.length === 0 ? (
             <View style={styles.empty}>
-              <Text style={styles.emptyEmoji}>🎉</Text>
-              <Text style={styles.emptyText}>{t('home.noNews')}</Text>
+              <Text style={styles.emptyEmoji}>📢</Text>
+              <Text style={styles.emptyText}>{zh ? '目前沒有動態。' : 'No feeds yet.'}</Text>
             </View>
           ) : (
             news.map((item) => (

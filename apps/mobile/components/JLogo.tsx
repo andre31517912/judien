@@ -10,6 +10,5 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: -0.5,
-    marginLeft: 16,
   },
 });

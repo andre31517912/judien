@@ -241,7 +241,12 @@ export default function EventsTab() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={{ padding: 16, gap: 12, backgroundColor: colors.bg }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadEvents(scope, page, true); }} tintColor={colors.subtext} />}
-            ListEmptyComponent={<Text style={[styles.empty, { color: colors.placeholder }]}>{t('events.noEvents')}</Text>}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>📅</Text>
+                <Text style={[styles.empty, { color: colors.placeholder }]}>{zh ? '目前沒有活動。' : 'No events yet.'}</Text>
+              </View>
+            }
             renderItem={({ item }) => {
               const title = zh ? item.title_zh : item.title_en;
               const location = zh ? item.location_zh : item.location_en;
@@ -285,7 +290,9 @@ const styles = StyleSheet.create({
   activeTab: { borderBottomWidth: 2, borderColor: '#4F46E5' },
   tabText: { fontSize: 14, color: '#6B7280' },
   activeTabText: { color: '#4F46E5', fontWeight: '600' },
-  empty: { textAlign: 'center', color: '#9CA3AF', marginTop: 40 },
+  emptyState: { alignItems: 'center', marginTop: 60 },
+  emptyEmoji: { fontSize: 36, marginBottom: 8, opacity: 0.5 },
+  empty: { textAlign: 'center', color: '#9CA3AF' },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, flexDirection: 'row', gap: 12,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   thumbnail: { width: 80, height: 80, borderRadius: 8, overflow: 'hidden' },
