@@ -18,7 +18,7 @@ const INDIGO = '#4F46E5';
 export default function EventsTab() {
   const router = useRouter();
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const zh = i18n.language === 'zh';
@@ -41,7 +41,7 @@ export default function EventsTab() {
       .finally(() => { setLoading(false); setRefreshing(false); });
   };
 
-  useEffect(() => { loadEvents(); }, [scope, page]);
+  useEffect(() => { if (!authLoading) loadEvents(); }, [scope, page, authLoading]);
 
   // ── Create form state ───────────────────────────────────────────────────
   const [creating, setCreating] = useState(false);

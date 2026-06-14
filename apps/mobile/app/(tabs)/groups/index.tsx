@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { apiFetch } from '../../../lib/api';
+import { useAuth } from '../../../context/auth.context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../context/theme.context';
 import JLogo from '../../../components/JLogo';
@@ -57,6 +58,7 @@ type GroupSearchResult = {
 export default function GroupsTab() {
   const router = useRouter();
   const navigation = useNavigation();
+  const { loading: authLoading } = useAuth();
   const { i18n } = useTranslation();
   const { colors } = useTheme();
   const zh = i18n.language === 'zh';
@@ -104,8 +106,8 @@ export default function GroupsTab() {
   }, []);
 
   useEffect(() => {
-    loadPage();
-  }, [loadPage]);
+    if (!authLoading) loadPage();
+  }, [loadPage, authLoading]);
 
   const respondInvite = async (token: string, action: 'accept' | 'decline') => {
     try {

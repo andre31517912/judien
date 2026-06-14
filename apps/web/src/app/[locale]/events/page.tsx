@@ -15,7 +15,7 @@ type PageScope = 'home' | 'future' | 'past';
 
 export default function EventsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const [scope, setScope] = useState<PageScope>('home');
   const searchParams = useSearchParams();
@@ -74,6 +74,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     if (scope === 'home') {
       loadNews();
     } else {
@@ -84,7 +85,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         .then((res) => { setEvents(res.data); setTotal(res.total); })
         .finally(() => setEventLoading(false));
     }
-  }, [scope, page]);
+  }, [scope, page, authLoading]);
 
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();

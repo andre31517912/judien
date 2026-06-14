@@ -25,6 +25,7 @@ export default function AdminInvitesScreen() {
   const [invites, setInvites] = useState<InviteToken[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [revoking, setRevoking] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
@@ -51,6 +52,30 @@ export default function AdminInvitesScreen() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const revokeInvite = (invite: InviteToken) => {
+    Alert.alert(
+      zh ? '刪除邀請連結' : 'Delete Invite Link',
+      zh ? '確定要刪除此邀請連結嗎？此操作無法復原。' : 'Permanently delete this invite link? Cannot be undone.',
+      [
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        {
+          text: zh ? '刪除' : 'Delete', style: 'destructive',
+          onPress: async () => {
+            setRevoking(invite.id);
+            try {
+              await apiFetch(`/invites/${invite.id}`, { method: 'DELETE' });
+              setInvites((prev) => prev.filter((i) => i.id !== invite.id));
+            } catch (err: any) {
+              Alert.alert('Error', err.message ?? 'Failed to delete invite.');
+            } finally {
+              setRevoking(null);
+            }
+          },
+        },
+      ],
+    );
   };
 
   const copyLink = (token: string) => {
@@ -142,13 +167,20 @@ export default function AdminInvitesScreen() {
                 <Text style={styles.meta}>
                   {t('admin.inviteExpires')}: {new Date(invite.expiresAt).toLocaleDateString()}
                 </Text>
-                {!used && !expired && (
-                  <View style={styles.cardActions}>
-                    <TouchableOpacity style={styles.copyBtn} onPress={() => copyLink(invite.token)}>
+                <View style={styles.cardActions}>
+                  {!used && !expired && (
+                    <TouchableOpacity style={[styles.copyBtn, { flex: 1 }]} onPress={() => copyLink(invite.token)}>
                       <Text style={styles.copyBtnText}>{zh ? '複製連結' : 'Copy Link'}</Text>
                     </TouchableOpacity>
-                  </View>
-                )}
+                  )}
+                  <TouchableOpacity
+                    style={styles.revokeBtn}
+                    onPress={() => revokeInvite(invite)}
+                    disabled={revoking === invite.id}
+                  >
+                    <Text style={styles.revokeBtnText}>{revoking === invite.id ? '…' : (zh ? '刪除' : 'Delete')}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             );
           })
@@ -182,8 +214,10 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     statusExpired: { color: '#ef4444' },
     tokenText: { fontFamily: 'monospace', fontSize: 12, color: colors.subtext, marginBottom: 6 },
     meta: { fontSize: 12, color: colors.placeholder, marginBottom: 2 },
-    cardActions: { flexDirection: 'row', gap: 8, marginTop: 10 },
-    copyBtn: { flex: 1, backgroundColor: colors.input, borderRadius: 8, padding: 8, alignItems: 'center' },
+    cardActions: { flexDirection: 'row', gap: 8, marginTop: 10, alignItems: 'center' },
+    copyBtn: { backgroundColor: colors.input, borderRadius: 8, padding: 8, alignItems: 'center' },
     copyBtnText: { fontSize: 13, color: colors.text },
+    revokeBtn: { borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#FFF5F5' },
+    revokeBtnText: { fontSize: 13, color: '#DC2626', fontWeight: '600' },
   });
 }

@@ -13,6 +13,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [revoking, setRevoking] = useState<string | null>(null);
 
   // Modal state
   const [modalLink, setModalLink] = useState<string | null>(null);
@@ -53,6 +54,20 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
       setError((err as Error).message ?? 'Failed to create invite.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const revokeInvite = async (id: string) => {
+    if (!confirm(zh ? '確定要刪除此邀請連結嗎？此操作無法復原。' : 'Permanently delete this invite link? Cannot be undone.')) return;
+    setRevoking(id);
+    setError('');
+    try {
+      await apiFetch(`/invites/${id}`, { method: 'DELETE' });
+      setInvites((prev) => prev.filter((i) => i.id !== id));
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to delete invite.');
+    } finally {
+      setRevoking(null);
     }
   };
 
@@ -110,7 +125,7 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
             const used = !!invite.usedAt;
             const dim = used || expired;
             return (
-              <li key={invite.id} className={`border dark:border-gray-700 rounded-xl p-3 flex items-center gap-3 ${dim ? 'opacity-40' : ''}`}>
+              <li key={invite.id} className={`border dark:border-gray-700 rounded-xl p-3 flex items-center gap-3 ${dim ? 'opacity-50' : ''}`}>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${
                   invite.role === 'ADMIN'
                     ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
@@ -128,7 +143,13 @@ export default function AdminInvitesPage({ params }: { params: { locale: string 
                         : `${zh ? '到期' : 'Expires'} ${new Date(invite.expiresAt).toLocaleDateString()}`}
                   </p>
                 </div>
-
+                <button
+                  onClick={() => revokeInvite(invite.id)}
+                  disabled={revoking === invite.id}
+                  className="shrink-0 rounded-md border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
+                >
+                  {revoking === invite.id ? '…' : (zh ? '刪除' : 'Delete')}
+                </button>
               </li>
             );
           })}
