@@ -26,7 +26,7 @@ export default function SignupScreen() {
     }
     setLoading(true);
     try {
-      await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: 'en', inviteToken: inviteToken.trim() });
+      await signup({ email, password, phone, displayName: displayName.trim() || undefined, preferredLanguage: (i18n.language === 'zh' ? 'zh' : 'en'), inviteToken: inviteToken.trim() });
       router.replace('/(tabs)/events');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Sign-up failed.');
@@ -43,16 +43,20 @@ export default function SignupScreen() {
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.bg }]}>
         <Text style={[styles.title, { color: colors.text }]}>{t('auth.signup')}</Text>
         <TextInput style={inputStyle} placeholder={t('auth.displayName') || 'Display Name (nickname)'}
-          placeholderTextColor={colors.placeholder} value={displayName} onChangeText={setDisplayName} />
+          placeholderTextColor={colors.placeholder} value={displayName} onChangeText={setDisplayName}
+          textContentType="name" autoComplete="name" returnKeyType="next" />
         <TextInput style={inputStyle} placeholder={t('auth.email')}
           placeholderTextColor={colors.placeholder} value={email}
-          onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address"
+          textContentType="emailAddress" autoComplete="email" returnKeyType="next" />
         <TextInput style={inputStyle} placeholder={t('auth.password')}
           placeholderTextColor={colors.placeholder} value={password}
-          onChangeText={setPassword} secureTextEntry />
+          onChangeText={setPassword} secureTextEntry
+          textContentType="newPassword" autoComplete="new-password" returnKeyType="next" />
         <TextInput style={inputStyle} placeholder={zh ? '+886912345678' : '+1 / +44 / +886…'}
           placeholderTextColor={colors.placeholder} value={phone}
-          onChangeText={setPhone} keyboardType="phone-pad" />
+          onChangeText={setPhone} keyboardType="phone-pad"
+          textContentType="telephoneNumber" autoComplete="tel" returnKeyType="next" />
         <TextInput style={inputStyle} placeholder={t('auth.inviteTokenPlaceholder') || 'Invite Code'}
           placeholderTextColor={colors.placeholder} value={inviteToken}
           onChangeText={setInviteToken} autoCapitalize="none" autoCorrect={false} />

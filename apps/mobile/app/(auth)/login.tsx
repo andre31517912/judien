@@ -51,6 +51,9 @@ export default function LoginScreen() {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
+          textContentType="username"
+          autoComplete="username"
+          returnKeyType="next"
         />
         <TextInput
           style={[styles.input, { borderColor: colors.border, backgroundColor: colors.input, color: colors.inputText }]}
@@ -59,6 +62,10 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          textContentType="password"
+          autoComplete="current-password"
+          returnKeyType="go"
+          onSubmitEditing={handleLogin}
         />
         <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
           <Text style={styles.btnText}>{loading ? (zh ? '登入中…' : 'Logging in…') : t('auth.login')}</Text>

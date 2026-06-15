@@ -4,10 +4,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { apiFetch, setTokens, clearTokens } from '../lib/api';
 import type { User } from '@judien/shared';
 
+type AuthUser = Omit<User, 'passwordHash'>;
+
 interface AuthContextValue {
-  user: Omit<User, 'passwordHash'> | null;
+  user: AuthUser | null;
   loading: boolean;
-  login: (identifier: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<AuthUser>;
   signup: (data: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -16,7 +18,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthContextValue['user']>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -32,17 +34,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => { refresh(); }, [refresh]);
 
-  const login = async (identifier: string, password: string) => {
-    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/login', {
+  const login = async (identifier: string, password: string): Promise<AuthUser> => {
+    const data = await apiFetch<{ user: AuthUser; accessToken: string; refreshToken?: string }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ identifier, password }),
     });
     setTokens(data.accessToken, data.refreshToken ?? null);
     setUser(data.user);
+    return data.user;
   };
 
   const signup = async (body: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => {
-    const data = await apiFetch<{ user: AuthContextValue['user']; accessToken: string; refreshToken?: string }>('/auth/signup', {
+    const data = await apiFetch<{ user: AuthUser; accessToken: string; refreshToken?: string }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(body),
     });

@@ -30,8 +30,8 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
     setError('');
     setLoading(true);
     try {
-      await login(identifier, password);
-      router.push(`/${params.locale}/events`);
+      const loggedInUser = await login(identifier, password);
+      router.push(`/${loggedInUser.preferredLanguage ?? params.locale}/events`);
     } catch (err: unknown) {
       setError((err as Error).message ?? (zh ? '登入失敗。' : 'Login failed.'));
     } finally {

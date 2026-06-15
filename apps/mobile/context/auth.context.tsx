@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { apiFetch } from '../lib/api';
+import i18n from '../lib/i18n';
 import type { User } from '@judien/shared';
 
 interface AuthContextValue {
@@ -19,18 +20,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthContextValue['user']>(null);
   const [loading, setLoading] = useState(true);
 
+  const applyUser = useCallback((u: AuthContextValue['user']) => {
+    setUser(u);
+    if (u?.preferredLanguage) i18n.changeLanguage(u.preferredLanguage);
+  }, []);
+
   const init = useCallback(async () => {
     const token = await SecureStore.getItemAsync('access_token');
     if (!token) { setLoading(false); return; }
     try {
       const me = await apiFetch<AuthContextValue['user']>('/auth/me');
-      setUser(me);
+      applyUser(me);
     } catch {
       await SecureStore.deleteItemAsync('access_token');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [applyUser]);
 
   useEffect(() => { init(); }, [init]);
 
@@ -41,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     if (data.accessToken) await SecureStore.setItemAsync('access_token', data.accessToken);
     if (data.refreshToken) await SecureStore.setItemAsync('refresh_token', data.refreshToken);
-    setUser(data.user);
+    applyUser(data.user);
   };
 
   const signup = async (body: { email: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken: string }) => {
@@ -51,14 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     if (data.accessToken) await SecureStore.setItemAsync('access_token', data.accessToken);
     if (data.refreshToken) await SecureStore.setItemAsync('refresh_token', data.refreshToken);
-    setUser(data.user);
+    applyUser(data.user);
   };
 
   const loginWithTokens = async (accessToken: string, refreshToken: string) => {
     await SecureStore.setItemAsync('access_token', accessToken);
     await SecureStore.setItemAsync('refresh_token', refreshToken);
     const me = await apiFetch<AuthContextValue['user']>('/auth/me');
-    setUser(me);
+    applyUser(me);
   };
 
   const logout = async () => {
