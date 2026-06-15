@@ -25,7 +25,7 @@ import type { EventWithCounts, Comment, EventInvitee } from '@judien/shared';
 
 type GuestEntry = { handle: string; displayName: string | null };
 type InvitedEntry = { name: string; email?: string };
-type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[] };
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
 
 const INDIGO = '#4F46E5';
 
@@ -81,7 +81,7 @@ export default function EventDetailScreen() {
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [showGuests, setShowGuests] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING'>('GOING');
   const [guestSearch, setGuestSearch] = useState('');
 
   const [showBlast, setShowBlast] = useState(false);
@@ -160,13 +160,14 @@ export default function EventDetailScreen() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
         INVITED: inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+        PENDING: rsvpData.PENDING,
       });
       setShowGuests(true);
     } catch {
@@ -585,9 +586,10 @@ export default function EventDetailScreen() {
               />
               <View style={styles.guestTabRow}>
                 {([
-                  ['INVITED', zh ? '已邀請' : 'Invited', guests?.INVITED.length ?? 0],
-                  ['GOING',   zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? 0],
-                  ['NO',      zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? 0],
+                  ['INVITED',  zh ? '已邀請' : 'Invited',    guests?.INVITED.length ?? 0],
+                  ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? 0],
+                  ['NO',       zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? 0],
+                  ...(guests?.PENDING !== undefined ? [['PENDING', zh ? '未回應' : 'Unresponded', guests.PENDING.length] as [typeof activeGuestTab, string, number]] : []),
                 ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
                   <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
                     style={[styles.guestTab, activeGuestTab === tab && styles.guestTabActive]}>
@@ -613,11 +615,13 @@ export default function EventDetailScreen() {
                         </View>
                       ));
                   }
-                  const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
+                  const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
+                  const rows = tabData.filter((g) =>
                     !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term)
                   );
+                  const emptyMsg = term ? (zh ? '找不到符合結果' : 'No matches') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應' : 'Everyone has responded') : (zh ? '暫無名單' : 'No one yet');
                   return rows.length === 0
-                    ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無名單' : 'No one yet')}</Text>
+                    ? <Text style={styles.empty}>{emptyMsg}</Text>
                     : rows.map((g, i) => (
                       <View key={i} style={styles.guestRow}>
                         <Text style={styles.guestName}>{g.displayName || g.handle}</Text>

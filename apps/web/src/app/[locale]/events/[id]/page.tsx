@@ -37,10 +37,10 @@ export default function EventDetailPage() {
   // guest list
   type GuestEntry = { handle: string; displayName: string | null };
   type InvitedEntry = { name: string; email?: string };
-  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[] };
+  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
   const [guestSearch, setGuestSearch] = useState('');
 
@@ -49,13 +49,14 @@ export default function EventDetailPage() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
         INVITED: inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+        PENDING: rsvpData.PENDING,
       });
     } finally {
       setGuestsLoading(false);
@@ -472,9 +473,10 @@ export default function EventDetailPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
           <div className="flex border-b border-gray-100 dark:border-gray-800">
             {([
-              ['INVITED', zh ? '已邀請' : 'Invited', guests?.INVITED.length ?? 0],
-              ['GOING',   zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), event.rsvpCounts.GOING],
-              ['NO',      zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'), event.rsvpCounts.NO],
+              ['INVITED',  zh ? '已邀請' : 'Invited',      guests?.INVITED.length ?? 0],
+              ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), event.rsvpCounts.GOING],
+              ['NO',       zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'), event.rsvpCounts.NO],
+              ...(guests?.PENDING !== undefined ? [['PENDING', zh ? '未回應' : 'Unresponded', guests.PENDING.length] as [typeof activeGuestTab, string, number]] : []),
             ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
               <button
                 key={tab}
@@ -522,11 +524,13 @@ export default function EventDetailPage() {
                     </div>
                   ));
               }
-              const rows = (guests?.[activeGuestTab] ?? []).filter((g) =>
+              const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
+              const rows = tabData.filter((g) =>
                 !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term)
               );
+              const emptyMsg = term ? (zh ? '找不到符合結果。' : 'No matches.') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應。' : 'Everyone has responded.') : (zh ? '目前沒有人。' : 'Nobody yet.');
               return rows.length === 0
-                ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有人。' : 'Nobody yet.')}</p>
+                ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{emptyMsg}</p>
                 : rows.map((g, i) => (
                   <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                     <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">

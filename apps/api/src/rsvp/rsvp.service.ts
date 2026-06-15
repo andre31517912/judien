@@ -107,9 +107,10 @@ export class RsvpService {
       }
     }
 
-    // For group admins and platform admins: add PENDING bucket (members who haven't replied)
-    let pending: { handle: string; displayName: string | null; source: 'user' }[] | undefined;
+    // PENDING bucket: members/invitees who haven't replied
+    let pending: { handle: string; displayName: string | null; source: 'user' | 'guest' }[] | undefined;
     if (event.groupId && userId) {
+      // Group events: group admins and platform admins see all unresponded members
       const [requestingUser, adminMembership] = await Promise.all([
         this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
         this.prisma.groupMembership.findUnique({
@@ -130,6 +131,37 @@ export class RsvpService {
             displayName: m.groupNickname ?? m.user.displayName ?? null,
             source: 'user' as const,
           }));
+      }
+    } else if (!event.groupId && userId) {
+      // Normal events: event creator and platform admins see invite acceptors who haven't RSVPd
+      const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+      const isCreatorOrAdmin = requestingUser?.role === 'ADMIN' || event.createdById === userId;
+
+      if (isCreatorOrAdmin) {
+        const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
+        const guestRsvpEmails = new Set(guestRsvps.map((r) => r.guestEmail.toLowerCase()));
+
+        const invites = await this.prisma.eventInvite.findMany({
+          where: { eventId },
+          include: { acceptedBy: { select: { id: true, displayName: true, email: true } } },
+        });
+
+        pending = [];
+        for (const inv of invites) {
+          if (inv.acceptedByUserId && !rsvpUserIds.has(inv.acceptedByUserId)) {
+            pending.push({
+              handle: this.maskIdentifier(inv.acceptedBy?.email ?? ''),
+              displayName: inv.acceptedBy?.displayName ?? null,
+              source: 'user' as const,
+            });
+          } else if (!inv.acceptedByUserId && inv.guestEmail && !guestRsvpEmails.has(inv.guestEmail.toLowerCase())) {
+            pending.push({
+              handle: this.maskIdentifier(inv.guestEmail),
+              displayName: inv.guestName ?? null,
+              source: 'guest' as const,
+            });
+          }
+        }
       }
     }
 
