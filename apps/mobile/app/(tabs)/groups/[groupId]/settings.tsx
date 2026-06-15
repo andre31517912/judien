@@ -50,6 +50,8 @@ export default function GroupSettingsScreen() {
     };
   }, [zh, colors.headerBg]));
 
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+
   const [tab, setTab] = useState<Tab>('general');
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
@@ -118,6 +120,7 @@ export default function GroupSettingsScreen() {
         setGroupName((current.group as any).name ?? '');
         setGroupDescription((current.group as any).description ?? '');
         setPhotoUrl((current.group as any).photoUrl ?? null);
+        setIsGroupAdmin((current as any).membership?.role === 'GROUP_ADMIN' || (current.group as any).createdById === user?.id);
       }
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
     } catch {
@@ -448,7 +451,7 @@ export default function GroupSettingsScreen() {
     { key: 'roster', label: zh ? '新增成員' : 'Add Members' },
     { key: 'requests', label: joinRequests.length > 0 ? `${zh ? '申請' : 'Requests'} (${joinRequests.length})` : (zh ? '申請' : 'Requests') },
     { key: 'donations' as Tab, label: zh ? '捐款' : 'Donations' },
-    ...(isPlatformAdmin ? [{ key: 'hierarchy' as Tab, label: zh ? '群組架構' : 'Hierarchy' }] : []),
+    ...((isPlatformAdmin || isGroupAdmin) ? [{ key: 'hierarchy' as Tab, label: zh ? '群組架構' : 'Hierarchy' }] : []),
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -675,8 +678,8 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Hierarchy (platform admin only) */}
-      {tab === 'hierarchy' && isPlatformAdmin && (
+      {/* Hierarchy (platform admin or group admin) */}
+      {tab === 'hierarchy' && (isPlatformAdmin || isGroupAdmin) && (
         <View style={{ gap: 12 }}>
           {hierarchyError ? <Text style={styles.hierarchyError}>{hierarchyError}</Text> : null}
           {hierarchySuccess ? <Text style={styles.hierarchySuccess}>{hierarchySuccess}</Text> : null}

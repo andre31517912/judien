@@ -808,8 +808,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         </section>
       )}
 
-      {/* Group Hierarchy — platform admin only */}
-      {isPlatformAdmin && (
+      {/* Group Hierarchy — platform admin or group admin */}
+      {(isPlatformAdmin || isGroupAdmin) && (
         <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組層級' : 'Group Hierarchy'}</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '設定此群組的上層父群組，或在其下建立、連結子群組。' : 'Set a parent group this one sits under, or create and link child groups beneath it.'}</p>

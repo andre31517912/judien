@@ -217,9 +217,8 @@ export class EventsService {
       if (!canManage) {
         throw new ForbiddenException('You do not have permission to create events for this group.');
       }
-    } else if (creator.role !== 'ADMIN') {
-      throw new ForbiddenException('Only platform admins can create global events.');
     }
+    // No groupId → personal event; any authenticated user may create one.
 
     const event = await this.prisma.event.create({
       data: {

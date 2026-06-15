@@ -231,7 +231,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             {zh ? '過往活動' : 'Past'}
           </button>
         </div>
-        {isAdmin && scope !== 'home' && (
+        {user && scope !== 'home' && (
           <button
             onClick={() => { setCreatingEvent((v) => !v); setEventMsg(''); }}
             className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
