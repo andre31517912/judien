@@ -135,7 +135,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason || showGuests;
+  const anyModalOpen = showInviteModal || showNoReason;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -165,9 +165,6 @@ export default function EventDetailPage() {
       setRsvpStatus(ev.myRsvp);
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setLoading(false);
-      if (ev.isPast) {
-        setShowGuests(true);
-      }
     }).catch(() => setLoading(false));
   }, [params.id]);
 
