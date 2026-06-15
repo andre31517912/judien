@@ -107,6 +107,15 @@ export class RsvpService {
       }
     }
 
+    // INVITED bucket: for group events, all group members are considered invited
+    let invited: { name: string; email: string | null }[] | undefined;
+    if (event.groupId) {
+      invited = memberships.map((m) => ({
+        name: m.groupNickname ?? m.user.displayName ?? '',
+        email: null,
+      }));
+    }
+
     // PENDING bucket: members/invitees who haven't replied
     let pending: { handle: string; displayName: string | null; source: 'user' | 'guest' }[] | undefined;
     if (event.groupId && userId) {
@@ -167,6 +176,7 @@ export class RsvpService {
 
     return {
       ...groups,
+      ...(invited !== undefined ? { INVITED: invited } : {}),
       ...(pending !== undefined ? { PENDING: pending } : {}),
     };
   }

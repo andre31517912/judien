@@ -49,18 +49,37 @@ export default function EventDetailPage() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
-        INVITED: inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+        INVITED: rsvpData.INVITED
+          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined }))
+          : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
       });
     } finally {
       setGuestsLoading(false);
     }
+  };
+
+  const handleExportCsv = () => {
+    if (!guests) return;
+    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const rows = ['Name,Status'];
+    for (const g of (guests.INVITED ?? [])) rows.push(`${esc(g.name)},Invited`);
+    for (const g of (guests.GOING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Going`);
+    for (const g of (guests.NO ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},"Not Going"`);
+    for (const g of (guests.PENDING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Unresponded`);
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `guest-list-${params.id}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // blast state
@@ -465,10 +484,11 @@ export default function EventDetailPage() {
         )}
       </div>
 
-      {/* Guest list panel — 3 tabs: Invited, Going, Not Going */}
+      {/* Guest list panel — tabs: Invited, Going, Not Going, Unresponded */}
       {showGuests && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
-          <div className="flex border-b border-gray-100 dark:border-gray-800">
+          <div className="flex items-center border-b border-gray-100 dark:border-gray-800">
+            <div className="flex flex-1">
             {([
               ['INVITED',  zh ? '已邀請' : 'Invited',      guests?.INVITED.length ?? 0],
               ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), event.rsvpCounts.GOING],
@@ -487,6 +507,15 @@ export default function EventDetailPage() {
                 {label} ({count})
               </button>
             ))}
+            </div>
+            {guests && (
+              <button
+                onClick={handleExportCsv}
+                className="shrink-0 px-3 mr-2 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-indigo-400 hover:text-indigo-600 transition py-1.5"
+              >
+                {zh ? '匯出 CSV' : 'Export CSV'}
+              </button>
+            )}
           </div>
 
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">

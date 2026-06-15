@@ -160,13 +160,15 @@ export default function EventDetailScreen() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
-        INVITED: inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+        INVITED: rsvpData.INVITED
+          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: (i as any).email ?? undefined }))
+          : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
       });
       setShowGuests(true);
@@ -175,6 +177,17 @@ export default function EventDetailScreen() {
     } finally {
       setGuestsLoading(false);
     }
+  };
+
+  const handleExportCsv = async () => {
+    if (!guests) return;
+    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
+    const rows = ['Name,Status'];
+    for (const g of (guests.INVITED ?? [])) rows.push(`${esc(g.name)},Invited`);
+    for (const g of (guests.GOING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Going`);
+    for (const g of (guests.NO ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},"Not Going"`);
+    for (const g of (guests.PENDING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Unresponded`);
+    await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
   const handleBlastSend = async () => {
@@ -630,9 +643,14 @@ export default function EventDetailScreen() {
                     ));
                 })()}
               </ScrollView>
-              <TouchableOpacity style={[styles.modalSecondaryBtn, { marginTop: 12 }]} onPress={() => setShowGuests(false)}>
-                <Text style={styles.modalSecondaryBtnText}>{zh ? '關閉' : 'Close'}</Text>
-              </TouchableOpacity>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                <TouchableOpacity style={[styles.modalSecondaryBtn, { flex: 1 }]} onPress={handleExportCsv}>
+                  <Text style={styles.modalSecondaryBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.modalSecondaryBtn, { flex: 1 }]} onPress={() => setShowGuests(false)}>
+                  <Text style={styles.modalSecondaryBtnText}>{zh ? '關閉' : 'Close'}</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
           </TouchableOpacity>
         </Modal>
