@@ -147,16 +147,13 @@ export class RsvpService {
       const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
       pending = memberships
         .filter((m) => !rsvpUserIds.has(m.userId))
-        .map((m) => {
-          const entry: typeof pending![number] = {
-            handle: m.user.email ?? '',
-            displayName: m.groupNickname ?? m.user.displayName ?? null,
-            source: 'user' as const,
-          };
-          if (m.user.email) entry.email = m.user.email;
-          if (m.user.phoneE164) entry.phone = m.user.phoneE164;
-          return entry;
-        });
+        .map((m) => ({
+          handle: m.user.email ?? '',
+          displayName: m.groupNickname ?? m.user.displayName ?? null,
+          source: 'user' as const,
+          ...(m.user.email ? { email: m.user.email } : {}),
+          ...(m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
+        }));
     } else if (!event.groupId && userId) {
       const invites = await this.prisma.eventInvite.findMany({
         where: { eventId },
