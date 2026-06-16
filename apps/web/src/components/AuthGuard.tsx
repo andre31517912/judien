@@ -6,7 +6,7 @@ import { useAuth } from '../context/auth.context';
 import CompleteProfileModal from './CompleteProfileModal';
 import SetPasswordModal from './SetPasswordModal';
 
-const PUBLIC_SUFFIXES = ['/login', '/signup'];
+const PUBLIC_SUFFIXES = ['/login', '/signup', '/forgot-password', '/privacy-policy', '/terms-of-use', '/privacy-practice'];
 
 /** Placeholder emails created by the system — not real identifiers. */
 function isPlaceholderEmail(email: string | null): boolean {
@@ -31,13 +31,18 @@ export default function AuthGuard({
   const [showCompletion, setShowCompletion] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const isPublic = PUBLIC_SUFFIXES.some((s) => pathname.endsWith(s));
+  const isLandingPage = pathname === `/${locale}`;
+  const isPublic = isLandingPage || PUBLIC_SUFFIXES.some((s) => pathname.endsWith(s));
 
   useEffect(() => {
     if (!loading && !user && !isPublic) {
       router.replace(`/${locale}/login`);
     }
-  }, [loading, user, isPublic, locale, router]);
+    // Authenticated users on landing page go straight to events
+    if (!loading && user && isLandingPage) {
+      router.replace(`/${locale}/events`);
+    }
+  }, [loading, user, isPublic, isLandingPage, locale, router]);
 
   useEffect(() => {
     if (!user) return;

@@ -27,6 +27,9 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   const [lang, setLang] = useState<'en' | 'zh'>(params.locale as 'en' | 'zh');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showLineNewBanner, setShowLineNewBanner] = useState(false);
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
@@ -497,6 +500,66 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* ── Danger Zone ── */}
+      <div className="mt-10 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-6">
+        <h3 className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">{zh ? '危險區域' : 'Danger Zone'}</h3>
+        <p className="text-xs text-red-500 dark:text-red-400/80 mb-4">
+          {zh ? '刪除帳號後，所有資料將永久刪除且無法還原。' : 'Deleting your account is permanent and cannot be undone. All your data will be erased.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="rounded-md border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+        >
+          {zh ? '刪除帳號' : 'Delete Account'}
+        </button>
+      </div>
+
+      {/* Delete confirm modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{zh ? '確定要刪除帳號嗎？' : 'Delete your account?'}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {zh ? '此操作無法復原。所有活動、群組、RSVP 資料都將永久刪除。請輸入「DELETE」確認。' : 'This cannot be undone. All your events, groups, and RSVPs will be permanently erased. Type DELETE to confirm.'}
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 mb-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+            />
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                {zh ? '取消' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await apiFetch('/users/me', { method: 'DELETE' });
+                    window.location.href = `/${params.locale}`;
+                  } catch {
+                    setDeleting(false);
+                    setShowDeleteConfirm(false);
+                  }
+                }}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition"
+              >
+                {deleting ? (zh ? '刪除中…' : 'Deleting…') : (zh ? '永久刪除' : 'Delete Forever')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/auth.context';
 import { useTheme } from '../context/theme.context';
 import { apiFetch } from '../lib/api';
@@ -11,7 +11,7 @@ import i18n from '../lib/i18n';
 const INDIGO = '#4F46E5';
 
 export default function ProfileSettingsScreen() {
-  const { user, refresh } = useAuth();
+  const { user, refresh, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
@@ -27,6 +27,7 @@ export default function ProfileSettingsScreen() {
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
 
@@ -178,6 +179,45 @@ export default function ProfileSettingsScreen() {
         <Text style={styles.btnText}>{saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}</Text>
       </TouchableOpacity>
 
+      {/* Danger Zone */}
+      <View style={styles.dangerZone}>
+        <Text style={styles.dangerTitle}>{zh ? '危險區域' : 'Danger Zone'}</Text>
+        <Text style={styles.dangerBody}>
+          {zh ? '刪除帳號後，所有資料將永久刪除且無法還原。' : 'Deleting your account is permanent and cannot be undone.'}
+        </Text>
+        <TouchableOpacity
+          style={[styles.deleteBtn, { opacity: deleting ? 0.6 : 1 }]}
+          disabled={deleting}
+          onPress={() => {
+            Alert.alert(
+              zh ? '刪除帳號' : 'Delete Account',
+              zh ? '此操作無法復原。所有資料將永久刪除。確定要繼續嗎？' : 'This cannot be undone. All your data will be permanently erased. Are you sure?',
+              [
+                { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+                {
+                  text: zh ? '永久刪除' : 'Delete Forever',
+                  style: 'destructive',
+                  onPress: async () => {
+                    setDeleting(true);
+                    try {
+                      await apiFetch('/users/me', { method: 'DELETE' });
+                      await logout();
+                    } catch (err: any) {
+                      Alert.alert('Error', err.message ?? 'Failed to delete account.');
+                      setDeleting(false);
+                    }
+                  },
+                },
+              ],
+            );
+          }}
+        >
+          {deleting
+            ? <ActivityIndicator color="#EF4444" />
+            : <Text style={styles.deleteBtnText}>{zh ? '刪除帳號' : 'Delete Account'}</Text>}
+        </TouchableOpacity>
+      </View>
+
     </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -201,5 +241,10 @@ function makeStyles(colors: ReturnType<typeof import('../context/theme.context')
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, fontSize: 15, marginBottom: 4, backgroundColor: colors.input, color: colors.inputText },
     btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 20 },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+    dangerZone: { marginTop: 32, borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 12, padding: 16, backgroundColor: '#FFF5F5' },
+    dangerTitle: { fontSize: 13, fontWeight: '700', color: '#DC2626', marginBottom: 4 },
+    dangerBody: { fontSize: 12, color: '#EF4444', marginBottom: 12, lineHeight: 18 },
+    deleteBtn: { borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, padding: 12, alignItems: 'center' },
+    deleteBtnText: { color: '#DC2626', fontWeight: '600', fontSize: 14 },
   });
 }

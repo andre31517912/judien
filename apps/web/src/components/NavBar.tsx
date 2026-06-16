@@ -37,7 +37,7 @@ export default function NavBar({ locale }: NavBarProps) {
   return (
     <>
     <nav className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 shadow-sm px-4 py-3 flex items-center justify-between transition-colors">
-      <Link href={`/${locale}/events`} className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
+      <Link href={user ? `/${locale}/events` : `/${locale}`} className="font-bold text-xl text-indigo-600 dark:text-indigo-400">
         {zh ? '聚點' : 'Judien'}
       </Link>
       <div className="flex items-center gap-4 text-sm">

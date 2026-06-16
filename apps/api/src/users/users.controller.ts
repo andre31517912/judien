@@ -1,4 +1,4 @@
-import { Controller, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Patch, Delete, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -18,5 +18,12 @@ export class UsersController {
     @Body(new ZodValidationPipe(UpdateProfileSchema)) dto: UpdateProfileDto,
   ) {
     return this.usersService.updateProfile(user.id, dto);
+  }
+
+  // DELETE /api/users/me
+  @Delete('me')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAccount(@CurrentUser() user: User) {
+    return this.usersService.deleteAccount(user.id);
   }
 }
