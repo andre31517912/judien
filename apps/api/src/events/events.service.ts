@@ -278,37 +278,54 @@ export class EventsService {
 
     const updated = await this.prisma.event.update({ where: { id }, data: dto });
 
-    // Notify group members when significant fields change
-    if (event.groupId && actor) {
-      const significantChange =
-        (dto.startAt !== undefined && dto.startAt !== event.startAt?.toISOString()) ||
-        (dto.endAt !== undefined && dto.endAt !== (event.endAt?.toISOString() ?? null)) ||
-        (dto.location_en !== undefined && dto.location_en !== event.location_en) ||
-        (dto.location_zh !== undefined && dto.location_zh !== event.location_zh) ||
-        (dto.title_en !== undefined && dto.title_en !== event.title_en) ||
-        (dto.title_zh !== undefined && dto.title_zh !== event.title_zh);
+    // Notify all invited people whenever any update is saved
+    if (actor) {
+      const actorName = (actor as any).displayName ?? 'An organizer';
+      const title_en = updated.title_en || updated.title_zh;
+      const title_zh = updated.title_zh || updated.title_en;
+      const notif = (userId: string, extraFields?: Record<string, unknown>) => ({
+        userId,
+        type: 'EVENT_UPDATED' as const,
+        title_en: `${actorName} updated "${title_en}"`,
+        title_zh: `${actorName} 更新了「${title_zh}」的詳情`,
+        body_en: `Event details have been updated. Tap to see what changed.`,
+        body_zh: `活動詳情已更新，點擊查看。`,
+        actionUrl: `/events/${id}`,
+        eventId: id,
+        ...extraFields,
+      });
 
-      if (significantChange) {
+      if (event.groupId) {
         const members = await this.prisma.groupMembership.findMany({
           where: { groupId: event.groupId, status: 'ACCEPTED', userId: { not: actor.id } },
           select: { userId: true },
         });
         if (members.length) {
-          const title_en = updated.title_en || updated.title_zh;
-          const title_zh = updated.title_zh || updated.title_en;
           await this.notifications.createMany(
-            members.map(({ userId }) => ({
-              userId,
-              type: 'EVENT_UPDATED' as const,
-              title_en: `Event updated: ${title_en}`,
-              title_zh: `活動已更新：${title_zh}`,
-              body_en: new Date(updated.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
-              body_zh: new Date(updated.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
-              actionUrl: `/events/${id}`,
-              groupId: event.groupId!,
-              eventId: id,
-            })),
+            members.map(({ userId }) => notif(userId, { groupId: event.groupId! })),
           );
+        }
+      } else {
+        const [rsvps, invites] = await Promise.all([
+          this.prisma.rSVP.findMany({ where: { eventId: id }, select: { userId: true } }),
+          this.prisma.eventInvite.findMany({
+            where: { eventId: id, acceptedByUserId: { not: null } },
+            select: { acceptedByUserId: true },
+          }),
+        ]);
+        const seen = new Set<string>([actor.id]);
+        const recipientIds: string[] = [];
+        for (const r of rsvps) {
+          if (!seen.has(r.userId)) { seen.add(r.userId); recipientIds.push(r.userId); }
+        }
+        for (const inv of invites) {
+          if (inv.acceptedByUserId && !seen.has(inv.acceptedByUserId)) {
+            seen.add(inv.acceptedByUserId);
+            recipientIds.push(inv.acceptedByUserId);
+          }
+        }
+        if (recipientIds.length) {
+          await this.notifications.createMany(recipientIds.map((userId) => notif(userId)));
         }
       }
     }
