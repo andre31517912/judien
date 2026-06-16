@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch, apiUpload } from '../../lib/api';
@@ -10,109 +10,31 @@ import i18n from '../../lib/i18n';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
-  const { user, logout, refresh } = useAuth();
+  const { user, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors, theme, setTheme } = useTheme();
+  const { colors } = useTheme();
   const zh = i18n.language === 'zh';
 
-  const [displayName, setDisplayName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [muteEmail, setMuteEmail] = useState(false);
-  const [muteInApp, setMuteInApp] = useState(false);
-  const [lang, setLang] = useState<'en' | 'zh'>('en');
-  const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
 
-  const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
-
   useEffect(() => {
-    if (user) {
-      setDisplayName((user as any).displayName ?? '');
-      const rawEmail = (user as any)?.email ?? '';
-      setEmail(isLineOnlyEmail(rawEmail) ? '' : rawEmail);
-      setPhone((user as any)?.phoneE164 ?? '');
-      setMuteEmail((user as any).muteEmail ?? false);
-      setMuteInApp((user as any).muteInAppNotifications ?? false);
-      const savedLang = user.preferredLanguage as 'en' | 'zh';
-      setLang(savedLang);
-      i18n.changeLanguage(savedLang);
-      setPhotoUrl((user as any).photoUrl ?? null);
-    }
+    if (user) setPhotoUrl((user as any).photoUrl ?? null);
   }, [user]);
 
   const handlePickPhoto = async () => {
-    Alert.alert(
-      zh ? '大頭照' : 'Profile Photo',
-      '',
-      [
-        {
-          text: zh ? '上傳新照片' : 'Upload New Photo',
-          onPress: async () => {
-            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
-            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-            if (result.canceled) return;
-            setPhotoUploading(true);
-            try {
-              const { url } = await apiUpload(result.assets[0].uri);
-              await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
-              setPhotoUrl(url);
-              await refresh();
-            } catch (err: any) { Alert.alert('Error', err.message ?? 'Upload failed'); }
-            finally { setPhotoUploading(false); }
-          },
-        },
-        ...(photoUrl ? [{
-          text: zh ? '刪除照片' : 'Remove Photo',
-          style: 'destructive' as const,
-          onPress: async () => {
-            try {
-              await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
-              setPhotoUrl(null);
-              await refresh();
-            } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed'); }
-          },
-        }] : []),
-        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
-  const handleSave = async () => {
-    const storedEmail = (user as any)?.email ?? '';
-    const storedPhone = (user as any)?.phoneE164 ?? '';
-    const isLineEmail = isLineOnlyEmail(storedEmail);
-    const displayedEmail = isLineEmail ? '' : storedEmail;
-
-    const body: Record<string, unknown> = { preferredLanguage: lang, muteEmail, muteInAppNotifications: muteInApp };
-    if (displayName.trim() && displayName.trim() !== ((user as any)?.displayName ?? '')) body.displayName = displayName.trim();
-    if (phone.trim() !== storedPhone) body.phone = phone.trim() || null;
-    if (email.trim() !== displayedEmail) {
-      if (email.trim() && !isLineOnlyEmail(email.trim())) body.email = email.trim();
-      else if (!email.trim() && !isLineEmail) body.email = null;
-    }
-    if (password.trim()) body.password = password.trim();
-
-    const resultingEmail = 'email' in body ? (body.email as string | null) : (isLineEmail ? null : storedEmail || null);
-    const resultingPhone = 'phone' in body ? (body.phone as string | null) : (storedPhone || null);
-    if (!resultingEmail && !resultingPhone) {
-      Alert.alert('', zh ? '必須至少保留一個電子郵件或手機號碼。' : 'You must keep at least one email or phone number.');
-      return;
-    }
-
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    if (result.canceled) return;
+    setPhotoUploading(true);
     try {
-      await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify(body) });
-      i18n.changeLanguage(lang);
-      setTheme(pendingTheme);
-      await refresh();
-      setPassword('');
-    } catch (err: any) {
-      Alert.alert('Error', err.message);
-    }
+      const { url } = await apiUpload(result.assets[0].uri);
+      await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
+      setPhotoUrl(url);
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Upload failed'); }
+    finally { setPhotoUploading(false); }
   };
 
   const handleLogout = async () => { await logout(); };
@@ -121,22 +43,18 @@ export default function ProfileScreen() {
 
   if (!user) return <View style={styles.center}><Text style={styles.text}>Please log in.</Text></View>;
 
+  const rawEmail = (user as any)?.email ?? '';
+  const displayEmail = rawEmail.endsWith('@line.local') ? '' : rawEmail;
+  const displayPhone = (user as any)?.phoneE164 ?? '';
+
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <>
     <Stack.Screen options={{ headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleRow}>
-        <Text style={styles.title}>{t('profile.title')}</Text>
-        <View style={[styles.roleBadge, user.role === 'ADMIN' ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
-          <Text style={[styles.roleBadgeText, user.role === 'ADMIN' ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser]}>
-            {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
-          </Text>
-        </View>
-      </View>
 
-      {/* Profile Photo */}
-      <View style={styles.photoSection}>
-        <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.photoWrapper}>
+      {/* Avatar */}
+      <View style={styles.avatarSection}>
+        <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.photoWrapper} activeOpacity={0.85}>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.photoAvatar} />
           ) : (
@@ -148,85 +66,38 @@ export default function ProfileScreen() {
             <Text style={styles.cameraBtnText}>{photoUploading ? '…' : '📷'}</Text>
           </View>
         </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.photoName}>{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</Text>
-          <Text style={styles.photoHint}>{zh ? '點擊相機更換大頭照' : 'Tap camera to change photo'}</Text>
+
+        <View style={[styles.roleBadge, user.role === 'ADMIN' ? styles.roleBadgeAdmin : styles.roleBadgeUser]}>
+          <Text style={[styles.roleBadgeText, user.role === 'ADMIN' ? styles.roleBadgeTextAdmin : styles.roleBadgeTextUser]}>
+            {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+          </Text>
+        </View>
+
+        {photoUploading && <Text style={styles.uploadingText}>{zh ? '上傳中…' : 'Uploading…'}</Text>}
+      </View>
+
+      {/* Info cards */}
+      <View style={styles.infoSection}>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>{zh ? '姓名' : 'Name'}</Text>
+          <Text style={styles.infoValue}>{(user as any).displayName || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
+        </View>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>{zh ? '電子郵件' : 'Email'}</Text>
+          <Text style={styles.infoValue}>{displayEmail || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
+        </View>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>{zh ? '電話' : 'Phone'}</Text>
+          <Text style={styles.infoValue}>{displayPhone || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
         </View>
       </View>
 
-      <Text style={styles.label}>{zh ? '全名' : 'Full Name'}</Text>
-      <TextInput
-        style={styles.input}
-        value={displayName}
-        onChangeText={setDisplayName}
-        placeholder={(user as any).displayName || (zh ? '輸入全名' : 'Enter full name')}
-        placeholderTextColor={colors.placeholder}
-      />
-
-      <Text style={styles.label}>{t('profile.language')}</Text>
-      <View style={styles.rowGroup}>
-        {(['en', 'zh'] as const).map((l) => (
-          <TouchableOpacity key={l} onPress={() => setLang(l)}
-            style={[styles.optBtn, lang === l && styles.optBtnActive]}>
-            <Text style={[styles.optBtnText, lang === l && styles.optBtnTextActive]}>
-              {l === 'en' ? 'English' : '中文'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={styles.label}>{zh ? '主題' : 'Theme'}</Text>
-      <View style={styles.rowGroup}>
-        {(['light', 'dark'] as const).map((th) => (
-          <TouchableOpacity key={th} onPress={() => setPendingTheme(th)}
-            style={[styles.optBtn, pendingTheme === th && styles.optBtnActive]}>
-            <Text style={[styles.optBtnText, pendingTheme === th && styles.optBtnTextActive]}>
-              {th === 'light' ? (zh ? '☀️ 淺色' : '☀️ Light') : (zh ? '🌙 深色' : '🌙 Dark')}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.notifCard}>
-        <Text style={[styles.label, { marginTop: 0, marginBottom: 10 }]}>{zh ? '通知設定' : 'Notification settings'}</Text>
-        <View style={styles.muteRow}>
-          <Text style={styles.muteLabel}>{zh ? '靜音所有站內通知' : 'Mute in-app notifications'}</Text>
-          <Switch value={muteInApp} onValueChange={setMuteInApp} trackColor={{ true: '#4F46E5' }} />
-        </View>
-        <View style={[styles.muteRow, { marginTop: 10 }]}>
-          <Text style={styles.muteLabel}>{t('profile.muteEmail')}</Text>
-          <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
-        </View>
-      </View>
-
-      <Text style={styles.label}>{t('auth.phone')}</Text>
-      <TextInput style={styles.input} value={phone} onChangeText={setPhone}
-        placeholder={(user as any)?.phoneE164 || '+886912345678'} keyboardType="phone-pad"
-        placeholderTextColor={colors.placeholder} />
-
-      <Text style={styles.label}>{t('auth.email')}</Text>
-      <TextInput style={styles.input} value={email} onChangeText={setEmail}
-        placeholder={
-          isLineOnlyEmail((user as any)?.email ?? '')
-            ? (zh ? '設定真實電子郵件（選填）' : 'Set a real email (optional)')
-            : ((user as any)?.email || 'email@example.com')
-        }
-        keyboardType="email-address" autoCapitalize="none"
-        placeholderTextColor={colors.placeholder} />
-      {isLineOnlyEmail((user as any)?.email ?? '') && (
-        <Text style={{ fontSize: 11, color: '#D97706', marginTop: 2, marginBottom: 4 }}>
-          {zh ? '您透過 LINE 登入，目前無真實電子郵件。設定後可用電子郵件+密碼登入。' : 'You signed in with LINE and have no real email. Add one to also log in with email + password.'}
-        </Text>
-      )}
-
-      <Text style={styles.label}>{t('auth.password')}</Text>
-      <TextInput style={styles.input} value={password} onChangeText={setPassword}
-        placeholder="••••••••" secureTextEntry placeholderTextColor={colors.placeholder} />
-
-      <TouchableOpacity style={styles.btn} onPress={handleSave}>
-        <Text style={styles.btnText}>{zh ? '儲存' : 'Save'}</Text>
+      {/* Edit Profile */}
+      <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/profile-settings' as any)} activeOpacity={0.85}>
+        <Text style={styles.editBtnText}>{zh ? '編輯個人資料' : 'Edit Profile'}</Text>
       </TouchableOpacity>
 
+      {/* Admin buttons */}
       {user.role === 'ADMIN' && (
         <>
           <TouchableOpacity style={[styles.btn, { backgroundColor: '#7C3AED', marginTop: 12 }]} onPress={() => router.push('/admin/invites' as any)}>
@@ -252,7 +123,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
-    </KeyboardAvoidingView>
+    </>
   );
 }
 
@@ -260,35 +131,29 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
   return StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
     container: { padding: 24, backgroundColor: colors.bg, flexGrow: 1 },
-    titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 },
-    title: { fontSize: 24, fontWeight: 'bold', color: colors.text },
     text: { color: colors.text },
+    avatarSection: { alignItems: 'center', gap: 12, marginBottom: 28, paddingTop: 8 },
+    photoWrapper: { position: 'relative', width: 100, height: 100 },
+    photoAvatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: '#E5E7EB' },
+    photoPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
+    photoPlaceholderIcon: { fontSize: 50 },
+    cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 30, height: 30, borderRadius: 15, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+    cameraBtnText: { fontSize: 15 },
+    uploadingText: { fontSize: 12, color: colors.placeholder },
     roleBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
     roleBadgeAdmin: { backgroundColor: '#EEF2FF' },
     roleBadgeUser: { backgroundColor: '#DCFCE7' },
     roleBadgeText: { fontSize: 12, fontWeight: '600' },
     roleBadgeTextAdmin: { color: '#4338CA' },
     roleBadgeTextUser: { color: '#16A34A' },
-    photoSection: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20, paddingVertical: 8 },
-    photoWrapper: { position: 'relative', width: 80, height: 80 },
-    photoAvatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#E5E7EB' },
-    photoPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
-    photoPlaceholderIcon: { fontSize: 40 },
-    cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
-    cameraBtnText: { fontSize: 14 },
-    photoName: { fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 4 },
-    photoHint: { fontSize: 12, color: colors.placeholder },
-    label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 6, marginTop: 14 },
-    rowGroup: { flexDirection: 'row', gap: 10 },
-    optBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: colors.card },
-    optBtnActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
-    optBtnText: { color: colors.text, fontSize: 14 },
-    optBtnTextActive: { color: '#fff' },
-    notifCard: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 16, marginTop: 14 },
-    muteRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    muteLabel: { fontSize: 14, color: colors.text, flex: 1, marginRight: 8 },
-    input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, fontSize: 15, marginBottom: 4, backgroundColor: colors.input, color: colors.inputText },
-    btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 20 },
+    infoSection: { gap: 10, marginBottom: 24 },
+    infoCard: { backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 14 },
+    infoLabel: { fontSize: 11, color: colors.placeholder, marginBottom: 3, textTransform: 'uppercase', letterSpacing: 0.4 },
+    infoValue: { fontSize: 16, fontWeight: '600', color: colors.text },
+    infoEmpty: { fontSize: 14, fontWeight: '400', color: colors.placeholder },
+    editBtn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center' },
+    editBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+    btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center' },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
     policyRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 28, gap: 8 },
     policyLink: { fontSize: 13, color: colors.subtext, textDecorationLine: 'underline' },
