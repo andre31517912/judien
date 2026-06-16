@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/auth.context';
 import { useTheme } from '../context/theme.context';
 import { apiFetch } from '../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useRouter, Stack, useFocusEffect, useNavigation } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 import JLogo from '../components/JLogo';
 import i18n from '../lib/i18n';
 
@@ -14,7 +14,6 @@ export default function ProfileSettingsScreen() {
   const { user, refresh, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const navigation = useNavigation();
   const { colors, theme, setTheme } = useTheme();
   const zh = i18n.language === 'zh';
 
@@ -44,23 +43,6 @@ export default function ProfileSettingsScreen() {
       i18n.changeLanguage(savedLang);
     }
   }, [user]);
-
-  useFocusEffect(useCallback(() => {
-    navigation.getParent()?.setOptions({
-      headerShown: true,
-      headerTitle: () => <JLogo />,
-      headerStyle: { backgroundColor: colors.headerBg },
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: undefined,
-    });
-    return () => {
-      navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
-    };
-  }, [zh, colors.headerBg]));
 
   const handleSave = async () => {
     const storedEmail = (user as any)?.email ?? '';
@@ -105,7 +87,7 @@ export default function ProfileSettingsScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <Stack.Screen options={{ gestureEnabled: true }} />
+    <Stack.Screen options={{ gestureEnabled: true, headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
     <ScrollView contentContainerStyle={styles.container}>
 
       <Text style={styles.pageTitle}>{zh ? '編輯個人資料' : 'Edit Profile'}</Text>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl, Share,
+  StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl,
 } from 'react-native';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import JLogo from '../../../components/JLogo';
@@ -253,31 +253,6 @@ export default function EventsTab() {
               const date = new Date(item.startAt).toLocaleDateString();
               const fee = item.feeAmount ? `${item.feeCurrency} ${item.feeAmount}` : (zh ? '免費' : 'Free');
               const coverUri = resolveImageUrl(item.coverImageUrl);
-              const handleExport = async () => {
-                try {
-                  type GuestEntry = { handle: string; displayName: string | null };
-                  type InvitedEntry = { name: string };
-                  const guests = await apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${item.id}/rsvp/guests`);
-                  const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
-                  const lines: string[] = [];
-                  lines.push(`Title,${esc(title)}`);
-                  lines.push(`Date,${esc(date)}`);
-                  if (location) lines.push(`Location,${esc(location)}`);
-                  lines.push(`Fee,${esc(fee)}`);
-                  if (item.groupName) lines.push(`Group,${esc(item.groupName)}`);
-                  lines.push('');
-                  const invited = (guests.INVITED ?? []).map((g) => g.name);
-                  const going = guests.GOING.map((g) => g.displayName ?? g.handle);
-                  const notGoing = guests.NO.map((g) => g.displayName ?? g.handle);
-                  const unresponded = (guests.PENDING ?? []).map((g) => g.displayName ?? g.handle);
-                  lines.push('Invited,Going,Not Going,Unresponded');
-                  const maxLen = Math.max(invited.length, going.length, notGoing.length, unresponded.length, 0);
-                  for (let i = 0; i < maxLen; i++) {
-                    lines.push([invited[i] ?? '', going[i] ?? '', notGoing[i] ?? '', unresponded[i] ?? ''].map(esc).join(','));
-                  }
-                  await Share.share({ message: lines.join('\n'), title: zh ? '活動資料' : 'Event Export' });
-                } catch (err: any) { Alert.alert('Error', err.message ?? 'Export failed'); }
-              };
               return (
                 <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <TouchableOpacity style={{ flexDirection: 'row', gap: 12, flex: 1 }} onPress={() => router.push(`/events/${item.id}`)}>
@@ -301,9 +276,6 @@ export default function EventsTab() {
                       <Text style={[styles.rsvpRow, { color: colors.placeholder }]}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>
                     </View>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleExport} style={styles.exportBtn}>
-                    <Text style={styles.exportBtnText}>{zh ? '匯出' : 'Export'}</Text>
-                  </TouchableOpacity>
                 </View>
               );
             }}
@@ -324,12 +296,10 @@ const styles = StyleSheet.create({
   emptyState: { alignItems: 'center', marginTop: 60 },
   emptyEmoji: { fontSize: 36, marginBottom: 8, opacity: 0.5 },
   empty: { textAlign: 'center', color: '#9CA3AF' },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14, flexDirection: 'column', gap: 8,
+  card: { backgroundColor: '#fff', borderRadius: 12, padding: 14,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4, elevation: 2 },
   thumbnail: { width: 80, height: 80, borderRadius: 8, overflow: 'hidden' },
   cardBody: { flex: 1 },
-  exportBtn: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 5, alignSelf: 'flex-start' },
-  exportBtnText: { fontSize: 11, color: '#6B7280', fontWeight: '500' },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#111827', marginBottom: 4 },
   cardGroup: { fontSize: 12, color: '#4F46E5', fontWeight: '500', marginBottom: 4 },
   seriesBadge: { backgroundColor: '#EEF2FF', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 4 },

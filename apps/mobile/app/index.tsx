@@ -13,6 +13,6 @@ export default function Index() {
     );
   }
 
-  if (user) return <Redirect href="/(tabs)/events" />;
+  if (user) return <Redirect href="/(tabs)/home" />;
   return <Redirect href="/(auth)/login" />;
 }
