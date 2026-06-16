@@ -74,7 +74,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         .card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(99,102,241,.12);}
       `}</style>
 
-      <div className="relative overflow-x-hidden bg-white dark:bg-gray-950">
+      <div className="-mx-4 -my-6 relative overflow-x-hidden bg-white dark:bg-gray-950">
 
         {/* ── Floating orbs ── */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -84,112 +84,120 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </div>
 
         {/* ── Hero ── */}
-        <section className="relative w-full px-6 sm:px-10 lg:px-16 pt-20 pb-16 text-center">
-          <div className="fade-up-0 inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/60 select-none">
-            ✨ Events &amp; Communities, Made Simple
-          </div>
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 pt-20 pb-16">
+          <div className="max-w-7xl mx-auto">
+            <div className="fade-up-0 inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/60 select-none">
+              ✨ Events &amp; Communities, Made Simple
+            </div>
 
-          <h1 className="fade-up-1 text-5xl sm:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1] mb-6">
-            Plan events.<br />
-            <span className="shimmer-text">Build community.</span>
-          </h1>
+            <h1 className="fade-up-1 text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1] mb-6 max-w-4xl">
+              Plan events.<br />
+              <span className="shimmer-text">Build community.</span>
+            </h1>
 
-          <p className="fade-up-2 text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Judien brings individuals and groups together through beautifully simple event planning — from the first invite to the final headcount.
-          </p>
+            <p className="fade-up-2 text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mb-10 leading-relaxed">
+              Judien brings individuals and groups together through beautifully simple event planning — from the first invite to the final headcount.
+            </p>
 
-          <div className="fade-up-3 flex flex-wrap justify-center gap-4">
-            <Link
-              href={`/${locale}/signup`}
-              className="px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-base shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/45 transition-all"
-            >
-              Get Started — it&apos;s free
-            </Link>
-            <Link
-              href={`/${locale}/login`}
-              className="px-8 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-base backdrop-blur-sm transition-all"
-            >
-              Log In
-            </Link>
+            <div className="fade-up-3 flex flex-wrap gap-4">
+              <Link
+                href={`/${locale}/signup`}
+                className="px-8 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-base shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/45 transition-all"
+              >
+                Get Started — it&apos;s free
+              </Link>
+              <Link
+                href={`/${locale}/login`}
+                className="px-8 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-base backdrop-blur-sm transition-all"
+              >
+                Log In
+              </Link>
+            </div>
           </div>
         </section>
 
         {/* ── App preview tiles ── */}
-        <section className="relative w-full px-6 sm:px-10 lg:px-16 mb-24">
-          <div className="rounded-2xl border border-gray-100 dark:border-gray-800 shadow-2xl bg-gradient-to-br from-slate-50 to-indigo-50/60 dark:from-gray-900 dark:to-indigo-950/30 p-8">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              {[
-                { title: 'Hiking Trip', tag: '18 going', color: 'bg-indigo-100 dark:bg-indigo-900/40' },
-                { title: 'Team Dinner', tag: '7 going', color: 'bg-violet-100 dark:bg-violet-900/40' },
-                { title: 'Workshop', tag: '24 going', color: 'bg-sky-100 dark:bg-sky-900/40' },
-              ].map((e, i) => (
-                <div key={i} className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/60">
-                  <div className={`w-full h-20 rounded-lg mb-3 ${e.color}`} />
-                  <p className="font-semibold text-sm text-gray-800 dark:text-white truncate">{e.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{e.tag}</p>
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">RSVPs</p>
-                <div className="flex gap-4 text-sm font-semibold">
-                  <span className="text-green-600">✓ 49 Going</span>
-                  <span className="text-red-400">✗ 12 Not Going</span>
-                </div>
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 mb-24">
+          <div className="max-w-7xl mx-auto">
+            <div className="rounded-2xl border border-gray-100 dark:border-gray-800 shadow-2xl bg-gradient-to-br from-slate-50 to-indigo-50/60 dark:from-gray-900 dark:to-indigo-950/30 p-8">
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                {[
+                  { title: 'Hiking Trip', tag: '18 going', color: 'bg-indigo-100 dark:bg-indigo-900/40' },
+                  { title: 'Team Dinner', tag: '7 going', color: 'bg-violet-100 dark:bg-violet-900/40' },
+                  { title: 'Workshop', tag: '24 going', color: 'bg-sky-100 dark:bg-sky-900/40' },
+                ].map((e, i) => (
+                  <div key={i} className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/60">
+                    <div className={`w-full h-20 rounded-lg mb-3 ${e.color}`} />
+                    <p className="font-semibold text-sm text-gray-800 dark:text-white truncate">{e.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{e.tag}</p>
+                  </div>
+                ))}
               </div>
-              <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Last Update</p>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">📣 Blast sent to all</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">RSVPs</p>
+                  <div className="flex gap-4 text-sm font-semibold">
+                    <span className="text-green-600">✓ 49 Going</span>
+                    <span className="text-red-400">✗ 12 Not Going</span>
+                  </div>
+                </div>
+                <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Last Update</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">📣 Blast sent to all</p>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── Features ── */}
-        <section className="relative w-full px-6 sm:px-10 lg:px-16 py-16">
-          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white mb-3">
-            Everything in one place
-          </h2>
-          <p className="text-center text-gray-500 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
-            Whether you&apos;re planning a one-off outing or managing a recurring community group, Judien has you covered.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map((f, i) => (
-              <div key={i} className="card-hover bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
-                <div className="text-3xl mb-4">{f.icon}</div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.body}</p>
-              </div>
-            ))}
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-16">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+              Everything in one place
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-12 max-w-2xl">
+              Whether you&apos;re planning a one-off outing or managing a recurring community group, Judien has you covered.
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {FEATURES.map((f, i) => (
+                <div key={i} className="card-hover bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
+                  <div className="text-3xl mb-4">{f.icon}</div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{f.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.body}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* ── How it works ── */}
-        <section className="relative bg-gray-50 dark:bg-gray-900/60 py-20 px-6 sm:px-10 lg:px-16">
-          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white mb-12">How it works</h2>
-          <div className="grid sm:grid-cols-3 gap-8">
-            {STEPS.map((s, i) => (
-              <div key={i} className="text-center">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-lg mb-4 shadow-lg shadow-indigo-500/25">
-                  {s.num}
+        <section className="relative bg-gray-50 dark:bg-gray-900/60 py-20 px-6 sm:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12">How it works</h2>
+            <div className="grid sm:grid-cols-3 gap-8">
+              {STEPS.map((s, i) => (
+                <div key={i}>
+                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-lg mb-4 shadow-lg shadow-indigo-500/25">
+                    {s.num}
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{s.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.body}</p>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{s.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.body}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
 
         {/* ── Quote ── */}
-        <section className="relative py-20 px-6 sm:px-10 lg:px-16 overflow-hidden">
+        <section className="relative py-20 px-6 sm:px-10 lg:px-16 xl:px-24 overflow-hidden">
           <div className="pointer-events-none absolute inset-0" aria-hidden>
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600" />
             <div className="orb-a absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
             <div className="orb-b absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
           </div>
-          <div className="relative text-center">
-            <p className="text-3xl sm:text-4xl font-bold text-white leading-snug mb-4 max-w-3xl mx-auto">
+          <div className="relative max-w-7xl mx-auto">
+            <p className="text-3xl sm:text-4xl font-bold text-white leading-snug mb-4 max-w-3xl">
               &ldquo;Finally, an event app that works for our community.&rdquo;
             </p>
             <p className="text-indigo-200 text-base">— Judien community organizer</p>
@@ -197,19 +205,21 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── Final CTA ── */}
-        <section className="relative w-full px-6 sm:px-10 lg:px-16 py-24 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Ready to bring your group together?
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-8 text-lg">
-            Join Judien and start planning events your community will love.
-          </p>
-          <Link
-            href={`/${locale}/signup`}
-            className="inline-block px-10 py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/45 transition-all"
-          >
-            Create Your Free Account
-          </Link>
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 py-24">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Ready to bring your group together?
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-8 text-lg max-w-xl">
+              Join Judien and start planning events your community will love.
+            </p>
+            <Link
+              href={`/${locale}/signup`}
+              className="inline-block px-10 py-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/45 transition-all"
+            >
+              Create Your Free Account
+            </Link>
+          </div>
         </section>
 
       </div>

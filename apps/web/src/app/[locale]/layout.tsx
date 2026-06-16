@@ -16,10 +16,10 @@ export default async function LocaleLayout({
 }) {
   if (!locales.includes(params.locale)) notFound();
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black transition-colors">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-black transition-colors overflow-x-hidden">
       <HtmlLang locale={params.locale} />
       <NavBar locale={params.locale} />
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 w-full px-4 py-6">
         <AuthGuard locale={params.locale}>{children}</AuthGuard>
       </main>
       <Footer locale={params.locale} />
