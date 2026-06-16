@@ -244,7 +244,7 @@ export default function EventsTab() {
             ListEmptyComponent={
               <View style={styles.emptyState}>
                 <Text style={styles.emptyEmoji}>📅</Text>
-                <Text style={[styles.empty, { color: colors.placeholder }]}>{zh ? '目前沒有活動。' : 'No events yet.'}</Text>
+                <Text style={[styles.empty, { color: colors.placeholder }]}>{zh ? '沒有活動' : 'No events'}</Text>
               </View>
             }
             renderItem={({ item }) => {
@@ -270,7 +270,7 @@ export default function EventsTab() {
                         </View>
                       )}
                       <Text style={[styles.cardTitle, { color: colors.text }]} numberOfLines={2}>{title}</Text>
-                      {item.groupName && <Text style={styles.cardGroup}>👥 {item.groupName}</Text>}
+                      {item.groupName && <Text style={styles.cardGroup}>{item.groupName}</Text>}
                       <Text style={[styles.cardMeta, { color: colors.subtext }]}>{date}</Text>
                       {location ? <Text style={[styles.cardMeta, { color: colors.subtext }]} numberOfLines={1}>{location}</Text> : null}
                       <Text style={[styles.rsvpRow, { color: colors.placeholder }]}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>

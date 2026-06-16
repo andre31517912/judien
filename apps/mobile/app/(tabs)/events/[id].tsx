@@ -29,6 +29,18 @@ type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; 
 
 const INDIGO = '#4F46E5';
 
+function timeAgo(dateStr: string, zh: boolean): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return zh ? '剛剛' : 'just now';
+  if (m < 60) return zh ? `${m} 分鐘前` : `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return zh ? `${h} 小時前` : `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return zh ? `${d} 天前` : `${d}d ago`;
+  return new Date(dateStr).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+}
+
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -388,7 +400,7 @@ export default function EventDetailScreen() {
           )}
 
           <Text style={styles.title}>{title}</Text>
-          {event.groupName && <Text style={styles.groupBadge}>👥 {event.groupName}</Text>}
+          {event.groupName && <Text style={styles.groupBadge}>{event.groupName}</Text>}
 
           <View style={styles.metaBlock}>
             {(event as any).createdByName && (
@@ -523,30 +535,13 @@ export default function EventDetailScreen() {
             return (
               <View key={c.id} style={styles.commentWrapper}>
                 <View style={styles.comment}>
+                  {/* Header: handle + timestamp */}
                   <View style={styles.commentHeader}>
                     <Text style={styles.commentHandle}>{c.userHandle}</Text>
-                    <View style={styles.commentActions}>
-                      {isOwn && !isEditing && (
-                        <TouchableOpacity
-                          onPress={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }}
-                          style={styles.commentActionBtn}
-                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
-                        >
-                          <Text style={styles.commentActionText}>{zh ? '編輯' : 'Edit'}</Text>
-                        </TouchableOpacity>
-                      )}
-                      {canDelete && (
-                        <TouchableOpacity
-                          onPress={() => handleDeleteComment(c.id)}
-                          style={styles.commentActionBtn}
-                          hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
-                        >
-                          <Text style={[styles.commentActionText, { color: '#EF4444' }]}>✕</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
+                    <Text style={styles.commentDate}>{timeAgo(c.createdAt, zh)}</Text>
                   </View>
 
+                  {/* Body or inline edit */}
                   {isEditing ? (
                     <View style={styles.editBlock}>
                       <TextInput
@@ -561,10 +556,7 @@ export default function EventDetailScreen() {
                         <TouchableOpacity style={styles.editSaveBtn} onPress={() => handleEditComment(c.id)}>
                           <Text style={styles.editSaveBtnText}>{t('common.save')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                          style={styles.editCancelBtn}
-                          onPress={() => { setEditingCommentId(null); setEditCommentBody(''); }}
-                        >
+                        <TouchableOpacity style={styles.editCancelBtn} onPress={() => { setEditingCommentId(null); setEditCommentBody(''); }}>
                           <Text style={styles.editCancelBtnText}>{t('common.cancel')}</Text>
                         </TouchableOpacity>
                       </View>
@@ -573,21 +565,31 @@ export default function EventDetailScreen() {
                     <Text style={styles.commentBody}>{c.body}</Text>
                   )}
 
-                  <View style={styles.commentFooter}>
-                    <Text style={styles.commentDate}>{new Date(c.createdAt).toLocaleString()}</Text>
-                    {user && (
-                      <TouchableOpacity
-                        onPress={() => setReplyingToId(replyingToId === c.id ? null : c.id)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Text style={styles.replyBtn}>
-                          {replyingToId === c.id ? (zh ? '取消' : 'Cancel') : (zh ? '回覆' : 'Reply')}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
+                  {/* Footer actions */}
+                  {!isEditing && (
+                    <View style={styles.commentFooter}>
+                      {user && (
+                        <TouchableOpacity onPress={() => setReplyingToId(replyingToId === c.id ? null : c.id)} hitSlop={{ top: 8, bottom: 8, left: 0, right: 8 }}>
+                          <Text style={styles.commentAction}>
+                            {replyingToId === c.id ? (zh ? '取消' : 'Cancel') : (zh ? '回覆' : 'Reply')}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      {isOwn && (
+                        <TouchableOpacity onPress={() => { setEditingCommentId(c.id); setEditCommentBody(c.body); }} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                          <Text style={styles.commentAction}>{zh ? '編輯' : 'Edit'}</Text>
+                        </TouchableOpacity>
+                      )}
+                      {canDelete && (
+                        <TouchableOpacity onPress={() => handleDeleteComment(c.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 0 }}>
+                          <Text style={[styles.commentAction, styles.commentActionDelete]}>{zh ? '刪除' : 'Delete'}</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
                 </View>
 
+                {/* Reply input */}
                 {replyingToId === c.id && user && (
                   <View style={styles.replyInputRow}>
                     <TextInput
@@ -605,23 +607,21 @@ export default function EventDetailScreen() {
                   </View>
                 )}
 
+                {/* Replies */}
                 {c.replies && c.replies.length > 0 && (
                   <View style={styles.repliesSection}>
                     {c.replies.map((reply) => (
                       <View key={reply.id} style={styles.nestedReply}>
                         <View style={styles.commentHeader}>
                           <Text style={styles.replyHandle}>{reply.userHandle}</Text>
-                          {(user?.id === reply.userId || isAdmin) && (
-                            <TouchableOpacity
-                              onPress={() => handleDeleteComment(reply.id)}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                            >
-                              <Text style={[styles.commentActionText, { color: '#EF4444' }]}>✕</Text>
-                            </TouchableOpacity>
-                          )}
+                          <Text style={styles.commentDate}>{timeAgo(reply.createdAt, zh)}</Text>
                         </View>
                         <Text style={styles.replyBody}>{reply.body}</Text>
-                        <Text style={styles.replyDate}>{new Date(reply.createdAt).toLocaleString()}</Text>
+                        {(user?.id === reply.userId || isAdmin) && (
+                          <TouchableOpacity onPress={() => handleDeleteComment(reply.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ marginTop: 6 }}>
+                            <Text style={[styles.commentAction, styles.commentActionDelete]}>{zh ? '刪除' : 'Delete'}</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     ))}
                   </View>
@@ -821,14 +821,13 @@ const makeStyles = (colors: any) => StyleSheet.create({
   empty: { color: colors.placeholder, fontSize: 14, marginBottom: 8 },
   commentWrapper: { marginBottom: 14 },
   comment: { backgroundColor: colors.card, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: colors.border },
-  commentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  commentHandle: { fontSize: 13, color: colors.subtext, fontWeight: '500' },
-  commentActions: { flexDirection: 'row', gap: 12 },
-  commentActionBtn: { padding: 2 },
-  commentActionText: { fontSize: 13, color: INDIGO, fontWeight: '600' },
-  commentBody: { fontSize: 15, color: colors.text, lineHeight: 22, marginBottom: 10 },
-  commentFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  commentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  commentHandle: { fontSize: 13, color: colors.text, fontWeight: '600' },
+  commentBody: { fontSize: 15, color: colors.text, lineHeight: 22, marginBottom: 8 },
+  commentFooter: { flexDirection: 'row', gap: 14, alignItems: 'center', marginTop: 2 },
   commentDate: { fontSize: 11, color: colors.placeholder },
+  commentAction: { fontSize: 12, color: colors.subtext, fontWeight: '500' },
+  commentActionDelete: { color: '#EF4444' },
   replyBtn: { fontSize: 13, color: INDIGO, fontWeight: '600' },
 
   // Inline edit

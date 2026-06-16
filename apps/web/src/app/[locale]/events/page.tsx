@@ -278,7 +278,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           ) : news.length === 0 && !composing ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-3">🎉</p>
-              <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有公告，一切都是最新的！' : "No news yet — you're all caught up!"}</p>
+              <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有動態' : 'No feeds'}</p>
             </div>
           ) : (
             news.map((item) => {
@@ -438,7 +438,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           ) : events.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-4xl mb-3">📅</p>
-              <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
+              <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有活動' : 'No events'}</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -500,7 +500,7 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
         )}
         <div className="flex-1 min-w-0">
           <h2 className="font-semibold text-lg truncate text-gray-900 dark:text-white">{title}</h2>
-          {event.groupName && <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">👥 {event.groupName}</p>}
+          {event.groupName && <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{event.groupName}</p>}
           <p className="text-sm text-gray-500 dark:text-gray-400">{startDate}</p>
           {location && <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{location}</p>}
           <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-1">{fee}</p>

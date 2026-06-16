@@ -1,7 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl,
+  ActivityIndicator, RefreshControl, Animated, PanResponder, Alert,
 } from 'react-native';
 import { useRouter, useFocusEffect, Stack } from 'expo-router';
 import JLogo from '../../components/JLogo';
@@ -27,6 +27,93 @@ function resolveRoute(actionUrl: string | null): string | null {
   if (eventMatch) return `/events/${eventMatch[1]}`;
   if (actionUrl === '/feed' || actionUrl.startsWith('/news')) return '/(tabs)/home';
   return null;
+}
+
+const DELETE_BTN_WIDTH = 72;
+
+function SwipeableNotification({ n, onDelete, onPress, styles, colors, zh }: {
+  n: AppNotification;
+  onDelete: (id: string) => void;
+  onPress: (n: AppNotification) => void;
+  styles: ReturnType<typeof makeStyles>;
+  colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors'];
+  zh: boolean;
+}) {
+  const translateX = useRef(new Animated.Value(0)).current;
+  const isOpen = useRef(false);
+
+  const close = useCallback(() => {
+    Animated.spring(translateX, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+    isOpen.current = false;
+  }, [translateX]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, { dx, dy }) =>
+        Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8,
+      onPanResponderMove: (_, { dx }) => {
+        if (isOpen.current) {
+          translateX.setValue(Math.max(-DELETE_BTN_WIDTH, Math.min(0, -DELETE_BTN_WIDTH + dx)));
+        } else if (dx < 0) {
+          translateX.setValue(Math.max(-DELETE_BTN_WIDTH, dx));
+        }
+      },
+      onPanResponderRelease: (_, { dx }) => {
+        if (isOpen.current) {
+          if (dx > DELETE_BTN_WIDTH / 2) {
+            Animated.spring(translateX, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+            isOpen.current = false;
+          } else {
+            Animated.spring(translateX, { toValue: -DELETE_BTN_WIDTH, useNativeDriver: true, bounciness: 4 }).start();
+          }
+        } else {
+          if (dx < -DELETE_BTN_WIDTH / 2) {
+            Animated.spring(translateX, { toValue: -DELETE_BTN_WIDTH, useNativeDriver: true, bounciness: 4 }).start();
+            isOpen.current = true;
+          } else {
+            Animated.spring(translateX, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+          }
+        }
+      },
+    })
+  ).current;
+
+  const handleDeletePress = () => {
+    Animated.timing(translateX, { toValue: -400, duration: 220, useNativeDriver: true }).start(() => {
+      onDelete(n.id);
+    });
+  };
+
+  const title = zh ? n.title_zh : n.title_en;
+  const body = zh ? n.body_zh : n.body_en;
+  const hasRoute = !!resolveRoute(n.actionUrl);
+
+  return (
+    <View style={styles.swipeRow}>
+      <TouchableOpacity style={styles.deleteAction} onPress={handleDeletePress} activeOpacity={0.85}>
+        <Text style={styles.deleteActionIcon}>✕</Text>
+      </TouchableOpacity>
+
+      <Animated.View style={[styles.slideRow, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
+        <TouchableOpacity
+          style={[styles.item, { backgroundColor: n.read ? colors.card : '#EEF2FF', borderColor: colors.border }]}
+          onPress={() => { if (isOpen.current) { close(); return; } onPress(n); }}
+          activeOpacity={hasRoute ? 0.7 : 1}
+        >
+          {!n.read && <View style={styles.dot} />}
+          <View style={styles.itemBody}>
+            <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
+            <Text style={[styles.itemBodyText, { color: colors.subtext }]} numberOfLines={2}>{body}</Text>
+            <Text style={[styles.itemTime, { color: colors.placeholder }]}>
+              {new Date(n.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+              })}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
 }
 
 export default function NotificationsTab() {
@@ -56,6 +143,11 @@ export default function NotificationsTab() {
     const route = resolveRoute(n.actionUrl);
     if (route) router.push(route as any);
   };
+
+  const handleDelete = useCallback(async (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    apiFetch(`/notifications/${id}`, { method: 'DELETE' }).catch(() => {});
+  }, []);
 
   const markAllRead = async () => {
     await apiFetch('/notifications/mark-all-read', { method: 'POST' }).catch(() => {});
@@ -88,29 +180,17 @@ export default function NotificationsTab() {
             <Text style={styles.empty}>{zh ? '目前沒有通知。' : 'No notifications yet.'}</Text>
           </View>
         }
-        renderItem={({ item: n }) => {
-          const title = zh ? n.title_zh : n.title_en;
-          const body = zh ? n.body_zh : n.body_en;
-          const hasRoute = !!resolveRoute(n.actionUrl);
-          return (
-            <TouchableOpacity
-              style={[styles.item, { backgroundColor: n.read ? colors.card : '#EEF2FF', borderColor: colors.border }]}
-              onPress={() => handlePress(n)}
-              activeOpacity={hasRoute ? 0.7 : 1}
-            >
-              {!n.read && <View style={styles.dot} />}
-              <View style={styles.itemBody}>
-                <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={1}>{title}</Text>
-                <Text style={[styles.itemBodyText, { color: colors.subtext }]} numberOfLines={2}>{body}</Text>
-                <Text style={[styles.itemTime, { color: colors.placeholder }]}>
-                  {new Date(n.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                  })}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
+        renderItem={({ item: n }) => (
+          <SwipeableNotification
+            key={n.id}
+            n={n}
+            onDelete={handleDelete}
+            onPress={handlePress}
+            styles={styles}
+            colors={colors}
+            zh={zh}
+          />
+        )}
       />
     </View>
   );
@@ -128,6 +208,16 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
       alignItems: 'flex-end',
     },
     markAllText: { fontSize: 13, color: '#4F46E5' },
+    swipeRow: { overflow: 'hidden' },
+    deleteAction: {
+      position: 'absolute', right: 0, top: 0, bottom: 0,
+      width: DELETE_BTN_WIDTH,
+      backgroundColor: '#EF4444',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    deleteActionIcon: { color: '#fff', fontSize: 20, fontWeight: '700' },
+    slideRow: { backgroundColor: colors.bg },
     item: {
       flexDirection: 'row', alignItems: 'flex-start',
       padding: 16,

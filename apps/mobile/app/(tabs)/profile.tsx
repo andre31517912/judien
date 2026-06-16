@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch, apiUpload } from '../../lib/api';
@@ -63,7 +64,9 @@ export default function ProfileScreen() {
             </View>
           )}
           <View style={styles.cameraBtn}>
-            <Text style={styles.cameraBtnText}>{photoUploading ? '…' : '📷'}</Text>
+            {photoUploading
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Ionicons name="camera" size={15} color="#fff" />}
           </View>
         </TouchableOpacity>
 
