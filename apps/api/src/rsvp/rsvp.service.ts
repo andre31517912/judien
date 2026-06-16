@@ -59,10 +59,24 @@ export class RsvpService {
       }
     }
 
+    // Determine if caller has admin access (event creator, platform admin, or group admin)
+    let isCallerAdmin = false;
+    if (userId) {
+      const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+      isCallerAdmin = requestingUser?.role === 'ADMIN' || event.createdById === userId;
+      if (!isCallerAdmin && event.groupId) {
+        const adminMembership = await (this.prisma.groupMembership as any).findUnique({
+          where: { groupId_userId: { groupId: event.groupId, userId } },
+          select: { role: true, status: true },
+        });
+        isCallerAdmin = adminMembership?.status === 'ACCEPTED' && adminMembership?.role === 'GROUP_ADMIN';
+      }
+    }
+
     const [rsvps, guestRsvps, memberships] = await Promise.all([
       this.prisma.rSVP.findMany({
         where: { eventId },
-        include: { user: { select: { email: true, displayName: true } } },
+        include: { user: { select: { email: true, displayName: true, phoneE164: true } } },
         orderBy: { updatedAt: 'asc' },
       }),
       this.prisma.guestRSVP.findMany({
@@ -72,14 +86,14 @@ export class RsvpService {
       event.groupId
         ? (this.prisma.groupMembership as any).findMany({
             where: { groupId: event.groupId, status: 'ACCEPTED' },
-            select: { userId: true, groupNickname: true, user: { select: { id: true, displayName: true } } },
-          }) as Promise<{ userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]>
-        : Promise.resolve([] as { userId: string; groupNickname: string | null; user: { id: string; displayName: string | null } }[]),
+            select: { userId: true, groupNickname: true, user: { select: { id: true, displayName: true, email: true, phoneE164: true } } },
+          }) as Promise<{ userId: string; groupNickname: string | null; user: { id: string; displayName: string | null; email: string | null; phoneE164: string | null } }[]>
+        : Promise.resolve([] as { userId: string; groupNickname: string | null; user: { id: string; displayName: string | null; email: string | null; phoneE164: string | null } }[]),
     ]);
 
     const nicknameByUserId = new Map(memberships.map((m) => [m.userId, m.groupNickname]));
 
-    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; source: 'user' | 'guest' }[]> = {
+    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[]> = {
       GOING: [],
       NO: [],
     };
@@ -88,67 +102,65 @@ export class RsvpService {
       const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
         const nickname = nicknameByUserId.get(r.userId) ?? null;
-        groups[status].push({
-          handle: this.maskIdentifier(r.user.email ?? ''),
+        const entry: typeof groups['GOING'][number] = {
+          handle: isCallerAdmin ? (r.user.email ?? '') : this.maskIdentifier(r.user.email ?? ''),
           displayName: nickname ?? (r.user as any).displayName ?? null,
           source: 'user',
-        });
+        };
+        if (isCallerAdmin) {
+          if (r.user.email) entry.email = r.user.email;
+          if ((r.user as any).phoneE164) entry.phone = (r.user as any).phoneE164;
+        }
+        groups[status].push(entry);
       }
     }
 
     for (const r of guestRsvps) {
       const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
-        groups[status].push({
-          handle: this.maskIdentifier(r.guestEmail),
+        const entry: typeof groups['GOING'][number] = {
+          handle: isCallerAdmin ? r.guestEmail : this.maskIdentifier(r.guestEmail),
           displayName: r.guestName,
           source: 'guest',
-        });
+        };
+        if (isCallerAdmin) {
+          entry.email = r.guestEmail;
+          entry.phone = r.guestPhone;
+        }
+        groups[status].push(entry);
       }
     }
 
     // INVITED bucket: for group events, all group members are considered invited
-    let invited: { name: string; email: string | null }[] | undefined;
+    let invited: { name: string; email: string | null; phone?: string | null }[] | undefined;
     if (event.groupId) {
       invited = memberships.map((m) => ({
         name: m.groupNickname ?? m.user.displayName ?? '',
-        email: null,
+        email: isCallerAdmin ? (m.user.email ?? null) : null,
+        ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
       }));
     }
 
     // PENDING bucket: members/invitees who haven't replied
-    let pending: { handle: string; displayName: string | null; source: 'user' | 'guest' }[] | undefined;
-    if (event.groupId && userId) {
-      // Group events: group admins and platform admins see all unresponded members
-      const [requestingUser, adminMembership] = await Promise.all([
-        this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } }),
-        this.prisma.groupMembership.findUnique({
-          where: { groupId_userId: { groupId: event.groupId, userId } },
-          select: { role: true, status: true },
-        }),
-      ]);
-      const isAdmin =
-        requestingUser?.role === 'ADMIN' ||
-        (adminMembership?.status === 'ACCEPTED' && adminMembership?.role === 'GROUP_ADMIN');
-
-      if (isAdmin) {
-        const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
-        pending = memberships
-          .filter((m) => !rsvpUserIds.has(m.userId))
-          .map((m) => ({
-            handle: '',
+    let pending: { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[] | undefined;
+    if (event.groupId && isCallerAdmin) {
+      const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
+      pending = memberships
+        .filter((m) => !rsvpUserIds.has(m.userId))
+        .map((m) => {
+          const entry: typeof pending![number] = {
+            handle: m.user.email ?? '',
             displayName: m.groupNickname ?? m.user.displayName ?? null,
             source: 'user' as const,
-          }));
-      }
+          };
+          if (m.user.email) entry.email = m.user.email;
+          if (m.user.phoneE164) entry.phone = m.user.phoneE164;
+          return entry;
+        });
     } else if (!event.groupId && userId) {
-      // Normal events: event creator and platform admins see invite acceptors who haven't RSVPd
-      const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-      const isCreatorOrAdmin = requestingUser?.role === 'ADMIN' || event.createdById === userId;
-
       const invites = await this.prisma.eventInvite.findMany({
         where: { eventId },
-        include: { acceptedBy: { select: { id: true, displayName: true, email: true } } },
+        include: { acceptedBy: { select: { id: true, displayName: true, email: true, phoneE164: true } } },
       });
 
       // INVITED bucket for normal events: show direct invites (created with guestEmail set)
@@ -156,11 +168,12 @@ export class RsvpService {
       if (directInvites.length > 0) {
         invited = directInvites.map((inv) => ({
           name: inv.guestName ?? inv.guestEmail ?? '',
-          email: inv.guestEmail,
+          email: isCallerAdmin ? (inv.guestEmail ?? null) : null,
+          ...(isCallerAdmin && inv.guestPhone ? { phone: inv.guestPhone } : {}),
         }));
       }
 
-      if (isCreatorOrAdmin) {
+      if (isCallerAdmin) {
         const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
         const rsvpUserEmails = new Set(
           rsvps.filter((r) => r.user.email).map((r) => r.user.email!.toLowerCase())
@@ -170,19 +183,25 @@ export class RsvpService {
         pending = [];
         for (const inv of invites) {
           if (inv.acceptedByUserId && !rsvpUserIds.has(inv.acceptedByUserId)) {
-            pending.push({
-              handle: this.maskIdentifier(inv.acceptedBy?.email ?? ''),
+            const entry: typeof pending[number] = {
+              handle: inv.acceptedBy?.email ?? '',
               displayName: inv.acceptedBy?.displayName ?? null,
               source: 'user' as const,
-            });
+            };
+            if (inv.acceptedBy?.email) entry.email = inv.acceptedBy.email;
+            if ((inv.acceptedBy as any)?.phoneE164) entry.phone = (inv.acceptedBy as any).phoneE164;
+            pending.push(entry);
           } else if (!inv.acceptedByUserId && inv.guestEmail) {
             const emailLower = inv.guestEmail.toLowerCase();
             if (!guestRsvpEmails.has(emailLower) && !rsvpUserEmails.has(emailLower)) {
-              pending.push({
-                handle: this.maskIdentifier(inv.guestEmail),
+              const entry: typeof pending[number] = {
+                handle: inv.guestEmail,
                 displayName: inv.guestName ?? null,
                 source: 'guest' as const,
-              });
+              };
+              entry.email = inv.guestEmail;
+              if (inv.guestPhone) entry.phone = inv.guestPhone;
+              pending.push(entry);
             }
           }
         }

@@ -23,8 +23,8 @@ import { useTheme } from '../../../context/theme.context';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, EventInvitee } from '@judien/shared';
 
-type GuestEntry = { handle: string; displayName: string | null };
-type InvitedEntry = { name: string; email?: string };
+type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
 type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
 
 const INDIGO = '#4F46E5';
@@ -172,7 +172,7 @@ export default function EventDetailScreen() {
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
         INVITED: rsvpData.INVITED
-          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: (i as any).email ?? undefined }))
+          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
           : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
       });
@@ -186,12 +186,12 @@ export default function EventDetailScreen() {
 
   const handleExportCsv = async () => {
     if (!guests) return;
-    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const rows = ['Name,Status'];
-    for (const g of (guests.INVITED ?? [])) rows.push(`${esc(g.name)},Invited`);
-    for (const g of (guests.GOING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Going`);
-    for (const g of (guests.NO ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},"Not Going"`);
-    for (const g of (guests.PENDING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Unresponded`);
+    const esc = (s: string) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    const rows = ['Name,Email,Phone,Status'];
+    for (const g of (guests.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Invited')].join(','));
+    for (const g of (guests.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
+    for (const g of (guests.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
+    for (const g of (guests.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
@@ -344,6 +344,9 @@ export default function EventDetailScreen() {
             <View style={styles.adminBar}>
               <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
                 <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.exportBtn} onPress={handleExportCsv}>
+                <Text style={styles.exportBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteBtn}
@@ -712,12 +715,13 @@ export default function EventDetailScreen() {
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
                           {g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {(g as any).phone && <Text style={styles.guestHandle}>{(g as any).phone}</Text>}
                         </View>
                       ));
                   }
                   const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
                   const rows = tabData.filter((g) =>
-                    !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term)
+                    !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
                   );
                   const emptyMsg = term ? (zh ? '找不到符合結果' : 'No matches') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應' : 'Everyone has responded') : (zh ? '暫無名單' : 'No one yet');
                   return rows.length === 0
@@ -725,15 +729,13 @@ export default function EventDetailScreen() {
                     : rows.map((g, i) => (
                       <View key={i} style={styles.guestRow}>
                         <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                        {g.handle && <Text style={styles.guestHandle}>{g.handle}</Text>}
+                        {g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                        {g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                       </View>
                     ));
                 })()}
               </ScrollView>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                <TouchableOpacity style={[styles.modalSecondaryBtn, { flex: 1 }]} onPress={handleExportCsv}>
-                  <Text style={styles.modalSecondaryBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={[styles.modalSecondaryBtn, { flex: 1 }]} onPress={() => setShowGuests(false)}>
                   <Text style={styles.modalSecondaryBtnText}>{zh ? '關閉' : 'Close'}</Text>
                 </TouchableOpacity>
@@ -779,6 +781,8 @@ const makeStyles = (colors: any) => StyleSheet.create({
   adminBar: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   editBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   editBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  exportBtn: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  exportBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
   deleteBtn: { backgroundColor: '#EF4444', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   deleteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   seriesBadge: { backgroundColor: '#EEF2FF', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 10 },

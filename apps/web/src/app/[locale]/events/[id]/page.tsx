@@ -35,8 +35,8 @@ export default function EventDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // guest list
-  type GuestEntry = { handle: string; displayName: string | null };
-  type InvitedEntry = { name: string; email?: string };
+  type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+  type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
   type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
@@ -56,7 +56,7 @@ export default function EventDetailPage() {
         GOING: rsvpData.GOING,
         NO: rsvpData.NO,
         INVITED: rsvpData.INVITED
-          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined }))
+          ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
           : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
       });
@@ -65,14 +65,35 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleExportCsv = () => {
-    if (!guests) return;
-    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const rows = ['Name,Status'];
-    for (const g of (guests.INVITED ?? [])) rows.push(`${esc(g.name)},Invited`);
-    for (const g of (guests.GOING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Going`);
-    for (const g of (guests.NO ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},"Not Going"`);
-    for (const g of (guests.PENDING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Unresponded`);
+  const handleExportCsv = async () => {
+    const esc = (s: string) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    // Load guests if not already loaded
+    let data = guests;
+    if (!data) {
+      setGuestsLoading(true);
+      try {
+        const [rsvpData, inviteesData] = await Promise.all([
+          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`),
+          apiFetch<EventInvitee[]>(`/event-invites/event/${params.id}/invitees`).catch(() => [] as EventInvitee[]),
+        ]);
+        data = {
+          GOING: rsvpData.GOING,
+          NO: rsvpData.NO,
+          INVITED: rsvpData.INVITED
+            ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
+            : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+          PENDING: rsvpData.PENDING,
+        };
+        setGuests(data);
+      } finally {
+        setGuestsLoading(false);
+      }
+    }
+    const rows = ['Name,Email,Phone,Status'];
+    for (const g of (data.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc((g as any).phone ?? ''), esc('Invited')].join(','));
+    for (const g of (data.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
+    for (const g of (data.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
+    for (const g of (data.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -370,13 +391,19 @@ export default function EventDetailPage() {
       )}
       {/* Admin toolbar */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id) && (
-        <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+        <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700 flex-wrap">
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
             className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
           >
             {zh ? '編輯活動' : 'Edit Event'}
           </a>
+          <button
+            onClick={handleExportCsv}
+            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md hover:border-indigo-400 hover:text-indigo-600 transition"
+          >
+            {zh ? '匯出 CSV' : 'Export CSV'}
+          </button>
         </div>
       )}
 
@@ -536,14 +563,6 @@ export default function EventDetailPage() {
               </button>
             ))}
             </div>
-            {guests && (
-              <button
-                onClick={handleExportCsv}
-                className="shrink-0 px-3 mr-2 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-indigo-400 hover:text-indigo-600 transition py-1.5"
-              >
-                {zh ? '匯出 CSV' : 'Export CSV'}
-              </button>
-            )}
           </div>
 
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
@@ -574,13 +593,14 @@ export default function EventDetailPage() {
                       <div className="min-w-0">
                         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
                         {g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                        {(g as any).phone && <p className="text-xs text-gray-400 truncate">{(g as any).phone}</p>}
                       </div>
                     </div>
                   ));
               }
               const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
               const rows = tabData.filter((g) =>
-                !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term)
+                !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
               );
               const emptyMsg = term ? (zh ? '找不到符合結果。' : 'No matches.') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應。' : 'Everyone has responded.') : (zh ? '目前沒有人。' : 'Nobody yet.');
               return rows.length === 0
@@ -590,7 +610,11 @@ export default function EventDetailPage() {
                     <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                       {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
+                      {g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                      {g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
+                    </div>
                   </div>
                 ));
             })()}

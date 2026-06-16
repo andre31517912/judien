@@ -302,9 +302,6 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
           value={value}
           onChange={(e) => {
             const next = e.target.value;
-            if (showMapPreview && lastSelectedLabelRef.current && next !== lastSelectedLabelRef.current) {
-              setPos(null);
-            }
             onChange(next);
             if (!next.trim()) {
               lastSelectedLabelRef.current = null;

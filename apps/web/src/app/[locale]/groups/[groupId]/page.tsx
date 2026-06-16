@@ -930,7 +930,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Members */}
         {viewTab === 'members' && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <input
               value={memberSearch}
               onChange={(e) => setMemberSearch(e.target.value)}
@@ -977,6 +977,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </div>
               </div>
             ))}
+            <div className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
             {[...members].filter((m) => {
               const term = memberSearch.trim().toLowerCase();
               if (!term) return true;
@@ -995,7 +996,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               const isOwnRow = member.userId === user?.id;
               const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
               return (
-              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
+              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-gray-900 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
@@ -1041,6 +1042,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </div>
               );
             })}
+            </div>
           </div>
         )}
 

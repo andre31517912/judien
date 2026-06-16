@@ -678,9 +678,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     },
 
     memberCard: {
-      backgroundColor: colors.card, borderRadius: 12, padding: 12,
+      backgroundColor: colors.bg,
       flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
-      shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 3, elevation: 1,
+      paddingHorizontal: 0, paddingVertical: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
     },
     memberInfo: { flex: 1, gap: 2 },
     memberName: { fontSize: 14, fontWeight: '600', color: colors.text },
