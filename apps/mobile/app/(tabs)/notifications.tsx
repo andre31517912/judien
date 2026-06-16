@@ -146,8 +146,12 @@ export default function NotificationsTab() {
 
   const handleDelete = useCallback(async (id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-    apiFetch(`/notifications/${id}`, { method: 'DELETE' }).catch(() => {});
-  }, []);
+    try {
+      await apiFetch(`/notifications/${id}`, { method: 'DELETE' });
+    } catch {
+      load();
+    }
+  }, [load]);
 
   const markAllRead = async () => {
     await apiFetch('/notifications/mark-all-read', { method: 'POST' }).catch(() => {});
@@ -177,7 +181,7 @@ export default function NotificationsTab() {
         ListEmptyComponent={
           <View style={styles.center}>
             <Text style={styles.emptyIcon}>🔔</Text>
-            <Text style={styles.empty}>{zh ? '目前沒有通知。' : 'No notifications yet.'}</Text>
+            <Text style={styles.empty}>{zh ? '沒有通知' : 'No notifications'}</Text>
           </View>
         }
         renderItem={({ item: n }) => (

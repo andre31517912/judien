@@ -258,7 +258,7 @@ export default function EventDetailScreen() {
 
   const handleEditComment = async (commentId: string) => {
     if (!editCommentBody.trim()) return;
-    const updated = await apiFetch<Comment>(`/events/${id}/comments/${commentId}`, {
+    const updated = await apiFetch<Comment>(`/comments/${commentId}`, {
       method: 'PATCH', body: JSON.stringify({ body: editCommentBody.trim() }),
     });
     setComments((prev) => prev.map((c) => c.id === commentId ? { ...c, body: updated.body } : c));
@@ -275,7 +275,7 @@ export default function EventDetailScreen() {
         {
           text: t('common.delete'), style: 'destructive',
           onPress: async () => {
-            await apiFetch(`/events/${id}/comments/${commentId}`, { method: 'DELETE' });
+            await apiFetch(`/comments/${commentId}`, { method: 'DELETE' });
             setComments((prev) =>
               prev.filter((c) => c.id !== commentId)
                   .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) }))
