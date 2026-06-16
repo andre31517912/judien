@@ -84,7 +84,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </div>
 
         {/* ── Hero ── */}
-        <section className="relative max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 pt-20 pb-16 text-center">
           <div className="fade-up-0 inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/60 select-none">
             ✨ Events &amp; Communities, Made Simple
           </div>
@@ -94,7 +94,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             <span className="shimmer-text">Build community.</span>
           </h1>
 
-          <p className="fade-up-2 text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-xl mx-auto mb-10 leading-relaxed">
+          <p className="fade-up-2 text-lg sm:text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
             Judien brings individuals and groups together through beautifully simple event planning — from the first invite to the final headcount.
           </p>
 
@@ -115,31 +115,31 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── App preview tiles ── */}
-        <section className="relative max-w-3xl mx-auto px-6 mb-24">
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 mb-24">
           <div className="rounded-2xl border border-gray-100 dark:border-gray-800 shadow-2xl bg-gradient-to-br from-slate-50 to-indigo-50/60 dark:from-gray-900 dark:to-indigo-950/30 p-8">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
               {[
                 { title: 'Hiking Trip', tag: '18 going', color: 'bg-indigo-100 dark:bg-indigo-900/40' },
                 { title: 'Team Dinner', tag: '7 going', color: 'bg-violet-100 dark:bg-violet-900/40' },
                 { title: 'Workshop', tag: '24 going', color: 'bg-sky-100 dark:bg-sky-900/40' },
               ].map((e, i) => (
                 <div key={i} className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/60">
-                  <div className={`w-full h-16 rounded-lg mb-3 ${e.color}`} />
+                  <div className={`w-full h-20 rounded-lg mb-3 ${e.color}`} />
                   <p className="font-semibold text-sm text-gray-800 dark:text-white truncate">{e.title}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{e.tag}</p>
                 </div>
               ))}
             </div>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
-                <p className="text-xs text-gray-400 mb-0.5 uppercase tracking-wide">RSVPs</p>
-                <div className="flex gap-3 text-sm font-semibold">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
+                <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">RSVPs</p>
+                <div className="flex gap-4 text-sm font-semibold">
                   <span className="text-green-600">✓ 49 Going</span>
                   <span className="text-red-400">✗ 12 Not Going</span>
                 </div>
               </div>
-              <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
-                <p className="text-xs text-gray-400 mb-0.5 uppercase tracking-wide">Last Update</p>
+              <div className="bg-white dark:bg-gray-900 rounded-xl px-4 py-3 border border-gray-100 dark:border-gray-700/60 shadow-sm">
+                <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">Last Update</p>
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">📣 Blast sent to all</p>
               </div>
             </div>
@@ -147,12 +147,12 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── Features ── */}
-        <section className="relative max-w-5xl mx-auto px-6 py-16">
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 py-16">
           <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white mb-3">
             Everything in one place
           </h2>
           <p className="text-center text-gray-500 dark:text-gray-400 mb-12 max-w-2xl mx-auto">
-            Whether you're planning a one-off outing or managing a recurring community group, Judien has you covered.
+            Whether you&apos;re planning a one-off outing or managing a recurring community group, Judien has you covered.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURES.map((f, i) => (
@@ -166,32 +166,30 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── How it works ── */}
-        <section className="relative bg-gray-50 dark:bg-gray-900/60 py-20 px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white mb-12">How it works</h2>
-            <div className="grid sm:grid-cols-3 gap-8">
-              {STEPS.map((s, i) => (
-                <div key={i} className="text-center">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-lg mb-4 shadow-lg shadow-indigo-500/25">
-                    {s.num}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{s.title}</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.body}</p>
+        <section className="relative bg-gray-50 dark:bg-gray-900/60 py-20 px-6 sm:px-10 lg:px-16">
+          <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white mb-12">How it works</h2>
+          <div className="grid sm:grid-cols-3 gap-8">
+            {STEPS.map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white font-bold text-lg mb-4 shadow-lg shadow-indigo-500/25">
+                  {s.num}
                 </div>
-              ))}
-            </div>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{s.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{s.body}</p>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* ── Quote ── */}
-        <section className="relative py-20 px-6 overflow-hidden">
+        <section className="relative py-20 px-6 sm:px-10 lg:px-16 overflow-hidden">
           <div className="pointer-events-none absolute inset-0" aria-hidden>
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-600" />
             <div className="orb-a absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
             <div className="orb-b absolute -bottom-20 -right-20 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
           </div>
-          <div className="relative max-w-3xl mx-auto text-center">
-            <p className="text-3xl sm:text-4xl font-bold text-white leading-snug mb-4">
+          <div className="relative text-center">
+            <p className="text-3xl sm:text-4xl font-bold text-white leading-snug mb-4 max-w-3xl mx-auto">
               &ldquo;Finally, an event app that works for our community.&rdquo;
             </p>
             <p className="text-indigo-200 text-base">— Judien community organizer</p>
@@ -199,7 +197,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         </section>
 
         {/* ── Final CTA ── */}
-        <section className="relative max-w-3xl mx-auto px-6 py-24 text-center">
+        <section className="relative w-full px-6 sm:px-10 lg:px-16 py-24 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Ready to bring your group together?
           </h2>
@@ -213,25 +211,6 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
             Create Your Free Account
           </Link>
         </section>
-
-        {/* ── Footer ── */}
-        <footer className="border-t border-gray-100 dark:border-gray-800 py-10 px-6">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <span className="font-bold text-lg text-indigo-600 dark:text-indigo-400">Judien</span>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-              <a href="mailto:contact@madebyfayde.com" className="hover:text-gray-800 dark:hover:text-gray-200 transition">
-                Contact Support
-              </a>
-              <Link href={`/${locale}/privacy-policy`} className="hover:text-gray-800 dark:hover:text-gray-200 transition">
-                Privacy Policy
-              </Link>
-              <Link href={`/${locale}/terms-of-use`} className="hover:text-gray-800 dark:hover:text-gray-200 transition">
-                Terms of Use
-              </Link>
-            </div>
-            <span>© {new Date().getFullYear()} Judien</span>
-          </div>
-        </footer>
 
       </div>
     </>
