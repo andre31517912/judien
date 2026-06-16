@@ -26,6 +26,7 @@ type GroupListItem = {
     pid: string;
     name: string;
     description: string;
+    photoUrl?: string | null;
     discoverableBySearch: boolean;
     createdAt: string;
     updatedAt: string;
@@ -83,7 +84,14 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [success, setSuccess] = useState('');
 
   const importFileRef = useRef<HTMLInputElement>(null);
+  const groupPhotoFileRef = useRef<HTMLInputElement>(null);
   const [importLoading, setImportLoading] = useState(false);
+
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPhotoUrl, setEditPhotoUrl] = useState<string | null>(null);
+  const [groupPhotoUploading, setGroupPhotoUploading] = useState(false);
+  const [groupInfoSaving, setGroupInfoSaving] = useState(false);
   const [importResult, setImportResult] = useState<{ added: number; already_member: number; not_found: number } | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -165,6 +173,42 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [donationForm, setDonationForm] = useState({ forUserId: '', amount: '', currency: 'NTD', date: new Date().toISOString().slice(0, 10), note: '' });
   const [donationSaving, setDonationSaving] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
+
+  const handleGroupPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setGroupPhotoUploading(true);
+    setError('');
+    try {
+      const { url } = await apiUpload(file);
+      setEditPhotoUrl(url);
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Photo upload failed.');
+    } finally {
+      setGroupPhotoUploading(false);
+      if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = '';
+    }
+  };
+
+  const handleSaveGroupInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editName.trim()) { setError(zh ? '群組名稱不可為空。' : 'Group name is required.'); return; }
+    setGroupInfoSaving(true);
+    setError('');
+    setSuccess('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/settings`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name: editName.trim(), description: editDescription.trim(), photoUrl: editPhotoUrl }),
+      });
+      setSuccess(zh ? '群組資訊已更新。' : 'Group info updated.');
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to save group info.');
+    } finally {
+      setGroupInfoSaving(false);
+    }
+  };
 
   const loadDonations = async () => {
     setDonationsLoading(true);
@@ -331,6 +375,11 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       ]);
       const current = groups.find((item) => item.group.id === params.groupId) ?? null;
       setGroupItem(current);
+      if (current) {
+        setEditName(current.group.name ?? '');
+        setEditDescription(current.group.description ?? '');
+        setEditPhotoUrl(current.group.photoUrl ?? null);
+      }
       setMembers(memberList);
 
       const reqRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);
@@ -760,6 +809,68 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
 
       {error && <p className="text-sm text-red-500">{error}</p>}
       {success && <p className="text-sm text-green-600">{success}</p>}
+
+      {/* Group Info */}
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '群組資訊' : 'Group Info'}</h2>
+        <form onSubmit={(e) => void handleSaveGroupInfo(e)} className="mt-4 space-y-4">
+          {/* Photo */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片' : 'Group Photo'}</label>
+            <div className="flex items-center gap-4">
+              {editPhotoUrl ? (
+                <img src={editPhotoUrl} alt="" className="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+              ) : (
+                <div className="h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
+                  <span className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{editName.charAt(0).toUpperCase() || '?'}</span>
+                </div>
+              )}
+              <div className="flex gap-2 flex-wrap">
+                <button type="button" onClick={() => groupPhotoFileRef.current?.click()} disabled={groupPhotoUploading}
+                  className="rounded-md border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50">
+                  {groupPhotoUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '更換照片' : 'Change Photo')}
+                </button>
+                {editPhotoUrl && (
+                  <button type="button" onClick={() => setEditPhotoUrl(null)}
+                    className="rounded-md border border-red-200 dark:border-red-800 px-3 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    {zh ? '移除照片' : 'Remove Photo'}
+                  </button>
+                )}
+              </div>
+              <input ref={groupPhotoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleGroupPhotoUpload(e)} />
+            </div>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組名稱' : 'Group Name'}</label>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              maxLength={160}
+              required
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '描述（選填）' : 'Description (optional)'}</label>
+            <textarea
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
+            />
+          </div>
+
+          <button type="submit" disabled={groupInfoSaving || !editName.trim()}
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            {groupInfoSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存群組資訊' : 'Save Group Info')}
+          </button>
+        </form>
+      </section>
 
       {/* Pending join requests */}
       {joinRequests.length > 0 && (
