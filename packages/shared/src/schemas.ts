@@ -161,6 +161,8 @@ export const UpdateProfileSchema = z.object({
   colorTheme: z.enum(['light', 'dark']).optional(),
   muteEmail: z.boolean().optional(),
   muteLinePush: z.boolean().optional(),
+  muteInAppNotifications: z.boolean().optional(),
+  photoUrl: z.string().nullable().optional(),
 });
 export type UpdateProfileDto = z.infer<typeof UpdateProfileSchema>;
 

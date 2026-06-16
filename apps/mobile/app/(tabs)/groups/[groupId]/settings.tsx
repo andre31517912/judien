@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform, Share } from 'react-native';
 import { Stack, useLocalSearchParams, useNavigation, useRouter, useFocusEffect } from 'expo-router';
 import JLogo from '../../../../components/JLogo';
 import { useTranslation } from 'react-i18next';
@@ -21,7 +21,7 @@ function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'roster' | 'requests' | 'hierarchy' | 'donations';
+type Tab = 'general' | 'roster' | 'requests' | 'hierarchy' | 'donations' | 'report';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -96,6 +96,40 @@ export default function GroupSettingsScreen() {
   const [childSearchResults, setChildSearchResults] = useState<GroupSearchResult[]>([]);
   const [childSearching, setChildSearching] = useState(false);
   const [childLinking, setChildLinking] = useState(false);
+
+  // Report
+  const [reportYear, setReportYear] = useState(new Date().getFullYear());
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const generateReport = async () => {
+    if (!groupId) return;
+    setReportLoading(true);
+    try {
+      type ReportData = {
+        groupName: string; year: number; totalEvents: number; totalMembers: number;
+        members: { userId: string; displayName: string | null; email: string; going: number; no: number; noResponse: number; attendanceRate: number; totalDonatedUSD: number; totalDonatedNTD: number }[];
+      };
+      const data = await apiFetch<ReportData>(`/groups/${groupId}/report?year=${reportYear}`);
+      const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+      const row = (...cols: (string | number)[]) => cols.map(esc).join(',');
+      const lines: string[] = [];
+      lines.push(row('Group', data.groupName));
+      lines.push(row('Year', data.year));
+      lines.push(row('Total Events', data.totalEvents));
+      lines.push(row('Total Members', data.totalMembers));
+      lines.push('');
+      lines.push(row('Member', 'Attended', 'Absent', 'Unresponded', 'Attendance%', 'Donation'));
+      for (const m of data.members) {
+        const donations: string[] = [];
+        if (m.totalDonatedNTD > 0) donations.push(`$${m.totalDonatedNTD.toLocaleString()} NTD`);
+        if (m.totalDonatedUSD > 0) donations.push(`$${m.totalDonatedUSD.toLocaleString()} USD`);
+        lines.push(row(m.displayName ?? m.email, m.going, m.no, m.noResponse, `${m.attendanceRate}%`, donations.join(', ') || '—'));
+      }
+      await Share.share({ message: lines.join('\n'), title: `${data.groupName} ${data.year} Report` });
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to generate report.');
+    } finally { setReportLoading(false); }
+  };
 
   // Donations
   const [donations, setDonations] = useState<DonationRecord[]>([]);
@@ -452,6 +486,7 @@ export default function GroupSettingsScreen() {
     { key: 'requests', label: joinRequests.length > 0 ? `${zh ? '申請' : 'Requests'} (${joinRequests.length})` : (zh ? '申請' : 'Requests') },
     { key: 'donations' as Tab, label: zh ? '捐款' : 'Donations' },
     ...((isPlatformAdmin || isGroupAdmin) ? [{ key: 'hierarchy' as Tab, label: zh ? '群組架構' : 'Hierarchy' }] : []),
+    ...((isPlatformAdmin || isGroupAdmin) ? [{ key: 'report' as Tab, label: zh ? '年報' : 'Report' }] : []),
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -810,6 +845,31 @@ export default function GroupSettingsScreen() {
               ))}
             </View>
           </View>
+        </View>
+      )}
+
+      {/* Annual Report */}
+      {tab === 'report' && (isPlatformAdmin || isGroupAdmin) && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{zh ? '年度報告' : 'Annual Report'}</Text>
+          <Text style={styles.muted}>{zh ? '下載每位成員的年度出席率與捐款統計。' : 'Download per-member attendance and donation stats for any year.'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 }}>
+            <Text style={styles.fieldLabel}>{zh ? '年份' : 'Year'}</Text>
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              <TouchableOpacity style={[styles.roleBtn, { paddingHorizontal: 10 }]} onPress={() => setReportYear((y) => y - 1)}>
+                <Text style={styles.roleBtnText}>−</Text>
+              </TouchableOpacity>
+              <View style={[styles.roleBtn, { paddingHorizontal: 16 }]}>
+                <Text style={styles.roleBtnText}>{reportYear}</Text>
+              </View>
+              <TouchableOpacity style={[styles.roleBtn, { paddingHorizontal: 10 }]} onPress={() => setReportYear((y) => Math.min(y + 1, new Date().getFullYear() + 1))}>
+                <Text style={styles.roleBtnText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <TouchableOpacity style={[styles.primaryBtn, { marginTop: 12, opacity: reportLoading ? 0.5 : 1 }]} onPress={generateReport} disabled={reportLoading}>
+            <Text style={styles.primaryBtnText}>{reportLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '生成並下載報告' : 'Generate & Download Report')}</Text>
+          </TouchableOpacity>
         </View>
       )}
     </ScrollView>

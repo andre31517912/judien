@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth.context';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, apiUpload } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -17,6 +17,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [password, setPassword] = useState('');
   const [muteEmail, setMuteEmail] = useState(false);
   const [muteLinePush, setMuteLinePush] = useState(false);
+  const [muteInApp, setMuteInApp] = useState(false);
   const [lineLinked, setLineLinked] = useState(false);
   const [lineMsg, setLineMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [lineLoading, setLineLoading] = useState(false);
@@ -32,6 +33,8 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [inviteGenerating, setInviteGenerating] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
 
@@ -45,12 +48,42 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       setPassword('');
       setMuteEmail((user as any).muteEmail ?? false);
       setMuteLinePush(user.muteLinePush ?? false);
+      setMuteInApp((user as any).muteInAppNotifications ?? false);
       setLineLinked(!!user.lineUserId);
+      setPhotoUrl((user as any).photoUrl ?? null);
       if (user.role === 'ADMIN') {
         apiFetch<AdminInvite[]>('/invites').then(setAdminInvites).catch(() => {});
       }
     }
   }, [user]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoUploading(true);
+    try {
+      const { url } = await apiUpload(file);
+      await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
+      setPhotoUrl(url);
+      await refresh();
+    } catch (err: any) {
+      setMsg({ text: err.message ?? 'Photo upload failed.', ok: false });
+    } finally {
+      setPhotoUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    if (!confirm(zh ? '確定要刪除大頭照嗎？' : 'Delete your profile photo?')) return;
+    try {
+      await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
+      setPhotoUrl(null);
+      await refresh();
+    } catch (err: any) {
+      setMsg({ text: err.message ?? 'Failed to remove photo.', ok: false });
+    }
+  };
 
   // Show feedback after LINE OAuth redirect
   useEffect(() => {
@@ -75,6 +108,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       preferredLanguage: lang,
       muteEmail,
       muteLinePush,
+      muteInAppNotifications: muteInApp,
       displayName: displayName.trim(),
     };
     const storedPhone = (user as any)?.phoneE164 ?? '';
@@ -173,6 +207,37 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
         </p>
       )}
 
+      {/* Profile Photo */}
+      <div className="flex items-end gap-4 mb-6">
+        <div className="relative group">
+          {photoUrl ? (
+            <img src={photoUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
+              <svg className="w-14 h-14 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+              </svg>
+            </div>
+          )}
+          <label className={`absolute bottom-0 right-0 w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow-md transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+            <input type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </label>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-semibold text-gray-800 dark:text-white">{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">{photoUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '點擊相機圖示更換大頭照' : 'Click the camera icon to change photo')}</p>
+          {photoUrl && (
+            <button type="button" onClick={handlePhotoDelete} className="text-xs text-red-500 hover:text-red-600 text-left mt-1">
+              {zh ? '刪除大頭照' : 'Remove photo'}
+            </button>
+          )}
+        </div>
+      </div>
+
       <form onSubmit={handleSave} className="flex flex-col gap-4">
 
         <div>
@@ -233,12 +298,22 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <input type="checkbox" id="muteEmail" checked={muteEmail}
-            onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
-          <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">
-            {zh ? '靜音電子郵件通知' : 'Mute email notifications'}
-          </label>
+        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3">
+          <p className="text-sm font-medium dark:text-gray-200">{zh ? '通知設定' : 'Notification settings'}</p>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="muteInApp" checked={muteInApp}
+              onChange={(e) => setMuteInApp(e.target.checked)} className="w-4 h-4" />
+            <label htmlFor="muteInApp" className="text-sm dark:text-gray-300">
+              {zh ? '靜音所有站內通知（通知鈴鐺）' : 'Mute all in-app notifications (bell)'}
+            </label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="muteEmail" checked={muteEmail}
+              onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
+            <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">
+              {zh ? '靜音電子郵件通知' : 'Mute email notifications'}
+            </label>
+          </div>
         </div>
 
         {/* LINE account linking */}

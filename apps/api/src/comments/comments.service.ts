@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateCommentDto, UpdateCommentDto, CommentListQuery, Comment } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   private formatComment(c: any): Comment {
     return {
@@ -67,16 +71,59 @@ export class CommentsService {
     }
 
     const c = await this.prisma.comment.create({
-      data: { 
-        eventId, 
-        userId: user.id, 
+      data: {
+        eventId,
+        userId: user.id,
         body: dto.body,
         replyToId: dto.replyToId ?? null,
       },
       include: { user: { select: { id: true, email: true, displayName: true } } },
     });
-    
+
+    // Notify event creator on new top-level comment, or parent comment author on reply
+    this.notifyCommentPosted(c, event, user).catch(() => {});
+
     return this.formatComment(c);
+  }
+
+  private async notifyCommentPosted(
+    comment: { id: string; replyToId: string | null; userId: string },
+    event: { id: string; title_en: string; title_zh: string; createdById: string },
+    author: User,
+  ) {
+    const authorName = (author as any).displayName || author.email || 'Someone';
+    const eventTitle_en = event.title_en || event.title_zh || 'an event';
+    const eventTitle_zh = event.title_zh || event.title_en || '活動';
+
+    if (comment.replyToId) {
+      const parent = await this.prisma.comment.findUnique({
+        where: { id: comment.replyToId },
+        select: { userId: true },
+      });
+      if (parent && parent.userId !== author.id) {
+        await this.notifications.create({
+          userId: parent.userId,
+          type: 'COMMENT_ON_EVENT' as const,
+          title_en: `${authorName} replied to your comment`,
+          title_zh: `${authorName} 回覆了您的留言`,
+          body_en: eventTitle_en,
+          body_zh: eventTitle_zh,
+          actionUrl: `/events/${event.id}`,
+          eventId: event.id,
+        });
+      }
+    } else if (event.createdById !== author.id) {
+      await this.notifications.create({
+        userId: event.createdById,
+        type: 'COMMENT_ON_EVENT' as const,
+        title_en: `${authorName} commented on ${eventTitle_en}`,
+        title_zh: `${authorName} 在 ${eventTitle_zh} 留言`,
+        body_en: eventTitle_en,
+        body_zh: eventTitle_zh,
+        actionUrl: `/events/${event.id}`,
+        eventId: event.id,
+      });
+    }
   }
 
   /** Edit own comment only */

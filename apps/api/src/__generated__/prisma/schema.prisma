@@ -70,25 +70,33 @@ enum NotificationType {
   NEWS_PUBLISHED
   NEW_EVENT
   EVENT_BLAST
+  MEMBER_ADDED
+  MEMBER_REMOVED
+  ROLE_CHANGED
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  COMMENT_ON_EVENT
+  INVITE_ACCEPTED
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id                String   @id @default(cuid())
-  email             String?  @unique
-  passwordHash      String
-  phoneE164         String?  @unique
-  displayName       String?
-  preferredLanguage String   @default("en") // 'en' | 'zh'
-  colorTheme        String   @default("light") // 'light' | 'dark'
-  role              Role     @default(USER)
-  muteEmail         Boolean  @default(false)
-  muteLinePush      Boolean  @default(false)
-  lineUserId        String?  @unique
-  isGuest           Boolean  @default(false)
-  hasPassword       Boolean  @default(false)
-  createdAt         DateTime @default(now())
+  id                     String   @id @default(cuid())
+  email                  String?  @unique
+  passwordHash           String
+  phoneE164              String?  @unique
+  displayName            String?
+  preferredLanguage      String   @default("en") // 'en' | 'zh'
+  colorTheme             String   @default("light") // 'light' | 'dark'
+  role                   Role     @default(USER)
+  muteEmail              Boolean  @default(false)
+  muteLinePush           Boolean  @default(false)
+  muteInAppNotifications Boolean  @default(false)
+  lineUserId             String?  @unique
+  isGuest                Boolean  @default(false)
+  hasPassword            Boolean  @default(false)
+  createdAt              DateTime @default(now())
 
   events                 Event[]
   rsvps                  RSVP[]

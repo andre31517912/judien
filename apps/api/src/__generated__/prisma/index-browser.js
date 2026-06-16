@@ -133,6 +133,7 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   muteEmail: 'muteEmail',
   muteLinePush: 'muteLinePush',
+  muteInAppNotifications: 'muteInAppNotifications',
   lineUserId: 'lineUserId',
   isGuest: 'isGuest',
   hasPassword: 'hasPassword',
@@ -451,7 +452,14 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED',
   NEWS_PUBLISHED: 'NEWS_PUBLISHED',
   NEW_EVENT: 'NEW_EVENT',
-  EVENT_BLAST: 'EVENT_BLAST'
+  EVENT_BLAST: 'EVENT_BLAST',
+  MEMBER_ADDED: 'MEMBER_ADDED',
+  MEMBER_REMOVED: 'MEMBER_REMOVED',
+  ROLE_CHANGED: 'ROLE_CHANGED',
+  EVENT_UPDATED: 'EVENT_UPDATED',
+  EVENT_CANCELLED: 'EVENT_CANCELLED',
+  COMMENT_ON_EVENT: 'COMMENT_ON_EVENT',
+  INVITE_ACCEPTED: 'INVITE_ACCEPTED'
 };
 
 exports.Prisma.ModelName = {

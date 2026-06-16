@@ -146,14 +146,26 @@ export class RsvpService {
       const requestingUser = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
       const isCreatorOrAdmin = requestingUser?.role === 'ADMIN' || event.createdById === userId;
 
+      const invites = await this.prisma.eventInvite.findMany({
+        where: { eventId },
+        include: { acceptedBy: { select: { id: true, displayName: true, email: true } } },
+      });
+
+      // INVITED bucket for normal events: show direct invites (created with guestEmail set)
+      const directInvites = invites.filter((inv) => inv.guestEmail && !inv.acceptedByUserId);
+      if (directInvites.length > 0) {
+        invited = directInvites.map((inv) => ({
+          name: inv.guestName ?? inv.guestEmail ?? '',
+          email: inv.guestEmail,
+        }));
+      }
+
       if (isCreatorOrAdmin) {
         const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
+        const rsvpUserEmails = new Set(
+          rsvps.filter((r) => r.user.email).map((r) => r.user.email!.toLowerCase())
+        );
         const guestRsvpEmails = new Set(guestRsvps.map((r) => r.guestEmail.toLowerCase()));
-
-        const invites = await this.prisma.eventInvite.findMany({
-          where: { eventId },
-          include: { acceptedBy: { select: { id: true, displayName: true, email: true } } },
-        });
 
         pending = [];
         for (const inv of invites) {
@@ -163,12 +175,15 @@ export class RsvpService {
               displayName: inv.acceptedBy?.displayName ?? null,
               source: 'user' as const,
             });
-          } else if (!inv.acceptedByUserId && inv.guestEmail && !guestRsvpEmails.has(inv.guestEmail.toLowerCase())) {
-            pending.push({
-              handle: this.maskIdentifier(inv.guestEmail),
-              displayName: inv.guestName ?? null,
-              source: 'guest' as const,
-            });
+          } else if (!inv.acceptedByUserId && inv.guestEmail) {
+            const emailLower = inv.guestEmail.toLowerCase();
+            if (!guestRsvpEmails.has(emailLower) && !rsvpUserEmails.has(emailLower)) {
+              pending.push({
+                handle: this.maskIdentifier(inv.guestEmail),
+                displayName: inv.guestName ?? null,
+                source: 'guest' as const,
+              });
+            }
           }
         }
       }

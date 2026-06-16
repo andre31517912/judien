@@ -82,6 +82,34 @@ export default function EventDetailPage() {
     URL.revokeObjectURL(url);
   };
 
+  // direct invite state
+  const [directInviteId, setDirectInviteId] = useState('');
+  const [directInviteLoading, setDirectInviteLoading] = useState(false);
+  const [directInviteMsg, setDirectInviteMsg] = useState('');
+
+  const handleDirectInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!directInviteId.trim()) return;
+    setDirectInviteLoading(true);
+    setDirectInviteMsg('');
+    try {
+      const res = await apiFetch<{ displayName: string | null; status: string }>(`/events/${params.id}/direct-invite`, {
+        method: 'POST',
+        body: JSON.stringify({ identifier: directInviteId.trim() }),
+      });
+      if (res.status === 'already_rsvpd') {
+        setDirectInviteMsg(zh ? `${res.displayName ?? directInviteId} 已回覆 RSVP。` : `${res.displayName ?? directInviteId} has already RSVPed.`);
+      } else {
+        setDirectInviteMsg(zh ? `已邀請 ${res.displayName ?? directInviteId}，並已發送通知。` : `Invited ${res.displayName ?? directInviteId} and sent notification.`);
+        setDirectInviteId('');
+        setGuests(null);
+        if (showGuests) loadGuests();
+      }
+    } catch (err: unknown) {
+      setDirectInviteMsg((err as Error).message ?? (zh ? '找不到該用戶。' : 'User not found.'));
+    } finally { setDirectInviteLoading(false); }
+  };
+
   // blast state
   const [blastMsg, setBlastMsg] = useState('');
   const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
@@ -568,6 +596,35 @@ export default function EventDetailPage() {
             })()}
           </div>
         </div>
+      )}
+
+      {/* Direct invite by email/phone (event creator/admin, non-group events only) */}
+      {!event.groupId && (user?.role === 'ADMIN' || event.createdById === user?.id) && (
+        <section className="border border-dashed border-green-200 dark:border-green-900/40 rounded-xl p-5 bg-green-50/40 dark:bg-gray-900/50">
+          <h2 className="text-base font-semibold mb-1 dark:text-white">{zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{zh ? '輸入已註冊用戶的電子郵件或手機號碼，將其加入受邀名單並發送通知。' : 'Enter the email or phone of a registered user to add them to the invite list and send a notification.'}</p>
+          <form onSubmit={handleDirectInvite} className="flex gap-2 flex-wrap">
+            <input
+              type="text"
+              value={directInviteId}
+              onChange={(e) => setDirectInviteId(e.target.value)}
+              placeholder={zh ? 'Email 或手機號碼' : 'Email or phone number'}
+              className="flex-1 min-w-48 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+            />
+            <button
+              type="submit"
+              disabled={directInviteLoading || !directInviteId.trim()}
+              className="rounded-md bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+            >
+              {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
+            </button>
+          </form>
+          {directInviteMsg && (
+            <p className={`mt-2 text-sm ${directInviteMsg.startsWith('Invited') || directInviteMsg.startsWith('已邀請') ? 'text-green-600' : directInviteMsg.includes('already') || directInviteMsg.includes('已回覆') ? 'text-amber-500' : 'text-red-500'}`}>
+              {directInviteMsg}
+            </p>
+          )}
+        </section>
       )}
 
       {/* Send Message Blast (admin or event creator) */}

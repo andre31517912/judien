@@ -510,6 +510,9 @@ export class GroupsService {
       });
     });
 
+    // Notify group admins that the invite was accepted
+    this.notifyAdminsInviteAccepted(invite.groupId, user).catch(() => {});
+
     // Fire-and-forget: notify the new member of any upcoming events they missed
     this.notifyMemberOfUpcomingEvents(invite.groupId, user.id).catch(() => {});
 
@@ -684,9 +687,26 @@ export class GroupsService {
       throw new BadRequestException('Member not found in this group.');
     }
 
+    const group = await this.ensureGroupExists(groupId);
+
     await this.prisma.groupMembership.update({
       where: { groupId_userId: { groupId, userId: memberUserId } },
       data: { role },
+    });
+
+    const isPromotion = role === 'GROUP_ADMIN';
+    await this.notifications.create({
+      userId: memberUserId,
+      type: 'ROLE_CHANGED' as const,
+      title_en: isPromotion ? `You are now an admin of ${group.name}` : `Your role changed in ${group.name}`,
+      title_zh: isPromotion ? `您已成為 ${group.name} 的管理員` : `您在 ${group.name} 的角色已變更`,
+      body_en: isPromotion
+        ? `You have been promoted to group admin in "${group.name}".`
+        : `Your role has been changed to member in "${group.name}".`,
+      body_zh: isPromotion
+        ? `您在群組「${group.name}」中已升為管理員。`
+        : `您在群組「${group.name}」中的角色已變更為一般成員。`,
+      groupId,
     });
 
     return { updated: true };
@@ -700,6 +720,8 @@ export class GroupsService {
       throw new BadRequestException('You cannot remove yourself from the group using this endpoint.');
     }
 
+    const group = await this.ensureGroupExists(groupId);
+
     await this.prisma.groupMembership.upsert({
       where: { groupId_userId: { groupId, userId: memberUserId } },
       create: {
@@ -712,6 +734,16 @@ export class GroupsService {
         status: 'REMOVED',
         joinedAt: null,
       },
+    });
+
+    await this.notifications.create({
+      userId: memberUserId,
+      type: 'MEMBER_REMOVED' as const,
+      title_en: `Removed from ${group.name}`,
+      title_zh: `已從 ${group.name} 移除`,
+      body_en: `You have been removed from the group "${group.name}".`,
+      body_zh: `您已被從群組「${group.name}」中移除。`,
+      groupId,
     });
 
     return { removed: true };
@@ -774,6 +806,17 @@ export class GroupsService {
         text: `You have been added to the group "${group.name}" on Judien. Click here to view: ${groupLink}`,
       });
     }
+
+    await this.notifications.create({
+      userId: targetUser.id,
+      type: 'MEMBER_ADDED' as const,
+      title_en: `Added to ${group.name}`,
+      title_zh: `已加入 ${group.name}`,
+      body_en: `You have been added to the group "${group.name}".`,
+      body_zh: `您已被加入群組「${group.name}」。`,
+      actionUrl: `/groups/${groupId}`,
+      groupId,
+    });
 
     // Fire-and-forget: surface upcoming events for the newly-added member
     this.notifyMemberOfUpcomingEvents(groupId, targetUser.id).catch(() => {});
@@ -1019,6 +1062,29 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group not found.');
     return group;
+  }
+
+  private async notifyAdminsInviteAccepted(groupId: string, newMember: User) {
+    const group = await this.prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
+    if (!group) return;
+    const admins = await this.prisma.groupMembership.findMany({
+      where: { groupId, role: 'GROUP_ADMIN', status: 'ACCEPTED', userId: { not: newMember.id } },
+      select: { userId: true },
+    });
+    if (!admins.length) return;
+    const memberName = (newMember as any).displayName || newMember.email || 'Someone';
+    await this.notifications.createMany(
+      admins.map((a) => ({
+        userId: a.userId,
+        type: 'INVITE_ACCEPTED' as const,
+        title_en: `${memberName} joined ${group.name}`,
+        title_zh: `${memberName} 已加入 ${group.name}`,
+        body_en: `${memberName} accepted their invitation and joined the group.`,
+        body_zh: `${memberName} 已接受邀請並加入群組。`,
+        actionUrl: `/admin/groups/${groupId}/settings`,
+        groupId,
+      })),
+    );
   }
 
   // Notify a newly-added member of upcoming events they may have missed (up to 5, next 60 days).

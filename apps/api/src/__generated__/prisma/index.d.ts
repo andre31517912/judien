@@ -198,7 +198,14 @@ export const NotificationType: {
   GROUP_INVITE_RECEIVED: 'GROUP_INVITE_RECEIVED',
   NEWS_PUBLISHED: 'NEWS_PUBLISHED',
   NEW_EVENT: 'NEW_EVENT',
-  EVENT_BLAST: 'EVENT_BLAST'
+  EVENT_BLAST: 'EVENT_BLAST',
+  MEMBER_ADDED: 'MEMBER_ADDED',
+  MEMBER_REMOVED: 'MEMBER_REMOVED',
+  ROLE_CHANGED: 'ROLE_CHANGED',
+  EVENT_UPDATED: 'EVENT_UPDATED',
+  EVENT_CANCELLED: 'EVENT_CANCELLED',
+  COMMENT_ON_EVENT: 'COMMENT_ON_EVENT',
+  INVITE_ACCEPTED: 'INVITE_ACCEPTED'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -3130,6 +3137,7 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteEmail: boolean | null
     muteLinePush: boolean | null
+    muteInAppNotifications: boolean | null
     lineUserId: string | null
     isGuest: boolean | null
     hasPassword: boolean | null
@@ -3147,6 +3155,7 @@ export namespace Prisma {
     role: $Enums.Role | null
     muteEmail: boolean | null
     muteLinePush: boolean | null
+    muteInAppNotifications: boolean | null
     lineUserId: string | null
     isGuest: boolean | null
     hasPassword: boolean | null
@@ -3164,6 +3173,7 @@ export namespace Prisma {
     role: number
     muteEmail: number
     muteLinePush: number
+    muteInAppNotifications: number
     lineUserId: number
     isGuest: number
     hasPassword: number
@@ -3183,6 +3193,7 @@ export namespace Prisma {
     role?: true
     muteEmail?: true
     muteLinePush?: true
+    muteInAppNotifications?: true
     lineUserId?: true
     isGuest?: true
     hasPassword?: true
@@ -3200,6 +3211,7 @@ export namespace Prisma {
     role?: true
     muteEmail?: true
     muteLinePush?: true
+    muteInAppNotifications?: true
     lineUserId?: true
     isGuest?: true
     hasPassword?: true
@@ -3217,6 +3229,7 @@ export namespace Prisma {
     role?: true
     muteEmail?: true
     muteLinePush?: true
+    muteInAppNotifications?: true
     lineUserId?: true
     isGuest?: true
     hasPassword?: true
@@ -3307,6 +3320,7 @@ export namespace Prisma {
     role: $Enums.Role
     muteEmail: boolean
     muteLinePush: boolean
+    muteInAppNotifications: boolean
     lineUserId: string | null
     isGuest: boolean
     hasPassword: boolean
@@ -3341,6 +3355,7 @@ export namespace Prisma {
     role?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
@@ -3383,6 +3398,7 @@ export namespace Prisma {
     role?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
@@ -3400,6 +3416,7 @@ export namespace Prisma {
     role?: boolean
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
@@ -3474,6 +3491,7 @@ export namespace Prisma {
       role: $Enums.Role
       muteEmail: boolean
       muteLinePush: boolean
+      muteInAppNotifications: boolean
       lineUserId: string | null
       isGuest: boolean
       hasPassword: boolean
@@ -3905,6 +3923,7 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'Role'>
     readonly muteEmail: FieldRef<"User", 'Boolean'>
     readonly muteLinePush: FieldRef<"User", 'Boolean'>
+    readonly muteInAppNotifications: FieldRef<"User", 'Boolean'>
     readonly lineUserId: FieldRef<"User", 'String'>
     readonly isGuest: FieldRef<"User", 'Boolean'>
     readonly hasPassword: FieldRef<"User", 'Boolean'>
@@ -24434,6 +24453,7 @@ export namespace Prisma {
     role: 'role',
     muteEmail: 'muteEmail',
     muteLinePush: 'muteLinePush',
+    muteInAppNotifications: 'muteInAppNotifications',
     lineUserId: 'lineUserId',
     isGuest: 'isGuest',
     hasPassword: 'hasPassword',
@@ -25004,6 +25024,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteEmail?: BoolFilter<"User"> | boolean
     muteLinePush?: BoolFilter<"User"> | boolean
+    muteInAppNotifications?: BoolFilter<"User"> | boolean
     lineUserId?: StringNullableFilter<"User"> | string | null
     isGuest?: BoolFilter<"User"> | boolean
     hasPassword?: BoolFilter<"User"> | boolean
@@ -25045,6 +25066,7 @@ export namespace Prisma {
     role?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
+    muteInAppNotifications?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
@@ -25090,6 +25112,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     muteEmail?: BoolFilter<"User"> | boolean
     muteLinePush?: BoolFilter<"User"> | boolean
+    muteInAppNotifications?: BoolFilter<"User"> | boolean
     isGuest?: BoolFilter<"User"> | boolean
     hasPassword?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -25130,6 +25153,7 @@ export namespace Prisma {
     role?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
+    muteInAppNotifications?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
@@ -25153,6 +25177,7 @@ export namespace Prisma {
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     muteEmail?: BoolWithAggregatesFilter<"User"> | boolean
     muteLinePush?: BoolWithAggregatesFilter<"User"> | boolean
+    muteInAppNotifications?: BoolWithAggregatesFilter<"User"> | boolean
     lineUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
     isGuest?: BoolWithAggregatesFilter<"User"> | boolean
     hasPassword?: BoolWithAggregatesFilter<"User"> | boolean
@@ -26769,6 +26794,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -26810,6 +26836,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -26851,6 +26878,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -26892,6 +26920,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -26933,6 +26962,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -26950,6 +26980,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -26967,6 +26998,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -28875,6 +28907,7 @@ export namespace Prisma {
     role?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
+    muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
@@ -28892,6 +28925,7 @@ export namespace Prisma {
     role?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
+    muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
@@ -28909,6 +28943,7 @@ export namespace Prisma {
     role?: SortOrder
     muteEmail?: SortOrder
     muteLinePush?: SortOrder
+    muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
@@ -34662,6 +34697,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -34702,6 +34738,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -35035,6 +35072,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -35075,6 +35113,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -35416,6 +35455,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -35456,6 +35496,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -35583,6 +35624,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -35623,6 +35665,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -35799,6 +35842,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -35839,6 +35883,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36018,6 +36063,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36058,6 +36104,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36238,6 +36285,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36278,6 +36326,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36323,6 +36372,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36363,6 +36413,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36490,6 +36541,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36530,6 +36582,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36581,6 +36634,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36621,6 +36675,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36726,6 +36781,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36766,6 +36822,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -36893,6 +36950,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -36933,6 +36991,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -37038,6 +37097,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -37078,6 +37138,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -37260,6 +37321,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -37300,6 +37362,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -37440,6 +37503,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -37480,6 +37544,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -37595,6 +37660,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -37635,6 +37701,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -37876,6 +37943,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -37916,6 +37984,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -38043,6 +38112,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -38083,6 +38153,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -38176,6 +38247,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -38216,6 +38288,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -38331,6 +38404,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -38371,6 +38445,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -38411,6 +38486,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -38451,6 +38527,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39014,6 +39091,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39054,6 +39132,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39345,6 +39424,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39385,6 +39465,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39483,6 +39564,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39523,6 +39605,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39579,6 +39662,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39619,6 +39703,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39729,6 +39814,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39769,6 +39855,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -39809,6 +39896,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39849,6 +39937,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39894,6 +39983,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -39934,6 +40024,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40043,6 +40134,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40083,6 +40175,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40134,6 +40227,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40174,6 +40268,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40326,6 +40421,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40366,6 +40462,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40411,6 +40508,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40451,6 +40549,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40566,6 +40665,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40606,6 +40706,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40657,6 +40758,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40697,6 +40799,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -40843,6 +40946,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40883,6 +40987,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40928,6 +41033,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -40968,6 +41074,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41142,6 +41249,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41182,6 +41290,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41233,6 +41342,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41273,6 +41383,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41366,6 +41477,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41406,6 +41518,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41451,6 +41564,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41491,6 +41605,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41606,6 +41721,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41646,6 +41762,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41697,6 +41814,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41737,6 +41855,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41777,6 +41896,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41817,6 +41937,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41862,6 +41983,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41902,6 +42024,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -41958,6 +42081,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -41998,6 +42122,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -42049,6 +42174,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -42089,6 +42215,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -42129,6 +42256,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -42169,6 +42297,7 @@ export namespace Prisma {
     role?: $Enums.Role
     muteEmail?: boolean
     muteLinePush?: boolean
+    muteInAppNotifications?: boolean
     lineUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
@@ -42278,6 +42407,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
@@ -42318,6 +42448,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     muteEmail?: BoolFieldUpdateOperationsInput | boolean
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean

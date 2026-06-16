@@ -276,7 +276,44 @@ export class EventsService {
       }
     }
 
-    return this.prisma.event.update({ where: { id }, data: dto });
+    const updated = await this.prisma.event.update({ where: { id }, data: dto });
+
+    // Notify group members when significant fields change
+    if (event.groupId && actor) {
+      const significantChange =
+        (dto.startAt !== undefined && dto.startAt !== event.startAt?.toISOString()) ||
+        (dto.endAt !== undefined && dto.endAt !== (event.endAt?.toISOString() ?? null)) ||
+        (dto.location_en !== undefined && dto.location_en !== event.location_en) ||
+        (dto.location_zh !== undefined && dto.location_zh !== event.location_zh) ||
+        (dto.title_en !== undefined && dto.title_en !== event.title_en) ||
+        (dto.title_zh !== undefined && dto.title_zh !== event.title_zh);
+
+      if (significantChange) {
+        const members = await this.prisma.groupMembership.findMany({
+          where: { groupId: event.groupId, status: 'ACCEPTED', userId: { not: actor.id } },
+          select: { userId: true },
+        });
+        if (members.length) {
+          const title_en = updated.title_en || updated.title_zh;
+          const title_zh = updated.title_zh || updated.title_en;
+          await this.notifications.createMany(
+            members.map(({ userId }) => ({
+              userId,
+              type: 'EVENT_UPDATED' as const,
+              title_en: `Event updated: ${title_en}`,
+              title_zh: `活動已更新：${title_zh}`,
+              body_en: new Date(updated.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
+              body_zh: new Date(updated.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
+              actionUrl: `/events/${id}`,
+              groupId: event.groupId!,
+              eventId: id,
+            })),
+          );
+        }
+      }
+    }
+
+    return updated;
   }
 
   async remove(id: string, actor?: User) {
@@ -293,7 +330,94 @@ export class EventsService {
       }
     }
 
+    // Notify GOING RSVPers before deleting so the data is still accessible
+    if (event.groupId) {
+      const goingRsvps = await this.prisma.rSVP.findMany({
+        where: { eventId: id, status: 'GOING' },
+        select: { userId: true },
+      });
+      const recipientIds = goingRsvps
+        .map((r) => r.userId)
+        .filter((uid) => uid !== actor?.id);
+      if (recipientIds.length) {
+        const title_en = event.title_en || event.title_zh;
+        const title_zh = event.title_zh || event.title_en;
+        await this.notifications.createMany(
+          recipientIds.map((userId) => ({
+            userId,
+            type: 'EVENT_CANCELLED' as const,
+            title_en: `Event cancelled: ${title_en}`,
+            title_zh: `活動已取消：${title_zh}`,
+            body_en: `This event has been cancelled.`,
+            body_zh: `此活動已取消。`,
+            groupId: event.groupId!,
+          })),
+        );
+      }
+    }
+
     await this.prisma.event.delete({ where: { id } });
+  }
+
+  async directInvite(eventId: string, identifier: string, actor: User) {
+    const event = await this.ensureExists(eventId);
+
+    const isCreatorOrAdmin = actor.role === 'ADMIN' || event.createdById === actor.id;
+    if (!isCreatorOrAdmin) {
+      throw new ForbiddenException('Only the event creator or platform admin can directly invite users.');
+    }
+
+    const normalizedIdentifier = identifier.trim();
+    const isEmail = normalizedIdentifier.includes('@');
+    const foundUser = await this.prisma.user.findFirst({
+      where: isEmail
+        ? { email: normalizedIdentifier.toLowerCase() }
+        : { phoneE164: normalizedIdentifier },
+      select: { id: true, displayName: true, email: true, phoneE164: true },
+    });
+    if (!foundUser) throw new NotFoundException('No user found with that email or phone number.');
+    if (foundUser.id === actor.id) throw new ForbiddenException('You cannot invite yourself.');
+
+    const existingRsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId: foundUser.id } },
+    });
+    if (existingRsvp) {
+      return { userId: foundUser.id, displayName: foundUser.displayName, status: 'already_rsvpd' as const };
+    }
+
+    // Create EventInvite record to track direct invite (guestEmail = their email for pending tracking)
+    if (foundUser.email) {
+      const existing = await this.prisma.eventInvite.findFirst({
+        where: { eventId, guestEmail: foundUser.email },
+      });
+      if (!existing) {
+        await this.prisma.eventInvite.create({
+          data: {
+            eventId,
+            token: randomBytes(32).toString('hex'),
+            expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+            createdById: actor.id,
+            guestEmail: foundUser.email,
+            guestName: foundUser.displayName ?? '',
+          },
+        });
+      }
+    }
+
+    const title_en = event.title_en || event.title_zh;
+    const title_zh = event.title_zh || event.title_en;
+    await this.notifications.createMany([{
+      userId: foundUser.id,
+      type: 'EVENT_INVITE' as const,
+      title_en: `You've been invited to ${title_en}`,
+      title_zh: `您被邀請參加 ${title_zh}`,
+      body_en: 'You have been personally invited to this event. Tap to view details.',
+      body_zh: '您收到了此活動的個人邀請，點擊查看詳情。',
+      actionUrl: `/events/${eventId}`,
+      eventId,
+    }]);
+
+    return { userId: foundUser.id, displayName: foundUser.displayName, status: 'invited' as const };
   }
 
   async inviteMembers(eventId: string, userIds: string[], actor: User) {

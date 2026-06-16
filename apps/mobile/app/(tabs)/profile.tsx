@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
-import { apiFetch } from '../../lib/api';
+import { apiFetch, apiUpload } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useRouter, Stack } from 'expo-router';
 import JLogo from '../../components/JLogo';
 import i18n from '../../lib/i18n';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const { user, logout, refresh } = useAuth();
@@ -20,8 +21,11 @@ export default function ProfileScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [muteEmail, setMuteEmail] = useState(false);
+  const [muteInApp, setMuteInApp] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('en');
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
 
@@ -32,11 +36,51 @@ export default function ProfileScreen() {
       setEmail(isLineOnlyEmail(rawEmail) ? '' : rawEmail);
       setPhone((user as any)?.phoneE164 ?? '');
       setMuteEmail((user as any).muteEmail ?? false);
+      setMuteInApp((user as any).muteInAppNotifications ?? false);
       const savedLang = user.preferredLanguage as 'en' | 'zh';
       setLang(savedLang);
       i18n.changeLanguage(savedLang);
+      setPhotoUrl((user as any).photoUrl ?? null);
     }
   }, [user]);
+
+  const handlePickPhoto = async () => {
+    Alert.alert(
+      zh ? '大頭照' : 'Profile Photo',
+      '',
+      [
+        {
+          text: zh ? '上傳新照片' : 'Upload New Photo',
+          onPress: async () => {
+            const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
+            const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+            if (result.canceled) return;
+            setPhotoUploading(true);
+            try {
+              const { url } = await apiUpload(result.assets[0].uri);
+              await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
+              setPhotoUrl(url);
+              await refresh();
+            } catch (err: any) { Alert.alert('Error', err.message ?? 'Upload failed'); }
+            finally { setPhotoUploading(false); }
+          },
+        },
+        ...(photoUrl ? [{
+          text: zh ? '刪除照片' : 'Remove Photo',
+          style: 'destructive' as const,
+          onPress: async () => {
+            try {
+              await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
+              setPhotoUrl(null);
+              await refresh();
+            } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed'); }
+          },
+        }] : []),
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
 
   const handleSave = async () => {
     const storedEmail = (user as any)?.email ?? '';
@@ -44,7 +88,7 @@ export default function ProfileScreen() {
     const isLineEmail = isLineOnlyEmail(storedEmail);
     const displayedEmail = isLineEmail ? '' : storedEmail;
 
-    const body: Record<string, unknown> = { preferredLanguage: lang, muteEmail };
+    const body: Record<string, unknown> = { preferredLanguage: lang, muteEmail, muteInAppNotifications: muteInApp };
     if (displayName.trim() && displayName.trim() !== ((user as any)?.displayName ?? '')) body.displayName = displayName.trim();
     if (phone.trim() !== storedPhone) body.phone = phone.trim() || null;
     if (email.trim() !== displayedEmail) {
@@ -90,6 +134,26 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      {/* Profile Photo */}
+      <View style={styles.photoSection}>
+        <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.photoWrapper}>
+          {photoUrl ? (
+            <Image source={{ uri: photoUrl }} style={styles.photoAvatar} />
+          ) : (
+            <View style={styles.photoPlaceholder}>
+              <Text style={styles.photoPlaceholderIcon}>👤</Text>
+            </View>
+          )}
+          <View style={styles.cameraBtn}>
+            <Text style={styles.cameraBtnText}>{photoUploading ? '…' : '📷'}</Text>
+          </View>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.photoName}>{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</Text>
+          <Text style={styles.photoHint}>{zh ? '點擊相機更換大頭照' : 'Tap camera to change photo'}</Text>
+        </View>
+      </View>
+
       <Text style={styles.label}>{zh ? '全名' : 'Full Name'}</Text>
       <TextInput
         style={styles.input}
@@ -123,9 +187,16 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <View style={styles.muteRow}>
-        <Text style={styles.label}>{t('profile.muteEmail')}</Text>
-        <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
+      <View style={styles.notifCard}>
+        <Text style={[styles.label, { marginTop: 0, marginBottom: 10 }]}>{zh ? '通知設定' : 'Notification settings'}</Text>
+        <View style={styles.muteRow}>
+          <Text style={styles.muteLabel}>{zh ? '靜音所有站內通知' : 'Mute in-app notifications'}</Text>
+          <Switch value={muteInApp} onValueChange={setMuteInApp} trackColor={{ true: '#4F46E5' }} />
+        </View>
+        <View style={[styles.muteRow, { marginTop: 10 }]}>
+          <Text style={styles.muteLabel}>{t('profile.muteEmail')}</Text>
+          <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: '#4F46E5' }} />
+        </View>
       </View>
 
       <Text style={styles.label}>{t('auth.phone')}</Text>
@@ -198,13 +269,24 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     roleBadgeText: { fontSize: 12, fontWeight: '600' },
     roleBadgeTextAdmin: { color: '#4338CA' },
     roleBadgeTextUser: { color: '#16A34A' },
+    photoSection: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20, paddingVertical: 8 },
+    photoWrapper: { position: 'relative', width: 80, height: 80 },
+    photoAvatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#E5E7EB' },
+    photoPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
+    photoPlaceholderIcon: { fontSize: 40 },
+    cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+    cameraBtnText: { fontSize: 14 },
+    photoName: { fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 4 },
+    photoHint: { fontSize: 12, color: colors.placeholder },
     label: { fontSize: 14, fontWeight: '500', color: colors.text, marginBottom: 6, marginTop: 14 },
     rowGroup: { flexDirection: 'row', gap: 10 },
     optBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10, backgroundColor: colors.card },
     optBtnActive: { backgroundColor: '#4F46E5', borderColor: '#4F46E5' },
     optBtnText: { color: colors.text, fontSize: 14 },
     optBtnTextActive: { color: '#fff' },
-    muteRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+    notifCard: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 16, marginTop: 14 },
+    muteRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    muteLabel: { fontSize: 14, color: colors.text, flex: 1, marginRight: 8 },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, fontSize: 15, marginBottom: 4, backgroundColor: colors.input, color: colors.inputText },
     btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 20 },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },

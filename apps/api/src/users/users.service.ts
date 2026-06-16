@@ -46,6 +46,8 @@ export class UsersService {
     if (dto.colorTheme !== undefined) data.colorTheme = dto.colorTheme;
     if (dto.muteEmail !== undefined) data.muteEmail = dto.muteEmail;
     if (dto.muteLinePush !== undefined) data.muteLinePush = dto.muteLinePush;
+    if (dto.muteInAppNotifications !== undefined) data.muteInAppNotifications = dto.muteInAppNotifications;
+    if (dto.photoUrl !== undefined) data.photoUrl = dto.photoUrl;
     if (dto.password) {
       data.passwordHash = await bcrypt.hash(dto.password, 12);
       data.hasPassword = true;

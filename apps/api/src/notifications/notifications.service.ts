@@ -26,19 +26,26 @@ export class NotificationsService {
   ) {}
 
   async create(input: CreateNotificationInput) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: input.userId },
+      select: { muteInAppNotifications: true },
+    });
+    if ((user as any)?.muteInAppNotifications) return null;
     const notification = await this.prisma.notification.create({ data: input });
-    // LINE push disabled — re-enable when LINE Messaging API is active
-    // this.sendLinePushForNotification(input).catch(() => {});
     return notification;
   }
 
   async createMany(inputs: CreateNotificationInput[]) {
     if (!inputs.length) return;
-    const result = await this.prisma.notification.createMany({ data: inputs });
-    // LINE push disabled — re-enable when LINE Messaging API is active
-    // for (const input of inputs) {
-    //   this.sendLinePushForNotification(input).catch(() => {});
-    // }
+    const userIds = [...new Set(inputs.map((i) => i.userId))];
+    const mutedUsers = await this.prisma.user.findMany({
+      where: { id: { in: userIds }, muteInAppNotifications: true } as any,
+      select: { id: true },
+    });
+    const mutedSet = new Set(mutedUsers.map((u) => u.id));
+    const filtered = inputs.filter((i) => !mutedSet.has(i.userId));
+    if (!filtered.length) return;
+    const result = await this.prisma.notification.createMany({ data: filtered });
     return result;
   }
 

@@ -91,6 +91,11 @@ export default function EventDetailScreen() {
   const [blastSending, setBlastSending] = useState(false);
   const [blastResult, setBlastResult] = useState('');
 
+  const [directInviteId, setDirectInviteId] = useState('');
+  const [directInviteLoading, setDirectInviteLoading] = useState(false);
+  const [directInviteMsg, setDirectInviteMsg] = useState('');
+  const [showDirectInvite, setShowDirectInvite] = useState(false);
+
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
       .then((ev) => { setEvent(ev); setMyRsvp(ev.myRsvp); })
@@ -188,6 +193,27 @@ export default function EventDetailScreen() {
     for (const g of (guests.NO ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},"Not Going"`);
     for (const g of (guests.PENDING ?? [])) rows.push(`${esc(g.displayName ?? g.handle ?? '')},Unresponded`);
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
+  };
+
+  const handleDirectInvite = async () => {
+    if (!directInviteId.trim()) return;
+    setDirectInviteLoading(true);
+    setDirectInviteMsg('');
+    try {
+      const res = await apiFetch<{ displayName: string | null; status: string }>(`/events/${id}/direct-invite`, {
+        method: 'POST',
+        body: JSON.stringify({ identifier: directInviteId.trim() }),
+      });
+      if (res.status === 'already_rsvpd') {
+        setDirectInviteMsg(zh ? `${res.displayName ?? directInviteId} 已回覆 RSVP。` : `${res.displayName ?? directInviteId} has already RSVPed.`);
+      } else {
+        setDirectInviteMsg(zh ? `已邀請 ${res.displayName ?? directInviteId}。` : `Invited ${res.displayName ?? directInviteId}.`);
+        setDirectInviteId('');
+        setGuests(null);
+      }
+    } catch (err: any) {
+      setDirectInviteMsg(err.message ?? (zh ? '找不到該用戶。' : 'User not found.'));
+    } finally { setDirectInviteLoading(false); }
   };
 
   const handleBlastSend = async () => {
@@ -417,6 +443,39 @@ export default function EventDetailScreen() {
                   </TouchableOpacity>
                   {!!blastResult && (
                     <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444' }]}>{blastResult}</Text>
+                  )}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Direct Invite (event creator/admin, non-group events only) */}
+          {!event.groupId && (isAdmin || event.createdById === user?.id) && (
+            <View style={styles.blastSection}>
+              <TouchableOpacity onPress={() => setShowDirectInvite(!showDirectInvite)} style={styles.blastToggle}>
+                <Text style={styles.blastToggleText}>✉️ {zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</Text>
+              </TouchableOpacity>
+              {showDirectInvite && (
+                <View style={styles.blastForm}>
+                  <Text style={styles.blastLabel}>{zh ? '輸入已註冊用戶的 Email 或手機號碼' : 'Enter email or phone of a registered user'}</Text>
+                  <TextInput
+                    style={styles.blastInput}
+                    placeholder={zh ? 'Email 或手機號碼' : 'Email or phone number'}
+                    placeholderTextColor={colors.placeholder}
+                    value={directInviteId}
+                    onChangeText={setDirectInviteId}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                  />
+                  <TouchableOpacity
+                    style={[styles.blastSendBtn, { backgroundColor: '#16A34A', opacity: directInviteLoading || !directInviteId.trim() ? 0.5 : 1 }]}
+                    onPress={handleDirectInvite}
+                    disabled={directInviteLoading || !directInviteId.trim()}
+                  >
+                    <Text style={styles.blastSendBtnText}>{directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}</Text>
+                  </TouchableOpacity>
+                  {!!directInviteMsg && (
+                    <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
                   )}
                 </View>
               )}

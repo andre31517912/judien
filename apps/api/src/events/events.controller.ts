@@ -117,4 +117,15 @@ export class EventsController {
   ) {
     return this.eventsService.inviteMembers(id, dto.userIds, user);
   }
+
+  // POST /api/events/:id/direct-invite — invite user by email or phone (event creator/admin only)
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/direct-invite')
+  directInvite(
+    @Param('id') id: string,
+    @Body() body: { identifier: string },
+    @CurrentUser() user: User,
+  ) {
+    return this.eventsService.directInvite(id, body?.identifier ?? '', user);
+  }
 }

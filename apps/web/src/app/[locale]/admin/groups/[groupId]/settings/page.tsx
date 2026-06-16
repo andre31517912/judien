@@ -212,57 +212,36 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     members: { userId: string; displayName: string | null; email: string; totalEvents: number; going: number; no: number; noResponse: number; attendanceRate: number; totalDonatedUSD: number; totalDonatedNTD: number }[];
   };
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
-  const [reportData, setReportData] = useState<ReportData | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
-  const [reportExpanded, setReportExpanded] = useState<Record<string, boolean>>({});
 
-  const loadReport = async (year: number) => {
+  const generateReport = async () => {
     setReportLoading(true);
-    setReportData(null);
     try {
-      const data = await apiFetch<ReportData>(`/groups/${params.groupId}/report?year=${year}`);
-      setReportData(data);
+      const data = await apiFetch<ReportData>(`/groups/${params.groupId}/report?year=${reportYear}`);
+      const csvEscape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+      const row = (...cols: (string | number)[]) => cols.map(csvEscape).join(',');
+      const lines: string[] = [];
+      lines.push(row('Group', data.groupName));
+      lines.push(row('Year', data.year));
+      lines.push(row('Total Events', data.totalEvents));
+      lines.push(row('Total Members', data.totalMembers));
+      lines.push('');
+      lines.push(row('Member', 'Attended', 'Absent', 'Unresponded', 'Attendance%', 'Donation'));
+      for (const m of data.members) {
+        const donations: string[] = [];
+        if (m.totalDonatedNTD > 0) donations.push(`$${m.totalDonatedNTD.toLocaleString()} NTD`);
+        if (m.totalDonatedUSD > 0) donations.push(`$${m.totalDonatedUSD.toLocaleString()} USD`);
+        lines.push(row(m.displayName ?? m.email, m.going, m.no, m.noResponse, `${m.attendanceRate}%`, donations.join(', ') || '—'));
+      }
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.groupName}_report_${data.year}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
     finally { setReportLoading(false); }
-  };
-
-  const exportReportToCsv = (data: ReportData) => {
-    const csvEscape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
-    const row = (...cols: (string | number)[]) => cols.map(csvEscape).join(',');
-
-    const lines: string[] = [];
-
-    // Summary section
-    lines.push(row('Group', data.groupName));
-    lines.push(row('Year', data.year));
-    lines.push(row('Total Events', data.totalEvents));
-    lines.push(row('Total Members', data.totalMembers));
-    lines.push('');
-
-    // Member stats section
-    lines.push(row('Member', 'Email', 'Going', 'No', 'No Response', 'Attendance %', 'Donated USD', 'Donated NTD'));
-    for (const m of data.members) {
-      lines.push(row(m.displayName ?? m.email, m.email, m.going, m.no, m.noResponse, m.attendanceRate, m.totalDonatedUSD, m.totalDonatedNTD));
-    }
-    lines.push('');
-
-    // Per-event breakdown
-    for (const ev of data.events) {
-      lines.push(row('Event', ev.title, new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })));
-      lines.push(row('Member', 'Email', 'RSVP'));
-      for (const r of ev.memberRsvps) {
-        lines.push(row(r.displayName ?? r.email, r.email, r.status ?? 'No Response'));
-      }
-      lines.push('');
-    }
-
-    const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${data.groupName}_report_${data.year}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const handleImportMembers = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1447,119 +1426,10 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               onChange={(e) => setReportYear(parseInt(e.target.value) || new Date().getFullYear())}
               className="w-28 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
-            <button onClick={() => loadReport(reportYear)} disabled={reportLoading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <button onClick={generateReport} disabled={reportLoading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {reportLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '生成報告' : 'Generate Report')}
             </button>
-            {reportData && (
-              <button
-                onClick={() => exportReportToCsv(reportData)}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {zh ? '匯出 CSV' : 'Export CSV'}
-              </button>
-            )}
           </div>
-
-          {reportData && (
-            <div className="mt-6 space-y-6">
-
-              {/* Summary row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[{label: zh ? '總活動數' : 'Total Events', value: reportData.totalEvents}, {label: zh ? '總成員數' : 'Members', value: reportData.totalMembers}].map((s) => (
-                  <div key={s.label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 text-center">
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Member summary table */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '成員統計' : 'Member Summary'}</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✓ {zh ? '參加' : 'Going'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">✗ {zh ? '不參加' : 'No'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">– {zh ? '未回應' : 'No resp.'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-center">{zh ? '出席率' : 'Attendance'}</th>
-                        <th className="pb-2 pr-4 font-medium text-gray-500 dark:text-gray-400 text-right">USD</th>
-                        <th className="pb-2 font-medium text-gray-500 dark:text-gray-400 text-right">NTD</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                      {reportData.members.map((m) => (
-                        <tr key={m.userId}>
-                          <td className="py-2 pr-4 text-gray-900 dark:text-white">{m.displayName ?? m.email}</td>
-                          <td className="py-2 pr-4 text-center text-green-600">{m.going}</td>
-                          <td className="py-2 pr-4 text-center text-red-500">{m.no}</td>
-                          <td className="py-2 pr-4 text-center text-gray-400">{m.noResponse}</td>
-                          <td className="py-2 pr-4 text-center">
-                            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              m.attendanceRate >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : m.attendanceRate >= 50 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                              : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                            }`}>{m.attendanceRate}%</span>
-                          </td>
-                          <td className="py-2 pr-4 text-right font-mono text-gray-700 dark:text-gray-300">{m.totalDonatedUSD > 0 ? m.totalDonatedUSD.toLocaleString() : '—'}</td>
-                          <td className="py-2 text-right font-mono text-gray-700 dark:text-gray-300">{m.totalDonatedNTD > 0 ? m.totalDonatedNTD.toLocaleString() : '—'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Per-event breakdown */}
-              {reportData.events.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{zh ? '活動明細' : 'Event Breakdown'}</h3>
-                  <div className="space-y-2">
-                    {reportData.events.map((ev) => (
-                      <div key={ev.id} className="rounded-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
-                        <button
-                          onClick={() => setReportExpanded((p) => ({ ...p, [ev.id]: !p[ev.id] }))}
-                          className="w-full flex items-center justify-between px-4 py-3 text-left bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                        >
-                          <div>
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">{ev.title}</span>
-                            <span className="ml-3 text-xs text-gray-400 dark:text-gray-500">{new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}</span>
-                          </div>
-                          <span className="text-xs text-gray-400">{reportExpanded[ev.id] ? '▲' : '▼'}</span>
-                        </button>
-                        {reportExpanded[ev.id] && (
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead>
-                                <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
-                                  <th className="px-4 py-2 font-medium text-gray-500 dark:text-gray-400">{zh ? '成員' : 'Member'}</th>
-                                  <th className="px-4 py-2 font-medium text-gray-500 dark:text-gray-400">{zh ? '多婆證' : 'RSVP'}</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
-                                {ev.memberRsvps.map((r) => (
-                                  <tr key={r.userId}>
-                                    <td className="px-4 py-2 text-gray-900 dark:text-white">{r.displayName ?? r.email}</td>
-                                    <td className="px-4 py-2">
-                                      {r.status === 'GOING' ? <span className="text-green-600 font-medium">✓ {zh ? '參加' : 'Going'}</span>
-                                      : r.status === 'NO' ? <span className="text-red-500">✗ {zh ? '不參加' : 'No'}</span>
-                                      : <span className="text-gray-300 dark:text-gray-600">– {zh ? '未回應' : 'No response'}</span>}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </section>
 
         {/* ─── Danger Zone ───────────────────────────────────────────────── */}

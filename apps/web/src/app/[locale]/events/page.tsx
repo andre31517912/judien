@@ -486,6 +486,42 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
   const fee = event.feeAmount
     ? `${event.feeCurrency} ${event.feeAmount}`
     : zh ? '免費' : 'Free';
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExporting(true);
+    try {
+      type GuestEntry = { handle: string; displayName: string | null };
+      type InvitedEntry = { name: string; email?: string };
+      const guests = await apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${event.id}/rsvp/guests`);
+      const esc = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
+      const lines: string[] = [];
+      lines.push(`Title,${esc(title)}`);
+      lines.push(`Date,${esc(startDate)}`);
+      if (location) lines.push(`Location,${esc(location)}`);
+      lines.push(`Fee,${esc(fee)}`);
+      if (event.groupName) lines.push(`Group,${esc(event.groupName)}`);
+      lines.push('');
+      const invited = (guests.INVITED ?? []).map((g) => g.name);
+      const going = guests.GOING.map((g) => g.displayName ?? g.handle);
+      const notGoing = guests.NO.map((g) => g.displayName ?? g.handle);
+      const unresponded = (guests.PENDING ?? []).map((g) => g.displayName ?? g.handle);
+      lines.push('Invited,Going,Not Going,Unresponded');
+      const maxLen = Math.max(invited.length, going.length, notGoing.length, unresponded.length);
+      for (let i = 0; i < maxLen; i++) {
+        lines.push([invited[i] ?? '', going[i] ?? '', notGoing[i] ?? '', unresponded[i] ?? ''].map(esc).join(','));
+      }
+      const blob = new Blob([lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `event-${event.id}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch { /* ignore */ } finally { setExporting(false); }
+  };
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-md transition border border-gray-100 dark:border-gray-800">
@@ -509,6 +545,15 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
           </p>
         </div>
       </Link>
+      <div className="px-4 pb-3 pt-0">
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 border border-gray-200 dark:border-gray-700 rounded-md px-2.5 py-1 transition disabled:opacity-50"
+        >
+          {exporting ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '匯出 CSV' : 'Export CSV')}
+        </button>
+      </div>
     </div>
   );
 }
