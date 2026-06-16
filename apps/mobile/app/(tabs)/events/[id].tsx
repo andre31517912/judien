@@ -345,6 +345,34 @@ export default function EventDetailScreen() {
               <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
                 <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={() => {
+                  Alert.alert(
+                    zh ? '刪除活動' : 'Delete Event',
+                    zh
+                      ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
+                      : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`,
+                    [
+                      { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+                      {
+                        text: zh ? '確定刪除' : 'Delete',
+                        style: 'destructive',
+                        onPress: async () => {
+                          try {
+                            await apiFetch(`/events/${id}`, { method: 'DELETE' });
+                            router.replace('/(tabs)/events');
+                          } catch (err: any) {
+                            Alert.alert('Error', err.message ?? 'Failed to delete event');
+                          }
+                        },
+                      },
+                    ],
+                  );
+                }}
+              >
+                <Text style={styles.deleteBtnText}>{zh ? '刪除' : 'Delete'}</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -751,6 +779,8 @@ const makeStyles = (colors: any) => StyleSheet.create({
   adminBar: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   editBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   editBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  deleteBtn: { backgroundColor: '#EF4444', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
+  deleteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
   seriesBadge: { backgroundColor: '#EEF2FF', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 10 },
   seriesBadgeText: { color: '#4338CA', fontSize: 12, fontWeight: '500' },
   title: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: 8 },

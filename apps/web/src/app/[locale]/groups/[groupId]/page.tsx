@@ -60,6 +60,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [hasPendingJoinRequest, setHasPendingJoinRequest] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -153,7 +154,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         }
       }
 
-      if (!current) setError(zh ? '找不到此群組或您尚未是成員。' : 'Group not found or you are not a member.');
+      if (!current) {
+        const myRequests = await apiFetch<{ groupId: string; status: string }[]>('/groups/my-join-requests').catch(() => [] as { groupId: string; status: string }[]);
+        setHasPendingJoinRequest(myRequests.some((r) => r.groupId === params.groupId && r.status === 'PENDING'));
+      } else {
+        setHasPendingJoinRequest(false);
+      }
     } catch (err: unknown) {
       setError((err as Error).message ?? 'Failed to load group.');
     } finally {
@@ -384,6 +390,19 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   }
 
   if (!groupItem) {
+    if (hasPendingJoinRequest) {
+      return (
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-yellow-100 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800 p-10 text-center">
+          <p className="text-4xl">⏳</p>
+          <p className="font-semibold text-yellow-800 dark:text-yellow-300">
+            {zh ? '申請審核中' : 'Request Pending'}
+          </p>
+          <p className="text-sm text-yellow-700 dark:text-yellow-400 max-w-sm">
+            {zh ? '您的加入申請已送出，等待群組管理員審核。' : 'Your join request has been submitted and is awaiting admin approval.'}
+          </p>
+        </div>
+      );
+    }
     return (
       <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">
         {error || (zh ? '找不到此群組。' : 'Group not found.')}
@@ -392,6 +411,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   }
 
   const isGroupAdmin = groupItem.membership.role === 'GROUP_ADMIN';
+  const isAdmin = user?.role === 'ADMIN';
   const { group } = groupItem;
 
   const VIEW_TABS: { key: ViewTab; label: string; labelZh: string }[] = [
@@ -497,7 +517,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </button>
             ))}
           </div>
-          {isGroupAdmin && viewTab === 'feed' && (
+          {(isGroupAdmin || isAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => setComposingNews((v) => !v)}
               className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
@@ -505,7 +525,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               {composingNews ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立動態' : '+ Create Feed')}
             </button>
           )}
-          {isGroupAdmin && (viewTab === 'upcoming' || viewTab === 'past') && (
+          {(isGroupAdmin || isAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => setComposingEvent((v) => !v)}
               className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
@@ -523,7 +543,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Feed */}
         {viewTab === 'feed' && (
           <div className="space-y-4">
-            {isGroupAdmin && composingNews && (
+            {(isGroupAdmin || isAdmin) && composingNews && (
               <form onSubmit={handleCreateNews} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '發布公告' : 'Post Announcement'}</h3>
                 <input
@@ -630,7 +650,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
           <div className="space-y-3">
-            {isGroupAdmin && composingEvent && (
+            {(isGroupAdmin || isAdmin) && composingEvent && (
               <form onSubmit={handleCreateEvent} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '新增活動' : 'Create Event'}</h3>
                 <input
@@ -772,7 +792,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Past events */}
         {viewTab === 'past' && (
           <div className="space-y-3">
-            {isGroupAdmin && composingEvent && (
+            {(isGroupAdmin || isAdmin) && composingEvent && (
               <form onSubmit={handleCreateEvent} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '新增活動' : 'Create Event'}</h3>
                 <input

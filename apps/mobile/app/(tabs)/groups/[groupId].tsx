@@ -81,6 +81,7 @@ export default function GroupDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('feed');
   const [groupItem, setGroupItem] = useState<GroupListItem | null>(null);
+  const [hasPendingJoinRequest, setHasPendingJoinRequest] = useState(false);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [events, setEvents] = useState<EventWithCounts[]>([]);
@@ -100,6 +101,7 @@ export default function GroupDetailScreen() {
   const [newsBody, setNewsBody] = useState('');
   const [newsSubmitting, setNewsSubmitting] = useState(false);
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
+  const canManageGroup = useMemo(() => isGroupAdmin || user?.role === 'ADMIN', [isGroupAdmin, user?.role]);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   // Build the Tabs JS header (no system tap-highlight). Re-runs when isGroupAdmin or badge count changes.
@@ -113,7 +115,7 @@ export default function GroupDetailScreen() {
           <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
-      headerRight: isGroupAdmin ? () => (
+      headerRight: canManageGroup ? () => (
         <TouchableOpacity
           onPress={() => router.push(`/groups/${groupId}/settings`)}
           style={{ marginRight: 16 }}
@@ -128,7 +130,7 @@ export default function GroupDetailScreen() {
         </TouchableOpacity>
       ) : undefined,
     });
-  }, [zh, colors.headerBg, colors.text, isGroupAdmin, joinRequests.length, groupId]);
+  }, [zh, colors.headerBg, colors.text, canManageGroup, joinRequests.length, groupId]);
 
   useFocusEffect(useCallback(() => {
     configureHeader();
@@ -160,6 +162,13 @@ export default function GroupDetailScreen() {
       setNews(groupNews);
       setEvents(groupEvents.data);
       setRelationships(relationshipData);
+
+      if (!current) {
+        const myRequests = await apiFetch<{ groupId: string; status: string }[]>('/groups/my-join-requests').catch(() => [] as { groupId: string; status: string }[]);
+        setHasPendingJoinRequest(myRequests.some((r) => r.groupId === groupId && r.status === 'PENDING'));
+      } else {
+        setHasPendingJoinRequest(false);
+      }
 
       if (current?.membership.role === 'GROUP_ADMIN') {
         const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => [] as JoinRequest[]);
@@ -301,7 +310,19 @@ export default function GroupDetailScreen() {
   if (!groupItem) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>{zh ? '找不到群組或您尚未加入' : 'Group not found or you are not a member'}</Text>
+        {hasPendingJoinRequest ? (
+          <>
+            <Text style={[styles.emptyText, { fontSize: 40, marginBottom: 12 }]}>⏳</Text>
+            <Text style={[styles.emptyText, { fontWeight: '600', marginBottom: 6 }]}>
+              {zh ? '申請審核中' : 'Request Pending'}
+            </Text>
+            <Text style={[styles.emptyText, { fontSize: 13, textAlign: 'center', maxWidth: 260 }]}>
+              {zh ? '您的加入申請已送出，等待群組管理員審核。' : 'Your join request has been submitted and is awaiting admin approval.'}
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.emptyText}>{zh ? '找不到群組或您尚未加入' : 'Group not found or you are not a member'}</Text>
+        )}
       </View>
     );
   }
@@ -356,7 +377,7 @@ export default function GroupDetailScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-        {isGroupAdmin && (tab === 'feed' || tab === 'upcoming' || tab === 'past') && (
+        {canManageGroup && (tab === 'feed' || tab === 'upcoming' || tab === 'past') && (
           <TouchableOpacity
             style={styles.tabAddBtn}
             onPress={() => {
