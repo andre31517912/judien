@@ -121,11 +121,10 @@ export type SetRemindersDto = z.infer<typeof SetRemindersSchema>;
 // ─── Blast ────────────────────────────────────────────────────────────────────
 
 export const BlastSchema = z.object({
-  channels: z.array(z.enum(['EMAIL', 'LINE'])).min(1),
-  /** 'rsvped' = users who RSVPed any status; 'invited' = users who accepted an invite or RSVPed */
+  channels: z.array(z.enum(['EMAIL', 'LINE', 'IN_APP'])).min(1),
+  /** 'rsvped' = users who RSVPed GOING; 'invited' = all group members / direct invitees */
   audience: z.enum(['rsvped', 'invited']).default('rsvped'),
-  messageEn: z.string().min(1).max(1600),
-  messageZh: z.string().min(1).max(1600),
+  message: z.string().min(1).max(2000),
 });
 export type BlastDto = z.infer<typeof BlastSchema>;
 

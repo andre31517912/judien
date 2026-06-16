@@ -673,7 +673,7 @@ export default function EventDetailPage() {
               <div className="flex gap-3 flex-wrap">
                 {([
                   ['EMAIL', zh ? '✉️ 電子郵件' : '✉️ Email'],
-                  ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App Notification'],
+                  ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'],
                 ] as const).map(([ch, label]) => (
                   <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
