@@ -52,6 +52,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const { user } = useAuth();
   const zh = params.locale === 'zh';
   const [event, setEvent] = useState<Event | null>(null);
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
   const [form, setForm] = useState<Record<string, string>>({});
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
   const [customReminderValue, setCustomReminderValue] = useState('');
@@ -94,15 +96,20 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         feeCurrency: ev.feeCurrency,
         coverImageUrl: ev.coverImageUrl ?? '',
       });
+      if (ev.groupId) {
+        apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
+          .then((data) => {
+            setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN');
+            setAccessChecked(true);
+          })
+          .catch(() => setAccessChecked(true));
+        apiFetch<GroupMember[]>(`/groups/${ev.groupId}/members`).then(setGroupMembers).catch(() => {});
+      } else {
+        setAccessChecked(true);
+      }
     });
     apiFetch<ReminderRule[]>(`/events/${params.id}/reminders`).then((rules) => {
       setReminders(rules.map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
-    });
-    // Load group members if event belongs to a group
-    apiFetch<Event>(`/events/${params.id}`).then((ev) => {
-      if (ev.groupId) {
-        apiFetch<GroupMember[]>(`/groups/${ev.groupId}/members`).then(setGroupMembers).catch(() => {});
-      }
     });
   }, [params.id]);
 
@@ -212,8 +219,9 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   };
 
   if (!event) return <p className="text-gray-400 mt-8">Loading…</p>;
+  if (!accessChecked && user?.role !== 'ADMIN') return <p className="text-gray-400 mt-8">Loading…</p>;
 
-  if (user?.role !== 'ADMIN') return (
+  if (user?.role !== 'ADMIN' && !isGroupAdmin) return (
     <div className="text-center py-16">
       <p className="text-red-500 font-medium">Admin access required.</p>
     </div>

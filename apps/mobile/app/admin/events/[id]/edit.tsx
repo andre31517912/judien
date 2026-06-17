@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch, apiUpload } from '../../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../../context/theme.context';
+import { useAuth } from '../../../../context/auth.context';
 import JLogo from '../../../../components/JLogo';
 import type { Event, ReminderRule } from '@judien/shared';
 
@@ -34,12 +35,15 @@ export default function EditEventScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  const { user } = useAuth();
   const zh = i18n.language === 'zh';
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { top: safeTop } = useSafeAreaInsets();
 
   const [loading, setLoading] = useState(true);
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -75,6 +79,16 @@ export default function EditEventScreen() {
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
+      if (ev.groupId) {
+        apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
+          .then((data) => {
+            setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN');
+            setAccessChecked(true);
+          })
+          .catch(() => setAccessChecked(true));
+      } else {
+        setAccessChecked(true);
+      }
       setLoading(false);
     });
   }, [id]);
@@ -180,9 +194,15 @@ export default function EditEventScreen() {
           <View style={{ minWidth: 60 }} />
         </View>
       </View>
-      {loading ? (
+      {loading || (!accessChecked && user?.role !== 'ADMIN') ? (
         <View style={styles.center}>
           <ActivityIndicator color={INDIGO} />
+        </View>
+      ) : user?.role !== 'ADMIN' && !isGroupAdmin ? (
+        <View style={[styles.center, { padding: 24 }]}>
+          <Text style={{ color: '#EF4444', fontSize: 15, textAlign: 'center', fontWeight: '600' }}>
+            {zh ? '需要管理員權限。' : 'Admin access required.'}
+          </Text>
         </View>
       ) : (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
