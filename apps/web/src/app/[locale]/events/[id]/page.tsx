@@ -400,13 +400,13 @@ export default function EventDetailPage() {
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700 flex-wrap">
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
-            className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-md hover:bg-indigo-700"
+            className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
           >
             {zh ? '編輯活動' : 'Edit Event'}
           </a>
           <button
             onClick={handleExportCsv}
-            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md hover:border-indigo-400 hover:text-indigo-600 transition"
+            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition"
           >
             {zh ? '匯出 CSV' : 'Export CSV'}
           </button>
@@ -576,7 +576,7 @@ export default function EventDetailPage() {
               value={guestSearch}
               onChange={(e) => setGuestSearch(e.target.value)}
               placeholder={zh ? '搜尋…' : 'Search…'}
-              className="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -639,12 +639,12 @@ export default function EventDetailPage() {
               value={directInviteId}
               onChange={(e) => setDirectInviteId(e.target.value)}
               placeholder={zh ? 'Email 或手機號碼' : 'Email or phone number'}
-              className="flex-1 min-w-48 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white"
+              className="flex-1 min-w-48 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
               type="submit"
               disabled={directInviteLoading || !directInviteId.trim()}
-              className="rounded-md bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+              className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
             >
               {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
             </button>
@@ -671,7 +671,7 @@ export default function EventDetailPage() {
                 rows={3}
                 maxLength={2000}
                 placeholder={zh ? '您的訊息（中英文相同）…' : 'Your message (used for both English and Chinese)…'}
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
@@ -710,7 +710,7 @@ export default function EventDetailPage() {
               <button
                 onClick={handleBlast}
                 disabled={!blastMsg.trim() || blastChannels.length === 0}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
                 {zh ? '立即發送' : 'Send Now'}
               </button>
@@ -735,11 +735,11 @@ export default function EventDetailPage() {
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder={zh ? '寫下留言…' : 'Write a comment…'}
               maxLength={1000}
-              className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
             >
               {zh ? '送出' : 'Post'}
             </button>
@@ -796,12 +796,12 @@ export default function EventDetailPage() {
                         onChange={(e) => setEditCommentBody(e.target.value)}
                         rows={2}
                         maxLength={1000}
-                        className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditComment(c.id)}
-                          className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-md hover:bg-indigo-700"
+                          className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-indigo-700"
                         >
                           {zh ? '儲存' : 'Save'}
                         </button>
@@ -839,12 +839,12 @@ export default function EventDetailPage() {
                         onChange={(e) => setReplyBody(e.target.value)}
                         placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
                         maxLength={1000}
-                        className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         autoFocus
                       />
                       <button
                         type="submit"
-                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-xs hover:bg-indigo-700"
+                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-700"
                       >
                         {zh ? '送出' : 'Reply'}
                       </button>

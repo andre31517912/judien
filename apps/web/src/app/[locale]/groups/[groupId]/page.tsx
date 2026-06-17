@@ -640,13 +640,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                           <div className="flex shrink-0 items-center gap-2">
                             <button
                               onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
-                              className="rounded-md px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                              className="rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
                             >
                               {zh ? '編輯' : 'Edit'}
                             </button>
                             <button
                               onClick={() => handleDeleteGroupNews(item.id)}
-                              className="rounded-md px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                              className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
                             >
                               {zh ? '刪除' : 'Delete'}
                             </button>

@@ -76,7 +76,7 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
             onChange={(e) => setIdentifier(e.target.value)}
             placeholder=""
             required
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
         <div>
@@ -98,13 +98,13 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
+          className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
           {loading ? (zh ? '登入中…' : 'Signing in…') : (zh ? '登入' : 'Sign In')}
         </button>
@@ -119,7 +119,7 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
       <button
         onClick={handleLineLogin}
         disabled={lineLoading}
-        className="w-full flex items-center justify-center gap-2 bg-[#06C755] hover:bg-[#05b34d] disabled:opacity-60 text-white font-medium py-3 rounded-md transition"
+        className="w-full flex items-center justify-center gap-2 bg-[#06C755] hover:bg-[#05b34d] disabled:opacity-60 text-white font-medium py-3 rounded-lg transition"
       >
         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2C6.477 2 2 6.036 2 11.07c0 4.522 3.613 8.312 8.5 8.94v2.99s-.01.3.18.37c.23.08.36-.14.36-.14l2.17-2.89c.26.02.53.03.79.03 5.523 0 10-4.036 10-9.07C24 6.036 17.523 2 12 2z"/>

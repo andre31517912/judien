@@ -246,7 +246,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '姓名' : 'Full Name'}</label>
           <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
             placeholder={(user as any)?.displayName || (zh ? '輸入姓名' : 'Enter full name')}
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
         </div>
 
         <div>
@@ -292,7 +292,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '電話號碼' : 'Phone'}</label>
           <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
             placeholder={zh ? '保留空白則不更新' : 'Leave blank to keep current'}
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
         </div>
 
         <div>
@@ -303,7 +303,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
                 ? (zh ? '設定真實電子郵件（選填）' : 'Set a real email (optional)')
                 : (zh ? '保留空白則不更新' : 'Leave blank to keep current')
             }
-            className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
           {isLineOnlyEmail((user as any)?.email ?? '') && (
             <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
               {zh ? '您是透過 LINE 登入，目前無真實電子郵件。設定後可用電子郵件+密碼登入。' : 'You signed in with LINE and have no real email set. Add one here to also be able to log in with email + password.'}
@@ -319,7 +319,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           <div className="relative">
             <input type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-400" />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
               {showPassword ? (
@@ -337,7 +337,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
         </div>
 
         <button type="submit" disabled={saving}
-          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition">
+          className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition">
           {saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
         </button>
       </form>
@@ -355,17 +355,17 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               {zh ? '產生一個邀請連結，讓對方以平台管理員身份完成註冊。平台管理員擁有全平台超級使用者權限。' : 'Generate a link so someone can sign up as a Platform Admin — a superuser with full privileges across all groups and features.'}
             </p>
             <button type="button" disabled={adminInviteGenerating} onClick={() => generateInvite('ADMIN')}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {adminInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生平台管理員邀請連結' : 'Generate Platform Admin Invite Link')}
             </button>
             {adminInviteLink && (
               <div className="mt-4 space-y-2">
                 <p className="text-xs font-medium text-indigo-800 dark:text-indigo-300">{zh ? '邀請連結（7 天內有效）：' : 'Invite link (valid for 7 days):'}</p>
                 <div className="flex items-center gap-2">
-                  <input readOnly value={adminInviteLink} className="flex-1 rounded-md border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono" />
+                  <input readOnly value={adminInviteLink} className="flex-1 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono" />
                   <button type="button"
                     onClick={() => { navigator.clipboard.writeText(adminInviteLink).then(() => { setAdminInviteCopied(true); setTimeout(() => setAdminInviteCopied(false), 2000); }).catch(() => {}); }}
-                    className="shrink-0 rounded-md border border-indigo-300 dark:border-indigo-600 px-3 py-2 text-xs font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition">
+                    className="shrink-0 rounded-lg border border-indigo-300 dark:border-indigo-600 px-3 py-2 text-xs font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition">
                     {adminInviteCopied ? (zh ? '已複製！' : 'Copied!') : (zh ? '複製' : 'Copy')}
                   </button>
                 </div>
@@ -406,17 +406,17 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               {zh ? '產生一個邀請連結，讓尚未註冊的人以一般用戶身份加入平台。一般用戶無超級使用者權限。' : 'Generate a link for someone who doesn\'t have an account yet to sign up as a regular user — no admin privileges.'}
             </p>
             <button type="button" disabled={userInviteGenerating} onClick={() => generateInvite('USER')}
-              className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
               {userInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生一般用戶邀請連結' : 'Generate User Welcome Link')}
             </button>
             {userInviteLink && (
               <div className="mt-4 space-y-2">
                 <p className="text-xs font-medium text-emerald-800 dark:text-emerald-300">{zh ? '邀請連結（7 天內有效）：' : 'Invite link (valid for 7 days):'}</p>
                 <div className="flex items-center gap-2">
-                  <input readOnly value={userInviteLink} className="flex-1 rounded-md border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono" />
+                  <input readOnly value={userInviteLink} className="flex-1 rounded-lg border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-gray-800 px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-mono" />
                   <button type="button"
                     onClick={() => { navigator.clipboard.writeText(userInviteLink).then(() => { setUserInviteCopied(true); setTimeout(() => setUserInviteCopied(false), 2000); }).catch(() => {}); }}
-                    className="shrink-0 rounded-md border border-emerald-300 dark:border-emerald-600 px-3 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition">
+                    className="shrink-0 rounded-lg border border-emerald-300 dark:border-emerald-600 px-3 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition">
                     {userInviteCopied ? (zh ? '已複製！' : 'Copied!') : (zh ? '複製' : 'Copy')}
                   </button>
                 </div>
@@ -460,7 +460,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
         <button
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
-          className="rounded-md border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+          className="rounded-lg border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
         >
           {zh ? '刪除帳號' : 'Delete Account'}
         </button>
@@ -479,7 +479,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               value={deleteConfirmText}
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="DELETE"
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 mb-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 mb-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-400"
             />
             <div className="flex gap-3">
               <button

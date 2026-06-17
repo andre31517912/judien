@@ -243,7 +243,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組' : 'Groups'}</h1>
         <Link
           href={`/${params.locale}/admin/groups/new`}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
           {zh ? '+ 建立群組' : '+ Create Group'}
         </Link>
@@ -257,12 +257,12 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={zh ? '搜尋群組名稱…' : 'Search by group name…'}
-          className="flex-1 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           type="submit"
           disabled={searchLoading || !searchQuery.trim()}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           {searchLoading ? (zh ? '搜尋中…' : 'Searching…') : (zh ? '搜尋' : 'Search')}
         </button>
@@ -292,7 +292,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                 ) : (
                   <button
                     onClick={() => handleRequestJoin(result.id)}
-                    className="rounded-md border border-indigo-300 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
+                    className="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-950/30"
                   >
                     {zh ? '申請加入' : 'Request to Join'}
                   </button>
@@ -330,14 +330,14 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
                   <button
                     onClick={() => handleRespondInvite(inv.token, true)}
                     disabled={respondingId === inv.token}
-                    className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {zh ? '接受' : 'Accept'}
                   </button>
                   <button
                     onClick={() => handleRespondInvite(inv.token, false)}
                     disabled={respondingId === inv.token}
-                    className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                    className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
                   >
                     {zh ? '拒絕' : 'Decline'}
                   </button>

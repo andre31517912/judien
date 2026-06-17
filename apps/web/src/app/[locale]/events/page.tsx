@@ -234,7 +234,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         {user && scope !== 'home' && (
           <button
             onClick={() => { setCreatingEvent((v) => !v); setEventMsg(''); }}
-            className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
+            className="mb-1 bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700"
           >
             {creatingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
           </button>
@@ -242,7 +242,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         {user && scope === 'home' && (
           <button
             onClick={() => setComposing((v) => !v)}
-            className="mb-1 bg-indigo-600 text-white text-sm px-4 py-1.5 rounded-md hover:bg-indigo-700"
+            className="mb-1 bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-indigo-700"
           >
             {composing ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Create Post'}`}
           </button>
@@ -258,15 +258,15 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               {newsMsg && <p className="text-red-500 text-sm">{newsMsg}</p>}
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '標題' : 'Title'}</label>
-                <input className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" value={newsForm.title}
+                <input className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" value={newsForm.title}
                   onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })} />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '內容' : 'Body'}</label>
-                <textarea rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500" value={newsForm.body}
+                <textarea rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" value={newsForm.body}
                   onChange={(e) => setNewsForm({ ...newsForm, body: e.target.value })} />
               </div>
-              <button type="submit" disabled={newsSaving} className="self-end bg-indigo-600 text-white text-sm px-5 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60">
+              <button type="submit" disabled={newsSaving} className="self-end bg-indigo-600 text-white text-sm px-5 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60">
                 {newsSaving ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
               </button>
             </form>
@@ -333,7 +333,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                         <div className="flex shrink-0 flex-col items-end gap-1">
                           <button
                             onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
-                            className="rounded-md px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                            className="rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
                           >
                             {zh ? '編輯' : 'Edit'}
                           </button>
@@ -358,7 +358,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           {eventMsg && <p className="text-red-500 text-sm">{eventMsg}</p>}
           <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '名稱' : 'Title'}</label>
-            <input className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.title} onChange={setEF('title')} placeholder="Event name" />
+            <input className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.title} onChange={setEF('title')} placeholder="Event name" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '地點' : 'Location'}</label>
@@ -370,30 +370,30 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '描述' : 'Description'}</label>
-            <textarea rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.description} onChange={setEF('description')} placeholder="What's this event about?" />
+            <textarea rows={3} className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.description} onChange={setEF('description')} placeholder="What's this event about?" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '開始' : 'Start'}</label>
-              <input type="datetime-local" className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.startAt} onChange={setEF('startAt')} />
+              <input type="datetime-local" className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.startAt} onChange={setEF('startAt')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '結束（選填）' : 'End (optional)'}</label>
-              <input type="datetime-local" className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.endAt} onChange={setEF('endAt')} />
+              <input type="datetime-local" className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.endAt} onChange={setEF('endAt')} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '時區' : 'Timezone'}</label>
-              <input className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.timezone} onChange={setEF('timezone')} />
+              <input className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.timezone} onChange={setEF('timezone')} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '費用' : 'Fee'}</label>
-              <input type="number" className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.feeAmount} onChange={setEF('feeAmount')} placeholder="0" />
+              <input type="number" className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.feeAmount} onChange={setEF('feeAmount')} placeholder="0" />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '幣別' : 'Currency'}</label>
-              <input className="w-full border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" value={eventForm.feeCurrency} onChange={setEF('feeCurrency')} />
+              <input className="w-full border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" value={eventForm.feeCurrency} onChange={setEF('feeCurrency')} />
             </div>
           </div>
           <div>
@@ -424,7 +424,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             </div>
             <input ref={coverFileRef} type="file" accept="image/*" onChange={handleEventFileChange} className="hidden" />
           </div>
-          <button type="submit" className="self-end bg-indigo-600 text-white text-sm px-5 py-2 rounded-md hover:bg-indigo-700 font-medium">
+          <button type="submit" className="self-end bg-indigo-600 text-white text-sm px-5 py-2 rounded-lg hover:bg-indigo-700 font-medium">
             {zh ? '建立' : 'Create'}
           </button>
         </form>

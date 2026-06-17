@@ -69,7 +69,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
         value={form[key] as string}
         onChange={(e) => setForm({ ...form, [key]: e.target.value })}
         required={isRequired}
-        className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
       />
     </div>
   );
@@ -161,7 +161,7 @@ export default function SignupPage({ params }: { params: { locale: string } }) {
         <button
           type="submit"
           disabled={loading || !agreedToTerms}
-          className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
+          className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
         >
           {loading ? (zh ? '建立中…' : 'Creating account…') : (zh ? '建立帳號' : 'Create Account')}
         </button>

@@ -298,7 +298,7 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
     <div className="flex flex-col gap-2">
       <div className="relative">
         <input
-          className="w-full border rounded-md px-3 py-2 text-sm"
+          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           value={value}
           onChange={(e) => {
             const next = e.target.value;
@@ -318,7 +318,7 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
           placeholder={placeholder ?? 'Search any address in any language…'}
         />
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-md border border-gray-200 bg-white shadow-lg">
+          <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
             {suggestions.map((result) => (
               <button
                 key={`${result.lat}-${result.lng}-${result.label}`}

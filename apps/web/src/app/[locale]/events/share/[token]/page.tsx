@@ -162,7 +162,7 @@ export default function SharedEventPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button onClick={copyLink} className="text-sm rounded-md border border-gray-300 dark:border-gray-700 px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+        <button onClick={copyLink} className="text-sm rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-1.5 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
           {copied ? (zh ? '已複製' : 'Copied') : (zh ? '複製分享連結' : 'Copy Share Link')}
         </button>
       </div>
@@ -197,19 +197,19 @@ export default function SharedEventPage() {
               value={guest.name}
               onChange={(e) => setGuest((prev) => ({ ...prev, name: e.target.value }))}
               placeholder={zh ? '姓名' : 'Name'}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <input
               value={guest.phoneE164}
               onChange={(e) => setGuest((prev) => ({ ...prev, phoneE164: e.target.value }))}
               placeholder={zh ? '電話 (+886...)' : 'Phone (+886...)'}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <input
               value={guest.email}
               onChange={(e) => setGuest((prev) => ({ ...prev, email: e.target.value }))}
               placeholder={zh ? '電子郵件' : 'Email'}
-              className="rounded-md border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
         )}
@@ -237,7 +237,7 @@ export default function SharedEventPage() {
             </p>
             <Link
               href={`/${locale}/signup`}
-              className="inline-block mt-2 text-sm font-medium bg-indigo-600 text-white px-4 py-1.5 rounded-md hover:bg-indigo-700 transition"
+              className="inline-block mt-2 text-sm font-medium bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition"
             >
               {zh ? '建立帳號 →' : 'Create Account →'}
             </Link>

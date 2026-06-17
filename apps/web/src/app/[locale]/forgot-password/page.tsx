@@ -47,7 +47,7 @@ export default function ForgotPasswordPage({ params }: { params: { locale: strin
       </p>
 
       {sent ? (
-        <div className="rounded-md bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 p-4 text-green-800 dark:text-green-200 text-sm">
+        <div className="rounded-lg bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 p-4 text-green-800 dark:text-green-200 text-sm">
           {sentMsg}
           {cooldown && (
             <p className="mt-2 text-xs text-green-600 dark:text-green-400">
@@ -75,13 +75,13 @@ export default function ForgotPasswordPage({ params }: { params: { locale: strin
               onChange={(e) => setValue(e.target.value)}
               placeholder="someone@example.com"
               required
-              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
           <button
             type="submit"
             disabled={loading || cooldown}
-            className="bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
+            className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition"
           >
             {loading ? '…' : (zh ? '發送登入連結' : 'Send sign-in link')}
           </button>
