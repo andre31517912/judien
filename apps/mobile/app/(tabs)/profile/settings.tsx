@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { useAuth } from '../context/auth.context';
-import { useTheme } from '../context/theme.context';
-import { apiFetch } from '../lib/api';
+import { useAuth } from '../../../context/auth.context';
+import { useTheme } from '../../../context/theme.context';
+import { apiFetch } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useRouter, Stack } from 'expo-router';
-import JLogo from '../components/JLogo';
-import i18n from '../lib/i18n';
+import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
+import JLogo from '../../../components/JLogo';
+import i18n from '../../../lib/i18n';
 
 const INDIGO = '#4F46E5';
 
@@ -14,6 +14,7 @@ export default function ProfileSettingsScreen() {
   const { user, refresh, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const { colors, theme, setTheme } = useTheme();
   const zh = i18n.language === 'zh';
 
@@ -27,6 +28,24 @@ export default function ProfileSettingsScreen() {
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerShown: true,
+      headerTitle: () => <JLogo />,
+      headerStyle: { backgroundColor: colors.headerBg },
+      headerLeft: () => (
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        </TouchableOpacity>
+      ),
+      headerRight: undefined,
+    });
+    return () => {
+      navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zh, colors.headerBg]));
 
   const isLineOnlyEmail = (e: string) => e.endsWith('@line.local');
 
@@ -87,7 +106,6 @@ export default function ProfileSettingsScreen() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <Stack.Screen options={{ gestureEnabled: true, headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
     <ScrollView contentContainerStyle={styles.container}>
 
       <Text style={styles.pageTitle}>{zh ? '編輯個人資料' : 'Edit Profile'}</Text>
@@ -205,7 +223,7 @@ export default function ProfileSettingsScreen() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
     container: { padding: 24, backgroundColor: colors.bg, flexGrow: 1 },

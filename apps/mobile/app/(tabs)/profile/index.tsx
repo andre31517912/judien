@@ -1,13 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/auth.context';
-import { useTheme } from '../../context/theme.context';
-import { apiFetch, apiUpload } from '../../lib/api';
+import { useAuth } from '../../../context/auth.context';
+import { useTheme } from '../../../context/theme.context';
+import { apiFetch, apiUpload } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useRouter, Stack } from 'expo-router';
-import JLogo from '../../components/JLogo';
-import i18n from '../../lib/i18n';
+import { useRouter } from 'expo-router';
+import i18n from '../../../lib/i18n';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
@@ -49,8 +48,6 @@ export default function ProfileScreen() {
   const displayPhone = (user as any)?.phoneE164 ?? '';
 
   return (
-    <>
-    <Stack.Screen options={{ headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
     <ScrollView contentContainerStyle={styles.container}>
 
       {/* Avatar */}
@@ -96,7 +93,7 @@ export default function ProfileScreen() {
       </View>
 
       {/* Edit Profile */}
-      <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/profile-settings' as any)} activeOpacity={0.85}>
+      <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/profile/settings')} activeOpacity={0.85}>
         <Text style={styles.editBtnText}>{zh ? '編輯個人資料' : 'Edit Profile'}</Text>
       </TouchableOpacity>
 
@@ -126,11 +123,10 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
-    </>
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
   return StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
     container: { padding: 24, backgroundColor: colors.bg, flexGrow: 1 },
@@ -141,7 +137,6 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     photoPlaceholder: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
     photoPlaceholderIcon: { fontSize: 50 },
     cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 30, height: 30, borderRadius: 15, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
-    cameraBtnText: { fontSize: 15 },
     uploadingText: { fontSize: 12, color: colors.placeholder },
     roleBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
     roleBadgeAdmin: { backgroundColor: '#EEF2FF' },

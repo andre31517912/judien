@@ -71,6 +71,8 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
+          headerTitle: () => <JLogo />,
+          headerStyle: { backgroundColor: colors.headerBg },
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />
