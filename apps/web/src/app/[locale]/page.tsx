@@ -86,10 +86,6 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         {/* ── Hero ── */}
         <section className="relative w-full px-6 sm:px-10 lg:px-16 xl:px-24 pt-20 pb-16">
           <div className="max-w-7xl mx-auto">
-            <div className="fade-up-0 inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 border border-indigo-100 dark:border-indigo-800/60 select-none">
-              ✨ Events &amp; Communities, Made Simple
-            </div>
-
             <h1 className="fade-up-1 text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-[1.1] mb-6 max-w-4xl">
               Plan events.<br />
               <span className="shimmer-text">Build community.</span>
