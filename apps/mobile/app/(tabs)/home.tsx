@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { Stack } from 'expo-router';
 import JLogo from '../../components/JLogo';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch } from '../../lib/api';
@@ -14,7 +15,7 @@ import type { News } from '@judien/shared';
 
 export default function HomeTab() {
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const zh = i18n.language === 'zh';
   const isAdmin = user?.role === 'ADMIN';
@@ -81,7 +82,7 @@ export default function HomeTab() {
     ]);
   };
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -94,8 +95,9 @@ export default function HomeTab() {
           headerTitle: composing ? (zh ? '發布公告' : 'Create Post') : () => <JLogo />,
           headerStyle: { backgroundColor: colors.headerBg },
           headerLeft: composing ? () => (
-            <TouchableOpacity onPress={() => setComposing(false)} activeOpacity={1} style={{ marginLeft: 16 }}>
-              <Text style={styles.backBtn}>‹ {zh ? '返回' : 'Back'}</Text>
+            <TouchableOpacity onPress={() => setComposing(false)} activeOpacity={0.7} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="chevron-back" size={28} color={INDIGO} />
+              <Text style={styles.backBtn}>{zh ? '返回' : 'Back'}</Text>
             </TouchableOpacity>
           ) : undefined,
           headerRight: user && !composing ? () => (
@@ -180,7 +182,7 @@ export default function HomeTab() {
 
 const INDIGO = '#4F46E5';
 
-function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     container: { padding: 20, backgroundColor: colors.bg, flexGrow: 1 },
     headerBtn: { color: INDIGO, fontSize: 24, fontWeight: '400' },
@@ -197,7 +199,7 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     card: { backgroundColor: colors.card, borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
     cardTitle: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text, marginRight: 8 },
-    groupBadge: { alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 6 },
+    groupBadge: { alignSelf: 'flex-start', backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 6 },
     groupBadgeText: { fontSize: 11, fontWeight: '500', color: INDIGO },
     cardBody: { fontSize: 14, color: colors.subtext, lineHeight: 20 },
     cardDate: { fontSize: 12, color: colors.placeholder, marginTop: 8 },

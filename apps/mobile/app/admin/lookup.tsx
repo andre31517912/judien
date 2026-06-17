@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, Alert, ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -46,9 +47,9 @@ export default function AdminLookupScreen() {
   const { i18n } = useTranslation();
   const router = useRouter();
   const zh = i18n.language === 'zh';
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { top: safeTop } = useSafeAreaInsets();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   const [tab, setTab] = useState<'search' | 'users' | 'groups'>('search');
   const [query, setQuery] = useState('');
@@ -167,8 +168,9 @@ export default function AdminLookupScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
         <View style={styles.customHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
-            <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={26} color={INDIGO} />
+            <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
           </TouchableOpacity>
           <JLogo />
           <View style={{ minWidth: 60 }} />
@@ -282,7 +284,8 @@ export default function AdminLookupScreen() {
 }
 
 function UserCard({ u, zh, colors, deleting, onDelete }: { u: UserRow; zh: boolean; colors: Colors; deleting: boolean; onDelete: () => void }) {
-  const cs = useMemo(() => makeCardStyles(colors), [colors]);
+  const { isDark } = useTheme();
+  const cs = useMemo(() => makeCardStyles(colors, isDark), [colors, isDark]);
   return (
     <View style={cs.row}>
       <View style={{ flex: 1 }}>
@@ -347,16 +350,16 @@ function PaginationBar({ page, total, pageSize, zh, colors, onChange }: { page: 
   );
 }
 
-function makeStyles(colors: Colors) {
+function makeStyles(colors: Colors, isDark: boolean) {
   return StyleSheet.create({
     customHeader: { height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
     container: { padding: 16, gap: 14, backgroundColor: colors.bg, flexGrow: 1 },
     pageTitle: { fontSize: 22, fontWeight: '700', color: colors.text },
     tabRow: { flexDirection: 'row', gap: 8 },
     tabBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 8, alignItems: 'center', backgroundColor: colors.card },
-    tabBtnActive: { borderColor: INDIGO, backgroundColor: '#EEF2FF' },
+    tabBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     tabBtnText: { fontSize: 12, fontWeight: '600', color: colors.subtext },
-    tabBtnTextActive: { color: '#4338CA' },
+    tabBtnTextActive: { color: isDark ? '#818CF8' : '#4338CA' },
     searchInput: {
       borderWidth: 1, borderColor: colors.border, borderRadius: 10,
       paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
@@ -364,16 +367,16 @@ function makeStyles(colors: Colors) {
     },
     typeRow: { flexDirection: 'row', gap: 8 },
     typeBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingVertical: 7, alignItems: 'center', backgroundColor: colors.card },
-    typeBtnActive: { borderColor: INDIGO, backgroundColor: '#EEF2FF' },
+    typeBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     typeBtnText: { fontSize: 12, color: colors.subtext, fontWeight: '500' },
-    typeBtnTextActive: { color: '#4338CA', fontWeight: '700' },
+    typeBtnTextActive: { color: isDark ? '#818CF8' : '#4338CA', fontWeight: '700' },
     sectionLabel: { fontSize: 12, fontWeight: '700', color: colors.placeholder, letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 8 },
     countLabel: { fontSize: 12, color: colors.placeholder },
     empty: { color: colors.placeholder, textAlign: 'center', marginTop: 30, fontSize: 14 },
   });
 }
 
-function makeCardStyles(colors: Colors) {
+function makeCardStyles(colors: Colors, isDark = false) {
   return StyleSheet.create({
     row: {
       flexDirection: 'row', alignItems: 'flex-start', gap: 10,
@@ -382,8 +385,8 @@ function makeCardStyles(colors: Colors) {
     },
     name: { fontSize: 14, fontWeight: '600', color: colors.text },
     meta: { fontSize: 12, color: colors.subtext, marginTop: 2 },
-    adminBadge: { backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
-    adminBadgeText: { fontSize: 10, fontWeight: '700', color: '#4338CA' },
+    adminBadge: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
+    adminBadgeText: { fontSize: 10, fontWeight: '700', color: isDark ? '#818CF8' : '#4338CA' },
     lineBadge: { backgroundColor: '#DCFCE7', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
     lineBadgeText: { fontSize: 10, fontWeight: '700', color: '#16A34A' },
     deleteBtn: { borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#FFF5F5' },

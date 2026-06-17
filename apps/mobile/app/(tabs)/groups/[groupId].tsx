@@ -73,7 +73,7 @@ export default function GroupDetailScreen() {
   const navigation = useNavigation();
   const { i18n } = useTranslation();
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
 
   type Tab = 'feed' | 'upcoming' | 'past' | 'members';
@@ -102,7 +102,7 @@ export default function GroupDetailScreen() {
   const [newsSubmitting, setNewsSubmitting] = useState(false);
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
   const canManageGroup = useMemo(() => isGroupAdmin || user?.role === 'ADMIN', [isGroupAdmin, user?.role]);
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   // Build the Tabs JS header (no system tap-highlight). Re-runs when isGroupAdmin or badge count changes.
   const configureHeader = useCallback(() => {
@@ -111,15 +111,16 @@ export default function GroupDetailScreen() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={28} color={INDIGO} />
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
       headerRight: canManageGroup ? () => (
         <TouchableOpacity
           onPress={() => router.push(`/groups/${groupId}/settings`)}
           style={{ marginRight: 16 }}
-          activeOpacity={1}
+          activeOpacity={0.7}
         >
           <Ionicons name="settings-outline" size={22} color={colors.text} />
           {joinRequests.length > 0 && (
@@ -602,13 +603,13 @@ export default function GroupDetailScreen() {
 
 const INDIGO = '#4F46E5';
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
     photoBanner: { width: '100%', height: 130 },
-    photoBannerPlaceholder: { backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+    photoBannerPlaceholder: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoBannerIcon: { fontSize: 40, opacity: 0.5 },
 
     tabAddBtn: { paddingHorizontal: 14, paddingVertical: 10, marginRight: 4 },
@@ -692,10 +693,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     memberActions: { flexDirection: 'row', gap: 6, marginTop: 2 },
 
     rolePill: { borderRadius: 999, paddingHorizontal: 7, paddingVertical: 2 },
-    rolePillAdmin: { backgroundColor: '#EEF2FF' },
+    rolePillAdmin: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     rolePillMember: { backgroundColor: colors.border },
     rolePillText: { fontSize: 10, fontWeight: '700' },
-    rolePillTextAdmin: { color: '#4338CA' },
+    rolePillTextAdmin: { color: isDark ? '#818CF8' : '#4338CA' },
     rolePillTextMember: { color: colors.subtext },
 
     nicknameInput: {
@@ -709,8 +710,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
 
     renameBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.card },
     renameBtnText: { fontSize: 11, fontWeight: '700', color: colors.text },
-    promoteBtn: { borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#EEF2FF' },
-    promoteBtnText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
+    promoteBtn: { borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
+    promoteBtnText: { fontSize: 11, fontWeight: '700', color: isDark ? '#818CF8' : '#4338CA' },
     removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
     removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
   });

@@ -60,7 +60,7 @@ export default function GroupsTab() {
   const navigation = useNavigation();
   const { loading: authLoading } = useAuth();
   const { i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
 
   // ── Configure Tabs header (same style as Home/Notifications/Profile) ─────
@@ -147,7 +147,7 @@ export default function GroupsTab() {
     }
   };
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   if (loading) {
     return (
@@ -247,7 +247,7 @@ export default function GroupsTab() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
     container: { padding: 16, gap: 16, backgroundColor: colors.bg, flexGrow: 1 },
@@ -268,7 +268,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     cardRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
     cardContent: { flex: 1, gap: 4 },
     avatar: { width: 44, height: 44, borderRadius: 22 },
-    avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+    avatarPlaceholder: { width: 44, height: 44, borderRadius: 22, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     avatarLetter: { fontSize: 18, fontWeight: '700', color: '#4F46E5' },
     cardTitle: { fontSize: 16, fontWeight: '600', color: colors.text },
     cardSub: { fontSize: 13, color: colors.subtext },

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform, Share } from 'react-native';
 import { Stack, useLocalSearchParams, useNavigation, useRouter, useFocusEffect } from 'expo-router';
 import JLogo from '../../../../components/JLogo';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { apiFetch, apiUpload } from '../../../../lib/api';
@@ -26,7 +27,7 @@ type Tab = 'general' | 'roster' | 'hierarchy';
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const { i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { user } = useAuth();
   const zh = i18n.language === 'zh';
   const isPlatformAdmin = user?.role === 'ADMIN';
@@ -39,8 +40,9 @@ export default function GroupSettingsScreen() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={28} color={INDIGO} />
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
       headerRight: undefined,
@@ -141,7 +143,7 @@ export default function GroupSettingsScreen() {
   const [groupMembers, setGroupMembers] = useState<RosterMember[]>([]);
   const [showMemberPicker, setShowMemberPicker] = useState(false);
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   const loadData = async () => {
     if (!groupId) return;
@@ -914,7 +916,7 @@ export default function GroupSettingsScreen() {
               {showMemberPicker ? (
                 <View style={[styles.card, { marginBottom: 8, gap: 4 }]}>
                   {groupMembers.map((m) => (
-                    <TouchableOpacity key={m.userId} style={[styles.reqRow, donationForm.forUserId === m.userId && { borderColor: INDIGO, backgroundColor: '#EEF2FF' }]}
+                    <TouchableOpacity key={m.userId} style={[styles.reqRow, donationForm.forUserId === m.userId && { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' }]}
                       onPress={() => { setDonationForm((f) => ({ ...f, forUserId: m.userId })); setShowMemberPicker(false); }}>
                       <Text style={styles.reqPrimary}>{m.groupNickname ?? m.displayName ?? m.email ?? m.userId}</Text>
                       {m.email ? <Text style={styles.reqMeta}>{m.email}</Text> : null}
@@ -977,30 +979,30 @@ export default function GroupSettingsScreen() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     container: { padding: 16, gap: 12, backgroundColor: colors.bg },
     tabBar: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
     tabBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.card },
-    tabBtnActive: { borderColor: INDIGO, backgroundColor: '#EEF2FF' },
+    tabBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     tabBtnText: { fontSize: 12, fontWeight: '600', color: colors.subtext },
-    tabBtnTextActive: { color: '#4338CA' },
+    tabBtnTextActive: { color: isDark ? '#818CF8' : '#4338CA' },
     card: { backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 12, gap: 8 },
     sectionTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
     fieldLabel: { fontSize: 13, fontWeight: '500', color: colors.subtext },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, fontSize: 14, backgroundColor: colors.input, color: colors.inputText },
     textArea: { minHeight: 80, textAlignVertical: 'top' },
     photoPreview: { width: 88, height: 88, borderRadius: 44 },
-    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoPlaceholderText: { fontSize: 32, fontWeight: '700', color: INDIGO },
     photoBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.card },
     photoBtnDanger: { borderColor: '#FECACA', backgroundColor: '#FFF5F5' },
     photoBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
     roleRow: { flexDirection: 'row', gap: 8 },
     roleBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 8, alignItems: 'center' },
-    roleBtnActive: { borderColor: INDIGO, backgroundColor: '#EEF2FF' },
+    roleBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     roleBtnText: { color: colors.subtext, fontSize: 12, fontWeight: '600' },
-    roleBtnTextActive: { color: '#4338CA' },
+    roleBtnTextActive: { color: isDark ? '#818CF8' : '#4338CA' },
     primaryBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
     primaryBtnText: { color: '#fff', fontWeight: '700' },
     muted: { color: colors.placeholder, fontSize: 12 },
@@ -1025,8 +1027,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     removeBtnText: { color: '#DC2626', fontSize: 12, fontWeight: '600' },
     hierarchyRelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10 },
     searchRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-    searchBtn: { borderWidth: 1, borderColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: '#EEF2FF' },
-    searchBtnText: { color: '#4338CA', fontSize: 13, fontWeight: '600' },
+    searchBtn: { borderWidth: 1, borderColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
+    searchBtnText: { color: isDark ? '#818CF8' : '#4338CA', fontSize: 13, fontWeight: '600' },
     unlinkBtn: { borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FFF5F5' },
     unlinkBtnText: { color: '#DC2626', fontSize: 12, fontWeight: '600' },
     hierarchyError: { color: '#DC2626', fontSize: 13, backgroundColor: '#FFF5F5', borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, padding: 10 },

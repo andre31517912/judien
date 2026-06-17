@@ -96,7 +96,7 @@ function SwipeableNotification({ n, onDelete, onPress, styles, colors, zh }: {
 
       <Animated.View style={[styles.slideRow, { transform: [{ translateX }] }]} {...panResponder.panHandlers}>
         <TouchableOpacity
-          style={[styles.item, { backgroundColor: n.read ? colors.card : '#EEF2FF', borderColor: colors.border }]}
+          style={[styles.item, { backgroundColor: n.read ? colors.card : (isDark ? 'rgba(79,70,229,0.15)' : '#EEF2FF'), borderColor: colors.border }]}
           onPress={() => { if (isOpen.current) { close(); return; } onPress(n); }}
           activeOpacity={hasRoute ? 0.7 : 1}
         >
@@ -120,7 +120,7 @@ export default function NotificationsTab() {
   const { i18n } = useTranslation();
   const zh = i18n.language === 'zh';
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

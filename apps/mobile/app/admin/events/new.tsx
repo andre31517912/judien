@@ -3,6 +3,7 @@ import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, Alert, Image, Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -127,8 +128,9 @@ export default function NewEventScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
         <View style={styles.customHeader}>
-          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
-            <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={26} color={INDIGO} />
+            <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
           </TouchableOpacity>
           <JLogo />
           <View style={{ minWidth: 60 }} />

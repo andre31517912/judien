@@ -22,6 +22,7 @@ import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
 import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, EventInvitee } from '@judien/shared';
+import { Ionicons } from '@expo/vector-icons';
 
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
@@ -44,7 +45,7 @@ function timeAgo(dateStr: string, zh: boolean): string {
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { bottom: safeBottom } = useSafeAreaInsets();
@@ -52,7 +53,7 @@ export default function EventDetailScreen() {
   const isAdmin = user?.role === 'ADMIN';
   const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
   const scrollRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
 
@@ -63,8 +64,9 @@ export default function EventDetailScreen() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={28} color={INDIGO} />
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
       headerRight: undefined,
@@ -780,7 +782,7 @@ export default function EventDetailScreen() {
   );
 }
 
-const makeStyles = (colors: any) => StyleSheet.create({
+const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   kav: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   container: { flex: 1, backgroundColor: colors.bg },
@@ -794,8 +796,8 @@ const makeStyles = (colors: any) => StyleSheet.create({
   exportBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
   deleteBtn: { backgroundColor: '#EF4444', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   deleteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  seriesBadge: { backgroundColor: '#EEF2FF', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 10 },
-  seriesBadgeText: { color: '#4338CA', fontSize: 12, fontWeight: '500' },
+  seriesBadge: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 10 },
+  seriesBadgeText: { color: isDark ? '#818CF8' : '#4338CA', fontSize: 12, fontWeight: '500' },
   title: { fontSize: 24, fontWeight: 'bold', color: colors.text, marginBottom: 8 },
   groupBadge: { fontSize: 12, color: INDIGO, fontWeight: '500', marginBottom: 8 },
   metaBlock: { gap: 5, marginBottom: 12 },

@@ -1,6 +1,7 @@
 import '../lib/i18n';
 import { useEffect } from 'react';
 import { Linking, TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../context/auth.context';
@@ -57,8 +58,9 @@ function AppShell() {
           headerStyle: { backgroundColor: colors.headerBg },
           headerTintColor: colors.text,
           headerLeft: ({ canGoBack }) => canGoBack ? (
-            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-              <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+              <Ionicons name="chevron-back" size={28} color={INDIGO} />
+              <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
             </TouchableOpacity>
           ) : undefined,
         }}>

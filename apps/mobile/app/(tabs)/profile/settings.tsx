@@ -6,6 +6,7 @@ import { apiFetch } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import JLogo from '../../../components/JLogo';
+import { Ionicons } from '@expo/vector-icons';
 import i18n from '../../../lib/i18n';
 
 const INDIGO = '#4F46E5';
@@ -15,7 +16,7 @@ export default function ProfileSettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const navigation = useNavigation();
-  const { colors, theme, setTheme } = useTheme();
+  const { colors, theme, setTheme, isDark } = useTheme();
   const zh = i18n.language === 'zh';
 
   const [displayName, setDisplayName] = useState('');
@@ -35,8 +36,9 @@ export default function ProfileSettingsScreen() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={28} color={INDIGO} />
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
       headerRight: undefined,
@@ -100,7 +102,7 @@ export default function ProfileSettingsScreen() {
     }
   };
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   if (!user) return <View style={styles.center}><Text style={styles.text}>Please log in.</Text></View>;
 
@@ -223,7 +225,7 @@ export default function ProfileSettingsScreen() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
     container: { padding: 24, backgroundColor: colors.bg, flexGrow: 1 },
@@ -241,10 +243,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, fontSize: 15, marginBottom: 4, backgroundColor: colors.input, color: colors.inputText },
     btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 20 },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
-    dangerZone: { marginTop: 32, borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 12, padding: 16, backgroundColor: '#FFF5F5' },
-    dangerTitle: { fontSize: 13, fontWeight: '700', color: '#DC2626', marginBottom: 4 },
-    dangerBody: { fontSize: 12, color: '#EF4444', marginBottom: 12, lineHeight: 18 },
-    deleteBtn: { borderWidth: 1, borderColor: '#FCA5A5', borderRadius: 8, padding: 12, alignItems: 'center' },
-    deleteBtnText: { color: '#DC2626', fontWeight: '600', fontSize: 14 },
+    dangerZone: { marginTop: 32, borderWidth: 1, borderColor: isDark ? '#7F1D1D' : '#FCA5A5', borderRadius: 12, padding: 16, backgroundColor: isDark ? 'rgba(127,29,29,0.18)' : '#FFF5F5' },
+    dangerTitle: { fontSize: 13, fontWeight: '700', color: isDark ? '#FCA5A5' : '#DC2626', marginBottom: 4 },
+    dangerBody: { fontSize: 12, color: isDark ? '#F87171' : '#EF4444', marginBottom: 12, lineHeight: 18 },
+    deleteBtn: { borderWidth: 1, borderColor: isDark ? '#7F1D1D' : '#FCA5A5', borderRadius: 8, padding: 12, alignItems: 'center' },
+    deleteBtnText: { color: isDark ? '#FCA5A5' : '#DC2626', fontWeight: '600', fontSize: 14 },
   });
 }

@@ -25,7 +25,7 @@ type Guests = { GOING: GuestEntry[]; NO: GuestEntry[] };
 export default function SharedEventScreen() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const { i18n } = useTranslation();
   const router = useRouter();
   const zh = i18n.language === 'zh';
@@ -169,7 +169,7 @@ export default function SharedEventScreen() {
 
       {/* Join nudge (shown after guest RSVP) */}
       {showJoinNudge && (
-        <View style={[styles.nudge, { borderColor: '#A5B4FC', backgroundColor: '#EEF2FF' }]}>
+        <View style={[styles.nudge, { borderColor: isDark ? '#4338CA' : '#A5B4FC', backgroundColor: isDark ? 'rgba(79,70,229,0.15)' : '#EEF2FF' }]}>
           <View style={{ flex: 1 }}>
             <Text style={styles.nudgeTitle}>{zh ? '你已回覆成功！🎉' : "You're in! 🎉"}</Text>
             <Text style={styles.nudgeBody}>

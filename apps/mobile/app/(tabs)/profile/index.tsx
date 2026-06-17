@@ -13,7 +13,7 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => { await logout(); };
 
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
   if (!user) return <View style={styles.center}><Text style={styles.text}>Please log in.</Text></View>;
 
@@ -126,7 +126,7 @@ export default function ProfileScreen() {
   );
 }
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
     container: { padding: 24, backgroundColor: colors.bg, flexGrow: 1 },
@@ -139,10 +139,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 30, height: 30, borderRadius: 15, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
     uploadingText: { fontSize: 12, color: colors.placeholder },
     roleBadge: { borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-    roleBadgeAdmin: { backgroundColor: '#EEF2FF' },
+    roleBadgeAdmin: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     roleBadgeUser: { backgroundColor: '#DCFCE7' },
     roleBadgeText: { fontSize: 12, fontWeight: '600' },
-    roleBadgeTextAdmin: { color: '#4338CA' },
+    roleBadgeTextAdmin: { color: isDark ? '#818CF8' : '#4338CA' },
     roleBadgeTextUser: { color: '#16A34A' },
     infoSection: { gap: 10, marginBottom: 24 },
     infoCard: { backgroundColor: colors.card, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 14 },

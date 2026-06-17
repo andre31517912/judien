@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
@@ -23,7 +24,7 @@ export default function NewGroupScreen() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const { i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
 
   const [name, setName] = useState('');
@@ -34,7 +35,7 @@ export default function NewGroupScreen() {
   const [error, setError] = useState('');
 
   const suggestedPid = useMemo(() => slugifyPid(name), [name]);
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
   const { top: safeTop } = useSafeAreaInsets();
 
   const pickPhoto = async () => {
@@ -90,8 +91,9 @@ export default function NewGroupScreen() {
   const CustomHeader = () => (
     <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
       <View style={styles.customHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60 }} activeOpacity={1}>
-          <Text style={{ color: INDIGO, fontSize: 17 }}>‹ {zh ? '返回' : 'Back'}</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ minWidth: 60, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+          <Ionicons name="chevron-back" size={26} color={INDIGO} />
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
         <JLogo />
         <View style={{ minWidth: 60 }} />
@@ -219,7 +221,7 @@ export default function NewGroupScreen() {
 
 const INDIGO = '#4F46E5';
 
-function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors']) {
+function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     customHeader: { height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
@@ -252,7 +254,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     textArea: { minHeight: 96 },
     helperText: { fontSize: 12, color: colors.placeholder },
     photoPreview: { width: 88, height: 88, borderRadius: 44 },
-    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoPlaceholderText: { fontSize: 32, fontWeight: '700', color: '#4F46E5' },
     photoBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.card },
     photoBtnDanger: { borderColor: '#FECACA', backgroundColor: '#FFF5F5' },
