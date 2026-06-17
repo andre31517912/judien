@@ -21,7 +21,7 @@ function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'roster' | 'requests' | 'hierarchy' | 'donations' | 'report';
+type Tab = 'general' | 'roster' | 'hierarchy';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -58,6 +58,7 @@ export default function GroupSettingsScreen() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
+  const [discoverableBySearch, setDiscoverableBySearch] = useState(true);
 
   // Add member
   const [newName, setNewName] = useState('');
@@ -154,6 +155,7 @@ export default function GroupSettingsScreen() {
         setGroupName((current.group as any).name ?? '');
         setGroupDescription((current.group as any).description ?? '');
         setPhotoUrl((current.group as any).photoUrl ?? null);
+        setDiscoverableBySearch((current.group as any).discoverableBySearch ?? true);
         setIsGroupAdmin((current as any).membership?.role === 'GROUP_ADMIN' || (current.group as any).createdById === user?.id);
       }
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
@@ -242,7 +244,7 @@ export default function GroupSettingsScreen() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -347,7 +349,7 @@ export default function GroupSettingsScreen() {
     try {
       await apiFetch(`/groups/${groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify({ name: groupName.trim(), description: groupDescription.trim(), photoUrl }),
+        body: JSON.stringify({ name: groupName.trim(), description: groupDescription.trim(), photoUrl, discoverableBySearch }),
       });
       Alert.alert('✓', zh ? '設定已儲存' : 'Settings saved.');
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to save settings'); }
@@ -482,11 +484,8 @@ export default function GroupSettingsScreen() {
 
   const TABS: { key: Tab; label: string }[] = [
     { key: 'general', label: zh ? '設定' : 'Settings' },
-    { key: 'roster', label: zh ? '新增成員' : 'Add Members' },
-    { key: 'requests', label: joinRequests.length > 0 ? `${zh ? '申請' : 'Requests'} (${joinRequests.length})` : (zh ? '申請' : 'Requests') },
-    { key: 'donations' as Tab, label: zh ? '捐款' : 'Donations' },
+    { key: 'roster', label: joinRequests.length > 0 ? `${zh ? '成員' : 'Members'} (${joinRequests.length})` : (zh ? '成員' : 'Members') },
     ...((isPlatformAdmin || isGroupAdmin) ? [{ key: 'hierarchy' as Tab, label: zh ? '群組架構' : 'Hierarchy' }] : []),
-    ...((isPlatformAdmin || isGroupAdmin) ? [{ key: 'report' as Tab, label: zh ? '年報' : 'Report' }] : []),
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -550,15 +549,56 @@ export default function GroupSettingsScreen() {
             multiline
             maxLength={500}
           />
+          {/* Visibility toggle */}
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.fieldLabel}>{zh ? '群組可見性' : 'Group Visibility'}</Text>
+              <Text style={styles.muted}>
+                {discoverableBySearch
+                  ? (zh ? '公開 — 任何人可搜尋並申請加入' : 'Public — anyone can search and request to join')
+                  : (zh ? '私密 — 僅限邀請加入' : 'Private — invite-only')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.toggleTrack, discoverableBySearch && styles.toggleTrackOn]}
+              onPress={() => setDiscoverableBySearch((v) => !v)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.toggleThumb, discoverableBySearch && styles.toggleThumbOn]} />
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity style={styles.primaryBtn} onPress={saveSettings} disabled={settingsSaving}>
             <Text style={styles.primaryBtnText}>{settingsSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存設定' : 'Save Settings')}</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Add Members */}
+      {/* Members */}
       {tab === 'roster' && (
         <View style={{ gap: 12 }}>
+          {/* Pending join requests */}
+          {joinRequests.length > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>{zh ? `加入申請 (${joinRequests.length})` : `Join Requests (${joinRequests.length})`}</Text>
+              {joinRequests.map((req) => (
+                <View key={req.id} style={styles.reqRow}>
+                  <Text style={styles.reqPrimary}>{req.requester.displayName || req.requester.email}</Text>
+                  <Text style={styles.reqMeta}>{req.requester.email}</Text>
+                  {req.note ? <Text style={styles.reqNote}>{req.note}</Text> : null}
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity style={styles.approveBtn} onPress={() => reviewRequest(req.id, 'approve')}>
+                      <Text style={styles.approveBtnText}>{zh ? '核准' : 'Approve'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.rejectBtn} onPress={() => reviewRequest(req.id, 'reject')}>
+                      <Text style={styles.rejectBtnText}>{zh ? '拒絕' : 'Reject'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
           {/* Single create-and-add */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '建立帳號並加入' : 'Create Account & Add'}</Text>
@@ -689,29 +729,6 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Requests */}
-      {tab === 'requests' && (
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{zh ? '加入申請審核' : 'Join Requests'}</Text>
-          {joinRequests.length === 0 ? (
-            <Text style={styles.muted}>{zh ? '目前無待審核申請' : 'No pending requests.'}</Text>
-          ) : joinRequests.map((req) => (
-            <View key={req.id} style={styles.reqRow}>
-              <Text style={styles.reqPrimary}>{req.requester.displayName || req.requester.email}</Text>
-              <Text style={styles.reqMeta}>{req.requester.email}</Text>
-              {req.note ? <Text style={styles.reqNote}>{req.note}</Text> : null}
-              <View style={styles.actionsRow}>
-                <TouchableOpacity style={styles.approveBtn} onPress={() => reviewRequest(req.id, 'approve')}>
-                  <Text style={styles.approveBtnText}>{zh ? '核准' : 'Approve'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.rejectBtn} onPress={() => reviewRequest(req.id, 'reject')}>
-                  <Text style={styles.rejectBtnText}>{zh ? '拒絕' : 'Reject'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
-        </View>
-      )}
 
       {/* Hierarchy (platform admin or group admin) */}
       {tab === 'hierarchy' && (isPlatformAdmin || isGroupAdmin) && (
@@ -812,8 +829,8 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Donations */}
-      {tab === 'donations' && (
+      {/* Donations — commented out, work in progress */}
+      {false && tab === ('donations' as Tab) && (
         <View style={{ gap: 12 }}>
           <View style={styles.card}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -848,8 +865,8 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Annual Report */}
-      {tab === 'report' && (isPlatformAdmin || isGroupAdmin) && (
+      {/* Annual Report — commented out, work in progress */}
+      {false && tab === ('report' as Tab) && (isPlatformAdmin || isGroupAdmin) && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{zh ? '年度報告' : 'Annual Report'}</Text>
           <Text style={styles.muted}>{zh ? '下載每位成員的年度出席率與捐款統計。' : 'Download per-member attendance and donation stats for any year.'}</Text>
@@ -1019,6 +1036,11 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     donationRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10 },
     donationAmount: { fontSize: 14, fontWeight: '700', color: '#059669', fontVariant: ['tabular-nums'] },
     deleteDonationBtn: { color: '#EF4444', fontSize: 12, fontWeight: '600' },
+    toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+    toggleTrack: { width: 48, height: 28, borderRadius: 14, backgroundColor: colors.border, justifyContent: 'center', paddingHorizontal: 2 },
+    toggleTrackOn: { backgroundColor: INDIGO },
+    toggleThumb: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 2, elevation: 2 },
+    toggleThumbOn: { alignSelf: 'flex-end' },
     modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
     modalSheet: { backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 36 },
     donationHint: { backgroundColor: colors.bg, borderRadius: 8, padding: 10, marginBottom: 12, gap: 2 },

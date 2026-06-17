@@ -92,6 +92,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [editPhotoUrl, setEditPhotoUrl] = useState<string | null>(null);
   const [groupPhotoUploading, setGroupPhotoUploading] = useState(false);
   const [groupInfoSaving, setGroupInfoSaving] = useState(false);
+  const [editDiscoverableBySearch, setEditDiscoverableBySearch] = useState(true);
   const [importResult, setImportResult] = useState<{ added: number; already_member: number; not_found: number } | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -199,7 +200,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     try {
       await apiFetch(`/groups/${params.groupId}/settings`, {
         method: 'PATCH',
-        body: JSON.stringify({ name: editName.trim(), description: editDescription.trim(), photoUrl: editPhotoUrl }),
+        body: JSON.stringify({ name: editName.trim(), description: editDescription.trim(), photoUrl: editPhotoUrl, discoverableBySearch: editDiscoverableBySearch }),
       });
       setSuccess(zh ? '群組資訊已更新。' : 'Group info updated.');
       await loadPage();
@@ -379,6 +380,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         setEditName(current.group.name ?? '');
         setEditDescription(current.group.description ?? '');
         setEditPhotoUrl(current.group.photoUrl ?? null);
+        setEditDiscoverableBySearch(current.group.discoverableBySearch ?? true);
       }
       setMembers(memberList);
 
@@ -863,6 +865,29 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               maxLength={1000}
               className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none"
             />
+          </div>
+
+          {/* Visibility toggle */}
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                {zh ? '群組可見性' : 'Group Visibility'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {editDiscoverableBySearch
+                  ? (zh ? '公開 — 任何人可搜尋並申請加入' : 'Public — anyone can search and request to join')
+                  : (zh ? '私密 — 僅限邀請加入' : 'Private — invite-only')}
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={editDiscoverableBySearch}
+              onClick={() => setEditDiscoverableBySearch((v) => !v)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${editDiscoverableBySearch ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'}`}
+            >
+              <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${editDiscoverableBySearch ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
           </div>
 
           <button type="submit" disabled={groupInfoSaving || !editName.trim()}
