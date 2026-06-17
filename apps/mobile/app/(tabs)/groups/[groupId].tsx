@@ -457,19 +457,26 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyText}>{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</Text>
             </View>
           ) : events.map((ev) => (
-            <TouchableOpacity key={ev.id} style={styles.card} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
-              <Text style={styles.cardTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
-              <Text style={styles.cardMeta}>
-                {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-              </Text>
-              {(zh ? ev.location_zh : ev.location_en) ? (
-                <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
-              ) : null}
-              {ev.feeAmount != null && Number(ev.feeAmount) > 0 && (
-                <Text style={styles.feeTag}>{ev.feeAmount} {ev.feeCurrency}</Text>
+            <View key={ev.id} style={styles.card}>
+              <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
+                <Text style={styles.cardTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
+                <Text style={styles.cardMeta}>
+                  {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                </Text>
+                {(zh ? ev.location_zh : ev.location_en) ? (
+                  <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
+                ) : null}
+                {ev.feeAmount != null && Number(ev.feeAmount) > 0 && (
+                  <Text style={styles.feeTag}>{ev.feeAmount} {ev.feeCurrency}</Text>
+                )}
+                <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
+              </TouchableOpacity>
+              {canManageGroup && (
+                <TouchableOpacity onPress={() => router.push(`/admin/events/${ev.id}/edit` as any)} style={styles.cardEditRow}>
+                  <Text style={styles.cardEditText}>{zh ? '編輯活動' : 'Edit Event'}</Text>
+                </TouchableOpacity>
               )}
-              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
-            </TouchableOpacity>
+            </View>
           ))}
         </ScrollView>
       )}
@@ -485,16 +492,23 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyText}>{zh ? '沒有過去的活動記錄' : 'No past events'}</Text>
             </View>
           ) : pastEvents.map((ev) => (
-            <TouchableOpacity key={ev.id} style={[styles.card, styles.cardPast]} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
-              <Text style={[styles.cardTitle, styles.cardTitlePast]}>{zh ? ev.title_zh : ev.title_en}</Text>
-              <Text style={styles.cardMeta}>
-                {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-              </Text>
-              {(zh ? ev.location_zh : ev.location_en) ? (
-                <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
-              ) : null}
-              <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
-            </TouchableOpacity>
+            <View key={ev.id} style={[styles.card, styles.cardPast]}>
+              <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
+                <Text style={[styles.cardTitle, styles.cardTitlePast]}>{zh ? ev.title_zh : ev.title_en}</Text>
+                <Text style={styles.cardMeta}>
+                  {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                </Text>
+                {(zh ? ev.location_zh : ev.location_en) ? (
+                  <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
+                ) : null}
+                <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
+              </TouchableOpacity>
+              {canManageGroup && (
+                <TouchableOpacity onPress={() => router.push(`/admin/events/${ev.id}/edit` as any)} style={styles.cardEditRow}>
+                  <Text style={styles.cardEditText}>{zh ? '編輯活動' : 'Edit Event'}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           ))}
         </ScrollView>
       )}
@@ -666,6 +680,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     cardMeta: { fontSize: 12, color: colors.placeholder },
     feeTag: { alignSelf: 'flex-start', fontSize: 11, fontWeight: '700', color: '#B45309', backgroundColor: '#FEF3C7', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
     rsvpRow: { fontSize: 12, color: colors.placeholder, marginTop: 2 },
+    cardEditRow: { borderTopWidth: 1, borderTopColor: colors.border, marginTop: 8, paddingTop: 8 },
+    cardEditText: { fontSize: 12, fontWeight: '600', color: '#4F46E5' },
 
     emptyBox: { alignItems: 'center', marginTop: 40, gap: 10 },
     emptyEmoji: { fontSize: 40 },

@@ -783,29 +783,43 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
               </div>
             ) : events.map((ev) => (
-              <Link
+              <div
                 key={ev.id}
-                href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
+                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
               >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                    {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
+                <Link
+                  href={`/${params.locale}/events/${ev.id}`}
+                  className="block p-5"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? ev.title_zh : ev.title_en}</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                      </p>
+                      {(zh ? ev.location_zh : ev.location_en) && (
+                        <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
+                      )}
+                      <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
+                    </div>
+                    {ev.feeAmount != null && ev.feeAmount > 0 && (
+                      <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                        {ev.feeAmount} {ev.feeCurrency}
+                      </span>
                     )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
-                  {ev.feeAmount != null && ev.feeAmount > 0 && (
-                    <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                      {ev.feeAmount} {ev.feeCurrency}
-                    </span>
-                  )}
-                </div>
-              </Link>
+                </Link>
+                {(isGroupAdmin || isAdmin) && (
+                  <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-2">
+                    <Link
+                      href={`/${params.locale}/admin/events/${ev.id}/edit`}
+                      className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                    >
+                      {zh ? '編輯活動' : 'Edit Event'}
+                    </Link>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -927,11 +941,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
               </div>
             ) : pastEvents.map((ev) => (
-              <Link
+              <div
                 key={ev.id}
-                href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
+                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
               >
+                <Link
+                  href={`/${params.locale}/events/${ev.id}`}
+                  className="block p-5"
+                >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="space-y-1">
                     <h3 className="font-semibold text-gray-600 dark:text-gray-300">{zh ? ev.title_zh : ev.title_en}</h3>
@@ -944,7 +961,18 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
                   </div>
                 </div>
-              </Link>
+                </Link>
+                {(isGroupAdmin || isAdmin) && (
+                  <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-2">
+                    <Link
+                      href={`/${params.locale}/admin/events/${ev.id}/edit`}
+                      className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                    >
+                      {zh ? '編輯活動' : 'Edit Event'}
+                    </Link>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
