@@ -3139,6 +3139,7 @@ export namespace Prisma {
     muteLinePush: boolean | null
     muteInAppNotifications: boolean | null
     lineUserId: string | null
+    appleUserId: string | null
     isGuest: boolean | null
     hasPassword: boolean | null
     createdAt: Date | null
@@ -3157,6 +3158,7 @@ export namespace Prisma {
     muteLinePush: boolean | null
     muteInAppNotifications: boolean | null
     lineUserId: string | null
+    appleUserId: string | null
     isGuest: boolean | null
     hasPassword: boolean | null
     createdAt: Date | null
@@ -3175,6 +3177,7 @@ export namespace Prisma {
     muteLinePush: number
     muteInAppNotifications: number
     lineUserId: number
+    appleUserId: number
     isGuest: number
     hasPassword: number
     createdAt: number
@@ -3195,6 +3198,7 @@ export namespace Prisma {
     muteLinePush?: true
     muteInAppNotifications?: true
     lineUserId?: true
+    appleUserId?: true
     isGuest?: true
     hasPassword?: true
     createdAt?: true
@@ -3213,6 +3217,7 @@ export namespace Prisma {
     muteLinePush?: true
     muteInAppNotifications?: true
     lineUserId?: true
+    appleUserId?: true
     isGuest?: true
     hasPassword?: true
     createdAt?: true
@@ -3231,6 +3236,7 @@ export namespace Prisma {
     muteLinePush?: true
     muteInAppNotifications?: true
     lineUserId?: true
+    appleUserId?: true
     isGuest?: true
     hasPassword?: true
     createdAt?: true
@@ -3322,6 +3328,7 @@ export namespace Prisma {
     muteLinePush: boolean
     muteInAppNotifications: boolean
     lineUserId: string | null
+    appleUserId: string | null
     isGuest: boolean
     hasPassword: boolean
     createdAt: Date
@@ -3357,6 +3364,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: boolean
+    appleUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: boolean
@@ -3400,6 +3408,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: boolean
+    appleUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: boolean
@@ -3418,6 +3427,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: boolean
+    appleUserId?: boolean
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: boolean
@@ -3493,6 +3503,7 @@ export namespace Prisma {
       muteLinePush: boolean
       muteInAppNotifications: boolean
       lineUserId: string | null
+      appleUserId: string | null
       isGuest: boolean
       hasPassword: boolean
       createdAt: Date
@@ -3925,6 +3936,7 @@ export namespace Prisma {
     readonly muteLinePush: FieldRef<"User", 'Boolean'>
     readonly muteInAppNotifications: FieldRef<"User", 'Boolean'>
     readonly lineUserId: FieldRef<"User", 'String'>
+    readonly appleUserId: FieldRef<"User", 'String'>
     readonly isGuest: FieldRef<"User", 'Boolean'>
     readonly hasPassword: FieldRef<"User", 'Boolean'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
@@ -24455,6 +24467,7 @@ export namespace Prisma {
     muteLinePush: 'muteLinePush',
     muteInAppNotifications: 'muteInAppNotifications',
     lineUserId: 'lineUserId',
+    appleUserId: 'appleUserId',
     isGuest: 'isGuest',
     hasPassword: 'hasPassword',
     createdAt: 'createdAt'
@@ -25026,6 +25039,7 @@ export namespace Prisma {
     muteLinePush?: BoolFilter<"User"> | boolean
     muteInAppNotifications?: BoolFilter<"User"> | boolean
     lineUserId?: StringNullableFilter<"User"> | string | null
+    appleUserId?: StringNullableFilter<"User"> | string | null
     isGuest?: BoolFilter<"User"> | boolean
     hasPassword?: BoolFilter<"User"> | boolean
     createdAt?: DateTimeFilter<"User"> | Date | string
@@ -25068,6 +25082,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     muteInAppNotifications?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
+    appleUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
     createdAt?: SortOrder
@@ -25102,6 +25117,7 @@ export namespace Prisma {
     email?: string
     phoneE164?: string
     lineUserId?: string
+    appleUserId?: string
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
@@ -25140,7 +25156,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     groupRelationshipRequestsMade?: GroupRelationshipRequestListRelationFilter
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestListRelationFilter
-  }, "id" | "email" | "phoneE164" | "lineUserId">
+  }, "id" | "email" | "phoneE164" | "lineUserId" | "appleUserId">
 
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
@@ -25155,6 +25171,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     muteInAppNotifications?: SortOrder
     lineUserId?: SortOrderInput | SortOrder
+    appleUserId?: SortOrderInput | SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
     createdAt?: SortOrder
@@ -25179,6 +25196,7 @@ export namespace Prisma {
     muteLinePush?: BoolWithAggregatesFilter<"User"> | boolean
     muteInAppNotifications?: BoolWithAggregatesFilter<"User"> | boolean
     lineUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    appleUserId?: StringNullableWithAggregatesFilter<"User"> | string | null
     isGuest?: BoolWithAggregatesFilter<"User"> | boolean
     hasPassword?: BoolWithAggregatesFilter<"User"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -26796,6 +26814,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -26838,6 +26857,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -26880,6 +26900,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26922,6 +26943,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26964,6 +26986,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -26982,6 +27005,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27000,6 +27024,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28909,6 +28934,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
+    appleUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
     createdAt?: SortOrder
@@ -28927,6 +28953,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
+    appleUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
     createdAt?: SortOrder
@@ -28945,6 +28972,7 @@ export namespace Prisma {
     muteLinePush?: SortOrder
     muteInAppNotifications?: SortOrder
     lineUserId?: SortOrder
+    appleUserId?: SortOrder
     isGuest?: SortOrder
     hasPassword?: SortOrder
     createdAt?: SortOrder
@@ -34699,6 +34727,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -34740,6 +34769,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -35074,6 +35104,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35115,6 +35146,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35457,6 +35489,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -35498,6 +35531,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -35626,6 +35660,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35667,6 +35702,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35844,6 +35880,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -35885,6 +35922,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36065,6 +36103,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36106,6 +36145,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36287,6 +36327,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36328,6 +36369,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36374,6 +36416,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36415,6 +36458,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36543,6 +36587,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36584,6 +36629,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36636,6 +36682,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36677,6 +36724,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36783,6 +36831,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36824,6 +36873,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -36952,6 +37002,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36993,6 +37044,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37099,6 +37151,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -37140,6 +37193,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -37323,6 +37377,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37364,6 +37419,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37505,6 +37561,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -37546,6 +37603,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -37662,6 +37720,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37703,6 +37762,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37945,6 +38005,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -37986,6 +38047,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -38114,6 +38176,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38155,6 +38218,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38249,6 +38313,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -38290,6 +38355,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -38406,6 +38472,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38447,6 +38514,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38488,6 +38556,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -38529,6 +38598,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39093,6 +39163,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39134,6 +39205,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39426,6 +39498,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39467,6 +39540,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39566,6 +39640,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39607,6 +39682,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39664,6 +39740,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39705,6 +39782,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39816,6 +39894,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39857,6 +39936,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39898,6 +39978,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39939,6 +40020,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -39985,6 +40067,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40026,6 +40109,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40136,6 +40220,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40177,6 +40262,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40229,6 +40315,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40270,6 +40357,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40423,6 +40511,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40464,6 +40553,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40510,6 +40600,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40551,6 +40642,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40667,6 +40759,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40708,6 +40801,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40760,6 +40854,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40801,6 +40896,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40948,6 +41044,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -40989,6 +41086,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41035,6 +41133,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41076,6 +41175,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41251,6 +41351,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41292,6 +41393,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41344,6 +41446,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41385,6 +41488,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41479,6 +41583,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41520,6 +41625,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41566,6 +41672,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41607,6 +41714,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41723,6 +41831,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41764,6 +41873,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41816,6 +41926,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41857,6 +41968,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41898,6 +42010,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41939,6 +42052,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -41985,6 +42099,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -42026,6 +42141,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -42083,6 +42199,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42124,6 +42241,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42176,6 +42294,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42217,6 +42336,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42258,6 +42378,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -42299,6 +42420,7 @@ export namespace Prisma {
     muteLinePush?: boolean
     muteInAppNotifications?: boolean
     lineUserId?: string | null
+    appleUserId?: string | null
     isGuest?: boolean
     hasPassword?: boolean
     createdAt?: Date | string
@@ -42409,6 +42531,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42450,6 +42573,7 @@ export namespace Prisma {
     muteLinePush?: BoolFieldUpdateOperationsInput | boolean
     muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
     lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isGuest?: BoolFieldUpdateOperationsInput | boolean
     hasPassword?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

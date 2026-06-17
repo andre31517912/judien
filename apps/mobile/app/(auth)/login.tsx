@@ -6,9 +6,10 @@ import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { apiFetch } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 export default function LoginScreen() {
-  const { login } = useAuth();
+  const { login, loginWithTokens } = useAuth();
   const { colors } = useTheme();
   const router = useRouter();
   const { t, i18n } = useTranslation();
@@ -35,6 +36,27 @@ export default function LoginScreen() {
       await Linking.openURL(data.url);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Could not open LINE login.');
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      const tokens = await apiFetch<{ accessToken: string; refreshToken: string }>('/auth/apple/mobile', {
+        method: 'POST',
+        body: JSON.stringify({ identityToken: credential.identityToken, fullName: credential.fullName }),
+      });
+      await loginWithTokens(tokens.accessToken, tokens.refreshToken);
+      router.replace('/(tabs)/home');
+    } catch (err: any) {
+      if (err.code !== 'ERR_REQUEST_CANCELED') {
+        Alert.alert('Error', zh ? 'Apple 登入失敗。' : 'Apple Sign In failed.');
+      }
     }
   };
 
@@ -76,8 +98,15 @@ export default function LoginScreen() {
           <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
         <TouchableOpacity style={styles.lineBtn} onPress={handleLineLogin}>
-          <Text style={styles.lineBtnText}>🟩 {t('auth.lineLogin') || 'Continue with LINE'}</Text>
+          <Text style={styles.lineBtnText}>🟩 {zh ? '使用 LINE 登入' : 'Log in with LINE'}</Text>
         </TouchableOpacity>
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={10}
+          style={styles.appleBtn}
+          onPress={handleAppleLogin}
+        />
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} style={{ marginBottom: 12 }}>
           <Text style={styles.link}>{t('auth.forgotPassword') || 'Forgot password / Get sign-in link'}</Text>
         </TouchableOpacity>
@@ -100,7 +129,8 @@ const styles = StyleSheet.create({
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
   dividerLine: { flex: 1, height: 1 },
   dividerText: { marginHorizontal: 10, fontSize: 13 },
-  lineBtn: { backgroundColor: '#06C755', borderRadius: 10, padding: 16, alignItems: 'center', marginBottom: 16 },
+  lineBtn: { backgroundColor: '#06C755', borderRadius: 10, padding: 16, alignItems: 'center', marginBottom: 12 },
   lineBtnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  appleBtn: { width: '100%', height: 50, marginBottom: 16 },
   link: { color: '#4F46E5', textAlign: 'center', fontSize: 14 },
 });

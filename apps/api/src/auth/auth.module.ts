@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
 import { LineOAuthController } from './line-oauth.controller';
+import { AppleAuthController } from './apple-auth.controller';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { LineOAuthController } from './line-oauth.controller';
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
-  controllers: [AuthController, LineOAuthController],
+  controllers: [AuthController, LineOAuthController, AppleAuthController],
   exports: [AuthService],
 })
 export class AuthModule {}

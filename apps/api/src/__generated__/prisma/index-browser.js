@@ -135,6 +135,7 @@ exports.Prisma.UserScalarFieldEnum = {
   muteLinePush: 'muteLinePush',
   muteInAppNotifications: 'muteInAppNotifications',
   lineUserId: 'lineUserId',
+  appleUserId: 'appleUserId',
   isGuest: 'isGuest',
   hasPassword: 'hasPassword',
   createdAt: 'createdAt'

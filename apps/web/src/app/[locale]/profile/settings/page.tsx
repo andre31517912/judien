@@ -286,59 +286,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           </div>
         </div>
 
-        {/* LINE account linking */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium dark:text-gray-300">{zh ? 'LINE 帳號連結' : 'LINE Account'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {lineLinked
-                  ? (zh ? '已連結，可接收 LINE 推播通知。' : 'Linked — you can receive LINE push notifications.')
-                  : (zh ? '連結後可接收 LINE 推播通知。' : 'Link to receive LINE push notifications.')}
-              </p>
-            </div>
-            {lineLinked ? (
-              <button type="button" disabled={lineLoading}
-                onClick={async () => {
-                  setLineLoading(true);
-                  try {
-                    await apiFetch('/auth/line/connect', { method: 'DELETE' });
-                    await refresh();
-                    setLineLinked(false);
-                    setLineMsg({ text: zh ? 'LINE 帳號已解除連結。' : 'LINE account unlinked.', ok: true });
-                  } catch (err: any) {
-                    setLineMsg({ text: err.message ?? 'Error unlinking LINE.', ok: false });
-                  } finally { setLineLoading(false); }
-                }}
-                className="text-sm text-red-500 hover:text-red-600 font-medium disabled:opacity-50">
-                {lineLoading ? '…' : (zh ? '解除連結' : 'Unlink')}
-              </button>
-            ) : (
-              <button type="button" disabled={lineLoading}
-                onClick={async () => {
-                  setLineLoading(true);
-                  try {
-                    const data = await apiFetch<{ url?: string; error?: string }>('/auth/line/connect');
-                    if (data.url) window.location.href = data.url;
-                    else { setLineMsg({ text: data.error ?? 'LINE not configured.', ok: false }); setLineLoading(false); }
-                  } catch (err: any) {
-                    setLineMsg({ text: err.message ?? 'Error starting LINE link.', ok: false });
-                    setLineLoading(false);
-                  }
-                }}
-                className="text-sm bg-[#06C755] text-white px-3 py-1.5 rounded-md hover:bg-[#05a847] font-medium disabled:opacity-50">
-                {lineLoading ? '…' : (zh ? '連結 LINE' : 'Link LINE')}
-              </button>
-            )}
-          </div>
-          {lineMsg && <p className={`text-xs ${lineMsg.ok ? 'text-green-600' : 'text-red-500'}`}>{lineMsg.text}</p>}
-          {lineLinked && (
-            <div className="flex items-center gap-3">
-              <input type="checkbox" id="muteLinePush" checked={muteLinePush} onChange={(e) => setMuteLinePush(e.target.checked)} className="w-4 h-4" />
-              <label htmlFor="muteLinePush" className="text-xs dark:text-gray-400">{zh ? '靜音 LINE 推播通知' : 'Mute LINE push notifications'}</label>
-            </div>
-          )}
-        </div>
+        {/* LINE account linking for push notifications — removed; LINE login already handles account linking */}
 
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '電話號碼' : 'Phone'}</label>
