@@ -235,8 +235,12 @@ export default function EventDetailPage() {
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setLoading(false);
       if (ev.groupId) {
-        apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
-          .then(data => setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN'))
+        const gid = ev.groupId;
+        apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
+          .then(groups => {
+            const match = groups.find((g) => g.group.id === gid);
+            setIsGroupAdmin(match?.membership.status === 'ACCEPTED' && match?.membership.role === 'GROUP_ADMIN');
+          })
           .catch(() => {});
       }
     }).catch(() => setLoading(false));

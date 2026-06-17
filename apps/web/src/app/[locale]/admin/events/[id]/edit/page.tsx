@@ -97,9 +97,11 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       if (ev.groupId) {
-        apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
-          .then((data) => {
-            setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN');
+        const gid = ev.groupId;
+        apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
+          .then((groups) => {
+            const match = groups.find((g) => g.group.id === gid);
+            setIsGroupAdmin(match?.membership.status === 'ACCEPTED' && match?.membership.role === 'GROUP_ADMIN');
             setAccessChecked(true);
           })
           .catch(() => setAccessChecked(true));
