@@ -94,6 +94,7 @@ model User {
   muteLinePush           Boolean  @default(false)
   muteInAppNotifications Boolean  @default(false)
   lineUserId             String?  @unique
+  appleUserId            String?  @unique
   isGuest                Boolean  @default(false)
   hasPassword            Boolean  @default(false)
   createdAt              DateTime @default(now())

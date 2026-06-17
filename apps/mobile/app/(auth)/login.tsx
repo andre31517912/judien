@@ -24,7 +24,7 @@ export default function LoginScreen() {
       await login(email, password);
       router.replace('/(tabs)/home');
     } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Login failed.');
+      Alert.alert('Error', err.message ?? 'Sign in failed.');
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export default function LoginScreen() {
           onSubmitEditing={handleLogin}
         />
         <TouchableOpacity style={[styles.btn, loading && { opacity: 0.6 }]} onPress={handleLogin} disabled={loading}>
-          <Text style={styles.btnText}>{loading ? (zh ? '登入中…' : 'Logging in…') : t('auth.login')}</Text>
+          <Text style={styles.btnText}>{loading ? (zh ? '登入中…' : 'Signing in…') : t('auth.login')}</Text>
         </TouchableOpacity>
         <View style={styles.dividerRow}>
           <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
@@ -98,7 +98,7 @@ export default function LoginScreen() {
           <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
         </View>
         <TouchableOpacity style={styles.lineBtn} onPress={handleLineLogin}>
-          <Text style={styles.lineBtnText}>🟩 {zh ? '使用 LINE 登入' : 'Log in with LINE'}</Text>
+          <Text style={styles.lineBtnText}>🟩 {zh ? '使用 LINE 登入' : 'Sign in with LINE'}</Text>
         </TouchableOpacity>
         <AppleAuthentication.AppleAuthenticationButton
           buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}

@@ -97,7 +97,7 @@ export default function NavBar({ locale }: NavBarProps) {
         ) : (
           <>
             <Link href={`/${locale}/login`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-              {zh ? '登入' : 'Login'}
+              {zh ? '登入' : 'Sign In'}
             </Link>
             <Link
               href={`/${locale}/signup`}

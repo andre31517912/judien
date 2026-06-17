@@ -11,7 +11,7 @@ const en = {
     confirm: 'Confirm',
   },
   auth: {
-    login: 'Log In',
+    login: 'Sign In',
     signup: 'Sign Up',
     logout: 'Log Out',
     email: 'Email',
