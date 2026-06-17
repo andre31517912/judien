@@ -55,7 +55,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const displayPhone = (user as any)?.phoneE164 ?? '';
 
   return (
-    <div className="max-w-sm mx-auto py-10 px-4">
+    <div className="max-w-sm mx-auto pt-4 pb-10 px-4">
       {/* Avatar */}
       <div className="flex flex-col items-center gap-3 mb-8">
         <div className="relative">

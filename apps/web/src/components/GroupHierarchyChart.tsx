@@ -2,17 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { Tree, TreeNode } from 'react-organizational-chart';
 import styles from './GroupHierarchyChart.module.css';
 
 type SubgroupInfo = { id: string; name: string; description?: string };
-
 type TreeApiItem = SubgroupInfo & { children: SubgroupInfo[] };
 
-type TreeNode = {
+type TreeNode_ = {
   id: string;
   name: string;
   isCurrent: boolean;
-  children: TreeNode[];
+  children: TreeNode_[];
 };
 
 export type HierarchyData = {
@@ -30,10 +30,9 @@ interface Props {
   onClose: () => void;
 }
 
-function buildTree(data: HierarchyData, currentGroupId: string): TreeNode | null {
+function buildTree(data: HierarchyData, currentGroupId: string): TreeNode_ | null {
   const { lineage, tree } = data;
 
-  // Fallback: no lineage at all — just show current group + children
   if (!lineage || lineage.length === 0) {
     return {
       id: currentGroupId,
@@ -53,8 +52,7 @@ function buildTree(data: HierarchyData, currentGroupId: string): TreeNode | null
     };
   }
 
-  // Build children for the current group from `tree`
-  const treeChildren: TreeNode[] = (tree ?? []).map((sg) => ({
+  const treeChildren: TreeNode_[] = (tree ?? []).map((sg) => ({
     id: sg.id,
     name: sg.name,
     isCurrent: false,
@@ -66,15 +64,13 @@ function buildTree(data: HierarchyData, currentGroupId: string): TreeNode | null
     })),
   }));
 
-  // The last lineage entry is the current group
-  let node: TreeNode = {
+  let node: TreeNode_ = {
     id: lineage[lineage.length - 1].id,
     name: lineage[lineage.length - 1].name,
     isCurrent: lineage[lineage.length - 1].id === currentGroupId,
     children: treeChildren,
   };
 
-  // Wrap in ancestor chain (walk lineage in reverse, skipping the last)
   for (let i = lineage.length - 2; i >= 0; i--) {
     node = {
       id: lineage[i].id,
@@ -87,9 +83,9 @@ function buildTree(data: HierarchyData, currentGroupId: string): TreeNode | null
   return node;
 }
 
-function NodeComponent({ node, locale }: { node: TreeNode; locale: string }) {
+function NodeLabel({ node, locale }: { node: TreeNode_; locale: string }) {
   return (
-    <li>
+    <div className={styles.nodeLabelWrap}>
       <Link
         href={`/${locale}/groups/${node.id}`}
         className={`${styles.nodeBox} ${node.isCurrent ? styles.nodeBoxCurrent : styles.nodeBoxDefault}`}
@@ -97,21 +93,28 @@ function NodeComponent({ node, locale }: { node: TreeNode; locale: string }) {
       >
         {node.name}
       </Link>
-      {node.children.length > 0 && (
-        <ul>
-          {node.children.map((child) => (
-            <NodeComponent key={child.id} node={child} locale={locale} />
-          ))}
-        </ul>
-      )}
-    </li>
+    </div>
+  );
+}
+
+function SubTree({ node, locale }: { node: TreeNode_; locale: string }) {
+  if (node.children.length === 0) {
+    return (
+      <TreeNode label={<NodeLabel node={node} locale={locale} />} />
+    );
+  }
+  return (
+    <TreeNode label={<NodeLabel node={node} locale={locale} />}>
+      {node.children.map((child) => (
+        <SubTree key={child.id} node={child} locale={locale} />
+      ))}
+    </TreeNode>
   );
 }
 
 export default function GroupHierarchyChart({ data, currentGroupId, locale, loading, onClose }: Props) {
   const zh = locale === 'zh';
 
-  // Close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -140,9 +143,7 @@ export default function GroupHierarchyChart({ data, currentGroupId, locale, load
               </span>
             </span>
           </div>
-          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            ✕
-          </button>
+          <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         </div>
 
         {/* Chart */}
@@ -151,9 +152,17 @@ export default function GroupHierarchyChart({ data, currentGroupId, locale, load
             <div className={styles.spinner} />
           ) : root ? (
             <div className={styles.tree}>
-              <ul>
-                <NodeComponent node={root} locale={locale} />
-              </ul>
+              <Tree
+                label={<NodeLabel node={root} locale={locale} />}
+                lineWidth="2px"
+                lineColor="#6366f1"
+                lineBorderRadius="6px"
+                nodePadding="8px"
+              >
+                {root.children.map((child) => (
+                  <SubTree key={child.id} node={child} locale={locale} />
+                ))}
+              </Tree>
             </div>
           ) : (
             <p className={styles.noData}>

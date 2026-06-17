@@ -86,6 +86,9 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const coverFileRef = useRef<HTMLInputElement>(null);
 
   const [memberSearch, setMemberSearch] = useState('');
+  const [renamingMemberId, setRenamingMemberId] = useState<string | null>(null);
+  const [renameInput, setRenameInput] = useState('');
+  const [renameSaving, setRenameSaving] = useState(false);
 
   // Main view tabs
   type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
@@ -360,6 +363,24 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
+  const handleRenameMember = async (memberUserId: string) => {
+    setRenameSaving(true);
+    setError('');
+    try {
+      await apiFetch(`/groups/${params.groupId}/members/${memberUserId}/nickname`, {
+        method: 'PATCH',
+        body: JSON.stringify({ groupNickname: renameInput.trim() || null }),
+      });
+      setRenamingMemberId(null);
+      setSuccess(zh ? '成員名稱已更新。' : 'Member name updated.');
+      await loadPage();
+    } catch (err: unknown) {
+      setError((err as Error).message ?? 'Failed to rename member.');
+    } finally {
+      setRenameSaving(false);
+    }
+  };
+
   const handleReviewJoinRequest = async (requestId: string, action: 'approve' | 'reject') => {
     setReviewingId(requestId);
     setError('');
@@ -520,7 +541,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           {(isGroupAdmin || isAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => setComposingNews((v) => !v)}
-              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
             >
               {composingNews ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立動態' : '+ Create Feed')}
             </button>
@@ -528,7 +549,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           {(isGroupAdmin || isAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => setComposingEvent((v) => !v)}
-              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
             >
               {composingEvent ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立活動' : '+ Create Event')}
             </button>
@@ -931,13 +952,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Members */}
         {viewTab === 'members' && (
           <div className="space-y-3">
-            <input
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder={zh ? '搜尋成員…' : 'Search members…'}
-              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
+            <p className="text-xs text-gray-400 dark:text-gray-500">
               {members.length + (isGroupAdmin ? joinRequests.length : 0)}{' '}
               {zh ? '位成員' : (members.length + (isGroupAdmin ? joinRequests.length : 0)) === 1 ? 'member' : 'members'}
               {isGroupAdmin && joinRequests.length > 0 && (
@@ -946,6 +961,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </span>
               )}
             </p>
+            <input
+              value={memberSearch}
+              onChange={(e) => setMemberSearch(e.target.value)}
+              placeholder={zh ? '搜尋成員…' : 'Search members…'}
+              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
             {/* Pending join requests shown inline at top – group admin only */}
             {isGroupAdmin && joinRequests.map((req) => (
               <div key={`req-${req.id}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 shadow-sm">
@@ -995,47 +1016,82 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             }).map((member) => {
               const isOwnRow = member.userId === user?.id;
               const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+              const isRenaming = renamingMemberId === member.userId;
               return (
-              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-gray-900 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
-                    {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
-                    )}
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                      member.role === 'GROUP_ADMIN'
-                        ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
-                    </span>
-                    {member.childGroupName && (
-                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                        {member.childGroupName}
+              <div key={member.userId} className="bg-white dark:bg-gray-900 px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
+                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
+                      )}
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                        member.role === 'GROUP_ADMIN'
+                          ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                      }`}>
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
                       </span>
+                      {member.childGroupName && (
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                          {member.childGroupName}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
+                    </p>
+                    {isGroupAdmin && (member.email || member.phoneE164) && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
-                  </p>
-                  {isGroupAdmin && (member.email || member.phoneE164) && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
+                  {isGroupAdmin && !isOwnRow && (
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                      <button
+                        onClick={() => { setRenamingMemberId(member.userId); setRenameInput(member.groupNickname ?? member.displayName ?? ''); }}
+                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                      >
+                        {zh ? '重新命名' : 'Rename'}
+                      </button>
+                      <button
+                        onClick={() => handleChangeRole(member.userId, member.role)}
+                        className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                      >
+                        {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                      </button>
+                      <button
+                        onClick={() => handleRemoveMember(member.userId)}
+                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                      >
+                        {zh ? '移除' : 'Remove'}
+                      </button>
+                    </div>
                   )}
                 </div>
-                {isGroupAdmin && !isOwnRow && (
-                  <div className="flex items-center gap-2 shrink-0">
+                {isRenaming && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <input
+                      autoFocus
+                      value={renameInput}
+                      onChange={(e) => setRenameInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleRenameMember(member.userId); if (e.key === 'Escape') setRenamingMemberId(null); }}
+                      placeholder={zh ? '群組內顯示名稱（留空以清除）' : 'In-group display name (blank to clear)'}
+                      maxLength={100}
+                      className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
                     <button
-                      onClick={() => handleChangeRole(member.userId, member.role)}
-                      className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
+                      onClick={() => handleRenameMember(member.userId)}
+                      disabled={renameSaving}
+                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                     >
-                      {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
+                      {renameSaving ? '…' : (zh ? '儲存' : 'Save')}
                     </button>
                     <button
-                      onClick={() => handleRemoveMember(member.userId)}
-                      className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                      onClick={() => setRenamingMemberId(null)}
+                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                     >
-                      {zh ? '移除' : 'Remove'}
+                      {zh ? '取消' : 'Cancel'}
                     </button>
                   </div>
                 )}

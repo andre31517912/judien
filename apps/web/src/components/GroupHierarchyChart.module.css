@@ -19,7 +19,7 @@
   max-width: calc(100vw - 2rem);
   max-height: calc(100vh - 4rem);
   width: fit-content;
-  min-width: 320px;
+  min-width: 360px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -124,7 +124,7 @@
 /* ── Scrollable chart area ── */
 .chartContainer {
   overflow: auto;
-  padding: 2.5rem 3rem;
+  padding: 2.5rem 3rem 3rem;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -136,127 +136,39 @@
   padding: 2rem;
 }
 
-/* ── Org-chart tree ── */
+/* ── Tree wrapper ── */
 .tree {
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+/* ── Node label wrapper (centers the box) ── */
+.nodeLabelWrap {
   display: flex;
   justify-content: center;
-}
-
-.tree ul {
-  padding-top: 28px;
-  position: relative;
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding-left: 0;
-  justify-content: center;
-}
-
-.tree ul::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  border-left: 2px solid #374151;
-  width: 0;
-  height: 28px;
-}
-
-:global(.dark) .tree ul::before {
-  border-left-color: #9ca3af;
-}
-
-.tree li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  list-style-type: none;
-  position: relative;
-  padding: 28px 14px 0;
-}
-
-/* Horizontal connector lines */
-.tree li::before,
-.tree li::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 50%;
-  border-top: 2px solid #374151;
-  width: 50%;
-  height: 28px;
-}
-
-:global(.dark) .tree li::before,
-:global(.dark) .tree li::after {
-  border-top-color: #9ca3af;
-}
-
-.tree li::after {
-  right: auto;
-  left: 50%;
-  border-left: 2px solid #374151;
-  border-top: none;
-}
-
-:global(.dark) .tree li::after {
-  border-left-color: #9ca3af;
-}
-
-/* Only child: no horizontal lines */
-.tree li:only-child::after,
-.tree li:only-child::before {
-  display: none;
-}
-
-.tree li:only-child {
-  padding-top: 0;
-}
-
-/* First child: no left portion */
-.tree li:first-child::before {
-  border: 0 none;
-}
-
-/* Last child: no right after */
-.tree li:last-child::after {
-  border-top: 0 none;
-}
-
-/* Cap corners */
-.tree li:last-child::before {
-  border-right: 2px solid #374151;
-  border-radius: 0 5px 0 0;
-}
-
-:global(.dark) .tree li:last-child::before {
-  border-right-color: #9ca3af;
-}
-
-.tree li:first-child::after {
-  border-radius: 5px 0 0 0;
+  padding: 4px 0;
 }
 
 /* ── Node boxes ── */
 .nodeBox {
   display: inline-block;
-  padding: 0.5rem 1.125rem;
-  border-radius: 0.75rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 0.625rem;
   font-size: 0.8125rem;
   font-weight: 500;
   white-space: nowrap;
   text-decoration: none;
-  transition: transform 0.1s, box-shadow 0.15s;
+  transition: transform 0.12s, box-shadow 0.15s;
   cursor: pointer;
-  max-width: 180px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .nodeBox:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .nodeBoxDefault {
@@ -286,18 +198,18 @@
   border: 2px solid #6366f1;
   color: #4338ca;
   font-weight: 700;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
 }
 
 .nodeBoxCurrent:hover {
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22), 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 :global(.dark) .nodeBoxCurrent {
   background: rgba(99, 102, 241, 0.15);
   border-color: #818cf8;
   color: #a5b4fc;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 /* Loading spinner */
@@ -311,7 +223,5 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
