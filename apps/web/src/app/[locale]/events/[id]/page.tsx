@@ -33,6 +33,7 @@ export default function EventDetailPage() {
   const [noReason, setNoReason] = useState('');
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
   // guest list
   type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
@@ -233,6 +234,11 @@ export default function EventDetailPage() {
       setRsvpStatus(ev.myRsvp);
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setLoading(false);
+      if (ev.groupId) {
+        apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
+          .then(data => setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN'))
+          .catch(() => {});
+      }
     }).catch(() => setLoading(false));
   }, [params.id]);
 
@@ -390,7 +396,7 @@ export default function EventDetailPage() {
         />
       )}
       {/* Admin toolbar */}
-      {(user?.role === 'ADMIN' || event.createdById === user?.id) && (
+      {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700 flex-wrap">
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
@@ -652,7 +658,7 @@ export default function EventDetailPage() {
       )}
 
       {/* Send Message Blast (admin or event creator) */}
-      {(user?.role === 'ADMIN' || event.createdById === user?.id) && (
+      {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
           <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>

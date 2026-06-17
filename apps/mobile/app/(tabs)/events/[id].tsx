@@ -50,6 +50,7 @@ export default function EventDetailScreen() {
   const { bottom: safeBottom } = useSafeAreaInsets();
   const zh = i18n.language === 'zh';
   const isAdmin = user?.role === 'ADMIN';
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const scrollRef = useRef<ScrollView>(null);
@@ -110,7 +111,15 @@ export default function EventDetailScreen() {
 
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
-      .then((ev) => { setEvent(ev); setMyRsvp(ev.myRsvp); })
+      .then((ev) => {
+        setEvent(ev);
+        setMyRsvp(ev.myRsvp);
+        if (ev.groupId) {
+          apiFetch<{ membership?: { role: string } | null }>(`/groups/${ev.groupId}`)
+            .then(data => setIsGroupAdmin(data.membership?.role === 'GROUP_ADMIN'))
+            .catch(() => {});
+        }
+      })
       .catch(() => setFetchFailed(true));
     apiFetch<Comment[] | { data: Comment[] }>(`/events/${id}/comments`)
       .then((res) => setComments(Array.isArray(res) ? res : res.data))
@@ -352,7 +361,7 @@ export default function EventDetailScreen() {
         )}
         <View style={styles.body}>
 
-          {(isAdmin || event.createdById === user?.id) && (
+          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.adminBar}>
               <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
                 <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
@@ -440,7 +449,7 @@ export default function EventDetailScreen() {
             )}
           </View>
 
-          {(isAdmin || event.createdById === user?.id) && (
+          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
                 <Text style={styles.blastToggleText}>📣 {zh ? '發送訊息給出席者' : 'Message attendees'}</Text>

@@ -74,7 +74,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
         .card-hover:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(99,102,241,.12);}
       `}</style>
 
-      <div className="-mx-4 -my-6 relative overflow-x-hidden bg-white dark:bg-gray-950">
+      <div className="relative overflow-x-hidden bg-white dark:bg-gray-950" style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', marginTop: '-1.5rem', marginBottom: '-1.5rem' }}>
 
         {/* ── Floating orbs ── */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -110,7 +110,7 @@ export default function LandingPage({ params }: { params: { locale: string } }) 
                 href={`/${locale}/login`}
                 className="px-8 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200 font-semibold text-base backdrop-blur-sm transition-all"
               >
-                Log In
+                Sign In
               </Link>
             </div>
           </div>
