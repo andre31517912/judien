@@ -143,16 +143,16 @@ export class RsvpService {
 
     // PENDING bucket: members/invitees who haven't replied
     let pending: { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[] | undefined;
-    if (event.groupId && isCallerAdmin) {
+    if (event.groupId && userId) {
       const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
       pending = memberships
         .filter((m) => !rsvpUserIds.has(m.userId))
         .map((m) => ({
-          handle: m.user.email ?? '',
+          handle: isCallerAdmin ? (m.user.email ?? '') : this.maskIdentifier(m.user.email ?? ''),
           displayName: m.groupNickname ?? m.user.displayName ?? null,
           source: 'user' as const,
-          ...(m.user.email ? { email: m.user.email } : {}),
-          ...(m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
+          ...(isCallerAdmin && m.user.email ? { email: m.user.email } : {}),
+          ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
         }));
     } else if (!event.groupId && userId) {
       const invites = await this.prisma.eventInvite.findMany({
@@ -170,36 +170,36 @@ export class RsvpService {
         }));
       }
 
-      if (isCallerAdmin) {
-        const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
-        const rsvpUserEmails = new Set(
-          rsvps.filter((r) => r.user.email).map((r) => r.user.email!.toLowerCase())
-        );
-        const guestRsvpEmails = new Set(guestRsvps.map((r) => r.guestEmail.toLowerCase()));
+      const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
+      const rsvpUserEmails = new Set(
+        rsvps.filter((r) => r.user.email).map((r) => r.user.email!.toLowerCase())
+      );
+      const guestRsvpEmails = new Set(guestRsvps.map((r) => r.guestEmail.toLowerCase()));
 
-        pending = [];
-        for (const inv of invites) {
-          if (inv.acceptedByUserId && !rsvpUserIds.has(inv.acceptedByUserId)) {
+      pending = [];
+      for (const inv of invites) {
+        if (inv.acceptedByUserId && !rsvpUserIds.has(inv.acceptedByUserId)) {
+          const entry: typeof pending[number] = {
+            handle: isCallerAdmin ? (inv.acceptedBy?.email ?? '') : this.maskIdentifier(inv.acceptedBy?.email ?? ''),
+            displayName: inv.acceptedBy?.displayName ?? null,
+            source: 'user' as const,
+          };
+          if (isCallerAdmin && inv.acceptedBy?.email) entry.email = inv.acceptedBy.email;
+          if (isCallerAdmin && (inv.acceptedBy as any)?.phoneE164) entry.phone = (inv.acceptedBy as any).phoneE164;
+          pending.push(entry);
+        } else if (!inv.acceptedByUserId && inv.guestEmail) {
+          const emailLower = inv.guestEmail.toLowerCase();
+          if (!guestRsvpEmails.has(emailLower) && !rsvpUserEmails.has(emailLower)) {
             const entry: typeof pending[number] = {
-              handle: inv.acceptedBy?.email ?? '',
-              displayName: inv.acceptedBy?.displayName ?? null,
-              source: 'user' as const,
+              handle: isCallerAdmin ? inv.guestEmail : this.maskIdentifier(inv.guestEmail),
+              displayName: inv.guestName ?? null,
+              source: 'guest' as const,
             };
-            if (inv.acceptedBy?.email) entry.email = inv.acceptedBy.email;
-            if ((inv.acceptedBy as any)?.phoneE164) entry.phone = (inv.acceptedBy as any).phoneE164;
-            pending.push(entry);
-          } else if (!inv.acceptedByUserId && inv.guestEmail) {
-            const emailLower = inv.guestEmail.toLowerCase();
-            if (!guestRsvpEmails.has(emailLower) && !rsvpUserEmails.has(emailLower)) {
-              const entry: typeof pending[number] = {
-                handle: inv.guestEmail,
-                displayName: inv.guestName ?? null,
-                source: 'guest' as const,
-              };
+            if (isCallerAdmin) {
               entry.email = inv.guestEmail;
               if (inv.guestPhone) entry.phone = inv.guestPhone;
-              pending.push(entry);
             }
+            pending.push(entry);
           }
         }
       }

@@ -5,8 +5,6 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import Link from 'next/link';
-
 export default function ProfileSettingsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, refresh } = useAuth();
@@ -179,11 +177,6 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
     <div className="py-6 px-4">
       {/* Compact page header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href={`/${params.locale}/profile`} className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '編輯個人資料' : 'Edit Profile'}</h1>
         <span className={`ml-auto text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
           {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
@@ -241,7 +234,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="flex flex-col gap-4">
+      <form onSubmit={handleSave} className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '姓名' : 'Full Name'}</label>
           <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
@@ -254,39 +247,12 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           <div className="flex gap-2">
             {(['en', 'zh'] as const).map((l) => (
               <button key={l} type="button" onClick={() => setLang(l)}
-                className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors ${lang === l ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'}`}>
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors ${lang === l ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'}`}>
                 {l === 'en' ? 'English' : '中文'}
               </button>
             ))}
           </div>
         </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '主題' : 'Theme'}</label>
-          <div className="flex gap-2">
-            {(['light', 'dark'] as const).map((t) => (
-              <button key={t} type="button" onClick={() => setPendingTheme(t)}
-                className={`px-5 py-3 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1.5 ${pendingTheme === t ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'}`}>
-                {t === 'light' ? '☀️ ' : '🌙 '}
-                {t === 'light' ? (zh ? '淺色' : 'Light') : (zh ? '深色' : 'Dark')}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3">
-          <p className="text-sm font-medium dark:text-gray-200">{zh ? '通知設定' : 'Notification settings'}</p>
-          <div className="flex items-center gap-3">
-            <input type="checkbox" id="muteInApp" checked={muteInApp} onChange={(e) => setMuteInApp(e.target.checked)} className="w-4 h-4" />
-            <label htmlFor="muteInApp" className="text-sm dark:text-gray-300">{zh ? '靜音所有站內通知（通知鈴鐺）' : 'Mute all in-app notifications (bell)'}</label>
-          </div>
-          <div className="flex items-center gap-3">
-            <input type="checkbox" id="muteEmail" checked={muteEmail} onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
-            <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">{zh ? '靜音電子郵件通知' : 'Mute email notifications'}</label>
-          </div>
-        </div>
-
-        {/* LINE account linking for push notifications — removed; LINE login already handles account linking */}
 
         <div>
           <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '電話號碼' : 'Phone'}</label>
@@ -309,6 +275,19 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               {zh ? '您是透過 LINE 登入，目前無真實電子郵件。設定後可用電子郵件+密碼登入。' : 'You signed in with LINE and have no real email set. Add one here to also be able to log in with email + password.'}
             </p>
           )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1 dark:text-gray-300">{zh ? '主題' : 'Theme'}</label>
+          <div className="flex gap-2">
+            {(['light', 'dark'] as const).map((t) => (
+              <button key={t} type="button" onClick={() => setPendingTheme(t)}
+                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${pendingTheme === t ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-indigo-400'}`}>
+                {t === 'light' ? '☀️ ' : '🌙 '}
+                {t === 'light' ? (zh ? '淺色' : 'Light') : (zh ? '深色' : 'Dark')}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
@@ -336,8 +315,20 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           </div>
         </div>
 
+        <div className="col-span-2 border border-gray-200 dark:border-gray-700 rounded-lg p-4 flex flex-col gap-3">
+          <p className="text-sm font-medium dark:text-gray-200">{zh ? '通知設定' : 'Notification settings'}</p>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="muteInApp" checked={muteInApp} onChange={(e) => setMuteInApp(e.target.checked)} className="w-4 h-4" />
+            <label htmlFor="muteInApp" className="text-sm dark:text-gray-300">{zh ? '靜音所有站內通知（通知鈴鐺）' : 'Mute all in-app notifications (bell)'}</label>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="checkbox" id="muteEmail" checked={muteEmail} onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
+            <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">{zh ? '靜音電子郵件通知' : 'Mute email notifications'}</label>
+          </div>
+        </div>
+
         <button type="submit" disabled={saving}
-          className="bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition">
+          className="col-span-2 bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 font-medium disabled:opacity-60 transition">
           {saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
         </button>
       </form>
@@ -356,7 +347,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
             </p>
             <button type="button" disabled={adminInviteGenerating} onClick={() => generateInvite('ADMIN')}
               className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-              {adminInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生平台管理員邀請連結' : 'Generate Platform Admin Invite Link')}
+              {adminInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生連結' : 'Generate Link')}
             </button>
             {adminInviteLink && (
               <div className="mt-4 space-y-2">
@@ -400,14 +391,14 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           {/* Normal User welcome link */}
           <div className="rounded-2xl border border-emerald-100 dark:border-emerald-900/40 bg-emerald-50 dark:bg-emerald-950/20 p-6">
             <h2 className="text-base font-semibold text-emerald-900 dark:text-emerald-300 mb-1">
-              {zh ? '產生一般用戶歡迎連結' : 'Generate User Welcome Link'}
+              {zh ? '邀請新平台用戶' : 'Invite New Platform User'}
             </h2>
             <p className="text-sm text-emerald-700 dark:text-emerald-400 mb-4">
               {zh ? '產生一個邀請連結，讓尚未註冊的人以一般用戶身份加入平台。一般用戶無超級使用者權限。' : 'Generate a link for someone who doesn\'t have an account yet to sign up as a regular user — no admin privileges.'}
             </p>
             <button type="button" disabled={userInviteGenerating} onClick={() => generateInvite('USER')}
               className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
-              {userInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生一般用戶邀請連結' : 'Generate User Welcome Link')}
+              {userInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生連結' : 'Generate Link')}
             </button>
             {userInviteLink && (
               <div className="mt-4 space-y-2">
