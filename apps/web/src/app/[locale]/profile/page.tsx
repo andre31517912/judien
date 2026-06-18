@@ -55,63 +55,78 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const displayPhone = (user as any)?.phoneE164 ?? '';
 
   return (
-    <div className="max-w-sm mx-auto pt-4 pb-10 px-4">
-      {/* Avatar */}
-      <div className="flex flex-col items-center gap-3 mb-8">
-        <div className="relative">
-          {photoUrl ? (
-            <img src={photoUrl} alt="Profile" className="w-28 h-28 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
-              <svg className="w-16 h-16 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-              </svg>
+    <div className="max-w-lg mx-auto py-6">
+      {/* Profile card */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+        {/* Top band */}
+        <div className="h-20 bg-gradient-to-r from-indigo-500 to-violet-600" />
+
+        {/* Avatar + name */}
+        <div className="px-6 pb-6">
+          <div className="-mt-10 mb-4">
+            <div className="relative inline-block">
+              {photoUrl ? (
+                <img src={photoUrl} alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-900 shadow" />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-white dark:border-gray-900 shadow">
+                  <svg className="w-11 h-11 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                  </svg>
+                </div>
+              )}
+              <label className={`absolute bottom-0 right-0 w-7 h-7 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                <input type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
+                <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </label>
             </div>
-          )}
-          <label className={`absolute bottom-0 right-0 w-9 h-9 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow-md transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-            <input type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
-            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </label>
+          </div>
+
+          {photoUploading && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{zh ? '上傳中…' : 'Uploading…'}</p>}
+
+          <div className="flex items-center gap-2 mb-4">
+            <p className="text-lg font-bold text-gray-900 dark:text-white">
+              {(user as any).displayName || <span className="font-normal text-gray-400 dark:text-gray-500">{zh ? '未設定姓名' : 'No name set'}</span>}
+            </p>
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
+              {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+            </span>
+          </div>
+
+          {/* Info rows + Edit button on same line */}
+          <div className="flex items-end justify-between gap-3">
+            <div className="space-y-2 min-w-0">
+              {displayEmail && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <span className="truncate">{displayEmail}</span>
+                </div>
+              )}
+              {displayPhone && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  {displayPhone}
+                </div>
+              )}
+              {!displayEmail && !displayPhone && (
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚未設定聯絡資訊' : 'No contact info set'}</p>
+              )}
+            </div>
+            <Link
+              href={`/${params.locale}/profile/settings`}
+              className="shrink-0 rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              {zh ? '編輯' : 'Edit Profile'}
+            </Link>
+          </div>
         </div>
-        {photoUploading && <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '上傳中…' : 'Uploading…'}</p>}
-        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
-          {user.role === 'ADMIN' ? (zh ? '平台管理員' : 'Admin') : (zh ? '用戶' : 'User')}
-        </span>
       </div>
-
-      {/* Info cards */}
-      <div className="space-y-3 mb-8">
-        <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{zh ? '姓名' : 'Name'}</p>
-          <p className="text-base font-semibold text-gray-900 dark:text-white">
-            {(user as any).displayName || <span className="font-normal text-gray-400 dark:text-gray-500">{zh ? '未設定' : 'Not set'}</span>}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{zh ? '電子郵件' : 'Email'}</p>
-          <p className="text-base text-gray-900 dark:text-white">
-            {displayEmail || <span className="text-sm text-gray-400 dark:text-gray-500">{zh ? '未設定' : 'Not set'}</span>}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-5 py-4">
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">{zh ? '電話' : 'Phone'}</p>
-          <p className="text-base text-gray-900 dark:text-white">
-            {displayPhone || <span className="text-sm text-gray-400 dark:text-gray-500">{zh ? '未設定' : 'Not set'}</span>}
-          </p>
-        </div>
-      </div>
-
-      <Link
-        href={`/${params.locale}/profile/settings`}
-        className="block w-full text-center rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 transition"
-      >
-        {zh ? '編輯個人資料' : 'Edit Profile'}
-      </Link>
     </div>
   );
 }

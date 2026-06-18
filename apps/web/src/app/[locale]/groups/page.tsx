@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, resolveImageUrl } from '@/lib/api';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   DndContext,
   closestCenter,
@@ -116,13 +117,16 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
 export default function MyGroupsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [invites, setInvites] = useState<MyInvite[]>([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [searchQuery, setSearchQuery] = useState('');
+  // Search query comes from URL ?q= param (set by the NavBar search input)
+  const searchQuery = searchParams.get('q') ?? '';
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [joinMsg, setJoinMsg] = useState('');
@@ -192,21 +196,21 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    setSearchLoading(true);
-    setSearchResults([]);
-    setJoinMsg('');
-    try {
-      const res = await apiFetch<SearchResult[]>(`/groups/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchResults(res);
-    } catch (err: Error | unknown) {
-      setError((err as Error).message ?? 'Search failed.');
-    } finally {
-      setSearchLoading(false);
+  // Auto-trigger group search when URL ?q= param changes
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
     }
-  };
+    let cancelled = false;
+    setSearchLoading(true);
+    setJoinMsg('');
+    apiFetch<SearchResult[]>(`/groups/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      .then((res) => { if (!cancelled) setSearchResults(res); })
+      .catch((err: Error | unknown) => { if (!cancelled) setError((err as Error).message ?? 'Search failed.'); })
+      .finally(() => { if (!cancelled) setSearchLoading(false); });
+    return () => { cancelled = true; };
+  }, [searchQuery]);
 
   const handleRequestJoin = async (groupId: string) => {
     setJoinMsg('');
@@ -239,11 +243,11 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組' : 'Groups'}</h1>
+      {/* Header row */}
+      <div className="flex items-center justify-end gap-4">
         <Link
           href={`/${params.locale}/admin/groups/new`}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
         >
           {zh ? '+ 建立群組' : '+ Create Group'}
         </Link>
@@ -251,22 +255,12 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
 
       {error && <p className="text-sm text-red-500">{error}</p>}
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex gap-3">
-        <input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={zh ? '搜尋群組名稱…' : 'Search by group name…'}
-          className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <button
-          type="submit"
-          disabled={searchLoading || !searchQuery.trim()}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-        >
-          {searchLoading ? (zh ? '搜尋中…' : 'Searching…') : (zh ? '搜尋' : 'Search')}
-        </button>
-      </form>
+      {/* Search loading indicator */}
+      {searchLoading && (
+        <div className="flex justify-center py-3">
+          <div className="w-5 h-5 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 rounded-full animate-spin" />
+        </div>
+      )}
 
       {joinMsg && (
         <p className={`text-sm ${joinSuccess ? 'text-green-600' : 'text-red-500'}`}>{joinMsg}</p>
@@ -303,7 +297,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
         </div>
       )}
 
-      {searchResults.length === 0 && searchQuery && !searchLoading && (
+      {searchResults.length === 0 && searchQuery.trim() && !searchLoading && (
         <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '未找到符合的群組。' : 'No groups found.'}</p>
       )}
 

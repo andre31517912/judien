@@ -176,17 +176,17 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   if (!user) return <p className="text-gray-400">{zh ? '請先登入。' : 'Please log in.'}</p>;
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-4">
+    <div className="py-6 px-4">
+      {/* Compact page header */}
       <div className="flex items-center gap-3 mb-6">
-        <Link href={`/${params.locale}/profile`} className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
-          ‹ {zh ? '返回個人資料' : 'Back to Profile'}
+        <Link href={`/${params.locale}/profile`} className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
         </Link>
-      </div>
-
-      <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold dark:text-white">{zh ? '編輯個人資料' : 'Edit Profile'}</h1>
-        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
-          {user.role === 'ADMIN' ? (zh ? '平台管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '編輯個人資料' : 'Edit Profile'}</h1>
+        <span className={`ml-auto text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
+          {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
         </span>
       </div>
 
@@ -355,7 +355,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               {zh ? '產生一個邀請連結，讓對方以平台管理員身份完成註冊。平台管理員擁有全平台超級使用者權限。' : 'Generate a link so someone can sign up as a Platform Admin — a superuser with full privileges across all groups and features.'}
             </p>
             <button type="button" disabled={adminInviteGenerating} onClick={() => generateInvite('ADMIN')}
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {adminInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生平台管理員邀請連結' : 'Generate Platform Admin Invite Link')}
             </button>
             {adminInviteLink && (
@@ -460,7 +460,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
         <button
           type="button"
           onClick={() => setShowDeleteConfirm(true)}
-          className="rounded-lg border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
+          className="rounded-xl border border-red-300 dark:border-red-700 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition"
         >
           {zh ? '刪除帳號' : 'Delete Account'}
         </button>
@@ -502,7 +502,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
                     setShowDeleteConfirm(false);
                   }
                 }}
-                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition"
+                className="flex-1 rounded-xl bg-red-600 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 transition"
               >
                 {deleting ? (zh ? '刪除中…' : 'Deleting…') : (zh ? '永久刪除' : 'Delete Forever')}
               </button>

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import GroupHierarchyChart from '@/components/GroupHierarchyChart';
+import dynamic from 'next/dynamic';
+const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';

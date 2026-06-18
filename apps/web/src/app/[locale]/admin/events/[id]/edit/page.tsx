@@ -230,7 +230,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   );
 
   return (
-    <div className="max-w-2xl mx-auto mt-6 pb-20 space-y-6">
+    <div className="mt-6 pb-20 space-y-6">
       {showDeleteModal && (
         <ConfirmModal
           title={zh ? '刪除活動' : 'Delete Event'}
@@ -252,14 +252,14 @@ export default function EditEventPage({ params }: { params: { locale: string; id
           type="button"
           onClick={doUpdate}
           disabled={submitting}
-          className="text-sm bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60 transition"
+          className="text-sm bg-indigo-600 text-white px-3 py-2 rounded-xl hover:bg-indigo-700 disabled:opacity-60 transition"
         >
           {submitting ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存變更' : 'Save Changes')}
         </button>
         <button
           type="button"
           onClick={() => setShowDeleteModal(true)}
-          className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-md hover:bg-red-600"
+          className="text-sm bg-red-500 text-white px-3 py-1.5 rounded-xl hover:bg-red-600"
         >
           {zh ? '刪除活動' : 'Delete Event'}
         </button>
@@ -407,7 +407,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             type="button"
             onClick={handleSendInvites}
             disabled={inviting || selectedMemberIds.size === 0}
-            className="mt-3 bg-indigo-600 text-white text-sm px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-50 transition"
+            className="mt-3 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition"
           >
             {inviting
               ? (zh ? '傳送中…' : 'Sending…')
@@ -471,7 +471,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               setCustomReminderValue('');
             }}
             disabled={!customReminderValue || parseInt(customReminderValue, 10) < 1}
-            className="rounded-md bg-indigo-600 text-white px-3 py-1.5 text-sm hover:bg-indigo-700 disabled:opacity-50 transition"
+            className="rounded-xl bg-indigo-600 text-white px-3 py-1.5 text-sm hover:bg-indigo-700 disabled:opacity-50 transition"
           >
             + {zh ? '新增' : 'Add'}
           </button>
@@ -505,7 +505,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         {reminders.length > 0 && (
           <button onClick={handleSaveReminders}
             disabled={savingReminders}
-            className="mt-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60 transition">
+            className="mt-2 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 disabled:opacity-60 transition">
             {savingReminders ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存提醒' : 'Save Reminders')}
           </button>
         )}

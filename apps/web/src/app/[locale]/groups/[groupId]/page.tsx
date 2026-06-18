@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import GroupHierarchyChart from '@/components/GroupHierarchyChart';
+const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
@@ -449,18 +449,18 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Banner */}
         {group.photoUrl ? (
-          <div className="relative w-full h-40 sm:h-56">
+          <div className="relative w-full h-32 sm:h-44">
             <Image src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} fill className="object-cover" />
           </div>
         ) : (
-          <div className="w-full h-40 sm:h-56 bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-            <svg className="w-14 h-14 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <div className="w-full h-32 sm:h-44 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">
+            <svg className="w-12 h-12 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
           </div>
         )}
-        <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="px-4 pb-0 pt-4 sm:px-6 lg:px-8">
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1 flex-1 min-w-0">
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
             {group.description && (
@@ -541,15 +541,15 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           {(isGroupAdmin || isAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => setComposingNews((v) => !v)}
-              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+              className="shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
             >
-              {composingNews ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立動態' : '+ Create Feed')}
+              {composingNews ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立動態' : '+ Create Post')}
             </button>
           )}
           {(isGroupAdmin || isAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => setComposingEvent((v) => !v)}
-              className="shrink-0 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+              className="shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
             >
               {composingEvent ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立活動' : '+ Create Event')}
             </button>
@@ -584,7 +584,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   <button
                     type="submit"
                     disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                   >
                     {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
                   </button>
@@ -592,9 +592,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </form>
             )}
             {news.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">📢</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有公告' : 'No announcements yet'}</p>
+              <div className="py-16 text-center">
+                <p className="text-5xl mb-3">📢</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '目前沒有動態' : 'No feeds yet'}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '管理員會在這裡發布最新公告' : 'Group updates will appear here'}</p>
               </div>
             ) : news.map((item) => {
               const canEdit = item.createdById === user.id || isGroupAdmin || user.role === 'ADMIN';
@@ -619,14 +620,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => setEditingId(null)}
-                          className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                          className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                         >
                           {zh ? '取消' : 'Cancel'}
                         </button>
                         <button
                           onClick={() => handleUpdateNews(item.id)}
                           disabled={editSaving}
-                          className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition"
+                          className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition"
                         >
                           {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
                         </button>
@@ -770,7 +771,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   <button
                     type="submit"
                     disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                   >
                     {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
                   </button>
@@ -778,9 +779,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               </form>
             )}
             {events.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">📅</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</p>
+              <div className="py-16 text-center">
+                <p className="text-5xl mb-3">📅</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '目前沒有活動' : 'No events yet'}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '即將舉辦的活動會顯示在這裡' : 'Upcoming events will appear here'}</p>
               </div>
             ) : events.map((ev) => (
               <div
@@ -926,7 +928,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   <button
                     type="submit"
                     disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                   >
                     {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}
                   </button>
@@ -936,9 +938,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             {pastLoading ? (
               <p className="py-16 text-center text-sm text-gray-400 dark:text-gray-500">{zh ? '載入中…' : 'Loading…'}</p>
             ) : pastEvents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 py-16 text-center">
-                <p className="text-3xl">🕐</p>
-                <p className="mt-3 text-sm text-gray-400 dark:text-gray-500">{zh ? '沒有過去的活動記錄' : 'No past events'}</p>
+              <div className="py-16 text-center">
+                <p className="text-5xl mb-3">🕐</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '沒有過去的活動' : 'No events yet'}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '過去舉辦的活動會顯示在這裡' : 'Past events will appear here'}</p>
               </div>
             ) : pastEvents.map((ev) => (
               <div
@@ -979,153 +982,164 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
         {/* Members */}
         {viewTab === 'members' && (
-          <div className="space-y-3">
-            <p className="text-xs text-gray-400 dark:text-gray-500">
-              {members.length + (isGroupAdmin ? joinRequests.length : 0)}{' '}
-              {zh ? '位成員' : (members.length + (isGroupAdmin ? joinRequests.length : 0)) === 1 ? 'member' : 'members'}
+          <div className="space-y-2">
+            {/* Count above the card */}
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              {members.length}{' '}
+              {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}
               {isGroupAdmin && joinRequests.length > 0 && (
                 <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
                   {joinRequests.length} {zh ? '待審核' : 'pending'}
                 </span>
               )}
             </p>
-            <input
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder={zh ? '搜尋成員…' : 'Search members…'}
-              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            {/* Pending join requests shown inline at top – group admin only */}
-            {isGroupAdmin && joinRequests.map((req) => (
-              <div key={`req-${req.id}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 shadow-sm">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
-                    <span className="rounded-full bg-amber-200 dark:bg-amber-800/60 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
-                      {zh ? '申請中' : 'Pending'}
-                    </span>
-                  </div>
-                  {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
-                  <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleReviewJoinRequest(req.id, 'approve')}
-                    disabled={reviewingId === req.id}
-                    className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                  >
-                    {zh ? '批准' : 'Approve'}
-                  </button>
-                  <button
-                    onClick={() => handleReviewJoinRequest(req.id, 'reject')}
-                    disabled={reviewingId === req.id}
-                    className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
-                  >
-                    {zh ? '拒絕' : 'Decline'}
-                  </button>
+
+            {/* Single card */}
+            <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+              {/* Card header: search */}
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder={zh ? '搜尋成員…' : 'Search members…'}
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
                 </div>
               </div>
-            ))}
-            <div className="divide-y divide-gray-100 dark:divide-gray-800 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800">
-            {[...members].filter((m) => {
-              const term = memberSearch.trim().toLowerCase();
-              if (!term) return true;
-              return (
-                (m.groupNickname ?? '').toLowerCase().includes(term) ||
-                (m.displayName ?? '').toLowerCase().includes(term) ||
-                (m.email ?? '').toLowerCase().includes(term) ||
-                (m.phoneE164 ?? '').includes(term)
-              );
-            }).sort((a, b) => {
-              if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
-              const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
-              const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
-              return na.localeCompare(nb);
-            }).map((member) => {
-              const isOwnRow = member.userId === user?.id;
-              const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
-              const isRenaming = renamingMemberId === member.userId;
-              return (
-              <div key={member.userId} className="bg-white dark:bg-gray-900 px-4 py-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
-                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
-                      )}
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                        member.role === 'GROUP_ADMIN'
-                          ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {member.role === 'GROUP_ADMIN' ? (zh ? '群組管理員' : 'Group Admin') : (zh ? '群組成員' : 'Group Member')}
+
+              {/* Pending join requests – group admin only */}
+              {isGroupAdmin && joinRequests.map((req) => (
+                <div key={`req-${req.id}`} className="flex flex-wrap items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-100 dark:border-amber-900/40 px-4 py-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
+                      <span className="rounded-full bg-amber-200 dark:bg-amber-800/60 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                        {zh ? '申請中' : 'Pending'}
                       </span>
-                      {member.childGroupName && (
-                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                          {member.childGroupName}
-                        </span>
+                    </div>
+                    {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleReviewJoinRequest(req.id, 'approve')}
+                      disabled={reviewingId === req.id}
+                      className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                    >
+                      {zh ? '批准' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => handleReviewJoinRequest(req.id, 'reject')}
+                      disabled={reviewingId === req.id}
+                      className="rounded-xl border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
+                    >
+                      {zh ? '拒絕' : 'Decline'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Member rows */}
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {[...members].filter((m) => {
+                  const term = memberSearch.trim().toLowerCase();
+                  if (!term) return true;
+                  return (
+                    (m.groupNickname ?? '').toLowerCase().includes(term) ||
+                    (m.displayName ?? '').toLowerCase().includes(term) ||
+                    (m.email ?? '').toLowerCase().includes(term) ||
+                    (m.phoneE164 ?? '').includes(term)
+                  );
+                }).sort((a, b) => {
+                  if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+                  const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+                  const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+                  return na.localeCompare(nb);
+                }).map((member) => {
+                  const isOwnRow = member.userId === user?.id;
+                  const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+                  const isRenaming = renamingMemberId === member.userId;
+                  return (
+                    <div key={member.userId} className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{shownName}</span>
+                          {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</span>
+                          )}
+                          <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
+                            member.role === 'GROUP_ADMIN'
+                              ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+                          </span>
+                          {member.childGroupName && (
+                            <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shrink-0">
+                              {member.childGroupName}
+                            </span>
+                          )}
+                          {isGroupAdmin && (member.email || member.phoneE164) && (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</span>
+                          )}
+                        </div>
+                        {isGroupAdmin && !isOwnRow && (
+                          <div className="flex items-center shrink-0">
+                            <button
+                              onClick={() => { setRenamingMemberId(member.userId); setRenameInput(member.groupNickname ?? member.displayName ?? ''); }}
+                              className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition"
+                            >
+                              {zh ? '改名' : 'Rename'}
+                            </button>
+                            <button
+                              onClick={() => handleChangeRole(member.userId, member.role)}
+                              className="px-2 py-1 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition"
+                            >
+                              {member.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                            </button>
+                            <button
+                              onClick={() => handleRemoveMember(member.userId)}
+                              className="px-2 py-1 text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                            >
+                              {zh ? '移除' : 'Remove'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {isRenaming && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <input
+                            autoFocus
+                            value={renameInput}
+                            onChange={(e) => setRenameInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleRenameMember(member.userId); if (e.key === 'Escape') setRenamingMemberId(null); }}
+                            placeholder={zh ? '群組內顯示名稱（留空以清除）' : 'In-group display name (blank to clear)'}
+                            maxLength={100}
+                            className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                          <button
+                            onClick={() => handleRenameMember(member.userId)}
+                            disabled={renameSaving}
+                            className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
+                          >
+                            {renameSaving ? '…' : (zh ? '儲存' : 'Save')}
+                          </button>
+                          <button
+                            onClick={() => setRenamingMemberId(null)}
+                            className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                          >
+                            {zh ? '取消' : 'Cancel'}
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {member.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
-                    </p>
-                    {isGroupAdmin && (member.email || member.phoneE164) && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
-                    )}
-                  </div>
-                  {isGroupAdmin && !isOwnRow && (
-                    <div className="flex items-center gap-2 shrink-0 flex-wrap">
-                      <button
-                        onClick={() => { setRenamingMemberId(member.userId); setRenameInput(member.groupNickname ?? member.displayName ?? ''); }}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        {zh ? '重新命名' : 'Rename'}
-                      </button>
-                      <button
-                        onClick={() => handleChangeRole(member.userId, member.role)}
-                        className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
-                      >
-                        {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
-                      </button>
-                      <button
-                        onClick={() => handleRemoveMember(member.userId)}
-                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                      >
-                        {zh ? '移除' : 'Remove'}
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {isRenaming && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      autoFocus
-                      value={renameInput}
-                      onChange={(e) => setRenameInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleRenameMember(member.userId); if (e.key === 'Escape') setRenamingMemberId(null); }}
-                      placeholder={zh ? '群組內顯示名稱（留空以清除）' : 'In-group display name (blank to clear)'}
-                      maxLength={100}
-                      className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <button
-                      onClick={() => handleRenameMember(member.userId)}
-                      disabled={renameSaving}
-                      className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                    >
-                      {renameSaving ? '…' : (zh ? '儲存' : 'Save')}
-                    </button>
-                    <button
-                      onClick={() => setRenamingMemberId(null)}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                    >
-                      {zh ? '取消' : 'Cancel'}
-                    </button>
-                  </div>
-                )}
+                  );
+                })}
               </div>
-              );
-            })}
             </div>
           </div>
         )}

@@ -797,14 +797,26 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     return <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-sm text-red-700">{error || (zh ? '找不到此群組。' : 'Group not found.')}</div>;
   }
   return (
-    <div className="space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          {zh ? '群組設定' : 'Group Settings'} — {groupItem.group.name}
-        </h1>
+    <div className="space-y-6">
+      {/* Compact header */}
+      <div className="flex items-center gap-3">
+        <Link
+          href={`/${params.locale}/groups/${params.groupId}`}
+          className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition shrink-0"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </Link>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+            {groupItem.group.name}
+          </h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{zh ? '群組設定' : 'Group Settings'}</p>
+        </div>
         {joinRequests.length > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-700">
-            {joinRequests.length} {zh ? '件待審加入申請' : 'pending join requests'}
+          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
+            {joinRequests.length} {zh ? '待審核' : 'pending'}
           </span>
         )}
       </div>
@@ -891,7 +903,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           </div>
 
           <button type="submit" disabled={groupInfoSaving || !editName.trim()}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
             {groupInfoSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存群組資訊' : 'Save Group Info')}
           </button>
         </form>
@@ -910,7 +922,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   {req.note && <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 italic">"{req.note}"</p>}
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => handleReviewRequest(req.id, 'approve')} className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700">
+                  <button onClick={() => handleReviewRequest(req.id, 'approve')} className="rounded-xl bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700">
                     {zh ? '核准' : 'Approve'}
                   </button>
                   <button onClick={() => handleReviewRequest(req.id, 'reject')} className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -983,7 +995,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   <button
                     onClick={handleParentSearch}
                     disabled={parentSearchLoading || !parentSearchQuery.trim()}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {parentSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
                   </button>
@@ -1016,7 +1028,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                             }
                           }}
                           disabled={parentSaving}
-                          className="shrink-0 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                          className="shrink-0 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                         >
                           {zh ? '送出申請' : 'Send Request'}
                         </button>
@@ -1046,7 +1058,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   <button
                     type="submit"
                     disabled={parentCreating || !newParentForm.name.trim()}
-                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {parentCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立父群組' : '+ Create Parent Group')}
                   </button>
@@ -1109,7 +1121,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   <button
                     onClick={handleChildSearch}
                     disabled={childSearchLoading || !childSearchQuery.trim()}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {childSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
                   </button>
@@ -1126,7 +1138,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                         <button
                           onClick={() => handleLinkChildGroup(g.id, g.name)}
                           disabled={childLinking}
-                          className="shrink-0 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                          className="shrink-0 rounded-xl bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           {zh ? '設為子群組' : 'Set as Child'}
                         </button>
@@ -1183,7 +1195,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   <button
                     type="submit"
                     disabled={childCreating || !newChildForm.name.trim()}
-                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="w-full rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {childCreating ? (zh ? '建立中…' : 'Creating…') : (zh ? '+ 建立子群組' : '+ Create Child Group')}
                   </button>
@@ -1224,7 +1236,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               type="button"
               onClick={() => { setShowImportModal(true); setError(''); setBulkResults(null); }}
               disabled={importLoading}
-              className="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
             >
               {importLoading ? (zh ? '匯入中…' : 'Importing…') : (zh ? '批量匯入' : 'Bulk Import')}
             </button>
@@ -1234,7 +1246,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   type="button"
                   onClick={() => void handleExportMembers()}
                   disabled={exportLoading}
-                  className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-xl bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                 >
                   {exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '批量匯出' : 'Bulk Export')}
                 </button>
@@ -1259,7 +1271,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 type="button"
                 onClick={() => void handleMemberSearch()}
                 disabled={memberSearchLoading || !memberSearchQuery.trim()}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
                 {memberSearchLoading ? '…' : (zh ? '搜尋' : 'Search')}
               </button>
@@ -1291,7 +1303,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                       type="button"
                       onClick={() => void handleAddExistingMember(u.id, u.displayName)}
                       disabled={memberAddLoading === u.id}
-                      className="shrink-0 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                      className="shrink-0 rounded-xl bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
                     >
                       {memberAddLoading === u.id ? '…' : (zh ? '新增' : 'Add')}
                     </button>
@@ -1382,7 +1394,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             <button
               type="submit"
               disabled={newMemberLoading || !newMemberForm.displayName.trim() || (!newMemberForm.phone.trim() && !newMemberForm.email.trim()) || (newMemberPasswordMode === 'custom' && newMemberCustomPassword.trim().length < 6)}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+              className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
             >
               {newMemberLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立帳號並加入群組' : 'Create Account & Add to Group')}
             </button>
@@ -1404,7 +1416,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 <button
                   type="button"
                   onClick={() => { void navigator.clipboard.writeText(newMemberTempPassword.password); }}
-                  className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
+                  className="rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700"
                 >
                   {zh ? '複製' : 'Copy'}
                 </button>
@@ -1438,7 +1450,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '捐款記錄' : 'Donation Records'}</h2>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{zh ? '記錄並追蹤成員的捐款歷史（新台幣或美金）。' : 'Record and track member donations in NTD or USD with a running history.'}</p>
             </div>
-            <button onClick={() => setShowDonationModal(true)} className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition">
+            <button onClick={() => setShowDonationModal(true)} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 transition">
               {zh ? '+ 新增記錄' : '+ Add Record'}
             </button>
           </div>
@@ -1538,7 +1550,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                       {zh ? '取消' : 'Cancel'}
                     </button>
                     <button type="submit" disabled={donationSaving || !donationForm.forUserId || !donationForm.amount}
-                      className="flex-1 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
+                      className="flex-1 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50">
                       {donationSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '新增捐款' : 'Add Donation')}
                     </button>
                   </div>
@@ -1562,7 +1574,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               onChange={(e) => setReportYear(parseInt(e.target.value) || new Date().getFullYear())}
               className="w-28 rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
-            <button onClick={generateReport} disabled={reportLoading} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+            <button onClick={generateReport} disabled={reportLoading} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
               {reportLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '生成報告' : 'Generate Report')}
             </button>
           </div>
@@ -1579,7 +1591,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
             </p>
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="mt-4 rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
             >
               {zh ? '刪除群組' : 'Delete Group'}
             </button>
@@ -1610,7 +1622,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               <button
                 onClick={handleDeleteGroup}
                 disabled={deleteGroupLoading}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {deleteGroupLoading ? (zh ? '刪除中…' : 'Deleting…') : (zh ? '確認刪除' : 'Yes, Delete')}
               </button>
@@ -1717,7 +1729,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 <button
                   type="submit"
                   disabled={bulkLoading || !bulkText.trim() || (bulkPasswordMode === 'shared' && bulkSharedPassword.trim().length < 6)}
-                  className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+                  className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
                 >
                   {bulkLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '批量新增' : 'Bulk Add')}
                 </button>
