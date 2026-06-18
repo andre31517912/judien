@@ -811,16 +811,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     )}
                   </div>
                 </Link>
-                {(isGroupAdmin || isAdmin) && (
-                  <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-2">
-                    <Link
-                      href={`/${params.locale}/admin/events/${ev.id}/edit`}
-                      className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
-                    >
-                      {zh ? '編輯活動' : 'Edit Event'}
-                    </Link>
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -965,16 +955,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   </div>
                 </div>
                 </Link>
-                {(isGroupAdmin || isAdmin) && (
-                  <div className="border-t border-gray-100 dark:border-gray-800 px-5 py-2">
-                    <Link
-                      href={`/${params.locale}/admin/events/${ev.id}/edit`}
-                      className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
-                    >
-                      {zh ? '編輯活動' : 'Edit Event'}
-                    </Link>
-                  </div>
-                )}
               </div>
             ))}
           </div>
