@@ -329,7 +329,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               )}
               <Link
                 href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
-                className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition"
+                className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
               >
                 ⚙️ {zh ? '群組設定' : 'Settings'}
               </Link>
@@ -360,7 +360,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           {(isGroupAdmin || isPlatformAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => { setComposingNews((v) => !v); setNewsForm({ title: '', body: '' }); }}
-              className="mb-1 shrink-0 rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+              className="mb-1 shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
             >
               {composingNews ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Create Post'}`}
             </button>
@@ -368,7 +368,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           {(isGroupAdmin || isPlatformAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => { setComposingEvent((v) => !v); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }}
-              className="mb-1 shrink-0 rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+              className="mb-1 shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
             >
               {composingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
             </button>
@@ -556,133 +556,139 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {/* Members */}
         {viewTab === 'members' && (
           <div className="space-y-2">
-            <input
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              placeholder={zh ? '搜尋成員…' : 'Search members…'}
-              className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <p className="pb-1 text-xs text-gray-400 dark:text-gray-500">
-              {members.length} {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}
+            {/* Count above the card */}
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+              {members.length}{' '}
+              {zh ? '位成員' : members.length === 1 ? 'member' : 'members'}
+              {joinRequests.length > 0 && (
+                <span className="ml-2 rounded-full bg-amber-100 dark:bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                  {joinRequests.length} {zh ? '待審核' : 'pending'}
+                </span>
+              )}
             </p>
-            {[...members].filter((m) => {
-              const term = memberSearch.trim().toLowerCase();
-              if (!term) return true;
-              return (
-                (m.groupNickname ?? '').toLowerCase().includes(term) ||
-                (m.displayName ?? '').toLowerCase().includes(term) ||
-                (m.email ?? '').toLowerCase().includes(term)
-              );
-            }).sort((a, b) => {
-              if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
-              const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
-              const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
-              return na.localeCompare(nb);
-            }).map((member) => {
-              const isOwnRow = member.userId === user?.id;
-              const isEditingNickname = editingNicknameUserId === member.userId;
-              const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
-              return (
-              <div key={member.userId} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
-                <div className="min-w-0 flex-1">
-                  {isEditingNickname ? (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <input autoFocus
-                        className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44"
-                        placeholder={zh ? '群組暱稱（留空清除）' : 'Nickname (blank to clear)'}
-                        value={nicknameInput}
-                        onChange={(e) => setNicknameInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
-                        maxLength={100}
-                      />
-                      <button onClick={() => void handleSaveNickname(member.userId)} disabled={nicknameSaving}
-                        className="rounded-lg bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
-                        {nicknameSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
-                      </button>
-                      <button onClick={() => setEditingNicknameUserId(null)}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1 text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                        {zh ? '取消' : 'Cancel'}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-gray-900 dark:text-white">{shownName}</p>
-                      {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</p>
-                      )}
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${member.role === 'GROUP_ADMIN' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
-                        {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+
+            {/* Single card */}
+            <div className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
+              {/* Search header */}
+              <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder={zh ? '搜尋成員…' : 'Search members…'}
+                    className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Pending join requests */}
+              {joinRequests.map((req) => (
+                <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-100 dark:border-amber-900/40 px-4 py-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
+                      <span className="rounded-full bg-amber-200 dark:bg-amber-800/60 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
+                        {zh ? '申請中' : 'Pending'}
                       </span>
                     </div>
-                  )}
-                  {!isEditingNickname && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {member.joinedAt ? new Date(member.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US') : ''}
-                    </p>
-                  )}
-                  {(member.email || member.phoneE164) && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {isOwnRow && !isEditingNickname && (
-                    <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
-                      className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                      {zh ? '改名' : 'Rename'}
-                    </button>
-                  )}
-                  {!isOwnRow && !isEditingNickname && (
-                    <>
-                      <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
-                        className="rounded-lg border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                        {zh ? '改名' : 'Rename'}
-                      </button>
-                      <button onClick={() => handleChangeRole(member.userId, member.role)}
-                        className="rounded-lg border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
-                        {member.role === 'GROUP_ADMIN' ? (zh ? '降為成員' : 'Demote') : (zh ? '升為管理員' : 'Promote')}
-                      </button>
-                      <button onClick={() => handleRemoveMember(member.userId)}
-                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
-                        {zh ? '移除' : 'Remove'}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-              );
-            })}
-            {joinRequests.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-                  {zh ? `待審核申請 (${joinRequests.length})` : `Pending Requests (${joinRequests.length})`}
-                </h3>
-                {joinRequests.map((req) => (
-                  <div key={req.id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{req.requester.displayName || req.requester.email}</p>
-                      {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
-                      <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleReviewJoinRequest(req.id, 'approve')}
-                        disabled={reviewingId === req.id}
-                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
-                      >
-                        {zh ? '批准' : 'Approve'}
-                      </button>
-                      <button
-                        onClick={() => handleReviewJoinRequest(req.id, 'reject')}
-                        disabled={reviewingId === req.id}
-                        className="rounded-lg border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition"
-                      >
-                        {zh ? '拒絕' : 'Decline'}
-                      </button>
-                    </div>
+                    {req.note && <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{req.note}</p>}
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</p>
                   </div>
-                ))}
+                  <div className="flex gap-2">
+                    <button onClick={() => handleReviewJoinRequest(req.id, 'approve')} disabled={reviewingId === req.id}
+                      className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
+                      {zh ? '批准' : 'Approve'}
+                    </button>
+                    <button onClick={() => handleReviewJoinRequest(req.id, 'reject')} disabled={reviewingId === req.id}
+                      className="rounded-xl border border-red-200 dark:border-red-800 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50 transition">
+                      {zh ? '拒絕' : 'Decline'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* Member rows */}
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                {[...members].filter((m) => {
+                  const term = memberSearch.trim().toLowerCase();
+                  if (!term) return true;
+                  return (
+                    (m.groupNickname ?? '').toLowerCase().includes(term) ||
+                    (m.displayName ?? '').toLowerCase().includes(term) ||
+                    (m.email ?? '').toLowerCase().includes(term)
+                  );
+                }).sort((a, b) => {
+                  if (a.role !== b.role) return a.role === 'GROUP_ADMIN' ? -1 : 1;
+                  const na = (a.groupNickname ?? a.displayName ?? a.email ?? '').toLowerCase();
+                  const nb = (b.groupNickname ?? b.displayName ?? b.email ?? '').toLowerCase();
+                  return na.localeCompare(nb);
+                }).map((member) => {
+                  const isOwnRow = member.userId === user?.id;
+                  const isEditingNickname = editingNicknameUserId === member.userId;
+                  const shownName = member.groupNickname ?? member.displayName ?? member.email ?? member.userId;
+                  return (
+                    <div key={member.userId} className="px-4 py-2.5">
+                      {isEditingNickname ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <input autoFocus
+                            className="rounded-lg border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-gray-800 px-2 py-1 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 w-44"
+                            placeholder={zh ? '群組暱稱（留空清除）' : 'Nickname (blank to clear)'}
+                            value={nicknameInput}
+                            onChange={(e) => setNicknameInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') void handleSaveNickname(member.userId); if (e.key === 'Escape') setEditingNicknameUserId(null); }}
+                            maxLength={100}
+                          />
+                          <button onClick={() => void handleSaveNickname(member.userId)} disabled={nicknameSaving}
+                            className="rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition">
+                            {nicknameSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                          </button>
+                          <button onClick={() => setEditingNicknameUserId(null)}
+                            className="rounded-xl border border-gray-200 dark:border-gray-700 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                            {zh ? '取消' : 'Cancel'}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="min-w-0 flex-1 flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{shownName}</span>
+                            {member.groupNickname && member.displayName && member.groupNickname !== member.displayName && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">({member.displayName})</span>
+                            )}
+                            <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full shrink-0 ${member.role === 'GROUP_ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}>
+                              {member.role === 'GROUP_ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '成員' : 'Member')}
+                            </span>
+                            {(member.email || member.phoneE164) && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500">{[member.email, member.phoneE164].filter(Boolean).join(' · ')}</span>
+                            )}
+                          </div>
+                          <div className="flex items-center shrink-0">
+                            <button onClick={() => { setEditingNicknameUserId(member.userId); setNicknameInput(member.groupNickname ?? ''); }}
+                              className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition">
+                              {zh ? '改名' : 'Rename'}
+                            </button>
+                            {!isOwnRow && (
+                              <>
+                                <button onClick={() => handleChangeRole(member.userId, member.role)}
+                                  className="px-2 py-1 text-xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition">
+                                  {member.role === 'GROUP_ADMIN' ? (zh ? '降級' : 'Demote') : (zh ? '升級' : 'Promote')}
+                                </button>
+                                <button onClick={() => handleRemoveMember(member.userId)}
+                                  className="px-2 py-1 text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                                  {zh ? '移除' : 'Remove'}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
           </div>
         )}
 

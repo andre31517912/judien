@@ -19,11 +19,20 @@ export class NewsService {
   };
 
   async list(query: NewsListQuery, user?: User) {
+    const keywordWhere = query.q?.trim()
+      ? { OR: [
+          { title_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { title_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { body_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { body_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+        ] }
+      : undefined;
+
     if (query.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(query.groupId, user?.id);
       if (!canAccess) throw new ForbiddenException('You do not have access to this group.');
       return this.prisma.news.findMany({
-        where: { groupId: query.groupId },
+        where: keywordWhere ? { AND: [{ groupId: query.groupId }, keywordWhere] } : { groupId: query.groupId },
         orderBy: { createdAt: 'desc' },
         include: this.newsInclude,
       });
@@ -31,7 +40,7 @@ export class NewsService {
 
     if (!user) {
       return this.prisma.news.findMany({
-        where: { groupId: null },
+        where: keywordWhere ? { AND: [{ groupId: null }, keywordWhere] } : { groupId: null },
         orderBy: { createdAt: 'desc' },
         include: this.newsInclude,
       });
@@ -42,15 +51,17 @@ export class NewsService {
       select: { groupId: true },
     });
     const groupIds = memberships.map((m) => m.groupId);
+    const visibilityOr = [
+      { groupId: null },
+      ...(groupIds.length > 0 ? [{ groupId: { in: groupIds } }] : []),
+    ];
 
     return this.prisma.news.findMany({
-      where: {
-        OR: [
-          { groupId: null },
-          ...(groupIds.length > 0 ? [{ groupId: { in: groupIds } }] : []),
-        ],
-      },
+      where: keywordWhere
+        ? { AND: [{ OR: visibilityOr }, keywordWhere] }
+        : { OR: visibilityOr },
       orderBy: { createdAt: 'desc' },
+      take: 50,
       include: this.newsInclude,
     });
   }

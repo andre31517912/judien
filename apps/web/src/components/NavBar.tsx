@@ -21,24 +21,24 @@ export default function NavBar({ locale }: NavBarProps) {
 
   const isEventsPage = /^\/[a-z]{2}\/events$/.test(pathname ?? '');
   const isGroupsPage = /^\/[a-z]{2}\/groups$/.test(pathname ?? '');
-  const showSearch = isEventsPage || isGroupsPage;
+  const showSearch = !!user;
 
-  const searchPlaceholder = isGroupsPage
-    ? (locale === 'zh' ? '搜尋群組…' : 'Search groups…')
-    : (locale === 'zh' ? '搜尋活動、動態…' : 'Search events, posts…');
+  const searchPlaceholder = locale === 'zh' ? '搜尋活動、群組、動態…' : 'Search events, groups, posts…';
 
-  // Sync search input from URL param when landing on a searchable page
+  // Sync search input from URL param on pages that support live filtering
   useEffect(() => {
-    if (showSearch && typeof window !== 'undefined') {
+    if ((isEventsPage || isGroupsPage) && typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       setSearchValue(params.get('q') ?? '');
-    } else {
+    } else if (!isEventsPage && !isGroupsPage) {
       setSearchValue('');
     }
-  }, [showSearch, pathname]);
+  }, [isEventsPage, isGroupsPage, pathname]);
 
   const handleSearchChange = (value: string) => {
     setSearchValue(value);
+    // Live filter only on events/groups pages
+    if (!isEventsPage && !isGroupsPage) return;
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(() => {
       if (typeof window === 'undefined') return;
@@ -51,6 +51,13 @@ export default function NavBar({ locale }: NavBarProps) {
       const qs = currentParams.toString();
       router.replace(`${pathname}${qs ? `?${qs}` : ''}`);
     }, 300);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchValue.trim()) {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      router.push(`/${locale}/search?q=${encodeURIComponent(searchValue.trim())}`);
+    }
   };
 
   const handleLogout = async () => {
@@ -89,6 +96,7 @@ export default function NavBar({ locale }: NavBarProps) {
             <input
               value={searchValue}
               onChange={(e) => handleSearchChange(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               placeholder={searchPlaceholder}
               className="w-full pl-9 pr-4 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />

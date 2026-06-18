@@ -170,6 +170,7 @@ export type UpdateProfileDto = z.infer<typeof UpdateProfileSchema>;
 export const EventListQuerySchema = z.object({
   scope: z.enum(['future', 'past']).default('future'),
   groupId: z.string().min(1).optional(),
+  q: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(50).default(20),
 });
@@ -177,6 +178,7 @@ export type EventListQuery = z.infer<typeof EventListQuerySchema>;
 
 export const NewsListQuerySchema = z.object({
   groupId: z.string().min(1).optional(),
+  q: z.string().optional(),
 });
 export type NewsListQuery = z.infer<typeof NewsListQuerySchema>;
 

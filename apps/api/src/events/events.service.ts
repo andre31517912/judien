@@ -42,8 +42,17 @@ export class EventsService {
       visibilityWhere = { groupId: null };
     }
 
+    const keywordWhere = query.q?.trim()
+      ? { OR: [
+          { title_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { title_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { description_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { description_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+        ] }
+      : undefined;
+
     const where = {
-      AND: [scopeWhere, visibilityWhere],
+      AND: [scopeWhere, visibilityWhere, ...(keywordWhere ? [keywordWhere] : [])],
     };
 
     const orderBy =
