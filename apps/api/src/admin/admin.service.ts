@@ -81,18 +81,14 @@ export class AdminService {
         ? this.prisma.event.findMany({
             where: {
               OR: [
-                { title_en: { contains: term, mode: 'insensitive' } },
-                { title_zh: { contains: term, mode: 'insensitive' } },
-                { description_en: { contains: term, mode: 'insensitive' } },
-                { description_zh: { contains: term, mode: 'insensitive' } },
+                { title: { contains: term, mode: 'insensitive' } },
+                { description: { contains: term, mode: 'insensitive' } },
               ],
             },
             select: {
               id: true,
-              title_en: true,
-              title_zh: true,
-              description_en: true,
-              description_zh: true,
+              title: true,
+              description: true,
               startAt: true,
               createdAt: true,
               createdBy: { select: { id: true, displayName: true } },

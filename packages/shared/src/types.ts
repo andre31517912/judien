@@ -44,12 +44,9 @@ export interface Event {
   seriesId: string | null;
   partNumber: number | null;
   coverImageUrl: string | null;
-  title_en: string;
-  title_zh: string;
-  description_en: string;
-  description_zh: string;
-  location_en: string;
-  location_zh: string;
+  title: string;
+  description: string;
+  location: string;
   startAt: string;
   endAt: string | null;
   timezone: string;
@@ -258,8 +255,7 @@ export interface EventInvite {
 
 export interface EventSeries {
   id: string;
-  title_en: string;
-  title_zh: string;
+  title: string;
   groupId: string | null;
   createdById: string;
   createdAt: string;

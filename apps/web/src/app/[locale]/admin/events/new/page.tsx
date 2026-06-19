@@ -53,12 +53,9 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         coverImageUrl = uploaded.url;
       }
       const body: Record<string, unknown> = {
-        title_en: form.title,
-        title_zh: form.title,
-        description_en: form.description,
-        description_zh: form.description,
-        location_en: form.location,
-        location_zh: form.location,
+        title: form.title,
+        description: form.description,
+        location: form.location,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         timezone: form.timezone,

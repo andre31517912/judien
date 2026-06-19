@@ -50,12 +50,9 @@ export const CreateEventSchema = z.object({
   groupId: z.string().min(1).optional(),
   seriesId: z.string().min(1).optional(),
   partNumber: z.number().int().positive().optional(),
-  title_en: z.string().max(200).default(''),
-  title_zh: z.string().max(200).default(''),
-  description_en: z.string().max(10000).default(''),
-  description_zh: z.string().max(10000).default(''),
-  location_en: z.string().max(500).default(''),
-  location_zh: z.string().max(500).default(''),
+  title: z.string().max(200).default(''),
+  description: z.string().max(10000).default(''),
+  location: z.string().max(500).default(''),
   startAt: z.string().datetime().optional().default(new Date().toISOString()),
   endAt: z.string().datetime().nullable().optional(),
   timezone: z.string().default('Asia/Taipei'),
@@ -314,8 +311,7 @@ export type AcceptEventInviteDto = z.infer<typeof AcceptEventInviteSchema>;
 // ─── EventSeries ─────────────────────────────────────────────────────────────
 
 export const CreateEventSeriesSchema = z.object({
-  title_en: z.string().min(1).max(200),
-  title_zh: z.string().min(1).max(200),
+  title: z.string().min(1).max(200),
   groupId: z.string().min(1).optional(),
 });
 export type CreateEventSeriesDto = z.infer<typeof CreateEventSeriesSchema>;

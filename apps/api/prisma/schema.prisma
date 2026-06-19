@@ -144,12 +144,9 @@ model Event {
 
   coverImageUrl String?
 
-  title_en      String
-  title_zh      String
-  description_en String  @default("")
-  description_zh String  @default("")
-  location_en   String   @default("")
-  location_zh   String   @default("")
+  title         String
+  description   String   @default("")
+  location      String   @default("")
 
   startAt       DateTime
   endAt         DateTime?
@@ -212,8 +209,7 @@ model GuestRSVP {
 
 model EventSeries {
   id          String   @id @default(cuid())
-  title_en    String
-  title_zh    String
+  title       String
   groupId     String?
   createdById String
   createdAt   DateTime @default(now())

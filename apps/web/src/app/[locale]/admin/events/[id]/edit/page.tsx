@@ -86,9 +86,9 @@ export default function EditEventPage({ params }: { params: { locale: string; id
     apiFetch<Event>(`/events/${params.id}`).then((ev) => {
       setEvent(ev);
       setForm({
-        title: ev.title_en,
-        description: ev.description_en,
-        location: ev.location_en,
+        title: ev.title,
+        description: ev.description,
+        location: ev.location,
         startAt: (ev.startAt ?? '').replace('Z', '').slice(0, 16),
         endAt: (ev.endAt ?? '').replace('Z', '').slice(0, 16),
         timezone: ev.timezone,
@@ -132,12 +132,9 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         setCoverFile(null);
       }
       const body: Record<string, unknown> = {
-        title_en: form.title,
-        title_zh: form.title,
-        description_en: form.description,
-        description_zh: form.description,
-        location_en: form.location,
-        location_zh: form.location,
+        title: form.title,
+        description: form.description,
+        location: form.location,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         timezone: form.timezone,
@@ -236,8 +233,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
           title={zh ? '刪除活動' : 'Delete Event'}
           message={
             zh
-              ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
-              : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`
+              ? `確定要永久刪除「${event.title}」嗎？此操作無法恢復。`
+              : `Are you sure you want to delete "${event.title}"? This cannot be undone.`
           }
           confirmLabel={zh ? '確定刪除' : 'Delete'}
           cancelLabel={zh ? '取消' : 'Cancel'}

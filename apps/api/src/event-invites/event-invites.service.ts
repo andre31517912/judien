@@ -12,11 +12,11 @@ export class EventInvitesService {
   async getInviteInfo(token: string) {
     const invite = await this.prisma.eventInvite.findUnique({
       where: { token },
-      include: { event: { select: { id: true, title_en: true, title_zh: true } } },
+      include: { event: { select: { id: true, title: true } } },
     });
     if (!invite) throw new NotFoundException('Invite not found or expired.');
     if (new Date() > invite.expiresAt) throw new BadRequestException('Invite has expired.');
-    return { eventId: invite.event.id, title_en: invite.event.title_en, title_zh: invite.event.title_zh };
+    return { eventId: invite.event.id, title: invite.event.title };
   }
 
   async createInvite(eventId: string, user: User) {

@@ -56,7 +56,7 @@ async function processReminder(job: Job<ReminderJobData>) {
     const lang = (user.preferredLanguage === 'zh' ? 'zh' : 'en') as 'en' | 'zh';
     const dict = getDict(lang);
 
-    const title = lang === 'zh' ? event.title_zh : event.title_en;
+    const title = event.title;
     const startDt = DateTime.fromJSDate(event.startAt).setZone(event.timezone);
     const dateStr = startDt.toFormat('yyyy-MM-dd');
     const timeStr = startDt.toFormat('HH:mm');
@@ -74,10 +74,10 @@ async function processReminder(job: Job<ReminderJobData>) {
       data: {
         userId: user.id,
         type: 'EVENT_REMINDER',
-        title_en: subject,
-        title_zh: lang === 'zh' ? subject : t(getDict('zh').messages.reminderSubject, { title: event.title_zh }),
-        body_en: body,
-        body_zh: lang === 'zh' ? body : t(getDict('zh').messages.reminderBody, { title: event.title_zh, date: dateStr, time: timeStr, timezone: event.timezone }),
+        title_en: t(getDict('en').messages.reminderSubject, { title: event.title }),
+        title_zh: t(getDict('zh').messages.reminderSubject, { title: event.title }),
+        body_en: t(getDict('en').messages.reminderBody, { title: event.title, date: dateStr, time: timeStr, timezone: event.timezone }),
+        body_zh: t(getDict('zh').messages.reminderBody, { title: event.title, date: dateStr, time: timeStr, timezone: event.timezone }),
         actionUrl: `/events/${eventId}`,
         eventId,
       },

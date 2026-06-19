@@ -44,10 +44,8 @@ export class EventsService {
 
     const keywordWhere = query.q?.trim()
       ? { OR: [
-          { title_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { title_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { description_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { description_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { title: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { description: { contains: query.q.trim(), mode: 'insensitive' as const } },
         ] }
       : undefined;
 
@@ -246,19 +244,17 @@ export class EventsService {
         select: { userId: true },
       });
       if (members.length) {
-        const title_en = event.title_en || event.title_zh;
-        const title_zh = event.title_zh || event.title_en;
         await this.notifications.createMany(
           members.map(({ userId }) => ({
             userId,
             type: 'NEW_EVENT' as const,
-            title_en: `New event: ${title_en}`,
-            title_zh: `新活動：${title_zh}`,
-            body_en: event.location_en
-              ? `${new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })} · ${event.location_en}`
+            title_en: `New event: ${event.title}`,
+            title_zh: `新活動：${event.title}`,
+            body_en: event.location
+              ? `${new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })} · ${event.location}`
               : new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
-            body_zh: event.location_zh
-              ? `${new Date(event.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' })} · ${event.location_zh}`
+            body_zh: event.location
+              ? `${new Date(event.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' })} · ${event.location}`
               : new Date(event.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
             actionUrl: `/events/${event.id}`,
             groupId: dto.groupId,
@@ -290,13 +286,11 @@ export class EventsService {
     // Notify all invited people whenever any update is saved
     if (actor) {
       const actorName = (actor as any).displayName ?? 'An organizer';
-      const title_en = updated.title_en || updated.title_zh;
-      const title_zh = updated.title_zh || updated.title_en;
       const notif = (userId: string, extraFields?: Record<string, unknown>) => ({
         userId,
         type: 'EVENT_UPDATED' as const,
-        title_en: `${actorName} updated "${title_en}"`,
-        title_zh: `${actorName} 更新了「${title_zh}」的詳情`,
+        title_en: `${actorName} updated "${updated.title}"`,
+        title_zh: `${actorName} 更新了「${updated.title}」的詳情`,
         body_en: `Event details have been updated. Tap to see what changed.`,
         body_zh: `活動詳情已更新，點擊查看。`,
         actionUrl: `/events/${id}`,
@@ -366,14 +360,12 @@ export class EventsService {
         .map((r) => r.userId)
         .filter((uid) => uid !== actor?.id);
       if (recipientIds.length) {
-        const title_en = event.title_en || event.title_zh;
-        const title_zh = event.title_zh || event.title_en;
         await this.notifications.createMany(
           recipientIds.map((userId) => ({
             userId,
             type: 'EVENT_CANCELLED' as const,
-            title_en: `Event cancelled: ${title_en}`,
-            title_zh: `活動已取消：${title_zh}`,
+            title_en: `Event cancelled: ${event.title}`,
+            title_zh: `活動已取消：${event.title}`,
             body_en: `This event has been cancelled.`,
             body_zh: `此活動已取消。`,
             groupId: event.groupId!,
@@ -430,13 +422,11 @@ export class EventsService {
       }
     }
 
-    const title_en = event.title_en || event.title_zh;
-    const title_zh = event.title_zh || event.title_en;
     await this.notifications.createMany([{
       userId: foundUser.id,
       type: 'EVENT_INVITE' as const,
-      title_en: `You've been invited to ${title_en}`,
-      title_zh: `您被邀請參加 ${title_zh}`,
+      title_en: `You've been invited to ${event.title}`,
+      title_zh: `您被邀請參加 ${event.title}`,
       body_en: 'You have been personally invited to this event. Tap to view details.',
       body_zh: '您收到了此活動的個人邀請，點擊查看詳情。',
       actionUrl: `/events/${eventId}`,
@@ -457,14 +447,11 @@ export class EventsService {
       throw new ForbiddenException('Only platform admins can invite members to global events.');
     }
 
-    const title_en = event.title_en || event.title_zh;
-    const title_zh = event.title_zh || event.title_en;
-
     const inputs = userIds.map((userId) => ({
       userId,
       type: 'EVENT_INVITE' as const,
-      title_en: `You've been invited to ${title_en}`,
-      title_zh: `您被邀請參加 ${title_zh}`,
+      title_en: `You've been invited to ${event.title}`,
+      title_zh: `您被邀請參加 ${event.title}`,
       body_en: `An admin has invited you to join this event. Tap to view details.`,
       body_zh: `管理員邀請您參加此活動，點擊查看詳情。`,
       actionUrl: `/events/${eventId}`,

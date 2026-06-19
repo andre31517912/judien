@@ -138,9 +138,9 @@ export default function SharedEventPage() {
     return <p className="mt-10 text-sm text-red-500">{error || (zh ? '找不到分享活動。' : 'Shared event not found.')}</p>;
   }
 
-  const title = zh ? event.title_zh : event.title_en;
-  const description = zh ? event.description_zh : event.description_en;
-  const location = zh ? event.location_zh : event.location_en;
+  const title = event.title;
+  const description = event.description;
+  const location = event.location;
 
   const isPast = event ? new Date(event.startAt) < new Date() : false;
 

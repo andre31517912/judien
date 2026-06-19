@@ -1102,8 +1102,8 @@ export class GroupsService {
       events.map((ev) => ({
         userId,
         type: 'NEW_EVENT' as const,
-        title_en: `Upcoming: ${ev.title_en || ev.title_zh}`,
-        title_zh: `即將到來：${ev.title_zh || ev.title_en}`,
+        title_en: `Upcoming: ${ev.title}`,
+        title_zh: `即將到來：${ev.title}`,
         body_en: new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
         body_zh: new Date(ev.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
         actionUrl: `/events/${ev.id}`,
@@ -1695,7 +1695,7 @@ export class GroupsService {
       for (const r of ev.rsvps) rsvpMap[r.userId] = r.status;
       return {
         id: ev.id,
-        title: ev.title_en || ev.title_zh,
+        title: ev.title,
         startAt: ev.startAt.toISOString(),
         memberRsvps: memberIds.map((uid) => ({
           userId: uid,

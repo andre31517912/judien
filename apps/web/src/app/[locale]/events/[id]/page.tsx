@@ -354,9 +354,9 @@ export default function EventDetailPage() {
   );
   if (!event) return <p className="text-red-500 mt-8">Event not found.</p>;
 
-  const title = zh ? event.title_zh : event.title_en;
-  const description = zh ? event.description_zh : event.description_en;
-  const location = zh ? event.location_zh : event.location_en;
+  const title = event.title;
+  const description = event.description;
+  const location = event.location;
 
   const startDate = new Date(event.startAt).toLocaleString(
     zh ? 'zh-TW' : 'en-US',
@@ -390,8 +390,8 @@ export default function EventDetailPage() {
           title={zh ? '刪除活動' : 'Delete Event'}
           message={
             zh
-              ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
-              : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`
+              ? `確定要永久刪除「${event.title}」嗎？此操作無法恢復。`
+              : `Are you sure you want to delete "${event.title}"? This cannot be undone.`
           }
           confirmLabel={zh ? '確定刪除' : 'Delete'}
           cancelLabel={zh ? '取消' : 'Cancel'}
@@ -439,7 +439,7 @@ export default function EventDetailPage() {
       {eventSeries && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-700 text-xs font-medium px-3 py-1 rounded-full">
-            📚 {zh ? (eventSeries.title_zh || eventSeries.title_en) : (eventSeries.title_en || eventSeries.title_zh)}
+            📚 {eventSeries.title}
             {event.partNumber != null && ` — ${zh ? '第' : 'Part'} ${event.partNumber}`}
           </span>
           {eventSeries.events && eventSeries.events.length > 1 && (

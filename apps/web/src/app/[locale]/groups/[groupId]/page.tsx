@@ -251,12 +251,9 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
-          title_en: eventForm.title,
-          title_zh: eventForm.title,
-          description_en: eventForm.description,
-          description_zh: eventForm.description,
-          location_en: eventForm.location,
-          location_zh: eventForm.location,
+          title: eventForm.title,
+          description: eventForm.description,
+          location: eventForm.location,
           startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
           endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
           timezone: eventForm.timezone,
@@ -830,7 +827,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   return (
                     <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
                       {coverUrl ? (
-                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
                           <span className="text-5xl opacity-90 select-none">{emoji}</span>
@@ -844,8 +841,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                       )}
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
-                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
-                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
+                        {ev.location && <p className="text-xs text-white/70 mt-0.5 truncate">{ev.location}</p>}
                         <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
                       </div>
                     </Link>
@@ -987,7 +984,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   return (
                     <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1 opacity-75 hover:opacity-100">
                       {coverUrl ? (
-                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                        <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
                           <span className="text-5xl opacity-90 select-none">{emoji}</span>
@@ -996,8 +993,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
-                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
-                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
+                        {ev.location && <p className="text-xs text-white/70 mt-0.5 truncate">{ev.location}</p>}
                         <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
                       </div>
                     </Link>

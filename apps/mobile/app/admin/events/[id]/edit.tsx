@@ -68,9 +68,9 @@ export default function EditEventScreen() {
       apiFetch<ReminderRule[]>(`/events/${id}/reminders`).catch(() => [] as ReminderRule[]),
     ]).then(([ev, rules]) => {
       setForm({
-        title: (zh ? ev.title_zh : ev.title_en) || ev.title_en || ev.title_zh,
-        description: (zh ? ev.description_zh : ev.description_en) || ev.description_en || ev.description_zh,
-        location: (zh ? ev.location_zh : ev.location_en) || ev.location_en || ev.location_zh,
+        title: ev.title,
+        description: ev.description,
+        location: ev.location,
         startAt: ev.startAt ? ev.startAt.replace('Z', '').slice(0, 16) : '',
         endAt: ev.endAt ? ev.endAt.replace('Z', '').slice(0, 16) : '',
         timezone: ev.timezone,
@@ -133,12 +133,9 @@ export default function EditEventScreen() {
     try {
       const toISO = (s: string) => new Date(s.trim().replace(' ', 'T')).toISOString();
       const body: Record<string, unknown> = {
-        title_en: form.title,
-        title_zh: form.title,
-        description_en: form.description,
-        description_zh: form.description,
-        location_en: form.location,
-        location_zh: form.location,
+        title: form.title,
+        description: form.description,
+        location: form.location,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
         timezone: form.timezone,

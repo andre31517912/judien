@@ -328,9 +328,9 @@ export default function EventDetailScreen() {
     );
   }
 
-  const title = zh ? event.title_zh : event.title_en;
-  const desc = zh ? event.description_zh : event.description_en;
-  const location = zh ? event.location_zh : event.location_en;
+  const title = event.title;
+  const desc = event.description;
+  const location = event.location;
   const fee = event.feeAmount ? `${event.feeCurrency} ${event.feeAmount}` : t('events.free');
   const dateStr = new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US');
   const isPast = new Date(event.startAt) < new Date();
@@ -381,8 +381,8 @@ export default function EventDetailScreen() {
                   Alert.alert(
                     zh ? '刪除活動' : 'Delete Event',
                     zh
-                      ? `確定要永久刪除「${event.title_zh || event.title_en}」嗎？此操作無法恢復。`
-                      : `Are you sure you want to delete "${event.title_en || event.title_zh}"? This cannot be undone.`,
+                      ? `確定要永久刪除「${event.title}」嗎？此操作無法恢復。`
+                      : `Are you sure you want to delete "${event.title}"? This cannot be undone.`,
                     [
                       { text: zh ? '取消' : 'Cancel', style: 'cancel' },
                       {

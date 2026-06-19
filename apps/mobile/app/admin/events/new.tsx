@@ -82,9 +82,9 @@ export default function NewEventScreen() {
         coverImageUrl = uploaded.url;
       }
       const body: Record<string, unknown> = {
-        title_en: form.title, title_zh: form.title,
-        description_en: form.description, description_zh: form.description,
-        location_en: form.location, location_zh: form.location,
+        title: form.title,
+        description: form.description,
+        location: form.location,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
         timezone: form.timezone,

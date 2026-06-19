@@ -120,9 +120,9 @@ export default function EventsTab() {
       let coverImageUrl: string | null = null;
       if (coverUri) { const up = await apiUpload(coverUri); coverImageUrl = up.url; }
       await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify({
-        title_en: form.title, title_zh: form.title,
-        description_en: form.description, description_zh: form.description,
-        location_en: form.location, location_zh: form.location,
+        title: form.title,
+        description: form.description,
+        location: form.location,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
         timezone: form.timezone,
@@ -256,8 +256,8 @@ export default function EventsTab() {
               </View>
             }
             renderItem={({ item }) => {
-              const title = zh ? item.title_zh : item.title_en;
-              const location = zh ? item.location_zh : item.location_en;
+              const title = item.title;
+              const location = item.location;
               const date = new Date(item.startAt).toLocaleDateString();
               const fee = item.feeAmount ? `${item.feeCurrency} ${item.feeAmount}` : (zh ? '免費' : 'Free');
               const coverUri = resolveImageUrl(item.coverImageUrl);

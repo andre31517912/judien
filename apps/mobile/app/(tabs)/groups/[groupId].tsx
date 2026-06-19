@@ -504,9 +504,9 @@ export default function GroupDetailScreen() {
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
                       <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
                         <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
-                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{zh ? ev.title_zh : ev.title_en}</Text>
-                        {(zh ? ev.location_zh : ev.location_en) ? (
-                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{zh ? ev.location_zh : ev.location_en}</Text>
+                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
+                        {ev.location ? (
+                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
                         ) : null}
                         <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
                       </View>
@@ -551,9 +551,9 @@ export default function GroupDetailScreen() {
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
                       <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
                         <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
-                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{zh ? ev.title_zh : ev.title_en}</Text>
-                        {(zh ? ev.location_zh : ev.location_en) ? (
-                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{zh ? ev.location_zh : ev.location_en}</Text>
+                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
+                        {ev.location ? (
+                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
                         ) : null}
                         <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
                       </View>

@@ -340,6 +340,6 @@ export class RsvpService {
       });
     }
 
-    return { eventTitle: event.title_en || event.title_zh, rows };
+    return { eventTitle: event.title, rows };
   }
 }

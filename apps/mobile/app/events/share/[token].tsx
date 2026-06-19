@@ -93,9 +93,9 @@ export default function SharedEventScreen() {
     );
   }
 
-  const title = zh ? event.title_zh : event.title_en;
-  const description = zh ? event.description_zh : event.description_en;
-  const location = zh ? event.location_zh : event.location_en;
+  const title = event.title;
+  const description = event.description;
+  const location = event.location;
   const isPast = new Date(event.startAt) < new Date();
   const coverUri = resolveImageUrl(event.coverImageUrl);
 

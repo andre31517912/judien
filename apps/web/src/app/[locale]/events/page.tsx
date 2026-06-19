@@ -94,9 +94,8 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   }, [scope, page, authLoading]);
 
   const filteredEvents = events.filter((event) => {
-    const title = zh ? event.title_zh : event.title_en;
     const q = searchQuery.toLowerCase();
-    return !q || title.toLowerCase().includes(q);
+    return !q || event.title.toLowerCase().includes(q);
   });
 
   const handleCreateNews = async (e: React.FormEvent) => {
@@ -145,9 +144,9 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         coverImageUrl = uploaded.url;
       }
       const body: Record<string, unknown> = {
-        title_en: eventForm.title, title_zh: eventForm.title,
-        description_en: eventForm.description, description_zh: eventForm.description,
-        location_en: eventForm.location, location_zh: eventForm.location,
+        title: eventForm.title,
+        description: eventForm.description,
+        location: eventForm.location,
         startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
         endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
         timezone: eventForm.timezone,
@@ -575,8 +574,8 @@ const CARD_EMOJIS = ['🎉', '🎊', '🍻', '🎸', '🌟', '🎨', '🏃', '�
 
 function EventCard({ event, locale }: { event: EventWithCounts; locale: string }) {
   const zh = locale === 'zh';
-  const title = zh ? event.title_zh : event.title_en;
-  const location = zh ? event.location_zh : event.location_en;
+  const title = event.title;
+  const location = event.location;
 
   const startDateObj = new Date(event.startAt);
   const dayStr = startDateObj.toLocaleDateString(zh ? 'zh-TW' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' });

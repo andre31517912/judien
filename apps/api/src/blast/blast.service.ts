@@ -82,8 +82,6 @@ export class BlastService {
     // Exclude the sender themselves
     users = users.filter((u) => u.id !== actor.id);
 
-    const title_en = event.title_en || event.title_zh;
-    const title_zh = event.title_zh || event.title_en;
     let sent = 0;
 
     for (const user of users) {
@@ -94,7 +92,7 @@ export class BlastService {
           userId: user.id,
           eventId,
           to: user.email,
-          subject: `Message about: ${title_en}`,
+          subject: `Message about: ${event.title}`,
           text: dto.message,
         });
         delivered = true;
@@ -115,8 +113,8 @@ export class BlastService {
         users.map((user) => ({
           userId: user.id,
           type: 'EVENT_BLAST' as const,
-          title_en: `Message from ${title_en}`,
-          title_zh: `來自「${title_zh}」的訊息`,
+          title_en: `Message from ${event.title}`,
+          title_zh: `來自「${event.title}」的訊息`,
           body_en: dto.message,
           body_zh: dto.message,
           actionUrl: `/events/${eventId}`,

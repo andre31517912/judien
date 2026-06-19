@@ -10,8 +10,7 @@ export class EventSeriesService {
   async create(dto: CreateEventSeriesDto, user: User) {
     return this.prisma.eventSeries.create({
       data: {
-        title_en: dto.title_en,
-        title_zh: dto.title_zh,
+        title: dto.title,
         groupId: dto.groupId ?? null,
         createdById: user.id,
       },
