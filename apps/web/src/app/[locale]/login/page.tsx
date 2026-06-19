@@ -22,13 +22,15 @@ export default function LoginPage({ params }: { params: { locale: string } }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const next = searchParams.get('next');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const loggedInUser = await login(identifier, password);
-      router.push(`/${loggedInUser.preferredLanguage ?? params.locale}/events`);
+      router.push(next ?? `/${loggedInUser.preferredLanguage ?? params.locale}/events`);
     } catch (err: unknown) {
       setError((err as Error).message ?? (zh ? '登入失敗。' : 'Sign in failed.'));
     } finally {

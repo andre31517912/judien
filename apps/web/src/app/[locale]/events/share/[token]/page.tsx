@@ -240,8 +240,12 @@ export default function SharedEventPage() {
               </button>
               <p className="text-center text-xs text-gray-500 dark:text-gray-400">
                 {zh ? '已有帳號？' : 'Already have an account?'}{' '}
-                <Link href={`/${locale}/login`} className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
+                <Link href={`/${locale}/login?next=${encodeURIComponent(shareUrl)}`} className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
                   {zh ? '登入' : 'Log in'}
+                </Link>
+                {' · '}
+                <Link href={`/${locale}/forgot-password`} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:underline">
+                  {zh ? '忘記密碼？' : 'Forgot password?'}
                 </Link>
                 {' · '}
                 <button onClick={() => setShowGuestFallback(true)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
