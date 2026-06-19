@@ -480,11 +480,18 @@ export default function GroupDetailScreen() {
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                 const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                const isFree = !ev.feeAmount;
+                const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : (zh ? '免費' : 'Free');
                 return (
                   <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5' }} activeOpacity={0.85}>
                     {ev.coverImageUrl ? (
                       <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
                     ) : null}
+                    <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                      <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
+                      </View>
+                    </View>
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
                       <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
                         <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
@@ -519,11 +526,18 @@ export default function GroupDetailScreen() {
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                 const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                const isFree = !ev.feeAmount;
+                const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : (zh ? '免費' : 'Free');
                 return (
                   <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5', opacity: 0.75 }} activeOpacity={0.85}>
                     {ev.coverImageUrl ? (
                       <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
                     ) : null}
+                    <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                      <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                        <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
+                      </View>
+                    </View>
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
                       <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
                         <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>

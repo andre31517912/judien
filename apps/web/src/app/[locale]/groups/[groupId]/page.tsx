@@ -758,7 +758,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               <div className="grid grid-cols-3 gap-2">
                 {events.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
-                  const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : null;
+                  const isFree = !ev.feeAmount;
+                  const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : zh ? '免費' : 'Free';
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                   return (
@@ -769,11 +770,9 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                         <div className="absolute inset-0 bg-indigo-600" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-                      {fee && (
-                        <div className="absolute top-2.5 right-2.5">
-                          <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/90 text-white backdrop-blur-sm">{fee}</span>
-                        </div>
-                      )}
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>{fee}</span>
+                      </div>
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
                         <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
@@ -909,6 +908,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
               <div className="grid grid-cols-3 gap-2">
                 {pastEvents.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
+                  const isFree = !ev.feeAmount;
+                  const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : zh ? '免費' : 'Free';
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                   return (
@@ -919,6 +920,9 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                         <div className="absolute inset-0 bg-indigo-600" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>{fee}</span>
+                      </div>
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
                         <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
