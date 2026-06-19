@@ -82,14 +82,6 @@ export default function ProfileScreen() {
           <Text style={styles.infoLabel}>{zh ? '姓名' : 'Name'}</Text>
           <Text style={styles.infoValue}>{(user as any).displayName || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
         </View>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>{zh ? '電子郵件' : 'Email'}</Text>
-          <Text style={styles.infoValue}>{displayEmail || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
-        </View>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>{zh ? '電話' : 'Phone'}</Text>
-          <Text style={styles.infoValue}>{displayPhone || <Text style={styles.infoEmpty}>{zh ? '未設定' : 'Not set'}</Text>}</Text>
-        </View>
       </View>
 
       {/* Edit Profile */}
