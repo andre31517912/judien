@@ -373,7 +373,7 @@ export default function EventDetailPage() {
     <button
       key={status}
       onClick={() => handleRsvp(status)}
-      className={`px-4 py-2 rounded-full text-sm font-medium border transition ${
+      className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
         rsvpStatus === status
           ? 'bg-indigo-600 text-white border-indigo-600'
           : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400'
@@ -404,13 +404,13 @@ export default function EventDetailPage() {
         <div className="flex gap-3 py-2 border-b border-dashed border-gray-200 dark:border-gray-700 flex-wrap">
           <a
             href={`/${locale}/admin/events/${params.id}/edit`}
-            className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700"
+            className="text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-xl hover:bg-indigo-700 font-medium"
           >
             {zh ? '編輯活動' : 'Edit Event'}
           </a>
           <button
             onClick={handleExportCsv}
-            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition"
+            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-xl hover:border-indigo-400 hover:text-indigo-600 transition"
           >
             {zh ? '匯出 CSV' : 'Export CSV'}
           </button>
@@ -500,7 +500,7 @@ export default function EventDetailPage() {
           {user && !isPast && rsvpBtn('NO', zh ? '不參加' : 'Not Going')}
           <button
             onClick={() => { setShowGuests(!showGuests); if (!showGuests) loadGuests(); }}
-            className="px-4 py-2 rounded-full text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
+            className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
@@ -508,7 +508,7 @@ export default function EventDetailPage() {
             <button
               onClick={handleCreateInvite}
               disabled={inviteLoading}
-              className="px-4 py-2 rounded-full text-sm font-medium border bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 transition disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-500 text-white hover:bg-cyan-600 transition disabled:opacity-50"
             >
               {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
             </button>
@@ -534,13 +534,13 @@ export default function EventDetailPage() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setShowNoReason(false)}
-                className="rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
               >
                 {zh ? '取消' : 'Cancel'}
               </button>
               <button
                 onClick={handleConfirmNo}
-                className="rounded-lg bg-red-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-600 transition"
+                className="rounded-xl bg-red-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-red-600 transition"
               >
                 {zh ? '確認不參加' : 'Confirm'}
               </button>
@@ -648,7 +648,7 @@ export default function EventDetailPage() {
             <button
               type="submit"
               disabled={directInviteLoading || !directInviteId.trim()}
-              className="rounded-lg bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+              className="rounded-xl bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
             >
               {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
             </button>
@@ -714,7 +714,7 @@ export default function EventDetailPage() {
               <button
                 onClick={handleBlast}
                 disabled={!blastMsg.trim() || blastChannels.length === 0}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
                 {zh ? '立即發送' : 'Send Now'}
               </button>
@@ -743,7 +743,7 @@ export default function EventDetailPage() {
             />
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700"
             >
               {zh ? '送出' : 'Post'}
             </button>
@@ -805,7 +805,7 @@ export default function EventDetailPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEditComment(c.id)}
-                          className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-lg hover:bg-indigo-700"
+                          className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-xl hover:bg-indigo-700 font-medium"
                         >
                           {zh ? '儲存' : 'Save'}
                         </button>
@@ -848,7 +848,7 @@ export default function EventDetailPage() {
                       />
                       <button
                         type="submit"
-                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-700"
+                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-indigo-700"
                       >
                         {zh ? '送出' : 'Reply'}
                       </button>
@@ -902,13 +902,13 @@ export default function EventDetailPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleCopyInviteLink}
-                className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium text-sm"
+                className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition font-medium text-sm"
               >
                 {copyDone ? (zh ? '✓ 已複製' : '✓ Copied!') : (zh ? '複製' : 'Copy')}
               </button>
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="flex-1 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition font-medium text-sm"
+                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition font-medium text-sm"
               >
                 {zh ? '關閉' : 'Close'}
               </button>

@@ -81,6 +81,9 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', body: '' });
+  const [editSaving, setEditSaving] = useState(false);
   const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
   const [relationshipsLoading, setRelationshipsLoading] = useState(false);
   const [showRelationships, setShowRelationships] = useState(false);
@@ -232,6 +235,30 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
     finally { setNewsLoading(false); }
   };
 
+  const handleUpdateNews = async (id: string) => {
+    if (!editForm.title.trim() || !editForm.body.trim()) return;
+    setEditSaving(true);
+    setError('');
+    try {
+      await apiFetch(`/news/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ title_en: editForm.title, title_zh: editForm.title, body_en: editForm.body, body_zh: editForm.body }),
+      });
+      setEditingId(null);
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+    finally { setEditSaving(false); }
+  };
+
+  const handleDeleteNews = async (id: string) => {
+    if (!confirm(zh ? '確定要刪除此公告嗎？' : 'Delete this post?')) return;
+    setError('');
+    try {
+      await apiFetch(`/news/${id}`, { method: 'DELETE' });
+      await loadPage();
+    } catch (err: unknown) { setError((err as Error).message ?? 'Failed.'); }
+  };
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventForm.title.trim() || !eventForm.startAt) return;
@@ -296,7 +323,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
             </div>
           )}
         </div>
-        <div className="px-4 pb-0 pt-6 sm:px-6 lg:px-8">
+        <div className="px-4 pb-4 pt-6 sm:px-6 lg:px-8">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
             <div className="space-y-1 flex-1 min-w-0">
               <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
@@ -311,7 +338,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   setShowRelationships(true);
                 }}
                 disabled={relationshipsLoading}
-                className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
               >
                 {relationshipsLoading ? (
                   <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-500" />
@@ -329,7 +356,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               )}
               <Link
                 href={`/${params.locale}/admin/groups/${params.groupId}/settings`}
-                className="rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
+                className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition"
               >
                 ⚙️ {zh ? '群組設定' : 'Settings'}
               </Link>
@@ -341,16 +368,16 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
         {success && <p className="mb-3 text-sm text-green-600">{success}</p>}
 
         {/* ── Tab bar ── */}
-        <div className="flex items-end overflow-x-auto justify-between">
-          <div className="flex">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
             {VIEW_TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setViewTab(t.key)}
-                className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`shrink-0 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   viewTab === t.key
-                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 {zh ? t.labelZh : t.label}
@@ -360,17 +387,17 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           {(isGroupAdmin || isPlatformAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => { setComposingNews((v) => !v); setNewsForm({ title: '', body: '' }); }}
-              className="mb-1 shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
+              className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
-              {composingNews ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '發布公告' : 'Create Post'}`}
+              {composingNews ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '發布公告' : 'Create Post'}`}
             </button>
           )}
           {(isGroupAdmin || isPlatformAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => { setComposingEvent((v) => !v); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }}
-              className="mb-1 shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
+              className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
-              {composingEvent ? (zh ? '取消' : 'Cancel') : `+ ${zh ? '建立活動' : 'Create Event'}`}
+              {composingEvent ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '建立活動' : 'Create Event'}`}
             </button>
           )}
         </div>
@@ -385,106 +412,146 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           <div className="space-y-4">
             {composingNews && (isGroupAdmin || isPlatformAdmin) && (
               <form onSubmit={handleCreateNews} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '發布公告' : 'Create Post'}</h3>
-                    <input required value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                    <textarea required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                    <div className="flex gap-2">
-                      <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-                        {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
-                      </button>
-                      <button type="button" onClick={() => { setComposingNews(false); setNewsForm({ title: '', body: '' }); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        {zh ? '取消' : 'Cancel'}
-                      </button>
-                    </div>
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '發布公告' : 'Create Post'}</h3>
+                <input required value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <textarea required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <div className="flex gap-2">
+                  <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                    {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
+                  </button>
+                  <button type="button" onClick={() => { setComposingNews(false); setNewsForm({ title: '', body: '' }); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                </div>
               </form>
             )}
-            {news.length === 0 ? (
+            {editingId && (
+              <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '編輯公告' : 'Edit Post'}</h3>
+                <input value={editForm.title} onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <textarea value={editForm.body} onChange={(e) => setEditForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                  <button onClick={() => handleUpdateNews(editingId)} disabled={editSaving} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition">
+                    {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {news.length === 0 && !composingNews ? (
               <div className="text-center py-16">
                 <p className="text-4xl mb-3">🎉</p>
                 <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有公告，一切都是最新的！' : "No news yet — you're all caught up!"}</p>
               </div>
-            ) : news.map((item) => (
-              <div key={item.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? item.title_zh : item.title_en}</h3>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{zh ? item.body_zh : item.body_en}</p>
-                {item.createdAt && (
-                  <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
-                    {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
-                    {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
-                  </p>
-                )}
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {news.map((item) => {
+                  const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-violet-500 to-indigo-600','from-rose-500 to-pink-600','from-teal-500 to-cyan-600','from-amber-500 to-orange-600','from-emerald-500 to-green-600','from-sky-500 to-blue-600','from-fuchsia-500 to-purple-600'];
+                  const grad = gradients[hash % gradients.length];
+                  const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
+                  return (
+                    <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
+                      <div className="absolute inset-0 bg-black/15" />
+                      <div className="absolute top-2 right-2 flex gap-1 z-10">
+                        <button
+                          onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
+                          className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
+                        >✎</button>
+                        <button
+                          onClick={() => handleDeleteNews(item.id)}
+                          className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-red-500/80 flex items-center justify-center backdrop-blur-sm"
+                        >✕</button>
+                      </div>
+                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                        <div className="flex-1 overflow-hidden mt-7">
+                          <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
+                          <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
+                          <div className="min-w-0">
+                            {item.createdBy?.displayName && <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>}
+                            <p className="text-[10px] text-white/60">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
         )}
 
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {composingEvent && (isGroupAdmin || isPlatformAdmin) && (
               <form onSubmit={handleCreateEvent} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
-                    <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                    <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                    <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
-                        <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
+                <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
+                    <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
+                    <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
+                    <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
+                    <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
+                    <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面照片（選填）' : 'Cover Photo (optional)'}</label>
+                  <div
+                    onClick={() => coverFileRef.current?.click()}
+                    className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
+                  >
+                    {coverPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coverPreview} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
+                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
                       </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
-                        <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
-                        <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
-                        <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-                        <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                      </div>
-                    </div>
-                    {/* Cover photo */}
-                    <div>
-                      <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面照片（選填）' : 'Cover Photo (optional)'}</label>
-                      <div
-                        onClick={() => coverFileRef.current?.click()}
-                        className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
-                      >
-                        {coverPreview ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={coverPreview} alt="preview" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
-                            <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span className="text-sm">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
-                          </div>
-                        )}
-                        {coverPreview && (
-                          <button type="button" onClick={(ev) => { ev.stopPropagation(); setCoverFile(null); setCoverPreview(null); }}
-                            className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
-                        )}
-                      </div>
-                      <input ref={coverFileRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }} className="hidden" />
-                    </div>
-                    <div className="flex gap-2">
-                      <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
-                        {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
-                      </button>
-                      <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-md border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        {zh ? '取消' : 'Cancel'}
-                      </button>
-                    </div>
+                    )}
+                    {coverPreview && (
+                      <button type="button" onClick={(ev) => { ev.stopPropagation(); setCoverFile(null); setCoverPreview(null); }}
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+                    )}
+                  </div>
+                  <input ref={coverFileRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }} className="hidden" />
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                    {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
+                  </button>
+                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                </div>
               </form>
             )}
             {events.length === 0 ? (
@@ -492,64 +559,154 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <p className="text-4xl mb-3">📅</p>
                 <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
               </div>
-            ) : events.map((ev) => (
-              <Link
-                key={ev.id}
-                href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                    {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
-                    )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
-                  </div>
-                  {ev.feeAmount != null && ev.feeAmount > 0 && (
-                    <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
-                      {ev.feeAmount} {ev.feeCurrency}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {events.map((ev) => {
+                  const coverUrl = resolveImageUrl(ev.coverImageUrl);
+                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
+                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
+                  const grad = gradients[hash % gradients.length];
+                  const emoji = emojis[hash % emojis.length];
+                  const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : null;
+                  const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                  const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                  return (
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+                      {coverUrl ? (
+                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
+                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                      {fee && (
+                        <div className="absolute top-2.5 right-2.5">
+                          <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/90 text-white backdrop-blur-sm">{fee}</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
+                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
         {/* Past events */}
         {viewTab === 'past' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {composingEvent && (isGroupAdmin || isPlatformAdmin) && (
+              <form onSubmit={handleCreateEvent} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
+                <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
+                    <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
+                    <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
+                    <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
+                    <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
+                    <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面照片（選填）' : 'Cover Photo (optional)'}</label>
+                  <div
+                    onClick={() => coverFileRef.current?.click()}
+                    className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
+                  >
+                    {coverPreview ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coverPreview} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 text-gray-400 select-none">
+                        <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm">{zh ? '點擊上傳照片' : 'Click to upload a photo'}</span>
+                      </div>
+                    )}
+                    {coverPreview && (
+                      <button type="button" onClick={(ev) => { ev.stopPropagation(); setCoverFile(null); setCoverPreview(null); }}
+                        className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+                    )}
+                  </div>
+                  <input ref={coverFileRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (!f) return; setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }} className="hidden" />
+                </div>
+                <div className="flex gap-2">
+                  <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                    {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
+                  </button>
+                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                </div>
+              </form>
+            )}
             {pastLoading ? (
               <p className="py-16 text-center text-sm text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>
             ) : pastEvents.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-4xl mb-3">🕐</p>
-                <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有過去的活動記錄，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
+                <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有過去的活動記錄，一切都是最新的！' : "No past events yet."}</p>
               </div>
-            ) : pastEvents.map((ev) => (
-              <Link
-                key={ev.id}
-                href={`/${params.locale}/events/${ev.id}`}
-                className="block rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-600 dark:text-gray-300">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
-                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                    {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
-                    )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {pastEvents.map((ev) => {
+                  const coverUrl = resolveImageUrl(ev.coverImageUrl);
+                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
+                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
+                  const grad = gradients[hash % gradients.length];
+                  const emoji = emojis[hash % emojis.length];
+                  const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                  const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                  return (
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1 opacity-75 hover:opacity-100">
+                      {coverUrl ? (
+                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
+                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
+                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

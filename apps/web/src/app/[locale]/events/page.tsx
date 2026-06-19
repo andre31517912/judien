@@ -292,7 +292,26 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             </form>
           )}
 
-          {newsError && <p className="text-sm text-red-500 dark:text-red-400">{newsError}</p>}
+          {editingId && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-indigo-100 dark:border-indigo-900">
+              <h3 className="font-semibold text-gray-800 dark:text-white">{zh ? '編輯公告' : 'Edit Post'}</h3>
+              {newsError && <p className="text-red-500 text-sm">{newsError}</p>}
+              <input className={inputCls} value={editForm.title}
+                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} placeholder={zh ? '標題' : 'Title'} />
+              <textarea rows={3} className={`${inputCls} resize-none`} value={editForm.body}
+                onChange={(e) => setEditForm({ ...editForm, body: e.target.value })} placeholder={zh ? '內容' : 'Body'} />
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  {zh ? '取消' : 'Cancel'}
+                </button>
+                <button onClick={() => handleUpdateNews(editingId)} disabled={editSaving} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition">
+                  {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {newsError && !editingId && <p className="text-sm text-red-500 dark:text-red-400">{newsError}</p>}
           {newsLoading ? (
             <div className="flex justify-center py-12">
               <div className="w-8 h-8 border-2 border-gray-200 dark:border-gray-700 border-t-indigo-600 rounded-full animate-spin" />
@@ -304,85 +323,59 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '管理員會在這裡發布最新消息' : 'Community updates will appear here'}</p>
             </div>
           ) : (
-            news.map((item) => {
-              const canEdit = item.createdById === user?.id || isAdmin;
-              const isEditing = editingId === item.id;
-              const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
-              return (
-                <div key={item.id} className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-md transition-all p-5 border border-gray-100 dark:border-gray-800">
-                  {isEditing ? (
-                    <div className="flex flex-col gap-3">
-                      <input
-                        className={inputCls}
-                        value={editForm.title}
-                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                        placeholder={zh ? '標題' : 'Title'}
-                      />
-                      <textarea
-                        rows={4}
-                        className={`${inputCls} resize-none`}
-                        value={editForm.body}
-                        onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
-                        placeholder={zh ? '內容' : 'Body'}
-                      />
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
-                          {zh ? '取消' : 'Cancel'}
-                        </button>
-                        <button onClick={() => handleUpdateNews(item.id)} disabled={editSaving} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition">
-                          {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      {item.group && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-0.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {news.map((item) => {
+                const canEdit = item.createdById === user?.id || isAdmin;
+                const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
+                const grad = POST_GRADIENTS[hash % POST_GRADIENTS.length];
+                const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
+                return (
+                  <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
+                    <div className="absolute inset-0 bg-black/15" />
+                    {item.group && (
+                      <div className="absolute top-2.5 left-2.5 right-10 overflow-hidden">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-black/25 backdrop-blur-sm text-white truncate max-w-full">
                           👥 {item.group.name}
                         </span>
-                      )}
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <h2 className="font-bold text-lg text-gray-900 dark:text-white mb-1.5 leading-snug">
-                            {zh ? item.title_zh : item.title_en}
-                          </h2>
-                          <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
-                            {zh ? item.body_zh : item.body_en}
-                          </p>
-                          <div className="flex items-center gap-2.5 mt-4 pt-3 border-t border-gray-50 dark:border-gray-800">
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                              {initial}
-                            </div>
-                            <div>
-                              {item.createdBy?.displayName && (
-                                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-none">{item.createdBy.displayName}</p>
-                              )}
-                              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                                {new Date(item.createdAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                              </p>
-                            </div>
-                          </div>
+                      </div>
+                    )}
+                    {canEdit && (
+                      <div className="absolute top-2 right-2 flex gap-1">
+                        <button
+                          onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
+                          className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
+                          title={zh ? '編輯' : 'Edit'}
+                        >✎</button>
+                        <button
+                          onClick={() => handleDeleteNews(item.id)}
+                          className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-red-500/80 flex items-center justify-center backdrop-blur-sm"
+                          title={zh ? '刪除' : 'Delete'}
+                        >✕</button>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                      <div className={`flex-1 overflow-hidden ${(item.group || canEdit) ? 'mt-7' : ''}`}>
+                        <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
+                        <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                          {initial}
                         </div>
-                        {canEdit && (
-                          <div className="flex shrink-0 flex-col items-end gap-1">
-                            <button
-                              onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
-                              className="rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
-                            >
-                              {zh ? '編輯' : 'Edit'}
-                            </button>
-                            <button onClick={() => handleDeleteNews(item.id)}
-                              className="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 text-xs flex-shrink-0">
-                              {zh ? '刪除' : 'Delete'}
-                            </button>
-                          </div>
-                        )}
+                        <div className="min-w-0">
+                          {item.createdBy?.displayName && (
+                            <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>
+                          )}
+                          <p className="text-[10px] text-white/60">
+                            {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              );
-            })
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
@@ -491,7 +484,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {filteredEvents.map((event) => (
                 <EventCard key={event.id} event={event} locale={params.locale} />
               ))}
@@ -525,6 +518,16 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   );
 }
 
+const POST_GRADIENTS = [
+  'from-violet-500 to-indigo-600',
+  'from-rose-500 to-pink-600',
+  'from-teal-500 to-cyan-600',
+  'from-amber-500 to-orange-600',
+  'from-emerald-500 to-green-600',
+  'from-sky-500 to-blue-600',
+  'from-fuchsia-500 to-purple-600',
+];
+
 const CARD_GRADIENTS = [
   'from-indigo-400 to-violet-500',
   'from-rose-400 to-pink-500',
@@ -557,87 +560,34 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
   return (
     <Link
       href={`/${locale}/events/${event.id}`}
-      className="group block bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-200 border border-gray-100 dark:border-gray-800 overflow-hidden hover:-translate-y-1"
+      className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
     >
-      {/* Cover image or gradient placeholder */}
-      <div className="relative w-full aspect-video overflow-hidden">
-        {coverUrl ? (
-          <Image
-            src={coverUrl}
-            alt={title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-            <span className="text-5xl drop-shadow-sm select-none">{emoji}</span>
-          </div>
-        )}
-        {/* Fee badge */}
-        <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold shadow-md backdrop-blur-sm ${
-            isFree
-              ? 'bg-emerald-500 text-white'
-              : 'bg-amber-500 text-white'
-          }`}>
-            {fee}
-          </span>
+      {coverUrl ? (
+        <Image src={coverUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+      ) : (
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+          <span className="text-6xl drop-shadow-sm select-none opacity-90">{emoji}</span>
         </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <div className="absolute top-2.5 right-2.5">
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
+          {fee}
+        </span>
       </div>
-
-      {/* Card body */}
-      <div className="p-4">
-        {/* Date */}
-        <div className="flex items-center gap-1.5 mb-2">
-          <svg className="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">
-            {dayStr} · {timeStr}
+      {event.groupName && (
+        <div className="absolute top-2.5 left-2.5 max-w-[55%]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium bg-indigo-600/80 backdrop-blur-sm text-white overflow-hidden">
+            <span className="truncate">👥 {event.groupName}</span>
           </span>
         </div>
-
-        {/* Title */}
-        <h2 className="font-bold text-base text-gray-900 dark:text-white line-clamp-2 leading-snug mb-2">
-          {title}
-        </h2>
-
-        {/* Group */}
-        {event.groupName && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1 truncate">
-            <span>👥</span>
-            <span className="truncate">{event.groupName}</span>
-          </p>
-        )}
-
-        {/* Location */}
-        {location && (
-          <div className="flex items-start gap-1.5">
-            <svg className="w-3.5 h-3.5 text-gray-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{location}</p>
-          </div>
-        )}
-
-        {/* Attendee count */}
+      )}
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
+        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{title}</h2>
+        {location && <p className="text-xs text-white/70 mt-0.5 truncate">{location}</p>}
         {event.rsvpCounts.GOING > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-50 dark:border-gray-800 flex items-center gap-2">
-            <div className="flex -space-x-1.5">
-              {Array.from({ length: Math.min(3, event.rsvpCounts.GOING) }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-300 to-violet-400 border-2 border-white dark:border-gray-900 flex items-center justify-center text-[9px]"
-                >
-                  😊
-                </div>
-              ))}
-            </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {event.rsvpCounts.GOING} {zh ? '人參加' : 'going'}
-            </span>
-          </div>
+          <p className="text-xs text-white/50 mt-0.5">{event.rsvpCounts.GOING} {zh ? '人參加' : 'going'}</p>
         )}
       </div>
     </Link>

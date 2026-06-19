@@ -178,9 +178,6 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
       {/* Compact page header */}
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '編輯個人資料' : 'Edit Profile'}</h1>
-        <span className={`ml-auto text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
-          {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
-        </span>
       </div>
 
       {/* LINE welcome banner */}
@@ -225,7 +222,13 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
         </div>
         <div className="flex flex-col gap-1">
           <p className="text-sm font-semibold text-gray-800 dark:text-white">{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">{photoUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '點擊相機圖示更換大頭照' : 'Click the camera icon to change photo')}</p>
+          {photoUploading ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">{zh ? '上傳中…' : 'Uploading…'}</p>
+          ) : (
+            <span className={`self-start text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
+              {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+            </span>
+          )}
           {photoUrl && (
             <button type="button" onClick={handlePhotoDelete} className="text-xs text-red-500 hover:text-red-600 text-left mt-1">
               {zh ? '刪除大頭照' : 'Remove photo'}

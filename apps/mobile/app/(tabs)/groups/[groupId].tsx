@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -363,21 +364,23 @@ export default function GroupDetailScreen() {
       </View>
 
       {/* ── Tab bar ── */}
-      <View style={[styles.tabBar, { flexDirection: 'row', alignItems: 'center' }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll} style={{ flex: 1 }}>
-          {TABS.map((t) => (
-            <TouchableOpacity
-              key={t.key}
-              style={[styles.tabItem, tab === t.key && styles.tabItemActive]}
-              onPress={() => setTab(t.key)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
-                {zh ? t.labelZh : t.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      <View style={styles.tabBar}>
+        <View style={styles.tabPillWrap}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
+            {TABS.map((t) => (
+              <TouchableOpacity
+                key={t.key}
+                style={[styles.tabItem, tab === t.key && styles.tabItemActive]}
+                onPress={() => setTab(t.key)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.tabText, tab === t.key && styles.tabTextActive]}>
+                  {zh ? t.labelZh : t.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
         {canManageGroup && (tab === 'feed' || tab === 'upcoming' || tab === 'past') && (
           <TouchableOpacity
             style={styles.tabAddBtn}
@@ -435,16 +438,39 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyEmoji}>📢</Text>
               <Text style={styles.emptyText}>{zh ? '目前沒有公告' : 'No announcements yet'}</Text>
             </View>
-          ) : news.map((item) => (
-            <View key={item.id} style={styles.card}>
-              <Text style={styles.cardTitle}>{zh ? item.title_zh : item.title_en}</Text>
-              <Text style={styles.cardBody}>{zh ? item.body_zh : item.body_en}</Text>
-              <Text style={styles.cardMeta}>
-                {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
-                {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
-              </Text>
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {news.map((item) => {
+                const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
+                const gradColors: [string, string][] = [
+                  ['#7C3AED','#4F46E5'],['#E11D48','#DB2777'],['#0D9488','#0891B2'],
+                  ['#D97706','#EA580C'],['#059669','#16A34A'],['#0284C7','#2563EB'],
+                  ['#A21CAF','#7C3AED'],
+                ];
+                const [c1] = gradColors[hash % gradColors.length];
+                const tileSize = (Dimensions.get('window').width - 48) / 2;
+                return (
+                  <View key={item.id} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }}>
+                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                    <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
+                      <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 18 }} numberOfLines={4}>
+                        {zh ? item.title_zh : item.title_en}
+                      </Text>
+                      <View>
+                        <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }} numberOfLines={2}>
+                          {zh ? item.body_zh : item.body_en}
+                        </Text>
+                        <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 }}>
+                          {item.createdBy?.displayName ?? ''}{item.createdBy?.displayName ? ' · ' : ''}
+                          {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
-          ))}
+          )}
         </ScrollView>
       )}
 
@@ -456,28 +482,40 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyEmoji}>📅</Text>
               <Text style={styles.emptyText}>{zh ? '目前沒有即將到來的活動' : 'No upcoming events'}</Text>
             </View>
-          ) : events.map((ev) => (
-            <View key={ev.id} style={styles.card}>
-              <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
-                <Text style={styles.cardTitle}>{zh ? ev.title_zh : ev.title_en}</Text>
-                <Text style={styles.cardMeta}>
-                  {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                </Text>
-                {(zh ? ev.location_zh : ev.location_en) ? (
-                  <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
-                ) : null}
-                {ev.feeAmount != null && Number(ev.feeAmount) > 0 && (
-                  <Text style={styles.feeTag}>{ev.feeAmount} {ev.feeCurrency}</Text>
-                )}
-                <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
-              </TouchableOpacity>
-              {canManageGroup && (
-                <TouchableOpacity onPress={() => router.push(`/admin/events/${ev.id}/edit` as any)} style={styles.cardEditRow}>
-                  <Text style={styles.cardEditText}>{zh ? '編輯活動' : 'Edit Event'}</Text>
-                </TouchableOpacity>
-              )}
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {events.map((ev) => {
+                const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                const gradColors: [string, string][] = [
+                  ['#6366F1','#8B5CF6'],['#F43F5E','#EC4899'],['#F59E0B','#F97316'],
+                  ['#14B8A6','#06B6D4'],['#8B5CF6','#6366F1'],['#0EA5E9','#3B82F6'],
+                  ['#10B981','#14B8A6'],
+                ];
+                const [c1] = gradColors[hash % gradColors.length];
+                const tileSize = (Dimensions.get('window').width - 48) / 2;
+                const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                return (
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }} activeOpacity={0.85}>
+                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                    {ev.coverImageUrl ? (
+                      <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                    ) : null}
+                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
+                      <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
+                        <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{zh ? ev.title_zh : ev.title_en}</Text>
+                        {(zh ? ev.location_zh : ev.location_en) ? (
+                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{zh ? ev.location_zh : ev.location_en}</Text>
+                        ) : null}
+                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          ))}
+          )}
         </ScrollView>
       )}
 
@@ -491,25 +529,40 @@ export default function GroupDetailScreen() {
               <Text style={styles.emptyEmoji}>🕐</Text>
               <Text style={styles.emptyText}>{zh ? '沒有過去的活動記錄' : 'No past events'}</Text>
             </View>
-          ) : pastEvents.map((ev) => (
-            <View key={ev.id} style={[styles.card, styles.cardPast]}>
-              <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)}>
-                <Text style={[styles.cardTitle, styles.cardTitlePast]}>{zh ? ev.title_zh : ev.title_en}</Text>
-                <Text style={styles.cardMeta}>
-                  {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                </Text>
-                {(zh ? ev.location_zh : ev.location_en) ? (
-                  <Text style={styles.cardMeta}>{zh ? ev.location_zh : ev.location_en}</Text>
-                ) : null}
-                <Text style={styles.rsvpRow}>✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</Text>
-              </TouchableOpacity>
-              {canManageGroup && (
-                <TouchableOpacity onPress={() => router.push(`/admin/events/${ev.id}/edit` as any)} style={styles.cardEditRow}>
-                  <Text style={styles.cardEditText}>{zh ? '編輯活動' : 'Edit Event'}</Text>
-                </TouchableOpacity>
-              )}
+          ) : (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {pastEvents.map((ev) => {
+                const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                const gradColors: [string, string][] = [
+                  ['#6366F1','#8B5CF6'],['#F43F5E','#EC4899'],['#F59E0B','#F97316'],
+                  ['#14B8A6','#06B6D4'],['#8B5CF6','#6366F1'],['#0EA5E9','#3B82F6'],
+                  ['#10B981','#14B8A6'],
+                ];
+                const [c1] = gradColors[hash % gradColors.length];
+                const tileSize = (Dimensions.get('window').width - 48) / 2;
+                const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                return (
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1, opacity: 0.75 }} activeOpacity={0.85}>
+                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                    {ev.coverImageUrl ? (
+                      <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                    ) : null}
+                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
+                      <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
+                        <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{zh ? ev.title_zh : ev.title_en}</Text>
+                        {(zh ? ev.location_zh : ev.location_en) ? (
+                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{zh ? ev.location_zh : ev.location_en}</Text>
+                        ) : null}
+                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-          ))}
+          )}
         </ScrollView>
       )}
 
@@ -626,11 +679,11 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     photoBannerPlaceholder: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoBannerIcon: { fontSize: 40, opacity: 0.5 },
 
-    tabAddBtn: { paddingHorizontal: 14, paddingVertical: 10, marginRight: 4 },
-    tabAddBtnText: { color: INDIGO, fontSize: 22, fontWeight: '700', lineHeight: 26 },
+    tabAddBtn: { backgroundColor: INDIGO, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, marginLeft: 8 },
+    tabAddBtnText: { color: '#fff', fontSize: 18, fontWeight: '600', lineHeight: 22 },
 
     composeBox: {
-      backgroundColor: colors.card, borderRadius: 12, padding: 14,
+      backgroundColor: colors.card, borderRadius: 14, padding: 14,
       borderWidth: 1, borderColor: colors.border, gap: 6,
     },
     composeTitle: {
@@ -641,9 +694,9 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       minHeight: 80, fontSize: 14, color: colors.text,
       paddingTop: 6,
     },
-    composeBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+    composeBtn: { backgroundColor: INDIGO, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 },
     composeBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-    composeCancelBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8 },
+    composeCancelBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 },
     composeCancelText: { color: colors.subtext, fontSize: 13 },
 
     coverHeader: {
@@ -660,11 +713,12 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
     breadcrumb: { fontSize: 11, color: colors.placeholder },
 
-    tabBar: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border },
-    tabScroll: { paddingHorizontal: 8 },
-    tabItem: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 2, borderBottomColor: 'transparent' },
-    tabItemActive: { borderBottomColor: INDIGO },
-    tabText: { fontSize: 14, color: colors.subtext, fontWeight: '500' },
+    tabBar: { backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
+    tabPillWrap: { flex: 1, backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 4 },
+    tabScroll: { flexDirection: 'row', gap: 4 },
+    tabItem: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8 },
+    tabItemActive: { backgroundColor: isDark ? '#111827' : '#FFFFFF', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 2, elevation: 1 },
+    tabText: { fontSize: 13, color: colors.subtext, fontWeight: '500' },
     tabTextActive: { color: INDIGO, fontWeight: '700' },
 
     tabContent: { padding: 16, gap: 12, paddingBottom: 40 },
@@ -719,16 +773,16 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       borderWidth: 1, borderColor: '#C7D2FE', borderRadius: 8,
       paddingHorizontal: 10, paddingVertical: 6, fontSize: 13, color: colors.inputText, backgroundColor: colors.input,
     },
-    smallBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+    smallBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5 },
     smallBtnPrimary: { backgroundColor: INDIGO, borderColor: INDIGO },
     smallBtnText: { fontSize: 11, fontWeight: '600', color: colors.text },
     smallBtnPrimaryText: { fontSize: 11, fontWeight: '700', color: '#fff' },
 
-    renameBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.card },
+    renameBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: colors.card },
     renameBtnText: { fontSize: 11, fontWeight: '700', color: colors.text },
-    promoteBtn: { borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
+    promoteBtn: { borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },
     promoteBtnText: { fontSize: 11, fontWeight: '700', color: isDark ? '#818CF8' : '#4338CA' },
-    removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
+    removeBtn: { borderWidth: 1, borderColor: '#FECACA', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#FEF2F2' },
     removeBtnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
   });
 }

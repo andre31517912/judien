@@ -459,7 +459,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             </svg>
           </div>
         )}
-        <div className="px-4 pb-0 pt-4 sm:px-6 lg:px-8">
+        <div className="px-4 pb-4 pt-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1 flex-1 min-w-0">
             <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-3xl">{group.name}</h1>
@@ -517,21 +517,21 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {success && <p className="mb-3 text-sm text-green-600 dark:text-green-400">{success}</p>}
 
         {/* ── Tab bar ── */}
-        <div className="flex items-center justify-between">
-          <div className="flex overflow-x-auto">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto">
             {VIEW_TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setViewTab(t.key)}
-                className={`shrink-0 px-5 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+                className={`shrink-0 px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                   viewTab === t.key
-                    ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 {zh ? t.labelZh : t.label}
                 {t.key === 'members' && isGroupAdmin && joinRequests.length > 0 && (
-                  <span className="inline-flex items-center justify-center h-4.5 min-w-[1.125rem] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none py-0.5">
+                  <span className="inline-flex items-center justify-center min-w-[1.125rem] px-1 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
                     {joinRequests.length}
                   </span>
                 )}
@@ -541,17 +541,17 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           {(isGroupAdmin || isAdmin) && viewTab === 'feed' && (
             <button
               onClick={() => setComposingNews((v) => !v)}
-              className="shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
+              className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
-              {composingNews ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立動態' : '+ Create Post')}
+              {composingNews ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '建立動態' : 'Create Post'}`}
             </button>
           )}
           {(isGroupAdmin || isAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
               onClick={() => setComposingEvent((v) => !v)}
-              className="shrink-0 rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm"
+              className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
-              {composingEvent ? (zh ? '取消' : 'Cancel') : (zh ? '+ 建立活動' : '+ Create Event')}
+              {composingEvent ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '建立活動' : 'Create Event'}`}
             </button>
           )}
         </div>
@@ -591,87 +591,85 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 </div>
               </form>
             )}
-            {news.length === 0 ? (
+            {editingId && (
+              <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '編輯公告' : 'Edit Post'}</h3>
+                <input
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  placeholder={zh ? '標題' : 'Title'}
+                />
+                <textarea
+                  rows={4}
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  value={editForm.body}
+                  onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
+                  placeholder={zh ? '內容' : 'Body'}
+                />
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                    {zh ? '取消' : 'Cancel'}
+                  </button>
+                  <button onClick={() => handleUpdateNews(editingId)} disabled={editSaving} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition">
+                    {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
+                  </button>
+                </div>
+              </div>
+            )}
+            {news.length === 0 && !composingNews ? (
               <div className="py-16 text-center">
                 <p className="text-5xl mb-3">📢</p>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '目前沒有動態' : 'No feeds yet'}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '管理員會在這裡發布最新公告' : 'Group updates will appear here'}</p>
               </div>
-            ) : news.map((item) => {
-              const canEdit = item.createdById === user.id || isGroupAdmin || user.role === 'ADMIN';
-              const isEditing = editingId === item.id;
-              return (
-                <div key={item.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm">
-                  {isEditing ? (
-                    <div className="space-y-3">
-                      <input
-                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        value={editForm.title}
-                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                        placeholder={zh ? '標題' : 'Title'}
-                      />
-                      <textarea
-                        rows={4}
-                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                        value={editForm.body}
-                        onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
-                        placeholder={zh ? '內容' : 'Body'}
-                      />
-                      <div className="flex gap-2 justify-end">
-                        <button
-                          onClick={() => setEditingId(null)}
-                          className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                        >
-                          {zh ? '取消' : 'Cancel'}
-                        </button>
-                        <button
-                          onClick={() => handleUpdateNews(item.id)}
-                          disabled={editSaving}
-                          className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60 transition"
-                        >
-                          {editSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}
-                        </button>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {news.map((item) => {
+                  const canEdit = item.createdById === user.id || isGroupAdmin || user.role === 'ADMIN';
+                  const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-violet-500 to-indigo-600','from-rose-500 to-pink-600','from-teal-500 to-cyan-600','from-amber-500 to-orange-600','from-emerald-500 to-green-600','from-sky-500 to-blue-600','from-fuchsia-500 to-purple-600'];
+                  const grad = gradients[hash % gradients.length];
+                  const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
+                  return (
+                    <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
+                      <div className="absolute inset-0 bg-black/15" />
+                      {canEdit && (
+                        <div className="absolute top-2 right-2 flex gap-1 z-10">
+                          <button
+                            onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
+                            className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
+                          >✎</button>
+                          <button
+                            onClick={() => handleDeleteGroupNews(item.id)}
+                            className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-red-500/80 flex items-center justify-center backdrop-blur-sm"
+                          >✕</button>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                        <div className={`flex-1 overflow-hidden ${canEdit ? 'mt-7' : ''}`}>
+                          <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
+                          <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
+                          <div className="min-w-0">
+                            {item.createdBy?.displayName && <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>}
+                            <p className="text-[10px] text-white/60">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? item.title_zh : item.title_en}</h3>
-                        {canEdit && (
-                          <div className="flex shrink-0 items-center gap-2">
-                            <button
-                              onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
-                              className="rounded-lg px-2 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
-                            >
-                              {zh ? '編輯' : 'Edit'}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteGroupNews(item.id)}
-                              className="rounded-lg px-2 py-1 text-xs font-medium text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
-                            >
-                              {zh ? '刪除' : 'Delete'}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      <p className="mt-2 whitespace-pre-wrap text-sm text-gray-600 dark:text-gray-300">{zh ? item.body_zh : item.body_en}</p>
-                      {item.createdAt && (
-                        <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">
-                          {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
-                          {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
         {/* Upcoming events */}
         {viewTab === 'upcoming' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {(isGroupAdmin || isAdmin) && composingEvent && (
               <form onSubmit={handleCreateEvent} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '新增活動' : 'Create Event'}</h3>
@@ -784,41 +782,50 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '目前沒有活動' : 'No events yet'}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '即將舉辦的活動會顯示在這裡' : 'Upcoming events will appear here'}</p>
               </div>
-            ) : events.map((ev) => (
-              <div
-                key={ev.id}
-                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition hover:shadow-md hover:-translate-y-0.5"
-              >
-                <Link
-                  href={`/${params.locale}/events/${ev.id}`}
-                  className="block p-5"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div className="space-y-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{zh ? ev.title_zh : ev.title_en}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                      </p>
-                      {(zh ? ev.location_zh : ev.location_en) && (
-                        <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {events.map((ev) => {
+                  const coverUrl = resolveImageUrl(ev.coverImageUrl);
+                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
+                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
+                  const grad = gradients[hash % gradients.length];
+                  const emoji = emojis[hash % emojis.length];
+                  const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : null;
+                  const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                  const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                  return (
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
+                      {coverUrl ? (
+                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
+                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
+                        </div>
                       )}
-                      <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
-                    </div>
-                    {ev.feeAmount != null && ev.feeAmount > 0 && (
-                      <span className="rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                        {ev.feeAmount} {ev.feeCurrency}
-                      </span>
-                    )}
-                  </div>
-                </Link>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                      {fee && (
+                        <div className="absolute top-2.5 right-2.5">
+                          <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-500/90 text-white backdrop-blur-sm">{fee}</span>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
+                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
         )}
 
         {/* Past events */}
         {viewTab === 'past' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {(isGroupAdmin || isAdmin) && composingEvent && (
               <form onSubmit={handleCreateEvent} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
                 <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '新增活動' : 'Create Event'}</h3>
@@ -930,33 +937,41 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             ) : pastEvents.length === 0 ? (
               <div className="py-16 text-center">
                 <p className="text-5xl mb-3">🕐</p>
-                <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '沒有過去的活動' : 'No events yet'}</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">{zh ? '沒有過去的活動' : 'No past events'}</p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '過去舉辦的活動會顯示在這裡' : 'Past events will appear here'}</p>
               </div>
-            ) : pastEvents.map((ev) => (
-              <div
-                key={ev.id}
-                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 opacity-75 shadow-sm transition hover:opacity-100 hover:shadow-md"
-              >
-                <Link
-                  href={`/${params.locale}/events/${ev.id}`}
-                  className="block p-5"
-                >
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-gray-600 dark:text-gray-300">{zh ? ev.title_zh : ev.title_en}</h3>
-                    <p className="text-sm text-gray-400 dark:text-gray-500">
-                      {new Date(ev.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                    {(zh ? ev.location_zh : ev.location_en) && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? ev.location_zh : ev.location_en}</p>
-                    )}
-                    <p className="text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}  ✗ {ev.rsvpCounts.NO}</p>
-                  </div>
-                </div>
-                </Link>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                {pastEvents.map((ev) => {
+                  const coverUrl = resolveImageUrl(ev.coverImageUrl);
+                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
+                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
+                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
+                  const grad = gradients[hash % gradients.length];
+                  const emoji = emojis[hash % emojis.length];
+                  const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                  const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                  return (
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1 opacity-75 hover:opacity-100">
+                      {coverUrl ? (
+                        <Image src={coverUrl} alt={zh ? ev.title_zh : ev.title_en} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
+                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
+                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{zh ? ev.title_zh : ev.title_en}</h2>
+                        {(zh ? ev.location_zh : ev.location_en) && <p className="text-xs text-white/70 mt-0.5 truncate">{zh ? ev.location_zh : ev.location_en}</p>}
+                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            ))}
+            )}
           </div>
         )}
 
