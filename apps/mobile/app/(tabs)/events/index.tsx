@@ -264,11 +264,9 @@ export default function EventsTab() {
               return (
                 <View style={styles.card}>
                   <TouchableOpacity style={{ flexDirection: 'row', gap: 12, flex: 1 }} onPress={() => router.push(`/events/${item.id}`)}>
-                    {coverUri && (
-                      <View style={[styles.thumbnail, { backgroundColor: colors.border }]}>
-                        <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                      </View>
-                    )}
+                    <View style={[styles.thumbnail, { backgroundColor: coverUri ? colors.border : '#4F46E5' }]}>
+                      {coverUri && <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />}
+                    </View>
                     <View style={styles.cardBody}>
                       {(item as any).seriesTitle && (
                         <View style={styles.seriesBadge}>

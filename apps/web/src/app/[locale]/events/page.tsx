@@ -560,18 +560,6 @@ const POST_GRADIENTS = [
   'from-fuchsia-500 to-purple-600',
 ];
 
-const CARD_GRADIENTS = [
-  'from-indigo-400 to-violet-500',
-  'from-rose-400 to-pink-500',
-  'from-amber-400 to-orange-500',
-  'from-teal-400 to-cyan-500',
-  'from-purple-400 to-indigo-500',
-  'from-sky-400 to-blue-500',
-  'from-emerald-400 to-teal-500',
-];
-
-const CARD_EMOJIS = ['🎉', '🎊', '🍻', '🎸', '🌟', '🎨', '🏃', '☕', '🎭', '🎤', '🎮', '🌸'];
-
 function EventCard({ event, locale }: { event: EventWithCounts; locale: string }) {
   const zh = locale === 'zh';
   const title = event.title;
@@ -585,10 +573,6 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
   const isFree = !event.feeAmount;
   const coverUrl = resolveImageUrl(event.coverImageUrl);
 
-  const hash = (event.id.charCodeAt(0) ?? 0) + (event.id.charCodeAt(2) ?? 0);
-  const gradient = CARD_GRADIENTS[hash % CARD_GRADIENTS.length];
-  const emoji = CARD_EMOJIS[hash % CARD_EMOJIS.length];
-
   return (
     <Link
       href={`/${locale}/events/${event.id}`}
@@ -597,9 +581,7 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
       {coverUrl ? (
         <Image src={coverUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
       ) : (
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-          <span className="text-6xl drop-shadow-sm select-none opacity-90">{emoji}</span>
-        </div>
+        <div className="absolute inset-0 bg-indigo-600" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
       <div className="absolute top-2.5 right-2.5">

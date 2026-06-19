@@ -596,11 +596,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               <div className="grid grid-cols-3 gap-2">
                 {events.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
-                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
-                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
-                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
-                  const grad = gradients[hash % gradients.length];
-                  const emoji = emojis[hash % emojis.length];
                   const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : null;
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
@@ -609,9 +604,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                       {coverUrl ? (
                         <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
-                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
-                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
-                        </div>
+                        <div className="absolute inset-0 bg-indigo-600" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                       {fee && (
@@ -712,11 +705,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               <div className="grid grid-cols-3 gap-2">
                 {pastEvents.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
-                  const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
-                  const gradients = ['from-indigo-400 to-violet-500','from-rose-400 to-pink-500','from-amber-400 to-orange-500','from-teal-400 to-cyan-500','from-purple-400 to-indigo-500','from-sky-400 to-blue-500','from-emerald-400 to-teal-500'];
-                  const emojis = ['🎉','🎊','🍻','🎸','🌟','🎨','🏃','☕','🎭','🎤','🎮','🌸'];
-                  const grad = gradients[hash % gradients.length];
-                  const emoji = emojis[hash % emojis.length];
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                   return (
@@ -724,9 +712,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                       {coverUrl ? (
                         <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                       ) : (
-                        <div className={`absolute inset-0 bg-gradient-to-br ${grad} flex items-center justify-center`}>
-                          <span className="text-5xl opacity-90 select-none">{emoji}</span>
-                        </div>
+                        <div className="absolute inset-0 bg-indigo-600" />
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-3">

@@ -485,19 +485,11 @@ export default function GroupDetailScreen() {
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {events.map((ev) => {
-                const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
-                const gradColors: [string, string][] = [
-                  ['#6366F1','#8B5CF6'],['#F43F5E','#EC4899'],['#F59E0B','#F97316'],
-                  ['#14B8A6','#06B6D4'],['#8B5CF6','#6366F1'],['#0EA5E9','#3B82F6'],
-                  ['#10B981','#14B8A6'],
-                ];
-                const [c1] = gradColors[hash % gradColors.length];
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                 const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                 return (
-                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }} activeOpacity={0.85}>
-                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5' }} activeOpacity={0.85}>
                     {ev.coverImageUrl ? (
                       <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
                     ) : null}
@@ -532,19 +524,11 @@ export default function GroupDetailScreen() {
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
               {pastEvents.map((ev) => {
-                const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
-                const gradColors: [string, string][] = [
-                  ['#6366F1','#8B5CF6'],['#F43F5E','#EC4899'],['#F59E0B','#F97316'],
-                  ['#14B8A6','#06B6D4'],['#8B5CF6','#6366F1'],['#0EA5E9','#3B82F6'],
-                  ['#10B981','#14B8A6'],
-                ];
-                const [c1] = gradColors[hash % gradColors.length];
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                 const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                 return (
-                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1, opacity: 0.75 }} activeOpacity={0.85}>
-                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5', opacity: 0.75 }} activeOpacity={0.85}>
                     {ev.coverImageUrl ? (
                       <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
                     ) : null}
