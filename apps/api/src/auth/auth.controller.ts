@@ -126,9 +126,9 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  async forgotPassword(@Body() body: { email?: string }) {
+  async forgotPassword(@Body() body: { email?: string; next?: string }) {
     if (typeof body.email === 'string' && body.email.trim()) {
-      await this.authService.requestMagicLink(body.email.trim());
+      await this.authService.requestMagicLink(body.email.trim(), body.next);
     }
     return { sent: true };
   }
@@ -139,12 +139,14 @@ export class AuthController {
     const webOrigin = process.env.WEB_ORIGIN ?? 'http://localhost:3000';
     if (!token) return res.redirect(`${webOrigin}/en/login?error=invalid_link`);
     try {
-      const user = await this.authService.verifyMagicLink(token);
+      const { user, next } = await this.authService.verifyMagicLink(token);
       const tokens = this.authService.issueTokens(user);
       res.cookie('access_token', tokens.accessToken, COOKIE_OPTS);
       res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTS);
       const locale = user.preferredLanguage ?? 'en';
-      return res.redirect(`${webOrigin}/${locale}/events`);
+      // Only allow same-origin redirects to prevent open redirect attacks
+      const safeNext = next && (next.startsWith('/') || next.startsWith(webOrigin)) ? next : null;
+      return res.redirect(safeNext ?? `${webOrigin}/${locale}/events`);
     } catch {
       return res.redirect(`${webOrigin}/en/login?error=invalid_link`);
     }

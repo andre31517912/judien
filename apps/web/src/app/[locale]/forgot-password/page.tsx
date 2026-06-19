@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 
 export default function ForgotPasswordPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') ?? undefined;
   const [value, setValue] = useState('');
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +22,7 @@ export default function ForgotPasswordPage({ params }: { params: { locale: strin
     try {
       await apiFetch('/auth/forgot-password', {
         method: 'POST',
-        body: JSON.stringify({ email: value.trim() }),
+        body: JSON.stringify({ email: value.trim(), ...(next ? { next } : {}) }),
       });
       setSent(true);
       setCooldown(true);

@@ -128,12 +128,12 @@ export class AuthService {
    * Send a magic sign-in link to the user's email.
    * Silent if the email isn't registered (avoids leaking account existence).
    */
-  async requestMagicLink(email: string): Promise<void> {
+  async requestMagicLink(email: string, next?: string): Promise<void> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return;
 
     const token = this.jwt.sign(
-      { sub: user.id, type: 'magic' },
+      { sub: user.id, type: 'magic', ...(next ? { next } : {}) },
       { expiresIn: '15m' },
     );
 
@@ -157,17 +157,17 @@ export class AuthService {
   /**
    * Verify a magic link token and return the associated user.
    */
-  async verifyMagicLink(token: string): Promise<User> {
-    let payload: { sub: string; type: string };
+  async verifyMagicLink(token: string): Promise<{ user: User; next?: string }> {
+    let payload: { sub: string; type: string; next?: string };
     try {
-      payload = this.jwt.verify<{ sub: string; type: string }>(token);
+      payload = this.jwt.verify<{ sub: string; type: string; next?: string }>(token);
     } catch {
       throw new UnauthorizedException('Magic link is invalid or expired.');
     }
     if (payload.type !== 'magic') throw new UnauthorizedException('Invalid token type.');
     const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
     if (!user) throw new UnauthorizedException('User not found.');
-    return user;
+    return { user, next: payload.next };
   }
 
   /**

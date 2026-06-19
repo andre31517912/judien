@@ -244,7 +244,7 @@ export default function SharedEventPage() {
                   {zh ? '登入' : 'Log in'}
                 </Link>
                 {' · '}
-                <Link href={`/${locale}/forgot-password`} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:underline">
+                <Link href={`/${locale}/forgot-password?next=${encodeURIComponent(shareUrl)}`} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:underline">
                   {zh ? '忘記密碼？' : 'Forgot password?'}
                 </Link>
                 {' · '}
