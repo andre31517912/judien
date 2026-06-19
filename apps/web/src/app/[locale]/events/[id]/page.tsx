@@ -148,10 +148,10 @@ export default function EventDetailPage() {
         method: 'POST',
         body: JSON.stringify({ message: blastMsg.trim(), channels: blastChannels, audience: blastAudience }),
       });
-      setBlastResult(zh ? '✓ 訊息已發送' : '✓ Message sent');
+      setBlastResult('✓ Message sent');
       setBlastMsg('');
     } catch (err: unknown) {
-      setBlastResult(zh ? '發送失敗，請稍後再試。' : 'Failed to send. Please try again.');
+      setBlastResult('Failed to send. Please try again.');
     }
   };
 
@@ -664,26 +664,26 @@ export default function EventDetailPage() {
       {/* Send Message Blast (admin or event creator) */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
-          <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '發送訊息' : 'Send Message Blast'}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{zh ? '立即發送訊息給出席者。' : 'Send a message to attendees right now.'}</p>
+          <h2 className="text-lg font-semibold mb-1 dark:text-white">Send Message</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Send a message to attendees right now.</p>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">{zh ? '訊息' : 'Message'}</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Message</label>
               <textarea
                 value={blastMsg}
                 onChange={(e) => setBlastMsg(e.target.value)}
                 rows={3}
                 maxLength={2000}
-                placeholder={zh ? '您的訊息（中英文相同）…' : 'Your message (used for both English and Chinese)…'}
+                placeholder="Write your message…"
                 className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送方式' : 'Send via'}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Send via</p>
               <div className="flex gap-3 flex-wrap">
                 {([
-                  ['EMAIL', zh ? '✉️ 電子郵件' : '✉️ Email'],
-                  ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'],
+                  ['EMAIL', '✉️ Email'],
+                  ['IN_APP', '🔔 In-App'],
                 ] as const).map(([ch, label]) => (
                   <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
@@ -695,11 +695,11 @@ export default function EventDetailPage() {
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{zh ? '發送對象' : 'Send to'}</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Send to</p>
               <div className="flex gap-3 flex-wrap">
                 {([
-                  ['rsvped', zh ? '已回覆的用戶' : 'RSVPed Only'],
-                  ['invited', zh ? '所有受邀者' : 'All Invited'],
+                  ['rsvped', 'RSVPed Only'],
+                  ['invited', 'All Invited'],
                 ] as [typeof blastAudience, string][]).map(([val, label]) => (
                   <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
                     blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
@@ -716,7 +716,7 @@ export default function EventDetailPage() {
                 disabled={!blastMsg.trim() || blastChannels.length === 0}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
               >
-                {zh ? '立即發送' : 'Send Now'}
+                Send Now
               </button>
               {blastResult && (
                 <p className={`text-sm ${blastResult.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>

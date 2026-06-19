@@ -252,10 +252,10 @@ export default function EventDetailScreen() {
         method: 'POST',
         body: JSON.stringify({ message: blastMsg, channels: blastChannels, audience: blastAudience }),
       });
-      setBlastResult(zh ? `✓ 已發送給 ${res.sent} 人` : `✓ Sent to ${res.sent} people`);
+      setBlastResult(`✓ Sent to ${res.sent} people`);
       setBlastMsg('');
     } catch (err: any) {
-      setBlastResult(zh ? '發送失敗，請稍後再試。' : 'Failed to send. Please try again.');
+      setBlastResult('Failed to send. Please try again.');
     } finally {
       setBlastSending(false);
     }
@@ -458,13 +458,13 @@ export default function EventDetailScreen() {
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>📣 {zh ? '發送訊息給出席者' : 'Message attendees'}</Text>
+                <Text style={styles.blastToggleText}>📣 Message attendees</Text>
               </TouchableOpacity>
               {showBlast && (
                 <View style={styles.blastForm}>
-                  <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
+                  <Text style={styles.blastLabel}>Send via</Text>
                   <View style={styles.blastAudienceRow}>
-                    {([['EMAIL', zh ? '✉️ Email' : '✉️ Email'], ['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App']] as const).map(([ch, label]) => (
+                    {([['EMAIL', '✉️ Email'], ['IN_APP', '🔔 In-App']] as const).map(([ch, label]) => (
                       <TouchableOpacity key={ch}
                         onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
                         style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
@@ -472,20 +472,20 @@ export default function EventDetailScreen() {
                       </TouchableOpacity>
                     ))}
                   </View>
-                  <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
+                  <Text style={styles.blastLabel}>Send to</Text>
                   <View style={styles.blastAudienceRow}>
                     {(['rsvped', 'invited'] as const).map((a) => (
                       <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
                         style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive]}>
                         <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
-                          {a === 'rsvped' ? (zh ? '已回覆' : 'RSVPed') : (zh ? '已邀請' : 'Invited')}
+                          {a === 'rsvped' ? 'RSVPed' : 'Invited'}
                         </Text>
                       </TouchableOpacity>
                     ))}
                   </View>
                   <TextInput
                     style={styles.blastInput}
-                    placeholder={zh ? '輸入訊息…' : 'Enter message…'}
+                    placeholder="Enter message…"
                     placeholderTextColor={colors.placeholder}
                     value={blastMsg}
                     onChangeText={setBlastMsg}
@@ -497,7 +497,7 @@ export default function EventDetailScreen() {
                     onPress={handleBlastSend}
                     disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
                   >
-                    <Text style={styles.blastSendBtnText}>{blastSending ? (zh ? '發送中…' : 'Sending…') : (zh ? '立即發送' : 'Send Now')}</Text>
+                    <Text style={styles.blastSendBtnText}>{blastSending ? 'Sending…' : 'Send Now'}</Text>
                   </TouchableOpacity>
                   {!!blastResult && (
                     <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444' }]}>{blastResult}</Text>
