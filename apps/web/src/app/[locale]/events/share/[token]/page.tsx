@@ -190,7 +190,7 @@ export default function SharedEventPage() {
           {user && (
             <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-3">
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {zh ? `以 ${user.displayName ?? user.email ?? user.phone} 身份回覆：` : `RSVP as ${user.displayName ?? user.email ?? user.phone}:`}
+                {zh ? `以 ${user.displayName ?? user.email ?? user.phoneE164} 身份回覆：` : `RSVP as ${user.displayName ?? user.email ?? user.phoneE164}:`}
               </p>
               <div className="flex gap-2 flex-wrap">
                 {(['GOING', 'NO'] as const).map((s) => (
