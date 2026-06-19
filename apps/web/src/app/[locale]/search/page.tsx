@@ -157,11 +157,8 @@ function SearchContent({ locale }: { locale: string }) {
                 return (
                   <Row
                     key={u.id}
-                    primary={
-                      <Link href={`/${locale}/profile/${u.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-                        {u.displayName || <em className="text-gray-400">{zh ? '未設名稱' : 'No name'}</em>}
-                      </Link>
-                    }
+                    href={`/${locale}/profile/${u.id}`}
+                    primary={u.displayName || <em className="text-gray-400">{zh ? '未設名稱' : 'No name'}</em>}
                     secondary={secondary}
                     badge={isAdmin && adminUser.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : undefined}
                     isAdmin={isAdmin} deletingId={deletingId} id={u.id} zh={zh}
@@ -178,7 +175,8 @@ function SearchContent({ locale }: { locale: string }) {
               {results.news.map((n) => (
                 <Row
                   key={n.id}
-                  primary={<Link href={`/${locale}/news/${n.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{n.title}</Link>}
+                  href={`/${locale}/news/${n.id}`}
+                  primary={n.title}
                   secondary={`${n.createdBy?.displayName ?? '—'}${n.group ? ` · ${n.group.name}` : ''} · ${new Date(n.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}`}
                   sub={n.body}
                   isAdmin={isAdmin} deletingId={deletingId} id={n.id} zh={zh}
@@ -194,7 +192,8 @@ function SearchContent({ locale }: { locale: string }) {
               {results.events.map((e) => (
                 <Row
                   key={e.id}
-                  primary={<Link href={`/${locale}/events/${e.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{e.title}</Link>}
+                  href={`/${locale}/events/${e.id}`}
+                  primary={e.title}
                   secondary={`${e.createdBy?.displayName ?? '—'}${e.group ? ` · ${e.group.name}` : ''} · ${new Date(e.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}`}
                   sub={e.description ?? undefined}
                   isAdmin={isAdmin} deletingId={deletingId} id={e.id} zh={zh}
@@ -210,11 +209,8 @@ function SearchContent({ locale }: { locale: string }) {
               {results.groups.map((g) => (
                 <Row
                   key={g.id}
-                  primary={
-                    isAdmin
-                      ? <Link href={`/${locale}/admin/groups/${g.id}/settings`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{g.name}</Link>
-                      : <Link href={`/${locale}/groups/${g.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{g.name}</Link>
-                  }
+                  href={isAdmin ? `/${locale}/admin/groups/${g.id}/settings` : `/${locale}/groups/${g.id}`}
+                  primary={g.name}
                   secondary={`${g._count.memberships} ${zh ? '位成員' : 'members'}${g.description ? ` · ${g.description}` : ''}`}
                   isAdmin={isAdmin} deletingId={deletingId} id={g.id} zh={zh}
                   onDelete={() => deleteGroup(g)}
@@ -240,23 +236,33 @@ function Section({ label, children }: { label: string; children: React.ReactNode
 }
 
 function Row({
-  primary, secondary, sub, badge, id, deletingId, isAdmin, onDelete, zh,
+  primary, secondary, sub, badge, href, id, deletingId, isAdmin, onDelete, zh,
 }: {
-  primary: React.ReactNode; secondary: string; sub?: string; badge?: string;
+  primary: React.ReactNode; secondary: string; sub?: string; badge?: string; href?: string;
   id: string; deletingId: string | null; isAdmin: boolean; onDelete: () => void; zh: boolean;
 }) {
-  return (
-    <div className="flex items-start justify-between gap-4 px-4 py-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{primary}</span>
-          {badge && (
-            <span className="rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">{badge}</span>
-          )}
-        </div>
-        {sub && <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{sub}</p>}
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{secondary}</p>
+  const inner = (
+    <>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{primary}</span>
+        {badge && (
+          <span className="rounded-full bg-indigo-100 dark:bg-indigo-900/40 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 shrink-0">{badge}</span>
+        )}
       </div>
+      {sub && <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{sub}</p>}
+      {secondary && <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{secondary}</p>}
+    </>
+  );
+
+  return (
+    <div className="flex items-start justify-between gap-4 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+      {href ? (
+        <Link href={href} className="min-w-0 flex-1 block">
+          {inner}
+        </Link>
+      ) : (
+        <div className="min-w-0 flex-1">{inner}</div>
+      )}
       {isAdmin && (
         <button
           onClick={onDelete}

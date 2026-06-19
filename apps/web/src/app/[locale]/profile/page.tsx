@@ -86,21 +86,22 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
           {photoUploading && <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">{zh ? '上傳中…' : 'Uploading…'}</p>}
 
-          <div className="flex items-center gap-2 mb-4">
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {(user as any).displayName || <span className="font-normal text-gray-400 dark:text-gray-500">{zh ? '未設定姓名' : 'No name set'}</span>}
-            </p>
-            <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
-              {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
-            </span>
+          <div className="flex items-end justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                {(user as any).displayName || <span className="font-normal text-gray-400 dark:text-gray-500">{zh ? '未設定姓名' : 'No name set'}</span>}
+              </p>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
+                {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
+              </span>
+            </div>
+            <Link
+              href={`/${params.locale}/profile/settings`}
+              className="shrink-0 rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
+            >
+              {zh ? '編輯' : 'Edit Profile'}
+            </Link>
           </div>
-
-          <Link
-            href={`/${params.locale}/profile/settings`}
-            className="shrink-0 rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-          >
-            {zh ? '編輯' : 'Edit Profile'}
-          </Link>
         </div>
       </div>
     </div>

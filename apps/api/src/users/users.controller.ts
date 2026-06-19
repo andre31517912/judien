@@ -14,7 +14,7 @@ export class UsersController {
     private readonly prisma: PrismaService,
   ) {}
 
-  // GET /api/users/:id — public profile (display name only)
+  // GET /api/users/:id — public profile
   @Get(':id')
   async getPublicProfile(@Param('id') id: string) {
     const user = await this.prisma.user.findUnique({
