@@ -4777,12 +4777,9 @@ export namespace Prisma {
     seriesId: string | null
     partNumber: number | null
     coverImageUrl: string | null
-    title_en: string | null
-    title_zh: string | null
-    description_en: string | null
-    description_zh: string | null
-    location_en: string | null
-    location_zh: string | null
+    title: string | null
+    description: string | null
+    location: string | null
     startAt: Date | null
     endAt: Date | null
     timezone: string | null
@@ -4801,12 +4798,9 @@ export namespace Prisma {
     seriesId: string | null
     partNumber: number | null
     coverImageUrl: string | null
-    title_en: string | null
-    title_zh: string | null
-    description_en: string | null
-    description_zh: string | null
-    location_en: string | null
-    location_zh: string | null
+    title: string | null
+    description: string | null
+    location: string | null
     startAt: Date | null
     endAt: Date | null
     timezone: string | null
@@ -4825,12 +4819,9 @@ export namespace Prisma {
     seriesId: number
     partNumber: number
     coverImageUrl: number
-    title_en: number
-    title_zh: number
-    description_en: number
-    description_zh: number
-    location_en: number
-    location_zh: number
+    title: number
+    description: number
+    location: number
     startAt: number
     endAt: number
     timezone: number
@@ -4861,12 +4852,9 @@ export namespace Prisma {
     seriesId?: true
     partNumber?: true
     coverImageUrl?: true
-    title_en?: true
-    title_zh?: true
-    description_en?: true
-    description_zh?: true
-    location_en?: true
-    location_zh?: true
+    title?: true
+    description?: true
+    location?: true
     startAt?: true
     endAt?: true
     timezone?: true
@@ -4885,12 +4873,9 @@ export namespace Prisma {
     seriesId?: true
     partNumber?: true
     coverImageUrl?: true
-    title_en?: true
-    title_zh?: true
-    description_en?: true
-    description_zh?: true
-    location_en?: true
-    location_zh?: true
+    title?: true
+    description?: true
+    location?: true
     startAt?: true
     endAt?: true
     timezone?: true
@@ -4909,12 +4894,9 @@ export namespace Prisma {
     seriesId?: true
     partNumber?: true
     coverImageUrl?: true
-    title_en?: true
-    title_zh?: true
-    description_en?: true
-    description_zh?: true
-    location_en?: true
-    location_zh?: true
+    title?: true
+    description?: true
+    location?: true
     startAt?: true
     endAt?: true
     timezone?: true
@@ -5020,12 +5002,9 @@ export namespace Prisma {
     seriesId: string | null
     partNumber: number | null
     coverImageUrl: string | null
-    title_en: string
-    title_zh: string
-    description_en: string
-    description_zh: string
-    location_en: string
-    location_zh: string
+    title: string
+    description: string
+    location: string
     startAt: Date
     endAt: Date | null
     timezone: string
@@ -5063,12 +5042,9 @@ export namespace Prisma {
     seriesId?: boolean
     partNumber?: boolean
     coverImageUrl?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    description_en?: boolean
-    description_zh?: boolean
-    location_en?: boolean
-    location_zh?: boolean
+    title?: boolean
+    description?: boolean
+    location?: boolean
     startAt?: boolean
     endAt?: boolean
     timezone?: boolean
@@ -5098,12 +5074,9 @@ export namespace Prisma {
     seriesId?: boolean
     partNumber?: boolean
     coverImageUrl?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    description_en?: boolean
-    description_zh?: boolean
-    location_en?: boolean
-    location_zh?: boolean
+    title?: boolean
+    description?: boolean
+    location?: boolean
     startAt?: boolean
     endAt?: boolean
     timezone?: boolean
@@ -5125,12 +5098,9 @@ export namespace Prisma {
     seriesId?: boolean
     partNumber?: boolean
     coverImageUrl?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    description_en?: boolean
-    description_zh?: boolean
-    location_en?: boolean
-    location_zh?: boolean
+    title?: boolean
+    description?: boolean
+    location?: boolean
     startAt?: boolean
     endAt?: boolean
     timezone?: boolean
@@ -5182,12 +5152,9 @@ export namespace Prisma {
       seriesId: string | null
       partNumber: number | null
       coverImageUrl: string | null
-      title_en: string
-      title_zh: string
-      description_en: string
-      description_zh: string
-      location_en: string
-      location_zh: string
+      title: string
+      description: string
+      location: string
       startAt: Date
       endAt: Date | null
       timezone: string
@@ -5606,12 +5573,9 @@ export namespace Prisma {
     readonly seriesId: FieldRef<"Event", 'String'>
     readonly partNumber: FieldRef<"Event", 'Int'>
     readonly coverImageUrl: FieldRef<"Event", 'String'>
-    readonly title_en: FieldRef<"Event", 'String'>
-    readonly title_zh: FieldRef<"Event", 'String'>
-    readonly description_en: FieldRef<"Event", 'String'>
-    readonly description_zh: FieldRef<"Event", 'String'>
-    readonly location_en: FieldRef<"Event", 'String'>
-    readonly location_zh: FieldRef<"Event", 'String'>
+    readonly title: FieldRef<"Event", 'String'>
+    readonly description: FieldRef<"Event", 'String'>
+    readonly location: FieldRef<"Event", 'String'>
     readonly startAt: FieldRef<"Event", 'DateTime'>
     readonly endAt: FieldRef<"Event", 'DateTime'>
     readonly timezone: FieldRef<"Event", 'String'>
@@ -8062,8 +8026,7 @@ export namespace Prisma {
 
   export type EventSeriesMinAggregateOutputType = {
     id: string | null
-    title_en: string | null
-    title_zh: string | null
+    title: string | null
     groupId: string | null
     createdById: string | null
     createdAt: Date | null
@@ -8071,8 +8034,7 @@ export namespace Prisma {
 
   export type EventSeriesMaxAggregateOutputType = {
     id: string | null
-    title_en: string | null
-    title_zh: string | null
+    title: string | null
     groupId: string | null
     createdById: string | null
     createdAt: Date | null
@@ -8080,8 +8042,7 @@ export namespace Prisma {
 
   export type EventSeriesCountAggregateOutputType = {
     id: number
-    title_en: number
-    title_zh: number
+    title: number
     groupId: number
     createdById: number
     createdAt: number
@@ -8091,8 +8052,7 @@ export namespace Prisma {
 
   export type EventSeriesMinAggregateInputType = {
     id?: true
-    title_en?: true
-    title_zh?: true
+    title?: true
     groupId?: true
     createdById?: true
     createdAt?: true
@@ -8100,8 +8060,7 @@ export namespace Prisma {
 
   export type EventSeriesMaxAggregateInputType = {
     id?: true
-    title_en?: true
-    title_zh?: true
+    title?: true
     groupId?: true
     createdById?: true
     createdAt?: true
@@ -8109,8 +8068,7 @@ export namespace Prisma {
 
   export type EventSeriesCountAggregateInputType = {
     id?: true
-    title_en?: true
-    title_zh?: true
+    title?: true
     groupId?: true
     createdById?: true
     createdAt?: true
@@ -8191,8 +8149,7 @@ export namespace Prisma {
 
   export type EventSeriesGroupByOutputType = {
     id: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId: string | null
     createdById: string
     createdAt: Date
@@ -8217,8 +8174,7 @@ export namespace Prisma {
 
   export type EventSeriesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    title_en?: boolean
-    title_zh?: boolean
+    title?: boolean
     groupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -8230,8 +8186,7 @@ export namespace Prisma {
 
   export type EventSeriesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    title_en?: boolean
-    title_zh?: boolean
+    title?: boolean
     groupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -8241,8 +8196,7 @@ export namespace Prisma {
 
   export type EventSeriesSelectScalar = {
     id?: boolean
-    title_en?: boolean
-    title_zh?: boolean
+    title?: boolean
     groupId?: boolean
     createdById?: boolean
     createdAt?: boolean
@@ -8268,8 +8222,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      title_en: string
-      title_zh: string
+      title: string
       groupId: string | null
       createdById: string
       createdAt: Date
@@ -8670,8 +8623,7 @@ export namespace Prisma {
    */ 
   interface EventSeriesFieldRefs {
     readonly id: FieldRef<"EventSeries", 'String'>
-    readonly title_en: FieldRef<"EventSeries", 'String'>
-    readonly title_zh: FieldRef<"EventSeries", 'String'>
+    readonly title: FieldRef<"EventSeries", 'String'>
     readonly groupId: FieldRef<"EventSeries", 'String'>
     readonly createdById: FieldRef<"EventSeries", 'String'>
     readonly createdAt: FieldRef<"EventSeries", 'DateTime'>
@@ -14960,10 +14912,8 @@ export namespace Prisma {
   export type NewsMinAggregateOutputType = {
     id: string | null
     groupId: string | null
-    title_en: string | null
-    title_zh: string | null
-    body_en: string | null
-    body_zh: string | null
+    title: string | null
+    body: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14972,10 +14922,8 @@ export namespace Prisma {
   export type NewsMaxAggregateOutputType = {
     id: string | null
     groupId: string | null
-    title_en: string | null
-    title_zh: string | null
-    body_en: string | null
-    body_zh: string | null
+    title: string | null
+    body: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14984,10 +14932,8 @@ export namespace Prisma {
   export type NewsCountAggregateOutputType = {
     id: number
     groupId: number
-    title_en: number
-    title_zh: number
-    body_en: number
-    body_zh: number
+    title: number
+    body: number
     createdById: number
     createdAt: number
     updatedAt: number
@@ -14998,10 +14944,8 @@ export namespace Prisma {
   export type NewsMinAggregateInputType = {
     id?: true
     groupId?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -15010,10 +14954,8 @@ export namespace Prisma {
   export type NewsMaxAggregateInputType = {
     id?: true
     groupId?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -15022,10 +14964,8 @@ export namespace Prisma {
   export type NewsCountAggregateInputType = {
     id?: true
     groupId?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -15107,10 +15047,8 @@ export namespace Prisma {
   export type NewsGroupByOutputType = {
     id: string
     groupId: string | null
-    title_en: string
-    title_zh: string
-    body_en: string
-    body_zh: string
+    title: string
+    body: string
     createdById: string
     createdAt: Date
     updatedAt: Date
@@ -15136,10 +15074,8 @@ export namespace Prisma {
   export type NewsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     groupId?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15150,10 +15086,8 @@ export namespace Prisma {
   export type NewsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     groupId?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15164,10 +15098,8 @@ export namespace Prisma {
   export type NewsSelectScalar = {
     id?: boolean
     groupId?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15191,10 +15123,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       groupId: string | null
-      title_en: string
-      title_zh: string
-      body_en: string
-      body_zh: string
+      title: string
+      body: string
       createdById: string
       createdAt: Date
       updatedAt: Date
@@ -15595,10 +15525,8 @@ export namespace Prisma {
   interface NewsFieldRefs {
     readonly id: FieldRef<"News", 'String'>
     readonly groupId: FieldRef<"News", 'String'>
-    readonly title_en: FieldRef<"News", 'String'>
-    readonly title_zh: FieldRef<"News", 'String'>
-    readonly body_en: FieldRef<"News", 'String'>
-    readonly body_zh: FieldRef<"News", 'String'>
+    readonly title: FieldRef<"News", 'String'>
+    readonly body: FieldRef<"News", 'String'>
     readonly createdById: FieldRef<"News", 'String'>
     readonly createdAt: FieldRef<"News", 'DateTime'>
     readonly updatedAt: FieldRef<"News", 'DateTime'>
@@ -23404,10 +23332,8 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     type: $Enums.NotificationType | null
-    title_en: string | null
-    title_zh: string | null
-    body_en: string | null
-    body_zh: string | null
+    title: string | null
+    body: string | null
     read: boolean | null
     actionUrl: string | null
     groupId: string | null
@@ -23420,10 +23346,8 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     type: $Enums.NotificationType | null
-    title_en: string | null
-    title_zh: string | null
-    body_en: string | null
-    body_zh: string | null
+    title: string | null
+    body: string | null
     read: boolean | null
     actionUrl: string | null
     groupId: string | null
@@ -23436,10 +23360,8 @@ export namespace Prisma {
     id: number
     userId: number
     type: number
-    title_en: number
-    title_zh: number
-    body_en: number
-    body_zh: number
+    title: number
+    body: number
     read: number
     actionUrl: number
     groupId: number
@@ -23454,10 +23376,8 @@ export namespace Prisma {
     id?: true
     userId?: true
     type?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     read?: true
     actionUrl?: true
     groupId?: true
@@ -23470,10 +23390,8 @@ export namespace Prisma {
     id?: true
     userId?: true
     type?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     read?: true
     actionUrl?: true
     groupId?: true
@@ -23486,10 +23404,8 @@ export namespace Prisma {
     id?: true
     userId?: true
     type?: true
-    title_en?: true
-    title_zh?: true
-    body_en?: true
-    body_zh?: true
+    title?: true
+    body?: true
     read?: true
     actionUrl?: true
     groupId?: true
@@ -23575,10 +23491,8 @@ export namespace Prisma {
     id: string
     userId: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en: string
-    body_zh: string
+    title: string
+    body: string
     read: boolean
     actionUrl: string | null
     groupId: string | null
@@ -23608,10 +23522,8 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     type?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     read?: boolean
     actionUrl?: boolean
     groupId?: boolean
@@ -23626,10 +23538,8 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     type?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     read?: boolean
     actionUrl?: boolean
     groupId?: boolean
@@ -23644,10 +23554,8 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     type?: boolean
-    title_en?: boolean
-    title_zh?: boolean
-    body_en?: boolean
-    body_zh?: boolean
+    title?: boolean
+    body?: boolean
     read?: boolean
     actionUrl?: boolean
     groupId?: boolean
@@ -23675,10 +23583,8 @@ export namespace Prisma {
       id: string
       userId: string
       type: $Enums.NotificationType
-      title_en: string
-      title_zh: string
-      body_en: string
-      body_zh: string
+      title: string
+      body: string
       read: boolean
       actionUrl: string | null
       groupId: string | null
@@ -24083,10 +23989,8 @@ export namespace Prisma {
     readonly id: FieldRef<"Notification", 'String'>
     readonly userId: FieldRef<"Notification", 'String'>
     readonly type: FieldRef<"Notification", 'NotificationType'>
-    readonly title_en: FieldRef<"Notification", 'String'>
-    readonly title_zh: FieldRef<"Notification", 'String'>
-    readonly body_en: FieldRef<"Notification", 'String'>
-    readonly body_zh: FieldRef<"Notification", 'String'>
+    readonly title: FieldRef<"Notification", 'String'>
+    readonly body: FieldRef<"Notification", 'String'>
     readonly read: FieldRef<"Notification", 'Boolean'>
     readonly actionUrl: FieldRef<"Notification", 'String'>
     readonly groupId: FieldRef<"Notification", 'String'>
@@ -24483,12 +24387,9 @@ export namespace Prisma {
     seriesId: 'seriesId',
     partNumber: 'partNumber',
     coverImageUrl: 'coverImageUrl',
-    title_en: 'title_en',
-    title_zh: 'title_zh',
-    description_en: 'description_en',
-    description_zh: 'description_zh',
-    location_en: 'location_en',
-    location_zh: 'location_zh',
+    title: 'title',
+    description: 'description',
+    location: 'location',
     startAt: 'startAt',
     endAt: 'endAt',
     timezone: 'timezone',
@@ -24532,8 +24433,7 @@ export namespace Prisma {
 
   export const EventSeriesScalarFieldEnum: {
     id: 'id',
-    title_en: 'title_en',
-    title_zh: 'title_zh',
+    title: 'title',
     groupId: 'groupId',
     createdById: 'createdById',
     createdAt: 'createdAt'
@@ -24625,10 +24525,8 @@ export namespace Prisma {
   export const NewsScalarFieldEnum: {
     id: 'id',
     groupId: 'groupId',
-    title_en: 'title_en',
-    title_zh: 'title_zh',
-    body_en: 'body_en',
-    body_zh: 'body_zh',
+    title: 'title',
+    body: 'body',
     createdById: 'createdById',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -24750,10 +24648,8 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     type: 'type',
-    title_en: 'title_en',
-    title_zh: 'title_zh',
-    body_en: 'body_en',
-    body_zh: 'body_zh',
+    title: 'title',
+    body: 'body',
     read: 'read',
     actionUrl: 'actionUrl',
     groupId: 'groupId',
@@ -25212,12 +25108,9 @@ export namespace Prisma {
     seriesId?: StringNullableFilter<"Event"> | string | null
     partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
-    title_en?: StringFilter<"Event"> | string
-    title_zh?: StringFilter<"Event"> | string
-    description_en?: StringFilter<"Event"> | string
-    description_zh?: StringFilter<"Event"> | string
-    location_en?: StringFilter<"Event"> | string
-    location_zh?: StringFilter<"Event"> | string
+    title?: StringFilter<"Event"> | string
+    description?: StringFilter<"Event"> | string
+    location?: StringFilter<"Event"> | string
     startAt?: DateTimeFilter<"Event"> | Date | string
     endAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     timezone?: StringFilter<"Event"> | string
@@ -25246,12 +25139,9 @@ export namespace Prisma {
     seriesId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    description_en?: SortOrder
-    description_zh?: SortOrder
-    location_en?: SortOrder
-    location_zh?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrderInput | SortOrder
     timezone?: SortOrder
@@ -25283,12 +25173,9 @@ export namespace Prisma {
     seriesId?: StringNullableFilter<"Event"> | string | null
     partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
-    title_en?: StringFilter<"Event"> | string
-    title_zh?: StringFilter<"Event"> | string
-    description_en?: StringFilter<"Event"> | string
-    description_zh?: StringFilter<"Event"> | string
-    location_en?: StringFilter<"Event"> | string
-    location_zh?: StringFilter<"Event"> | string
+    title?: StringFilter<"Event"> | string
+    description?: StringFilter<"Event"> | string
+    location?: StringFilter<"Event"> | string
     startAt?: DateTimeFilter<"Event"> | Date | string
     endAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     timezone?: StringFilter<"Event"> | string
@@ -25317,12 +25204,9 @@ export namespace Prisma {
     seriesId?: SortOrderInput | SortOrder
     partNumber?: SortOrderInput | SortOrder
     coverImageUrl?: SortOrderInput | SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    description_en?: SortOrder
-    description_zh?: SortOrder
-    location_en?: SortOrder
-    location_zh?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrderInput | SortOrder
     timezone?: SortOrder
@@ -25349,12 +25233,9 @@ export namespace Prisma {
     seriesId?: StringNullableWithAggregatesFilter<"Event"> | string | null
     partNumber?: IntNullableWithAggregatesFilter<"Event"> | number | null
     coverImageUrl?: StringNullableWithAggregatesFilter<"Event"> | string | null
-    title_en?: StringWithAggregatesFilter<"Event"> | string
-    title_zh?: StringWithAggregatesFilter<"Event"> | string
-    description_en?: StringWithAggregatesFilter<"Event"> | string
-    description_zh?: StringWithAggregatesFilter<"Event"> | string
-    location_en?: StringWithAggregatesFilter<"Event"> | string
-    location_zh?: StringWithAggregatesFilter<"Event"> | string
+    title?: StringWithAggregatesFilter<"Event"> | string
+    description?: StringWithAggregatesFilter<"Event"> | string
+    location?: StringWithAggregatesFilter<"Event"> | string
     startAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     endAt?: DateTimeNullableWithAggregatesFilter<"Event"> | Date | string | null
     timezone?: StringWithAggregatesFilter<"Event"> | string
@@ -25510,8 +25391,7 @@ export namespace Prisma {
     OR?: EventSeriesWhereInput[]
     NOT?: EventSeriesWhereInput | EventSeriesWhereInput[]
     id?: StringFilter<"EventSeries"> | string
-    title_en?: StringFilter<"EventSeries"> | string
-    title_zh?: StringFilter<"EventSeries"> | string
+    title?: StringFilter<"EventSeries"> | string
     groupId?: StringNullableFilter<"EventSeries"> | string | null
     createdById?: StringFilter<"EventSeries"> | string
     createdAt?: DateTimeFilter<"EventSeries"> | Date | string
@@ -25522,8 +25402,7 @@ export namespace Prisma {
 
   export type EventSeriesOrderByWithRelationInput = {
     id?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
+    title?: SortOrder
     groupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -25537,8 +25416,7 @@ export namespace Prisma {
     AND?: EventSeriesWhereInput | EventSeriesWhereInput[]
     OR?: EventSeriesWhereInput[]
     NOT?: EventSeriesWhereInput | EventSeriesWhereInput[]
-    title_en?: StringFilter<"EventSeries"> | string
-    title_zh?: StringFilter<"EventSeries"> | string
+    title?: StringFilter<"EventSeries"> | string
     groupId?: StringNullableFilter<"EventSeries"> | string | null
     createdById?: StringFilter<"EventSeries"> | string
     createdAt?: DateTimeFilter<"EventSeries"> | Date | string
@@ -25549,8 +25427,7 @@ export namespace Prisma {
 
   export type EventSeriesOrderByWithAggregationInput = {
     id?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
+    title?: SortOrder
     groupId?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -25564,8 +25441,7 @@ export namespace Prisma {
     OR?: EventSeriesScalarWhereWithAggregatesInput[]
     NOT?: EventSeriesScalarWhereWithAggregatesInput | EventSeriesScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"EventSeries"> | string
-    title_en?: StringWithAggregatesFilter<"EventSeries"> | string
-    title_zh?: StringWithAggregatesFilter<"EventSeries"> | string
+    title?: StringWithAggregatesFilter<"EventSeries"> | string
     groupId?: StringNullableWithAggregatesFilter<"EventSeries"> | string | null
     createdById?: StringWithAggregatesFilter<"EventSeries"> | string
     createdAt?: DateTimeWithAggregatesFilter<"EventSeries"> | Date | string
@@ -26005,10 +25881,8 @@ export namespace Prisma {
     NOT?: NewsWhereInput | NewsWhereInput[]
     id?: StringFilter<"News"> | string
     groupId?: StringNullableFilter<"News"> | string | null
-    title_en?: StringFilter<"News"> | string
-    title_zh?: StringFilter<"News"> | string
-    body_en?: StringFilter<"News"> | string
-    body_zh?: StringFilter<"News"> | string
+    title?: StringFilter<"News"> | string
+    body?: StringFilter<"News"> | string
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -26019,10 +25893,8 @@ export namespace Prisma {
   export type NewsOrderByWithRelationInput = {
     id?: SortOrder
     groupId?: SortOrderInput | SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26036,10 +25908,8 @@ export namespace Prisma {
     OR?: NewsWhereInput[]
     NOT?: NewsWhereInput | NewsWhereInput[]
     groupId?: StringNullableFilter<"News"> | string | null
-    title_en?: StringFilter<"News"> | string
-    title_zh?: StringFilter<"News"> | string
-    body_en?: StringFilter<"News"> | string
-    body_zh?: StringFilter<"News"> | string
+    title?: StringFilter<"News"> | string
+    body?: StringFilter<"News"> | string
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -26050,10 +25920,8 @@ export namespace Prisma {
   export type NewsOrderByWithAggregationInput = {
     id?: SortOrder
     groupId?: SortOrderInput | SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -26068,10 +25936,8 @@ export namespace Prisma {
     NOT?: NewsScalarWhereWithAggregatesInput | NewsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"News"> | string
     groupId?: StringNullableWithAggregatesFilter<"News"> | string | null
-    title_en?: StringWithAggregatesFilter<"News"> | string
-    title_zh?: StringWithAggregatesFilter<"News"> | string
-    body_en?: StringWithAggregatesFilter<"News"> | string
-    body_zh?: StringWithAggregatesFilter<"News"> | string
+    title?: StringWithAggregatesFilter<"News"> | string
+    body?: StringWithAggregatesFilter<"News"> | string
     createdById?: StringWithAggregatesFilter<"News"> | string
     createdAt?: DateTimeWithAggregatesFilter<"News"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"News"> | Date | string
@@ -26710,10 +26576,8 @@ export namespace Prisma {
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
-    title_en?: StringFilter<"Notification"> | string
-    title_zh?: StringFilter<"Notification"> | string
-    body_en?: StringFilter<"Notification"> | string
-    body_zh?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     actionUrl?: StringNullableFilter<"Notification"> | string | null
     groupId?: StringNullableFilter<"Notification"> | string | null
@@ -26728,10 +26592,8 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     type?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     read?: SortOrder
     actionUrl?: SortOrderInput | SortOrder
     groupId?: SortOrderInput | SortOrder
@@ -26749,10 +26611,8 @@ export namespace Prisma {
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     userId?: StringFilter<"Notification"> | string
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
-    title_en?: StringFilter<"Notification"> | string
-    title_zh?: StringFilter<"Notification"> | string
-    body_en?: StringFilter<"Notification"> | string
-    body_zh?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     actionUrl?: StringNullableFilter<"Notification"> | string | null
     groupId?: StringNullableFilter<"Notification"> | string | null
@@ -26767,10 +26627,8 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     type?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     read?: SortOrder
     actionUrl?: SortOrderInput | SortOrder
     groupId?: SortOrderInput | SortOrder
@@ -26789,10 +26647,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Notification"> | string
     userId?: StringWithAggregatesFilter<"Notification"> | string
     type?: EnumNotificationTypeWithAggregatesFilter<"Notification"> | $Enums.NotificationType
-    title_en?: StringWithAggregatesFilter<"Notification"> | string
-    title_zh?: StringWithAggregatesFilter<"Notification"> | string
-    body_en?: StringWithAggregatesFilter<"Notification"> | string
-    body_zh?: StringWithAggregatesFilter<"Notification"> | string
+    title?: StringWithAggregatesFilter<"Notification"> | string
+    body?: StringWithAggregatesFilter<"Notification"> | string
     read?: BoolWithAggregatesFilter<"Notification"> | boolean
     actionUrl?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     groupId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
@@ -27034,12 +26890,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -27068,12 +26921,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -27096,12 +26946,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -27130,12 +26977,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -27161,12 +27005,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -27182,12 +27023,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -27206,12 +27044,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -27369,8 +27204,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
     group?: GroupCreateNestedOneWithoutEventSeriesInput
@@ -27379,8 +27213,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedCreateInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -27389,8 +27222,7 @@ export namespace Prisma {
 
   export type EventSeriesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
     group?: GroupUpdateOneWithoutEventSeriesNestedInput
@@ -27399,8 +27231,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27409,8 +27240,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateManyInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -27418,15 +27248,13 @@ export namespace Prisma {
 
   export type EventSeriesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type EventSeriesUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27859,10 +27687,8 @@ export namespace Prisma {
 
   export type NewsCreateInput = {
     id?: string
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutNewsInput
@@ -27872,10 +27698,8 @@ export namespace Prisma {
   export type NewsUncheckedCreateInput = {
     id?: string
     groupId?: string | null
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27883,10 +27707,8 @@ export namespace Prisma {
 
   export type NewsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutNewsNestedInput
@@ -27896,10 +27718,8 @@ export namespace Prisma {
   export type NewsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27908,10 +27728,8 @@ export namespace Prisma {
   export type NewsCreateManyInput = {
     id?: string
     groupId?: string | null
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27919,10 +27737,8 @@ export namespace Prisma {
 
   export type NewsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27930,10 +27746,8 @@ export namespace Prisma {
   export type NewsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28586,10 +28400,8 @@ export namespace Prisma {
   export type NotificationCreateInput = {
     id?: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     eventId?: string | null
@@ -28603,10 +28415,8 @@ export namespace Prisma {
     id?: string
     userId: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     groupId?: string | null
@@ -28618,10 +28428,8 @@ export namespace Prisma {
   export type NotificationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28635,10 +28443,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28651,10 +28457,8 @@ export namespace Prisma {
     id?: string
     userId: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     groupId?: string | null
@@ -28666,10 +28470,8 @@ export namespace Prisma {
   export type NotificationUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28681,10 +28483,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29126,12 +28926,9 @@ export namespace Prisma {
     seriesId?: SortOrder
     partNumber?: SortOrder
     coverImageUrl?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    description_en?: SortOrder
-    description_zh?: SortOrder
-    location_en?: SortOrder
-    location_zh?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     timezone?: SortOrder
@@ -29155,12 +28952,9 @@ export namespace Prisma {
     seriesId?: SortOrder
     partNumber?: SortOrder
     coverImageUrl?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    description_en?: SortOrder
-    description_zh?: SortOrder
-    location_en?: SortOrder
-    location_zh?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     timezone?: SortOrder
@@ -29179,12 +28973,9 @@ export namespace Prisma {
     seriesId?: SortOrder
     partNumber?: SortOrder
     coverImageUrl?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    description_en?: SortOrder
-    description_zh?: SortOrder
-    location_en?: SortOrder
-    location_zh?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    location?: SortOrder
     startAt?: SortOrder
     endAt?: SortOrder
     timezone?: SortOrder
@@ -29339,8 +29130,7 @@ export namespace Prisma {
 
   export type EventSeriesCountOrderByAggregateInput = {
     id?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
+    title?: SortOrder
     groupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -29348,8 +29138,7 @@ export namespace Prisma {
 
   export type EventSeriesMaxOrderByAggregateInput = {
     id?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
+    title?: SortOrder
     groupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -29357,8 +29146,7 @@ export namespace Prisma {
 
   export type EventSeriesMinOrderByAggregateInput = {
     id?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
+    title?: SortOrder
     groupId?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
@@ -29695,10 +29483,8 @@ export namespace Prisma {
   export type NewsCountOrderByAggregateInput = {
     id?: SortOrder
     groupId?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29707,10 +29493,8 @@ export namespace Prisma {
   export type NewsMaxOrderByAggregateInput = {
     id?: SortOrder
     groupId?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29719,10 +29503,8 @@ export namespace Prisma {
   export type NewsMinOrderByAggregateInput = {
     id?: SortOrder
     groupId?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30124,10 +29906,8 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     type?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     read?: SortOrder
     actionUrl?: SortOrder
     groupId?: SortOrder
@@ -30140,10 +29920,8 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     type?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     read?: SortOrder
     actionUrl?: SortOrder
     groupId?: SortOrder
@@ -30156,10 +29934,8 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     type?: SortOrder
-    title_en?: SortOrder
-    title_zh?: SortOrder
-    body_en?: SortOrder
-    body_zh?: SortOrder
+    title?: SortOrder
+    body?: SortOrder
     read?: SortOrder
     actionUrl?: SortOrder
     groupId?: SortOrder
@@ -33238,12 +33014,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -33270,12 +33043,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -33420,10 +33190,8 @@ export namespace Prisma {
 
   export type NewsCreateWithoutCreatedByInput = {
     id?: string
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutNewsInput
@@ -33432,10 +33200,8 @@ export namespace Prisma {
   export type NewsUncheckedCreateWithoutCreatedByInput = {
     id?: string
     groupId?: string | null
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33790,8 +33556,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateWithoutCreatedByInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdAt?: Date | string
     group?: GroupCreateNestedOneWithoutEventSeriesInput
     events?: EventCreateNestedManyWithoutSeriesInput
@@ -33799,8 +33564,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedCreateWithoutCreatedByInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId?: string | null
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutSeriesInput
@@ -33967,10 +33731,8 @@ export namespace Prisma {
   export type NotificationCreateWithoutUserInput = {
     id?: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     eventId?: string | null
@@ -33982,10 +33744,8 @@ export namespace Prisma {
   export type NotificationUncheckedCreateWithoutUserInput = {
     id?: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     groupId?: string | null
@@ -34094,12 +33854,9 @@ export namespace Prisma {
     seriesId?: StringNullableFilter<"Event"> | string | null
     partNumber?: IntNullableFilter<"Event"> | number | null
     coverImageUrl?: StringNullableFilter<"Event"> | string | null
-    title_en?: StringFilter<"Event"> | string
-    title_zh?: StringFilter<"Event"> | string
-    description_en?: StringFilter<"Event"> | string
-    description_zh?: StringFilter<"Event"> | string
-    location_en?: StringFilter<"Event"> | string
-    location_zh?: StringFilter<"Event"> | string
+    title?: StringFilter<"Event"> | string
+    description?: StringFilter<"Event"> | string
+    location?: StringFilter<"Event"> | string
     startAt?: DateTimeFilter<"Event"> | Date | string
     endAt?: DateTimeNullableFilter<"Event"> | Date | string | null
     timezone?: StringFilter<"Event"> | string
@@ -34249,10 +34006,8 @@ export namespace Prisma {
     NOT?: NewsScalarWhereInput | NewsScalarWhereInput[]
     id?: StringFilter<"News"> | string
     groupId?: StringNullableFilter<"News"> | string | null
-    title_en?: StringFilter<"News"> | string
-    title_zh?: StringFilter<"News"> | string
-    body_en?: StringFilter<"News"> | string
-    body_zh?: StringFilter<"News"> | string
+    title?: StringFilter<"News"> | string
+    body?: StringFilter<"News"> | string
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -34505,8 +34260,7 @@ export namespace Prisma {
     OR?: EventSeriesScalarWhereInput[]
     NOT?: EventSeriesScalarWhereInput | EventSeriesScalarWhereInput[]
     id?: StringFilter<"EventSeries"> | string
-    title_en?: StringFilter<"EventSeries"> | string
-    title_zh?: StringFilter<"EventSeries"> | string
+    title?: StringFilter<"EventSeries"> | string
     groupId?: StringNullableFilter<"EventSeries"> | string | null
     createdById?: StringFilter<"EventSeries"> | string
     createdAt?: DateTimeFilter<"EventSeries"> | Date | string
@@ -34655,10 +34409,8 @@ export namespace Prisma {
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
     type?: EnumNotificationTypeFilter<"Notification"> | $Enums.NotificationType
-    title_en?: StringFilter<"Notification"> | string
-    title_zh?: StringFilter<"Notification"> | string
-    body_en?: StringFilter<"Notification"> | string
-    body_zh?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    body?: StringFilter<"Notification"> | string
     read?: BoolFilter<"Notification"> | boolean
     actionUrl?: StringNullableFilter<"Notification"> | string | null
     groupId?: StringNullableFilter<"Notification"> | string | null
@@ -34858,8 +34610,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateWithoutEventsInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
     group?: GroupCreateNestedOneWithoutEventSeriesInput
@@ -34867,8 +34618,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedCreateWithoutEventsInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId?: string | null
     createdById: string
     createdAt?: Date | string
@@ -35247,8 +34997,7 @@ export namespace Prisma {
 
   export type EventSeriesUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
     group?: GroupUpdateOneWithoutEventSeriesNestedInput
@@ -35256,8 +35005,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateWithoutEventsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35415,12 +35163,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -35448,12 +35193,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -35580,12 +35322,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -35613,12 +35352,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -35735,12 +35471,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -35768,12 +35501,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -35811,12 +35541,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -35844,12 +35571,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -36013,12 +35737,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36045,12 +35766,9 @@ export namespace Prisma {
     groupId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36253,12 +35971,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36286,12 +36001,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36507,12 +36219,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -36540,12 +36249,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -36757,12 +36463,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36790,12 +36493,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -36922,12 +36622,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -36955,12 +36652,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -37077,12 +36771,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -37110,12 +36801,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -37297,12 +36985,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -37330,12 +37015,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -37795,12 +37477,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -37828,12 +37507,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -37871,12 +37547,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -37904,12 +37577,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -37931,12 +37601,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -37964,12 +37631,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -38096,12 +37760,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -38129,12 +37790,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -38877,12 +38535,9 @@ export namespace Prisma {
     id?: string
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -38909,12 +38564,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -38945,10 +38597,8 @@ export namespace Prisma {
 
   export type NewsCreateWithoutGroupInput = {
     id?: string
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutNewsInput
@@ -38956,10 +38606,8 @@ export namespace Prisma {
 
   export type NewsUncheckedCreateWithoutGroupInput = {
     id?: string
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38977,8 +38625,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateWithoutGroupInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventSeriesCreatedInput
     events?: EventCreateNestedManyWithoutSeriesInput
@@ -38986,8 +38633,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedCreateWithoutGroupInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdById: string
     createdAt?: Date | string
     events?: EventUncheckedCreateNestedManyWithoutSeriesInput
@@ -39038,10 +38684,8 @@ export namespace Prisma {
   export type NotificationCreateWithoutGroupInput = {
     id?: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     eventId?: string | null
@@ -39054,10 +38698,8 @@ export namespace Prisma {
     id?: string
     userId: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     eventId?: string | null
@@ -42667,12 +42309,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -42723,10 +42362,8 @@ export namespace Prisma {
   export type NewsCreateManyCreatedByInput = {
     id?: string
     groupId?: string | null
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -42845,8 +42482,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateManyCreatedByInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     groupId?: string | null
     createdAt?: Date | string
   }
@@ -42903,10 +42539,8 @@ export namespace Prisma {
   export type NotificationCreateManyUserInput = {
     id?: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     groupId?: string | null
@@ -42941,12 +42575,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -42973,12 +42604,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -43003,12 +42631,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -43132,10 +42757,8 @@ export namespace Prisma {
 
   export type NewsUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutNewsNestedInput
@@ -43144,10 +42767,8 @@ export namespace Prisma {
   export type NewsUncheckedUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43155,10 +42776,8 @@ export namespace Prisma {
   export type NewsUncheckedUpdateManyWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43525,8 +43144,7 @@ export namespace Prisma {
 
   export type EventSeriesUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutEventSeriesNestedInput
     events?: EventUpdateManyWithoutSeriesNestedInput
@@ -43534,8 +43152,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutSeriesNestedInput
@@ -43543,8 +43160,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateManyWithoutCreatedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43699,10 +43315,8 @@ export namespace Prisma {
   export type NotificationUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43714,10 +43328,8 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43729,10 +43341,8 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44055,12 +43665,9 @@ export namespace Prisma {
     groupId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -44076,12 +43683,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44108,12 +43712,9 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44138,12 +43739,9 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44256,12 +43854,9 @@ export namespace Prisma {
     seriesId?: string | null
     partNumber?: number | null
     coverImageUrl?: string | null
-    title_en: string
-    title_zh: string
-    description_en?: string
-    description_zh?: string
-    location_en?: string
-    location_zh?: string
+    title: string
+    description?: string
+    location?: string
     startAt: Date | string
     endAt?: Date | string | null
     timezone?: string
@@ -44275,10 +43870,8 @@ export namespace Prisma {
 
   export type NewsCreateManyGroupInput = {
     id?: string
-    title_en?: string
-    title_zh?: string
-    body_en?: string
-    body_zh?: string
+    title?: string
+    body?: string
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44286,8 +43879,7 @@ export namespace Prisma {
 
   export type EventSeriesCreateManyGroupInput = {
     id?: string
-    title_en: string
-    title_zh: string
+    title: string
     createdById: string
     createdAt?: Date | string
   }
@@ -44307,10 +43899,8 @@ export namespace Prisma {
     id?: string
     userId: string
     type: $Enums.NotificationType
-    title_en: string
-    title_zh: string
-    body_en?: string
-    body_zh?: string
+    title: string
+    body?: string
     read?: boolean
     actionUrl?: string | null
     eventId?: string | null
@@ -44539,12 +44129,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44571,12 +44158,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44601,12 +44185,9 @@ export namespace Prisma {
     seriesId?: NullableStringFieldUpdateOperationsInput | string | null
     partNumber?: NullableIntFieldUpdateOperationsInput | number | null
     coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    description_en?: StringFieldUpdateOperationsInput | string
-    description_zh?: StringFieldUpdateOperationsInput | string
-    location_en?: StringFieldUpdateOperationsInput | string
-    location_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
     startAt?: DateTimeFieldUpdateOperationsInput | Date | string
     endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     timezone?: StringFieldUpdateOperationsInput | string
@@ -44620,10 +44201,8 @@ export namespace Prisma {
 
   export type NewsUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutNewsNestedInput
@@ -44631,10 +44210,8 @@ export namespace Prisma {
 
   export type NewsUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44642,10 +44219,8 @@ export namespace Prisma {
 
   export type NewsUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44653,8 +44228,7 @@ export namespace Prisma {
 
   export type EventSeriesUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventSeriesCreatedNestedInput
     events?: EventUpdateManyWithoutSeriesNestedInput
@@ -44662,8 +44236,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: EventUncheckedUpdateManyWithoutSeriesNestedInput
@@ -44671,8 +44244,7 @@ export namespace Prisma {
 
   export type EventSeriesUncheckedUpdateManyWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44713,10 +44285,8 @@ export namespace Prisma {
   export type NotificationUpdateWithoutGroupInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44729,10 +44299,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44744,10 +44312,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     type?: EnumNotificationTypeFieldUpdateOperationsInput | $Enums.NotificationType
-    title_en?: StringFieldUpdateOperationsInput | string
-    title_zh?: StringFieldUpdateOperationsInput | string
-    body_en?: StringFieldUpdateOperationsInput | string
-    body_zh?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     read?: BoolFieldUpdateOperationsInput | boolean
     actionUrl?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: NullableStringFieldUpdateOperationsInput | string | null
