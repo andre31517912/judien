@@ -63,7 +63,9 @@
       "icon": "./assets/icon.png",
       "supportsTablet": false,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSPhotoLibraryUsageDescription": "Judien needs access to your photo library to upload profile photos and event images.",
+        "NSPhotoLibraryAddUsageDescription": "Judien needs permission to save photos to your library."
       }
     },
     "extra": {

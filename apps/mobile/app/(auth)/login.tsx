@@ -100,13 +100,15 @@ export default function LoginScreen() {
         <TouchableOpacity style={styles.lineBtn} onPress={handleLineLogin}>
           <Text style={styles.lineBtnText}>🟩 {zh ? '使用 LINE 登入' : 'Sign in with LINE'}</Text>
         </TouchableOpacity>
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={10}
-          style={styles.appleBtn}
-          onPress={handleAppleLogin}
-        />
+        {Platform.OS === 'ios' && (
+          <AppleAuthentication.AppleAuthenticationButton
+            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+            cornerRadius={10}
+            style={styles.appleBtn}
+            onPress={handleAppleLogin}
+          />
+        )}
         <TouchableOpacity onPress={() => router.push('/(auth)/forgot-password')} style={{ marginBottom: 12 }}>
           <Text style={styles.link}>{t('auth.forgotPassword') || 'Forgot password / Get sign-in link'}</Text>
         </TouchableOpacity>
