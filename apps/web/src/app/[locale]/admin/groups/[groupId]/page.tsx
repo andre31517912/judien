@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import dynamic from 'next/dynamic';
-const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
@@ -43,13 +41,7 @@ type JoinRequest = {
   requester: { id: string; displayName: string | null; email: string };
 };
 
-type SubgroupInfo = { id: string; name: string; description?: string };
-type RelationshipsData = {
-  parentGroup: SubgroupInfo | null;
-  subgroups: SubgroupInfo[];
-  lineage?: Array<{ id: string; name: string }>;
-  tree?: Array<SubgroupInfo & { children: SubgroupInfo[] }>;
-};
+
 
 export default function AdminGroupPage({ params }: { params: { locale: string; groupId: string } }) {
   const zh = params.locale === 'zh';
@@ -87,10 +79,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
   const [newsCoverPreview, setNewsCoverPreview] = useState<string | null>(null);
   const newsCoverFileRef = useRef<HTMLInputElement>(null);
-  const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
-  const [relationshipsLoading, setRelationshipsLoading] = useState(false);
-  const [showRelationships, setShowRelationships] = useState(false);
-
   // Member search + nickname
   const [memberSearch, setMemberSearch] = useState('');
   const [editingNicknameUserId, setEditingNicknameUserId] = useState<string | null>(null);
@@ -108,16 +96,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
       setEditingNicknameUserId(null);
     } catch (err: unknown) { setError((err as Error).message ?? 'Failed to save nickname.'); }
     finally { setNicknameSaving(false); }
-  };
-
-  const loadRelationships = async () => {
-    setRelationshipsLoading(true);
-    try {
-      const data = await apiFetch<RelationshipsData>(`/groups/${params.groupId}/relationships`);
-      setRelationships(data);
-    } finally {
-      setRelationshipsLoading(false);
-    }
   };
 
   const loadPage = async () => {
@@ -341,23 +319,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={async () => {
-                  await loadRelationships();
-                  setShowRelationships(true);
-                }}
-                disabled={relationshipsLoading}
-                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
-              >
-                {relationshipsLoading ? (
-                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-500" />
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-indigo-500">
-                    <path d="M2 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3ZM2 10a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3ZM9 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V3ZM13 9.5a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H12v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H13V9.5Z" />
-                  </svg>
-                )}
-                {zh ? '層級圖' : 'Hierarchy'}
-              </button>
               {joinRequests.length > 0 && (
                 <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
                   {joinRequests.length} {zh ? '待審核' : 'pending'}
@@ -867,15 +828,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
       </div>
 
-      {showRelationships && relationships && (
-        <GroupHierarchyChart
-          data={relationships}
-          currentGroupId={params.groupId}
-          locale={params.locale}
-          loading={relationshipsLoading}
-          onClose={() => setShowRelationships(false)}
-        />
-      )}
 
     </div>
   );

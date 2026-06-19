@@ -106,7 +106,7 @@ export default function SharedEventScreen() {
       )}
 
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
-      {event.groupName ? <Text style={[styles.groupBadge, { color: colors.subtext }]}>👥 {event.groupName}</Text> : null}
+      {event.groupName ? <Text style={[styles.groupBadge, { color: colors.subtext }]}>{event.groupName}</Text> : null}
       <Text style={[styles.meta, { color: colors.subtext }]}>{new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US')}</Text>
       {location ? <Text style={[styles.meta, { color: colors.subtext }]}>📍 {location}</Text> : null}
       {description ? <Text style={[styles.desc, { color: colors.text }]}>{description}</Text> : null}

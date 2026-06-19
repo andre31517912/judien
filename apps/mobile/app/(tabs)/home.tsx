@@ -186,7 +186,7 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     emptyText: { color: colors.placeholder, textAlign: 'center', fontSize: 15 },
     card: { backgroundColor: colors.card, borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
-    cardTitle: { flex: 1, fontSize: 16, fontWeight: '600', color: colors.text, marginRight: 8 },
+    cardTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: colors.text, marginRight: 8 },
     groupBadge: { alignSelf: 'flex-start', backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 6 },
     groupBadgeText: { fontSize: 11, fontWeight: '500', color: INDIGO },
     cardBody: { fontSize: 14, color: colors.subtext, lineHeight: 20 },

@@ -507,8 +507,8 @@ export default function EventDetailScreen() {
             </View>
           )}
 
-          {/* Direct Invite (event creator/admin, non-group events only) */}
-          {!event.groupId && (isAdmin || event.createdById === user?.id) && (
+          {/* Direct Invite (event creator/admin) */}
+          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowDirectInvite(!showDirectInvite)} style={styles.blastToggle}>
                 <Text style={styles.blastToggleText}>✉️ {zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</Text>
@@ -729,8 +729,8 @@ export default function EventDetailScreen() {
                       : rows.map((g, i) => (
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
-                          {g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                          {(g as any).phone && <Text style={styles.guestHandle}>{(g as any).phone}</Text>}
+                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && (g as any).phone && <Text style={styles.guestHandle}>{(g as any).phone}</Text>}
                         </View>
                       ));
                   }
@@ -744,8 +744,8 @@ export default function EventDetailScreen() {
                     : rows.map((g, i) => (
                       <View key={i} style={styles.guestRow}>
                         <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                        {g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                        {g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                        {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                        {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                       </View>
                     ));
                 })()}

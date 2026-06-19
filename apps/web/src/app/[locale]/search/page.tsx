@@ -29,7 +29,8 @@ type UserRow = {
   id: string; displayName: string | null; email: string | null; phoneE164: string | null;
   role: 'ADMIN' | 'USER'; createdAt: string; lineUserId: string | null;
 };
-type Results = { users?: UserRow[]; groups: GroupRow[]; news: NewsRow[]; events: EventRow[] };
+type PublicUserRow = { id: string; displayName: string | null };
+type Results = { users?: UserRow[] | PublicUserRow[]; groups: GroupRow[]; news: NewsRow[]; events: EventRow[] };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -145,19 +146,29 @@ function SearchContent({ locale }: { locale: string }) {
 
       {!loading && results && (
         <div className="space-y-8">
-          {/* Users (admin only) */}
-          {isAdmin && (results.users?.length ?? 0) > 0 && (
+          {/* Users */}
+          {(results.users?.length ?? 0) > 0 && (
             <Section label={`${zh ? '用戶' : 'Users'} · ${results.users!.length}`}>
-              {results.users!.map((u) => (
-                <Row
-                  key={u.id}
-                  primary={u.displayName ?? <em className="text-gray-400">{zh ? '未設名稱' : 'No name'}</em>}
-                  secondary={[u.email, u.phoneE164].filter(Boolean).join(' · ') || '—'}
-                  badge={u.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : undefined}
-                  isAdmin={isAdmin} deletingId={deletingId} id={u.id} zh={zh}
-                  onDelete={() => deleteUser(u)}
-                />
-              ))}
+              {results.users!.map((u) => {
+                const adminUser = u as UserRow;
+                const secondary = isAdmin
+                  ? [adminUser.email, adminUser.phoneE164].filter(Boolean).join(' · ') || '—'
+                  : '';
+                return (
+                  <Row
+                    key={u.id}
+                    primary={
+                      <Link href={`/${locale}/profile/${u.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                        {u.displayName || <em className="text-gray-400">{zh ? '未設名稱' : 'No name'}</em>}
+                      </Link>
+                    }
+                    secondary={secondary}
+                    badge={isAdmin && adminUser.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : undefined}
+                    isAdmin={isAdmin} deletingId={deletingId} id={u.id} zh={zh}
+                    onDelete={() => deleteUser(adminUser)}
+                  />
+                );
+              })}
             </Section>
           )}
 
@@ -183,7 +194,7 @@ function SearchContent({ locale }: { locale: string }) {
               {results.events.map((e) => (
                 <Row
                   key={e.id}
-                  primary={e.title}
+                  primary={<Link href={`/${locale}/events/${e.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{e.title}</Link>}
                   secondary={`${e.createdBy?.displayName ?? '—'}${e.group ? ` · ${e.group.name}` : ''} · ${new Date(e.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}`}
                   sub={e.description ?? undefined}
                   isAdmin={isAdmin} deletingId={deletingId} id={e.id} zh={zh}

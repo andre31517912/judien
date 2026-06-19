@@ -365,7 +365,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                       <div className="absolute inset-0 bg-black/15" />
                       <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
                         <div className={`flex-1 overflow-hidden ${(item.group || canEdit) ? 'mt-7' : ''}`}>
-                          <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{item.title}</h2>
+                          <h2 className="font-extrabold text-white text-base line-clamp-3 leading-snug">{item.title}</h2>
                           <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{item.body}</p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
@@ -592,7 +592,7 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
       {event.groupName && (
         <div className="absolute top-2.5 left-2.5 max-w-[55%]">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium bg-indigo-600/80 backdrop-blur-sm text-white overflow-hidden">
-            <span className="truncate">👥 {event.groupName}</span>
+            <span className="truncate">{event.groupName}</span>
           </span>
         </div>
       )}

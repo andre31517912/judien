@@ -354,6 +354,8 @@ export default function EventDetailPage() {
   );
   if (!event) return <p className="text-red-500 mt-8">Event not found.</p>;
 
+  const isEventAdmin = user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin;
+
   const title = event.title;
   const description = event.description;
   const location = event.location;
@@ -454,7 +456,7 @@ export default function EventDetailPage() {
         {event.groupName && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦團體' : 'Hosted by'}</span>
-            <span className="text-indigo-600 font-medium">👥 {event.groupName}</span>
+            <span className="text-indigo-600 font-medium">{event.groupName}</span>
           </div>
         )}
         {(event as any).createdByName && (
@@ -602,8 +604,8 @@ export default function EventDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
-                        {g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
-                        {(g as any).phone && <p className="text-xs text-gray-400 truncate">{(g as any).phone}</p>}
+                        {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                        {isEventAdmin && (g as any).phone && <p className="text-xs text-gray-400 truncate">{(g as any).phone}</p>}
                       </div>
                     </div>
                   ));
@@ -622,8 +624,8 @@ export default function EventDetailPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
-                      {g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
-                      {g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
+                      {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                      {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                     </div>
                   </div>
                 ));
@@ -632,8 +634,8 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      {/* Direct invite by email/phone (event creator/admin, non-group events only) */}
-      {!event.groupId && (user?.role === 'ADMIN' || event.createdById === user?.id) && (
+      {/* Direct invite by email/phone (event creator/admin) */}
+      {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-green-200 dark:border-green-900/40 rounded-xl p-5 bg-green-50/40 dark:bg-gray-900/50">
           <h2 className="text-base font-semibold mb-1 dark:text-white">{zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{zh ? '輸入已註冊用戶的電子郵件或手機號碼，將其加入受邀名單並發送通知。' : 'Enter the email or phone of a registered user to add them to the invite list and send a notification.'}</p>

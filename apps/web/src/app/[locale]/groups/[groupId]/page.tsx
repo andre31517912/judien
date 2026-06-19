@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
@@ -116,27 +115,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
   const [newsCoverPreview, setNewsCoverPreview] = useState<string | null>(null);
   const newsCoverFileRef = useRef<HTMLInputElement>(null);
-
-  type SubgroupInfo = { id: string; name: string; description: string };
-  type RelationshipsData = {
-    parentGroup: SubgroupInfo | null;
-    subgroups: SubgroupInfo[];
-    lineage?: Array<{ id: string; name: string }>;
-    tree?: Array<SubgroupInfo & { children: SubgroupInfo[] }>;
-  };
-  const [relationships, setRelationships] = useState<RelationshipsData | null>(null);
-  const [relationshipsLoading, setRelationshipsLoading] = useState(false);
-  const [showRelationships, setShowRelationships] = useState(false);
-
-  const loadRelationships = async () => {
-    setRelationshipsLoading(true);
-    try {
-      const data = await apiFetch<RelationshipsData>(`/groups/${params.groupId}/relationships`);
-      setRelationships(data);
-    } finally {
-      setRelationshipsLoading(false);
-    }
-  };
 
   const loadPage = async () => {
     setPageLoading(true);
@@ -471,35 +449,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             {group.description && (
               <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{group.description}</p>
             )}
-            {relationships?.lineage && relationships.lineage.length > 1 && (
-              <p className="text-xs text-gray-400 dark:text-gray-500">
-                {relationships.lineage.map((n, i) => (
-                  <span key={n.id}>
-                    {i > 0 && <span className="mx-1 text-gray-300 dark:text-gray-600">›</span>}
-                    <Link href={`/${params.locale}/groups/${n.id}`} className="hover:text-indigo-600">{n.name}</Link>
-                  </span>
-                ))}
-              </p>
-            )}
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={async () => {
-                await loadRelationships();
-                setShowRelationships(true);
-              }}
-              disabled={relationshipsLoading}
-              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 transition flex items-center gap-1.5"
-            >
-              {relationshipsLoading ? (
-                <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-500" />
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-indigo-500">
-                  <path d="M2 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3ZM2 10a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-3ZM9 3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1V3ZM13 9.5a.5.5 0 0 0-1 0V11H9.5a.5.5 0 0 0 0 1H12v1.5a.5.5 0 0 0 1 0V12h1.5a.5.5 0 0 0 0-1H13V9.5Z" />
-                </svg>
-              )}
-              {zh ? '層級圖' : 'Hierarchy'}
-            </button>
             {isGroupAdmin && (
               <>
                 {joinRequests.length > 0 && (
@@ -1148,17 +1099,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
       </div>
     </div>
-
-    {/* ── Group Hierarchy modal ── */}
-    {showRelationships && relationships && (
-      <GroupHierarchyChart
-        data={relationships}
-        currentGroupId={params.groupId}
-        locale={params.locale}
-        loading={relationshipsLoading}
-        onClose={() => setShowRelationships(false)}
-      />
-    )}
 
     </>
   );
