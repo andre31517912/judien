@@ -69,7 +69,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [success, setSuccess] = useState('');
 
   // GROUP_ADMIN: news post form
-  const [newsForm, setNewsForm] = useState({ title: '', body: '' });
+  const [newsForm, setNewsForm] = useState({ body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
 
   // GROUP_ADMIN: event create form
@@ -110,7 +110,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
   // Inline edit state for news
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: '', body: '' });
+  const [editForm, setEditForm] = useState({ body: '' });
   const [editSaving, setEditSaving] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
@@ -210,22 +210,20 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     e.preventDefault();
     setSuccess('');
     setError('');
-    if (!newsForm.title.trim()) { setError(zh ? '請輸入標題。' : 'Title is required.'); return; }
-    if (!newsForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Body is required.'); return; }
+    if (!newsForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Content is required.'); return; }
     setNewsLoading(true);
     try {
       const created = await apiFetch<News>('/news', {
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
-          title: newsForm.title,
           body: newsForm.body,
         }),
       });
       if (newsCoverFile) {
         await apiUpload(`/news/${created.id}/cover`, newsCoverFile).catch(() => {});
       }
-      setNewsForm({ title: '', body: '' });
+      setNewsForm({ body: '' });
       setNewsCoverFile(null);
       setNewsCoverPreview(null);
       if (newsCoverFileRef.current) newsCoverFileRef.current.value = '';
@@ -309,17 +307,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   };
 
   const handleUpdateNews = async (id: string) => {
-    if (!editForm.title.trim()) { setError(zh ? '請輸入標題。' : 'Title is required.'); return; }
-    if (!editForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Body is required.'); return; }
+    if (!editForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Content is required.'); return; }
     setEditSaving(true);
     setError('');
     try {
       await apiFetch(`/news/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          title: editForm.title,
-          body: editForm.body,
-        }),
+        body: JSON.stringify({ body: editForm.body }),
       });
       setEditingId(null);
       await loadPage();
@@ -580,19 +574,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           <div className="space-y-4">
             {(isGroupAdmin || isAdmin) && composingNews && (
               <form onSubmit={handleCreateNews} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '發布公告' : 'Post Announcement'}</h3>
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={newsForm.title}
-                  onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })}
-                  placeholder={zh ? '標題' : 'Title'}
-                />
                 <textarea
-                  rows={3}
+                  rows={4}
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   value={newsForm.body}
                   onChange={(e) => setNewsForm({ ...newsForm, body: e.target.value })}
-                  placeholder={zh ? '內容' : 'Body'}
+                  placeholder={zh ? '有什麼想說的…' : "What's on your mind…"}
+                  autoFocus
                 />
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
@@ -616,7 +604,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div className="flex justify-end">
                   <button
                     type="submit"
-                    disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()}
+                    disabled={newsLoading || !newsForm.body.trim()}
                     className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 transition"
                   >
                     {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
@@ -626,19 +614,14 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             )}
             {editingId && (
               <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '編輯公告' : 'Edit Post'}</h3>
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={editForm.title}
-                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  placeholder={zh ? '標題' : 'Title'}
-                />
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{zh ? '編輯貼文' : 'Edit Post'}</h3>
                 <textarea
-                  rows={4}
+                  rows={5}
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   value={editForm.body}
                   onChange={(e) => setEditForm({ ...editForm, body: e.target.value })}
-                  placeholder={zh ? '內容' : 'Body'}
+                  placeholder={zh ? '有什麼想說的…' : "What's on your mind…"}
+                  autoFocus
                 />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
@@ -688,7 +671,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                       {canEdit && (
                         <div className="absolute top-2 right-2 flex gap-1 z-10">
                           <button
-                            onClick={() => { setEditingId(item.id); setEditForm({ title: item.title, body: item.body }); }}
+                            onClick={() => { setEditingId(item.id); setEditForm({ body: item.body }); }}
                             className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
                           >✎</button>
                           <button

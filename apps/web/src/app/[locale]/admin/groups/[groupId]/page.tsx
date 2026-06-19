@@ -72,7 +72,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
   // Create post / event inline
   const [composingNews, setComposingNews] = useState(false);
-  const [newsForm, setNewsForm] = useState({ title: '', body: '' });
+  const [newsForm, setNewsForm] = useState({ body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
   const [composingEvent, setComposingEvent] = useState(false);
   const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
@@ -82,7 +82,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const coverFileRef = useRef<HTMLInputElement>(null);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ title: '', body: '' });
+  const [editForm, setEditForm] = useState({ body: '' });
   const [editSaving, setEditSaving] = useState(false);
   const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
   const [newsCoverPreview, setNewsCoverPreview] = useState<string | null>(null);
@@ -222,18 +222,18 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
 
   const handleCreateNews = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsForm.title.trim() || !newsForm.body.trim()) return;
+    if (!newsForm.body.trim()) return;
     setNewsLoading(true);
     setError('');
     try {
       const created = await apiFetch<News>('/news', {
         method: 'POST',
-        body: JSON.stringify({ groupId: params.groupId, title: newsForm.title, body: newsForm.body }),
+        body: JSON.stringify({ groupId: params.groupId, body: newsForm.body }),
       });
       if (newsCoverFile) {
         await apiUpload(`/news/${created.id}/cover`, newsCoverFile).catch(() => {});
       }
-      setNewsForm({ title: '', body: '' });
+      setNewsForm({ body: '' });
       setNewsCoverFile(null);
       setNewsCoverPreview(null);
       if (newsCoverFileRef.current) newsCoverFileRef.current.value = '';
@@ -245,13 +245,13 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   };
 
   const handleUpdateNews = async (id: string) => {
-    if (!editForm.title.trim() || !editForm.body.trim()) return;
+    if (!editForm.body.trim()) return;
     setEditSaving(true);
     setError('');
     try {
       await apiFetch(`/news/${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ title: editForm.title, body: editForm.body }),
+        body: JSON.stringify({ body: editForm.body }),
       });
       setEditingId(null);
       await loadPage();
@@ -395,7 +395,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           </div>
           {(isGroupAdmin || isPlatformAdmin) && viewTab === 'feed' && (
             <button
-              onClick={() => { setComposingNews((v) => !v); setNewsForm({ title: '', body: '' }); }}
+              onClick={() => { setComposingNews((v) => !v); setNewsForm({ body: '' }); }}
               className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
               {composingNews ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '發布公告' : 'Create Post'}`}
@@ -421,9 +421,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           <div className="space-y-4">
             {composingNews && (isGroupAdmin || isPlatformAdmin) && (
               <form onSubmit={handleCreateNews} className="rounded-2xl border border-indigo-100 dark:border-indigo-800 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '發布公告' : 'Create Post'}</h3>
-                <input required value={newsForm.title} onChange={(e) => setNewsForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                <textarea required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <textarea autoFocus required value={newsForm.body} onChange={(e) => setNewsForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '有什麼想說的…' : "What's on your mind…"} rows={4} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
                   {newsCoverPreview ? (
@@ -444,10 +442,10 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   }} />
                 </div>
                 <div className="flex gap-2">
-                  <button type="submit" disabled={newsLoading || !newsForm.title.trim() || !newsForm.body.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
+                  <button type="submit" disabled={newsLoading || !newsForm.body.trim()} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
                     {newsLoading ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
                   </button>
-                  <button type="button" onClick={() => { setComposingNews(false); setNewsForm({ title: '', body: '' }); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <button type="button" onClick={() => { setComposingNews(false); setNewsForm({ body: '' }); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
                     {zh ? '取消' : 'Cancel'}
                   </button>
                 </div>
@@ -455,9 +453,8 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
             )}
             {editingId && (
               <div className="rounded-2xl border border-indigo-100 dark:border-indigo-900 bg-white dark:bg-gray-900 p-5 shadow-sm space-y-3">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '編輯公告' : 'Edit Post'}</h3>
-                <input value={editForm.title} onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '標題' : 'Title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                <textarea value={editForm.body} onChange={(e) => setEditForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '內容' : 'Body'} rows={3} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none" />
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '編輯貼文' : 'Edit Post'}</h3>
+                <textarea autoFocus value={editForm.body} onChange={(e) => setEditForm((f) => ({ ...f, body: e.target.value }))} placeholder={zh ? '有什麼想說的…' : "What's on your mind…"} rows={5} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 <div className="flex gap-2 justify-end">
                   <button onClick={() => setEditingId(null)} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                     {zh ? '取消' : 'Cancel'}
@@ -503,7 +500,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                       </Link>
                       <div className="absolute top-2 right-2 flex gap-1 z-10">
                         <button
-                          onClick={() => { setEditingId(item.id); setEditForm({ title: item.title, body: item.body }); }}
+                          onClick={() => { setEditingId(item.id); setEditForm({ body: item.body }); }}
                           className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
                         >✎</button>
                         <button

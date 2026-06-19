@@ -98,7 +98,6 @@ export default function GroupDetailScreen() {
   const [nicknameSaving, setNicknameSaving] = useState(false);
 
   const [composingNews, setComposingNews] = useState(false);
-  const [newsTitle, setNewsTitle] = useState('');
   const [newsBody, setNewsBody] = useState('');
   const [newsSubmitting, setNewsSubmitting] = useState(false);
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
@@ -277,10 +276,10 @@ export default function GroupDetailScreen() {
     try {
       const created = await apiFetch<News>('/news', {
         method: 'POST',
-        body: JSON.stringify({ title: newsTitle.trim(), body: newsBody.trim(), groupId }),
+        body: JSON.stringify({ body: newsBody.trim(), groupId }),
       });
       setNews((prev) => [created, ...prev]);
-      setNewsTitle(''); setNewsBody(''); setComposingNews(false);
+      setNewsBody(''); setComposingNews(false);
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to post.'); }
     finally { setNewsSubmitting(false); }
   };
@@ -402,32 +401,25 @@ export default function GroupDetailScreen() {
           {composingNews && (
             <View style={styles.composeBox}>
               <TextInput
-                style={styles.composeTitle}
-                value={newsTitle}
-                onChangeText={setNewsTitle}
-                placeholder={zh ? '標題' : 'Title'}
-                placeholderTextColor={colors.placeholder}
-                maxLength={200}
-              />
-              <TextInput
                 style={styles.composeBody}
                 value={newsBody}
                 onChangeText={setNewsBody}
-                placeholder={zh ? '內容…' : 'Content…'}
+                placeholder={zh ? '有什麼想說的…' : "What's on your mind…"}
                 placeholderTextColor={colors.placeholder}
                 multiline
                 textAlignVertical="top"
                 maxLength={5000}
+                autoFocus
               />
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
-                  style={[styles.composeBtn, newsSubmitting && { opacity: 0.6 }]}
+                  style={[styles.composeBtn, (newsSubmitting || !newsBody.trim()) && { opacity: 0.6 }]}
                   onPress={submitNews}
-                  disabled={newsSubmitting}
+                  disabled={newsSubmitting || !newsBody.trim()}
                 >
                   <Text style={styles.composeBtnText}>{newsSubmitting ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.composeCancelBtn} onPress={() => { setComposingNews(false); setNewsTitle(''); setNewsBody(''); }}>
+                <TouchableOpacity style={styles.composeCancelBtn} onPress={() => { setComposingNews(false); setNewsBody(''); }}>
                   <Text style={styles.composeCancelText}>{zh ? '取消' : 'Cancel'}</Text>
                 </TouchableOpacity>
               </View>

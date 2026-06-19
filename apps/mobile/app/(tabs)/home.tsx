@@ -25,7 +25,7 @@ export default function HomeTab() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [composing, setComposing] = useState(false);
-  const [form, setForm] = useState({ title: '', body: '' });
+  const [form, setForm] = useState({ body: '' });
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async (silent = false) => {
@@ -47,15 +47,11 @@ export default function HomeTab() {
   const handleRefresh = () => { setRefreshing(true); load(true); };
 
   const handleCreate = async () => {
-    if (!form.title.trim()) { Alert.alert(zh ? '請輸入標題' : 'Title required', zh ? '標題不能為空。' : 'Please enter a title.'); return; }
-    if (!form.body.trim()) { Alert.alert(zh ? '請輸入內容' : 'Body required', zh ? '內容不能為空。' : 'Please enter some content.'); return; }
+    if (!form.body.trim()) { Alert.alert(zh ? '請輸入內容' : 'Content required', zh ? '內容不能為空。' : 'Please enter some content.'); return; }
     setSaving(true);
     try {
-      await apiFetch('/news', { method: 'POST', body: JSON.stringify({
-        title: form.title,
-        body: form.body,
-      }) });
-      setForm({ title: '', body: '' });
+      await apiFetch('/news', { method: 'POST', body: JSON.stringify({ body: form.body }) });
+      setForm({ body: '' });
       setComposing(false);
       load();
     } catch (err: any) {
@@ -109,25 +105,17 @@ export default function HomeTab() {
 
         {user && composing && (
           <View style={styles.form}>
-            <Text style={styles.formLabel}>{zh ? '標題' : 'Title'}</Text>
-            <TextInput
-              style={styles.input}
-              value={form.title}
-              onChangeText={(v) => setForm({ ...form, title: v })}
-              placeholderTextColor={colors.placeholder}
-              maxLength={200}
-              returnKeyType="next"
-            />
-            <Text style={styles.formLabel}>{zh ? '內容' : 'Body'}</Text>
             <TextInput
               style={[styles.input, styles.multiline]}
               value={form.body}
               onChangeText={(v) => setForm({ ...form, body: v })}
+              placeholder={zh ? '有什麼想說的…' : "What's on your mind…"}
               multiline
               placeholderTextColor={colors.placeholder}
               maxLength={5000}
+              autoFocus
             />
-            <TouchableOpacity style={[styles.submitBtn, saving && { opacity: 0.5 }]} onPress={handleCreate} disabled={saving}>
+            <TouchableOpacity style={[styles.submitBtn, (saving || !form.body.trim()) && { opacity: 0.5 }]} onPress={handleCreate} disabled={saving || !form.body.trim()}>
               <Text style={styles.submitBtnText}>{saving ? (zh ? '發布中…' : 'Posting…') : t('home.createPost')}</Text>
             </TouchableOpacity>
           </View>
