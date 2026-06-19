@@ -20,7 +20,7 @@ export default async function LocaleLayout({
       <HtmlLang locale={params.locale} />
       <NavBar locale={params.locale} />
       <main className="flex-1 w-full">
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="max-w-3xl mx-auto px-5 py-6">
           <AuthGuard locale={params.locale}>{children}</AuthGuard>
         </div>
       </main>

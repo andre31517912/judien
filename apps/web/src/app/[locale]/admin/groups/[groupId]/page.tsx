@@ -446,7 +446,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有公告，一切都是最新的！' : "No news yet — you're all caught up!"}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {news.map((item) => {
                   const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
                   const gradients = ['from-violet-500 to-indigo-600','from-rose-500 to-pink-600','from-teal-500 to-cyan-600','from-amber-500 to-orange-600','from-emerald-500 to-green-600','from-sky-500 to-blue-600','from-fuchsia-500 to-purple-600'];
@@ -560,7 +560,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <p className="text-gray-500 dark:text-gray-400">{zh ? '目前沒有活動，一切都是最新的！' : "No events yet — you're all caught up!"}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {events.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
                   const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
@@ -676,7 +676,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <p className="text-gray-500 dark:text-gray-400">{zh ? '沒有過去的活動記錄，一切都是最新的！' : "No past events yet."}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {pastEvents.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
                   const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);

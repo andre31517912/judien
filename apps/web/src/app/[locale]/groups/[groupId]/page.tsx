@@ -624,7 +624,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '管理員會在這裡發布最新公告' : 'Group updates will appear here'}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {news.map((item) => {
                   const canEdit = item.createdById === user.id || isGroupAdmin || user.role === 'ADMIN';
                   const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
@@ -783,7 +783,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '即將舉辦的活動會顯示在這裡' : 'Upcoming events will appear here'}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {events.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
                   const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);
@@ -941,7 +941,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '過去舉辦的活動會顯示在這裡' : 'Past events will appear here'}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {pastEvents.map((ev) => {
                   const coverUrl = resolveImageUrl(ev.coverImageUrl);
                   const hash = (ev.id.charCodeAt(0) ?? 0) + (ev.id.charCodeAt(2) ?? 0);

@@ -323,7 +323,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{zh ? '管理員會在這裡發布最新消息' : 'Community updates will appear here'}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {news.map((item) => {
                 const canEdit = item.createdById === user?.id || isAdmin;
                 const hash = item.id.charCodeAt(0) + (item.id.charCodeAt(2) ?? 0);
@@ -484,7 +484,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {filteredEvents.map((event) => (
                 <EventCard key={event.id} event={event} locale={params.locale} />
               ))}
