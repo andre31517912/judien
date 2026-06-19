@@ -9,7 +9,7 @@ import { useAuth } from '@/context/auth.context';
 // ── Shared types ──────────────────────────────────────────────────────────────
 
 type NewsRow = {
-  id: string; title_en: string; title_zh: string; body_en: string; body_zh: string; createdAt: string;
+  id: string; title: string; body: string; createdAt: string;
   createdBy: { displayName: string | null } | null;
   group: { id: string; name: string } | null;
 };
@@ -80,7 +80,7 @@ function SearchContent({ locale }: { locale: string }) {
   };
 
   const deleteNews = (n: NewsRow) => {
-    const title = zh ? n.title_zh : n.title_en;
+    const title = n.title;
     if (!confirm(zh ? `確定要永久刪除貼文「${title}」嗎？` : `Delete post "${title}"?`)) return;
     setDeletingId(n.id);
     del(`/admin/news/${n.id}`, () =>
@@ -167,9 +167,9 @@ function SearchContent({ locale }: { locale: string }) {
               {results.news.map((n) => (
                 <Row
                   key={n.id}
-                  primary={<Link href={`/${locale}/news/${n.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{zh ? n.title_zh : n.title_en}</Link>}
+                  primary={<Link href={`/${locale}/news/${n.id}`} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">{n.title}</Link>}
                   secondary={`${n.createdBy?.displayName ?? '—'}${n.group ? ` · ${n.group.name}` : ''} · ${new Date(n.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}`}
-                  sub={zh ? n.body_zh : n.body_en}
+                  sub={n.body}
                   isAdmin={isAdmin} deletingId={deletingId} id={n.id} zh={zh}
                   onDelete={() => deleteNews(n)}
                 />

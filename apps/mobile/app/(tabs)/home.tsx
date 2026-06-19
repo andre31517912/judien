@@ -52,8 +52,8 @@ export default function HomeTab() {
     setSaving(true);
     try {
       await apiFetch('/news', { method: 'POST', body: JSON.stringify({
-        title_en: form.title, title_zh: form.title,
-        body_en: form.body, body_zh: form.body,
+        title: form.title,
+        body: form.body,
       }) });
       setForm({ title: '', body: '' });
       setComposing(false);
@@ -153,7 +153,7 @@ export default function HomeTab() {
               <View key={item.id} style={styles.card}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle} numberOfLines={2}>
-                    {zh ? item.title_zh : item.title_en}
+                    {item.title}
                   </Text>
                   {(isAdmin || item.createdById === user?.id) && (
                     <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn} accessibilityLabel={zh ? '刪除公告' : 'Delete post'}>
@@ -166,7 +166,7 @@ export default function HomeTab() {
                     <Text style={styles.groupBadgeText}>👥 {item.group.name}</Text>
                   </View>
                 )}
-                <Text style={styles.cardBody}>{zh ? item.body_zh : item.body_en}</Text>
+                <Text style={styles.cardBody}>{item.body}</Text>
                 <Text style={styles.cardDate}>
                   {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
                   {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}

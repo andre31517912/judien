@@ -51,7 +51,7 @@ export default function NewsDetailScreen() {
             )}
 
             <Text style={{ fontSize: 22, fontWeight: '700', color: colors.text, lineHeight: 30, marginBottom: 12 }}>
-              {zh ? post.title_zh : post.title_en}
+              {post.title}
             </Text>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
@@ -68,7 +68,7 @@ export default function NewsDetailScreen() {
             <View style={{ height: 1, backgroundColor: isDark ? '#1F2937' : '#F3F4F6', marginBottom: 16 }} />
 
             <Text style={{ fontSize: 15, color: isDark ? '#D1D5DB' : '#374151', lineHeight: 24 }}>
-              {zh ? post.body_zh : post.body_en}
+              {post.body}
             </Text>
           </>
         )}

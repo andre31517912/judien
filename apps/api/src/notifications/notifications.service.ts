@@ -6,10 +6,8 @@ import type { NotificationType, User } from '../__generated__/prisma';
 export interface CreateNotificationInput {
   userId: string;
   type: NotificationType;
-  title_en: string;
-  title_zh: string;
-  body_en?: string;
-  body_zh?: string;
+  title: string;
+  body?: string;
   actionUrl?: string;
   groupId?: string;
   eventId?: string;

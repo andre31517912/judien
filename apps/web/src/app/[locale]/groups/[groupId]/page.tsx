@@ -211,10 +211,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
-          title_en: newsForm.title,
-          title_zh: newsForm.title,
-          body_en: newsForm.body,
-          body_zh: newsForm.body,
+          title: newsForm.title,
+          body: newsForm.body,
         }),
       });
       if (newsCoverFile) {
@@ -312,8 +310,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       await apiFetch(`/news/${id}`, {
         method: 'PATCH',
         body: JSON.stringify({
-          title_en: editForm.title, title_zh: editForm.title,
-          body_en: editForm.body, body_zh: editForm.body,
+          title: editForm.title,
+          body: editForm.body,
         }),
       });
       setEditingId(null);
@@ -660,13 +658,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
                       <Link href={`/${params.locale}/news/${item.id}`} className="absolute inset-0 z-0 block">
                         {item.coverImageUrl && (
-                          <Image src={resolveImageUrl(item.coverImageUrl)!} alt={zh ? item.title_zh : item.title_en} fill className="object-cover" />
+                          <Image src={resolveImageUrl(item.coverImageUrl)!} alt={item.title} fill className="object-cover" />
                         )}
                         <div className="absolute inset-0 bg-black/15" />
                         <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
                           <div className={`flex-1 overflow-hidden ${canEdit ? 'mt-7' : ''}`}>
-                            <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
-                            <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                            <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{item.title}</h2>
+                            <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{item.body}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
@@ -680,7 +678,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                       {canEdit && (
                         <div className="absolute top-2 right-2 flex gap-1 z-10">
                           <button
-                            onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
+                            onClick={() => { setEditingId(item.id); setEditForm({ title: item.title, body: item.body }); }}
                             className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
                           >✎</button>
                           <button

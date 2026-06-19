@@ -74,10 +74,8 @@ async function processReminder(job: Job<ReminderJobData>) {
       data: {
         userId: user.id,
         type: 'EVENT_REMINDER',
-        title_en: t(getDict('en').messages.reminderSubject, { title: event.title }),
-        title_zh: t(getDict('zh').messages.reminderSubject, { title: event.title }),
-        body_en: t(getDict('en').messages.reminderBody, { title: event.title, date: dateStr, time: timeStr, timezone: event.timezone }),
-        body_zh: t(getDict('zh').messages.reminderBody, { title: event.title, date: dateStr, time: timeStr, timezone: event.timezone }),
+        title: t(getDict('en').messages.reminderSubject, { title: event.title }),
+        body: t(getDict('en').messages.reminderBody, { title: event.title, date: dateStr, time: timeStr, timezone: event.timezone }),
         actionUrl: `/events/${eventId}`,
         eventId,
       },

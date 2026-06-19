@@ -328,10 +328,8 @@ model News {
   id          String   @id @default(cuid())
   groupId     String?
   group       Group?   @relation(fields: [groupId], references: [id])
-  title_en    String   @default("")
-  title_zh    String   @default("")
-  body_en     String   @default("")
-  body_zh     String   @default("")
+  title       String   @default("")
+  body        String   @default("")
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
   createdAt   DateTime @default(now())
@@ -500,10 +498,8 @@ model Notification {
   id        String           @id @default(cuid())
   userId    String
   type      NotificationType
-  title_en  String
-  title_zh  String
-  body_en   String           @default("")
-  body_zh   String           @default("")
+  title     String
+  body      String           @default("")
   read      Boolean          @default(false)
   actionUrl String?
   groupId   String?

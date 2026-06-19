@@ -277,7 +277,7 @@ export default function GroupDetailScreen() {
     try {
       const created = await apiFetch<News>('/news', {
         method: 'POST',
-        body: JSON.stringify({ title_en: newsTitle.trim(), title_zh: newsTitle.trim(), body_en: newsBody.trim(), body_zh: newsBody.trim(), groupId }),
+        body: JSON.stringify({ title: newsTitle.trim(), body: newsBody.trim(), groupId }),
       });
       setNews((prev) => [created, ...prev]);
       setNewsTitle(''); setNewsBody(''); setComposingNews(false);
@@ -454,11 +454,11 @@ export default function GroupDetailScreen() {
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
                     <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
                       <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 18 }} numberOfLines={4}>
-                        {zh ? item.title_zh : item.title_en}
+                        {item.title}
                       </Text>
                       <View>
                         <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }} numberOfLines={2}>
-                          {zh ? item.body_zh : item.body_en}
+                          {item.body}
                         </Text>
                         <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 }}>
                           {item.createdBy?.displayName ?? ''}{item.createdBy?.displayName ? ' · ' : ''}

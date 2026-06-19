@@ -563,10 +563,8 @@ export class GroupsService {
         admins.map((a) => ({
           userId: a.userId,
           type: 'JOIN_REQUEST_RECEIVED' as const,
-          title_en: `New join request for ${group.name}`,
-          title_zh: `${group.name} 有新的加入申請`,
-          body_en: `${requesterName} has requested to join ${group.name}.`,
-          body_zh: `${requesterName} 申請加入 ${group.name}。`,
+          title: `New join request for ${group.name}`,
+          body: `${requesterName} has requested to join ${group.name}.`,
           actionUrl: `/admin/groups/${groupId}/settings`,
           groupId,
           requestId: req.id,
@@ -619,10 +617,8 @@ export class GroupsService {
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_REJECTED',
-        title_en: `Join request declined`,
-        title_zh: `加入申請被拒絕`,
-        body_en: `Your request to join ${groupName} has been declined.`,
-        body_zh: `您申請加入 ${groupName} 的請求已被拒絕。`,
+        title: `Join request declined`,
+        body: `Your request to join ${groupName} has been declined.`,
         groupId: req.groupId,
         requestId,
       });
@@ -659,10 +655,8 @@ export class GroupsService {
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_APPROVED',
-        title_en: `Join request approved`,
-        title_zh: `加入申請已批准`,
-        body_en: `Your request to join ${groupName} has been approved. Welcome!`,
-        body_zh: `您申請加入 ${groupName} 的請求已獲批准，歡迎加入！`,
+        title: `Join request approved`,
+        body: `Your request to join ${groupName} has been approved. Welcome!`,
         groupId: req.groupId,
         requestId,
       });
@@ -698,14 +692,10 @@ export class GroupsService {
     await this.notifications.create({
       userId: memberUserId,
       type: 'ROLE_CHANGED' as const,
-      title_en: isPromotion ? `You are now an admin of ${group.name}` : `Your role changed in ${group.name}`,
-      title_zh: isPromotion ? `您已成為 ${group.name} 的管理員` : `您在 ${group.name} 的角色已變更`,
-      body_en: isPromotion
+      title: isPromotion ? `You are now an admin of ${group.name}` : `Your role changed in ${group.name}`,
+      body: isPromotion
         ? `You have been promoted to group admin in "${group.name}".`
         : `Your role has been changed to member in "${group.name}".`,
-      body_zh: isPromotion
-        ? `您在群組「${group.name}」中已升為管理員。`
-        : `您在群組「${group.name}」中的角色已變更為一般成員。`,
       groupId,
     });
 
@@ -739,10 +729,8 @@ export class GroupsService {
     await this.notifications.create({
       userId: memberUserId,
       type: 'MEMBER_REMOVED' as const,
-      title_en: `Removed from ${group.name}`,
-      title_zh: `已從 ${group.name} 移除`,
-      body_en: `You have been removed from the group "${group.name}".`,
-      body_zh: `您已被從群組「${group.name}」中移除。`,
+      title: `Removed from ${group.name}`,
+      body: `You have been removed from the group "${group.name}".`,
       groupId,
     });
 
@@ -810,10 +798,8 @@ export class GroupsService {
     await this.notifications.create({
       userId: targetUser.id,
       type: 'MEMBER_ADDED' as const,
-      title_en: `Added to ${group.name}`,
-      title_zh: `已加入 ${group.name}`,
-      body_en: `You have been added to the group "${group.name}".`,
-      body_zh: `您已被加入群組「${group.name}」。`,
+      title: `Added to ${group.name}`,
+      body: `You have been added to the group "${group.name}".`,
       actionUrl: `/groups/${groupId}`,
       groupId,
     });
@@ -1077,10 +1063,8 @@ export class GroupsService {
       admins.map((a) => ({
         userId: a.userId,
         type: 'INVITE_ACCEPTED' as const,
-        title_en: `${memberName} joined ${group.name}`,
-        title_zh: `${memberName} 已加入 ${group.name}`,
-        body_en: `${memberName} accepted their invitation and joined the group.`,
-        body_zh: `${memberName} 已接受邀請並加入群組。`,
+        title: `${memberName} joined ${group.name}`,
+        body: `${memberName} accepted their invitation and joined the group.`,
         actionUrl: `/admin/groups/${groupId}/settings`,
         groupId,
       })),
@@ -1102,10 +1086,8 @@ export class GroupsService {
       events.map((ev) => ({
         userId,
         type: 'NEW_EVENT' as const,
-        title_en: `Upcoming: ${ev.title}`,
-        title_zh: `即將到來：${ev.title}`,
-        body_en: new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
-        body_zh: new Date(ev.startAt).toLocaleDateString('zh-TW', { dateStyle: 'medium' }),
+        title: `Upcoming: ${ev.title}`,
+        body: new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
         actionUrl: `/events/${ev.id}`,
         groupId,
         eventId: ev.id,
@@ -1257,10 +1239,8 @@ export class GroupsService {
     await this.notifications.create({
       userId: targetGroup.createdById,
       type: 'JOIN_REQUEST_RECEIVED',
-      title_en: `Group relationship request for ${targetGroup.name}`,
-      title_zh: `${targetGroup.name} 有群組層級申請`,
-      body_en: `${sourceGroup.name} requested to be linked under ${targetGroup.name}.`,
-      body_zh: `${sourceGroup.name} 申請與 ${targetGroup.name} 建立父子群組關係。`,
+      title: `Group relationship request for ${targetGroup.name}`,
+      body: `${sourceGroup.name} requested to be linked under ${targetGroup.name}.`,
       actionUrl: `/admin/groups/${targetGroup.id}/settings`,
       groupId: targetGroup.id,
       requestId: created[0].id,
@@ -1417,10 +1397,8 @@ export class GroupsService {
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_APPROVED',
-        title_en: `Group relationship approved`,
-        title_zh: `群組層級申請已核准`,
-        body_en: `${sourceGroup.name} is now linked under ${targetGroup.name}.`,
-        body_zh: `${sourceGroup.name} 已連結為 ${targetGroup.name} 的子群組。`,
+        title: `Group relationship approved`,
+        body: `${sourceGroup.name} is now linked under ${targetGroup.name}.`,
         actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
         groupId: sourceGroup.id,
         requestId,
@@ -1441,10 +1419,8 @@ export class GroupsService {
     await this.notifications.create({
       userId: req.requesterUserId,
       type: 'JOIN_REQUEST_REJECTED',
-      title_en: `Group relationship rejected`,
-      title_zh: `群組層級申請被拒絕`,
-      body_en: `Your request to link ${sourceGroup.name} under ${targetGroup.name} was rejected.`,
-      body_zh: `您將 ${sourceGroup.name} 連結到 ${targetGroup.name} 的申請已被拒絕。`,
+      title: `Group relationship rejected`,
+      body: `Your request to link ${sourceGroup.name} under ${targetGroup.name} was rejected.`,
       actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
       groupId: sourceGroup.id,
       requestId,

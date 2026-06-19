@@ -15,7 +15,7 @@ import { apiFetch } from '../lib/api';
 const INDIGO = '#4F46E5';
 
 type NewsRow = {
-  id: string; title_en: string; title_zh: string; body_en: string; body_zh: string; createdAt: string;
+  id: string; title: string; body: string; createdAt: string;
   createdBy: { displayName: string | null } | null;
   group: { id: string; name: string } | null;
 };
@@ -92,7 +92,7 @@ export default function SearchScreen() {
   );
 
   const deleteNews = (n: NewsRow) => {
-    const title = zh ? n.title_zh : n.title_en;
+    const title = n.title;
     confirmDelete(
       zh ? `確定要永久刪除貼文「${title}」嗎？` : `Delete post "${title}"?`,
       async () => { setDeletingId(n.id); await del(`/admin/news/${n.id}`, () => setResults((p) => p ? { ...p, news: p.news.filter((x) => x.id !== n.id) } : null)); },
@@ -185,8 +185,8 @@ export default function SearchScreen() {
                 {results.news.map((n) => (
                   <Card key={n.id} colors={colors}>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.cardTitle} numberOfLines={1}>{zh ? n.title_zh : n.title_en}</Text>
-                      <Text style={styles.cardSub} numberOfLines={2}>{zh ? n.body_zh : n.body_en}</Text>
+                      <Text style={styles.cardTitle} numberOfLines={1}>{n.title}</Text>
+                      <Text style={styles.cardSub} numberOfLines={2}>{n.body}</Text>
                       <Text style={styles.cardMeta}>{n.createdBy?.displayName ?? '—'}{n.group ? ` · ${n.group.name}` : ''}</Text>
                     </View>
                     {isAdmin

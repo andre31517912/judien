@@ -136,10 +136,8 @@ export type BulkInviteMembersDto = z.infer<typeof BulkInviteMembersSchema>;
 
 export const CreateNewsSchema = z.object({
   groupId: z.string().min(1).optional(),
-  title_en: z.string().max(300).default(''),
-  title_zh: z.string().max(300).default(''),
-  body_en: z.string().max(10000).default(''),
-  body_zh: z.string().max(10000).default(''),
+  title: z.string().max(300).default(''),
+  body: z.string().max(10000).default(''),
 });
 export type CreateNewsDto = z.infer<typeof CreateNewsSchema>;
 

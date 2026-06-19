@@ -88,12 +88,11 @@ export class CommentsService {
 
   private async notifyCommentPosted(
     comment: { id: string; replyToId: string | null; userId: string },
-    event: { id: string; title_en: string; title_zh: string; createdById: string },
+    event: { id: string; title: string; createdById: string },
     author: User,
   ) {
     const authorName = (author as any).displayName || author.email || 'Someone';
-    const eventTitle_en = event.title_en || event.title_zh || 'an event';
-    const eventTitle_zh = event.title_zh || event.title_en || '活動';
+    const eventTitle = event.title || 'an event';
 
     if (comment.replyToId) {
       const parent = await this.prisma.comment.findUnique({
@@ -104,10 +103,8 @@ export class CommentsService {
         await this.notifications.create({
           userId: parent.userId,
           type: 'COMMENT_ON_EVENT' as const,
-          title_en: `${authorName} replied to your comment`,
-          title_zh: `${authorName} 回覆了您的留言`,
-          body_en: eventTitle_en,
-          body_zh: eventTitle_zh,
+          title: `${authorName} replied to your comment`,
+          body: eventTitle,
           actionUrl: `/events/${event.id}`,
           eventId: event.id,
         });
@@ -116,10 +113,8 @@ export class CommentsService {
       await this.notifications.create({
         userId: event.createdById,
         type: 'COMMENT_ON_EVENT' as const,
-        title_en: `${authorName} commented on ${eventTitle_en}`,
-        title_zh: `${authorName} 在 ${eventTitle_zh} 留言`,
-        body_en: eventTitle_en,
-        body_zh: eventTitle_zh,
+        title: `${authorName} commented on ${eventTitle}`,
+        body: eventTitle,
         actionUrl: `/events/${event.id}`,
         eventId: event.id,
       });

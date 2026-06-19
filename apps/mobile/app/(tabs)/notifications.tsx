@@ -12,10 +12,8 @@ import { useTranslation } from 'react-i18next';
 type AppNotification = {
   id: string;
   type: string;
-  title_en: string;
-  title_zh: string;
-  body_en: string;
-  body_zh: string;
+  title: string;
+  body: string;
   read: boolean;
   actionUrl: string | null;
   createdAt: string;
@@ -84,8 +82,8 @@ function SwipeableNotification({ n, onDelete, onPress, styles, colors, zh }: {
     });
   };
 
-  const title = zh ? n.title_zh : n.title_en;
-  const body = zh ? n.body_zh : n.body_en;
+  const title = n.title;
+  const body = n.body;
   const hasRoute = !!resolveRoute(n.actionUrl);
 
   return (

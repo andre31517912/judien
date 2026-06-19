@@ -113,10 +113,8 @@ export class BlastService {
         users.map((user) => ({
           userId: user.id,
           type: 'EVENT_BLAST' as const,
-          title_en: `Message from ${event.title}`,
-          title_zh: `來自「${event.title}」的訊息`,
-          body_en: dto.message,
-          body_zh: dto.message,
+          title: `Message from ${event.title}`,
+          body: dto.message,
           actionUrl: `/events/${eventId}`,
           eventId,
         })),

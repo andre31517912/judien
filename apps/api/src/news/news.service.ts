@@ -21,10 +21,8 @@ export class NewsService {
   async list(query: NewsListQuery, user?: User) {
     const keywordWhere = query.q?.trim()
       ? { OR: [
-          { title_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { title_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { body_en: { contains: query.q.trim(), mode: 'insensitive' as const } },
-          { body_zh: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { title: { contains: query.q.trim(), mode: 'insensitive' as const } },
+          { body: { contains: query.q.trim(), mode: 'insensitive' as const } },
         ] }
       : undefined;
 
@@ -84,7 +82,7 @@ export class NewsService {
   }
 
   private async notifyNewsPublished(
-    news: { id: string; title_en: string; title_zh: string; groupId: string | null; createdById: string },
+    news: { id: string; title: string; groupId: string | null; createdById: string },
     author: User,
   ) {
     const authorName = (author as any).displayName || author.email || 'Someone';
@@ -111,10 +109,8 @@ export class NewsService {
       recipientIds.map((userId) => ({
         userId,
         type: 'NEWS_PUBLISHED' as const,
-        title_en: news.title_en || 'New announcement',
-        title_zh: news.title_zh || '新公告',
-        body_en: `${authorName} published a new post.`,
-        body_zh: `${authorName} 發布了新公告。`,
+        title: news.title || 'New announcement',
+        body: `${authorName} published a new post.`,
         actionUrl: `/feed`,
         groupId: news.groupId ?? undefined,
       })),

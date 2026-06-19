@@ -7,10 +7,8 @@ import { apiFetch } from '@/lib/api';
 type AppNotification = {
   id: string;
   type: string;
-  title_en: string;
-  title_zh: string;
-  body_en: string;
-  body_zh: string;
+  title: string;
+  body: string;
   read: boolean;
   actionUrl: string | null;
   groupId: string | null;
@@ -163,11 +161,11 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
 
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white leading-tight">
-                    {zh ? n.title_zh : n.title_en}
+                    {n.title}
                   </p>
-                  {(zh ? n.body_zh : n.body_en) && (
+                  {n.body && (
                     <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 leading-snug">
-                      {zh ? n.body_zh : n.body_en}
+                      {n.body}
                     </p>
                   )}
                   <p className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">

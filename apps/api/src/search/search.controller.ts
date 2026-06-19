@@ -14,14 +14,12 @@ export class SearchController {
       this.prisma.news.findMany({
         where: {
           OR: [
-            { title_en: { contains: term, mode: 'insensitive' } },
-            { title_zh: { contains: term, mode: 'insensitive' } },
-            { body_en: { contains: term, mode: 'insensitive' } },
-            { body_zh: { contains: term, mode: 'insensitive' } },
+            { title: { contains: term, mode: 'insensitive' } },
+            { body: { contains: term, mode: 'insensitive' } },
           ],
         },
         select: {
-          id: true, title_en: true, title_zh: true, body_en: true, body_zh: true, createdAt: true,
+          id: true, title: true, body: true, createdAt: true,
           createdBy: { select: { displayName: true } },
           group: { select: { id: true, name: true } },
         },

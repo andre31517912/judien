@@ -26,8 +26,8 @@ export default function NewsDetailPage() {
   );
   if (!post) return <p className="text-red-500 mt-8 text-sm">{zh ? '找不到此文章。' : 'Post not found.'}</p>;
 
-  const title = zh ? post.title_zh : post.title_en;
-  const body = zh ? post.body_zh : post.body_en;
+  const title = post.title;
+  const body = post.body;
   const coverUrl = resolveImageUrl(post.coverImageUrl ?? null);
 
   return (

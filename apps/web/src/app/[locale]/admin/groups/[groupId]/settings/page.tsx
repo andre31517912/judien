@@ -714,10 +714,8 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
-          title_en: newsForm.title,
-          title_zh: newsForm.title,
-          body_en: newsForm.body,
-          body_zh: newsForm.body,
+          title: newsForm.title,
+          body: newsForm.body,
         }),
       });
       setNewsForm({ title: '', body: '' });
