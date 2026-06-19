@@ -31,12 +31,14 @@ export class SearchController {
       this.prisma.event.findMany({
         where: {
           OR: [
-            { title: { contains: term, mode: 'insensitive' } },
-            { description: { contains: term, mode: 'insensitive' } },
+            { title_en: { contains: term, mode: 'insensitive' } },
+            { title_zh: { contains: term, mode: 'insensitive' } },
+            { description_en: { contains: term, mode: 'insensitive' } },
+            { description_zh: { contains: term, mode: 'insensitive' } },
           ],
         },
         select: {
-          id: true, title: true, description: true, startAt: true,
+          id: true, title_en: true, title_zh: true, description_en: true, description_zh: true, startAt: true,
           createdBy: { select: { displayName: true } },
           group: { select: { id: true, name: true } },
         },
