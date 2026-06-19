@@ -128,13 +128,48 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
+/** Compress an image File client-side to max 1000px on longest edge at 0.85 JPEG quality.
+ *  Keeps the result only if smaller than the original. Falls back to original on any error.
+ *  This prevents the base64 representation from blowing past the 10 MB JSON body limit.
+ */
+function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const MAX_PX = 1000;
+      const scale = Math.min(1, MAX_PX / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+          resolve(compressed.size < file.size ? compressed : file);
+        },
+        'image/jpeg',
+        0.85,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+    img.src = objectUrl;
+  });
+}
+
 /** Upload a file (multipart/form-data). Returns { url } of the saved file.
+ *  Automatically compresses image files before upload so they stay within body limits.
  *  @param pathOrFile - Either a File (uploads to /upload) or a path string (e.g. `/news/:id/cover`)
  *  @param file       - Required when pathOrFile is a string path
  */
 export async function apiUpload(pathOrFile: File | string, file?: File): Promise<{ url: string }> {
   const path = typeof pathOrFile === 'string' ? pathOrFile : '/upload';
-  const f = typeof pathOrFile === 'string' ? file! : pathOrFile;
+  let f = typeof pathOrFile === 'string' ? file! : pathOrFile;
+  if (f.type.startsWith('image/')) f = await compressImage(f);
   const form = new FormData();
   form.append('file', f);
   const headers: Record<string, string> = {};

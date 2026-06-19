@@ -42,7 +42,9 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: url }) });
       setPhotoUrl(url);
       await refresh();
-    } catch { /* ignore */ } finally {
+    } catch (err: unknown) {
+      alert((err as Error)?.message ?? 'Photo upload failed.');
+    } finally {
       setPhotoUploading(false);
       e.target.value = '';
     }
