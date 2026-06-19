@@ -751,6 +751,11 @@ export default function EventDetailScreen() {
                 })()}
               </ScrollView>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && (
+                  <TouchableOpacity style={[styles.modalPrimaryBtn, { flex: 1 }]} onPress={handleExportCsv}>
+                    <Text style={styles.modalPrimaryBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity style={[styles.modalSecondaryBtn, { flex: 1 }]} onPress={() => setShowGuests(false)}>
                   <Text style={styles.modalSecondaryBtnText}>{zh ? '關閉' : 'Close'}</Text>
                 </TouchableOpacity>

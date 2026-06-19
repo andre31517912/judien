@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -54,6 +55,8 @@ type JoinRequest = {
 export default function GroupPage({ params }: { params: { locale: string; groupId: string } }) {
   const zh = params.locale === 'zh';
   const { user, loading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [groupItem, setGroupItem] = useState<MyGroupItem | null>(null);
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -92,7 +95,11 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
   // Main view tabs
   type ViewTab = 'feed' | 'upcoming' | 'past' | 'members';
-  const [viewTab, setViewTab] = useState<ViewTab>('feed');
+  const VALID_TABS: ViewTab[] = ['feed', 'upcoming', 'past', 'members'];
+  const initTab = VALID_TABS.includes(searchParams.get('tab') as ViewTab)
+    ? (searchParams.get('tab') as ViewTab)
+    : 'feed';
+  const [viewTab, setViewTab] = useState<ViewTab>(initTab);
   const [pastEvents, setPastEvents] = useState<EventWithCounts[]>([]);
   const [pastLoaded, setPastLoaded] = useState(false);
   const [pastLoading, setPastLoading] = useState(false);
@@ -526,7 +533,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             {VIEW_TABS.map((t) => (
               <button
                 key={t.key}
-                onClick={() => setViewTab(t.key)}
+                onClick={() => {
+                  setViewTab(t.key);
+                  router.replace(`/${params.locale}/groups/${params.groupId}?tab=${t.key}`);
+                }}
                 className={`shrink-0 px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                   viewTab === t.key
                     ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
