@@ -99,7 +99,7 @@ export default function EventsTab() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true, aspect: [4, 3], quality: 0.8,
+      allowsEditing: true, aspect: [4, 3], quality: 0.5,
     });
     if (!result.canceled && result.assets[0]) setCoverUri(result.assets[0].uri);
   };

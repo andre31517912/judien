@@ -107,7 +107,7 @@ export default function EditEventScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8,
+      quality: 0.5,
     });
     if (result.canceled) return;
     const uri = result.assets[0].uri;

@@ -128,23 +128,17 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
-/** Ensure an image File will fit inside the 10 MB JSON body limit after base64 encoding.
- *  Base64 adds ~33% overhead, so the safe ceiling for the raw file is 6 MB.
- *  Images already under that threshold are returned untouched (full quality, original dims).
- *  Oversized images are re-encoded as JPEG at high quality (0.92) keeping full dimensions
- *  up to 4000 px, which typically brings a 15 MB camera photo down to 3-5 MB.
+/** Compress every image before upload: max 1200 px on longest edge, JPEG quality 0.75.
+ *  Looks identical on any phone or laptop screen while keeping files at 100–400 KB.
+ *  Falls back to the original file on any canvas error.
  */
 function compressImage(file: File): Promise<File> {
-  const SAFE_BYTES = 6 * 1024 * 1024; // 6 MB → base64 ≤ 8 MB → safely under 10 MB limit
-  if (file.size <= SAFE_BYTES) return Promise.resolve(file);
-
   return new Promise((resolve) => {
     const objectUrl = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
-      // Keep original resolution, cap only at 4000 px to prevent absurd canvas sizes
-      const MAX_PX = 4000;
+      const MAX_PX = 1200;
       const scale = Math.min(1, MAX_PX / Math.max(img.width, img.height));
       const w = Math.round(img.width * scale);
       const h = Math.round(img.height * scale);
@@ -156,11 +150,10 @@ function compressImage(file: File): Promise<File> {
         (blob) => {
           if (!blob) { resolve(file); return; }
           const compressed = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
-          // If still over limit (extremely dense image), accept it — upload endpoint will reject with a clear error
           resolve(compressed);
         },
         'image/jpeg',
-        0.92,
+        0.75,
       );
     };
     img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
