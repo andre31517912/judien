@@ -504,13 +504,15 @@ export default function EventDetailPage() {
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
-          <button
-            onClick={handleCreateInvite}
-            disabled={inviteLoading}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-500 text-white hover:bg-cyan-600 transition disabled:opacity-50"
-          >
-            {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
-          </button>
+          {!isPast && (
+            <button
+              onClick={handleCreateInvite}
+              disabled={inviteLoading}
+              className="px-4 py-2 rounded-xl text-sm font-medium bg-cyan-500 text-white hover:bg-cyan-600 transition disabled:opacity-50"
+            >
+              {inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享活動' : '🔗 Share Event')}
+            </button>
+          )}
           {inviteError && <p className="text-sm text-red-500 dark:text-red-400 w-full mt-1">{inviteError}</p>}
           {!user && <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '請登入以回覆 RSVP。' : 'Log in to RSVP.'}</p>}
         </div>
