@@ -46,7 +46,7 @@ export default function NewsDetailScreen() {
 
             {post.group && (
               <View style={{ alignSelf: 'flex-start', backgroundColor: isDark ? '#312E81' : '#EEF2FF', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, marginBottom: 12 }}>
-                <Text style={{ color: isDark ? '#A5B4FC' : '#4338CA', fontSize: 12, fontWeight: '600' }}>👥 {post.group.name}</Text>
+                <Text style={{ color: isDark ? '#A5B4FC' : '#4338CA', fontSize: 12, fontWeight: '600' }}>{post.group.name}</Text>
               </View>
             )}
 

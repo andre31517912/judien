@@ -28,11 +28,12 @@ type GroupRow = {
   id: string; name: string; description: string;
   _count: { memberships: number };
 };
-type UserRow = {
+type AdminUserRow = {
   id: string; displayName: string | null; email: string | null; phoneE164: string | null;
   role: 'ADMIN' | 'USER'; createdAt: string; lineUserId: string | null;
 };
-type Results = { users?: UserRow[]; groups: GroupRow[]; news: NewsRow[]; events: EventRow[] };
+type PublicUserRow = { id: string; displayName: string | null };
+type Results = { users?: AdminUserRow[] | PublicUserRow[]; groups: GroupRow[]; news: NewsRow[]; events: EventRow[] };
 
 type Colors = ReturnType<typeof import('../context/theme.context').useTheme>['colors'];
 
@@ -86,7 +87,7 @@ export default function SearchScreen() {
     finally { setDeletingId(null); }
   };
 
-  const deleteUser = (u: UserRow) => confirmDelete(
+  const deleteUser = (u: AdminUserRow) => confirmDelete(
     zh ? `確定要永久刪除「${u.displayName ?? u.email}」嗎？` : `Delete "${u.displayName ?? u.email}"?`,
     async () => { setDeletingId(u.id); await del(`/admin/users/${u.id}`, () => setResults((p) => p ? { ...p, users: p.users?.filter((x) => x.id !== u.id) } : null)); },
   );
@@ -159,22 +160,36 @@ export default function SearchScreen() {
 
         {!loading && results && total > 0 && (
           <View style={{ gap: 24 }}>
-            {/* Users (admin only) */}
-            {isAdmin && (results.users?.length ?? 0) > 0 && (
+            {/* Users */}
+            {(results.users?.length ?? 0) > 0 && (
               <View>
                 <Text style={styles.sectionLabel}>{zh ? '用戶' : 'Users'} · {results.users!.length}</Text>
-                {results.users!.map((u) => (
-                  <Card key={u.id} colors={colors}>
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                        <Text style={styles.cardTitle} numberOfLines={1}>{u.displayName ?? <Text style={{ color: colors.placeholder, fontStyle: 'italic' }}>{zh ? '未設名稱' : 'No name'}</Text>}</Text>
-                        {u.role === 'ADMIN' && <Badge label={zh ? '管理員' : 'Admin'} isDark={isDark} />}
+                {results.users!.map((u) => {
+                  const adminUser = isAdmin ? (u as AdminUserRow) : null;
+                  return (
+                    <Card
+                      key={u.id}
+                      colors={colors}
+                      onPress={!isAdmin ? () => router.push(`/(tabs)/profile/${u.id}` as any) : undefined}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.cardTitle} numberOfLines={1}>
+                            {u.displayName ?? <Text style={{ color: colors.placeholder, fontStyle: 'italic' }}>{zh ? '未設名稱' : 'No name'}</Text>}
+                          </Text>
+                          {isAdmin && adminUser?.role === 'ADMIN' && <Badge label={zh ? '管理員' : 'Admin'} isDark={isDark} />}
+                        </View>
+                        {isAdmin && adminUser && (
+                          <Text style={styles.cardMeta}>{[adminUser.email, adminUser.phoneE164].filter(Boolean).join(' · ') || '—'}</Text>
+                        )}
                       </View>
-                      <Text style={styles.cardMeta}>{[u.email, u.phoneE164].filter(Boolean).join(' · ') || '—'}</Text>
-                    </View>
-                    <DeleteBtn deleting={deletingId === u.id} zh={zh} onPress={() => deleteUser(u)} />
-                  </Card>
-                ))}
+                      {isAdmin
+                        ? <DeleteBtn deleting={deletingId === u.id} zh={zh} onPress={() => deleteUser(adminUser!)} />
+                        : <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
+                      }
+                    </Card>
+                  );
+                })}
               </View>
             )}
 
@@ -183,7 +198,11 @@ export default function SearchScreen() {
               <View>
                 <Text style={styles.sectionLabel}>{zh ? '貼文' : 'Posts'} · {results.news.length}</Text>
                 {results.news.map((n) => (
-                  <Card key={n.id} colors={colors}>
+                  <Card
+                    key={n.id}
+                    colors={colors}
+                    onPress={!isAdmin && n.group ? () => router.push(`/(tabs)/groups/${n.group!.id}/news/${n.id}` as any) : undefined}
+                  >
                     <View style={{ flex: 1 }}>
                       <Text style={styles.cardTitle} numberOfLines={1}>{n.title}</Text>
                       <Text style={styles.cardSub} numberOfLines={2}>{n.body}</Text>
@@ -191,9 +210,9 @@ export default function SearchScreen() {
                     </View>
                     {isAdmin
                       ? <DeleteBtn deleting={deletingId === n.id} zh={zh} onPress={() => deleteNews(n)} />
-                      : <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${n.group?.id}/news/${n.id}` as any)} activeOpacity={0.7}>
-                          <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
-                        </TouchableOpacity>
+                      : n.group
+                        ? <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
+                        : null
                     }
                   </Card>
                 ))}
@@ -205,7 +224,11 @@ export default function SearchScreen() {
               <View>
                 <Text style={styles.sectionLabel}>{zh ? '活動' : 'Events'} · {results.events.length}</Text>
                 {results.events.map((e) => (
-                  <Card key={e.id} colors={colors}>
+                  <Card
+                    key={e.id}
+                    colors={colors}
+                    onPress={!isAdmin ? () => router.push(`/(tabs)/events/${e.id}` as any) : undefined}
+                  >
                     <View style={{ flex: 1 }}>
                       <Text style={styles.cardTitle} numberOfLines={1}>{e.title}</Text>
                       {e.description ? <Text style={styles.cardSub} numberOfLines={1}>{e.description}</Text> : null}
@@ -225,7 +248,11 @@ export default function SearchScreen() {
               <View>
                 <Text style={styles.sectionLabel}>{zh ? '群組' : 'Groups'} · {results.groups.length}</Text>
                 {results.groups.map((g) => (
-                  <Card key={g.id} colors={colors}>
+                  <Card
+                    key={g.id}
+                    colors={colors}
+                    onPress={!isAdmin ? () => router.push(`/(tabs)/groups/${g.id}` as any) : undefined}
+                  >
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.cardTitle, { color: INDIGO }]} numberOfLines={1}>{g.name}</Text>
                       {g.description ? <Text style={styles.cardSub} numberOfLines={1}>{g.description}</Text> : null}
@@ -233,9 +260,7 @@ export default function SearchScreen() {
                     </View>
                     {isAdmin
                       ? <DeleteBtn deleting={deletingId === g.id} zh={zh} onPress={() => deleteGroup(g)} />
-                      : <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${g.id}` as any)} activeOpacity={0.7}>
-                          <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
-                        </TouchableOpacity>
+                      : <Ionicons name="chevron-forward" size={18} color={colors.placeholder} />
                     }
                   </Card>
                 ))}
@@ -248,16 +273,20 @@ export default function SearchScreen() {
   );
 }
 
-function Card({ colors, children }: { colors: Colors; children: React.ReactNode }) {
-  return (
-    <View style={{
-      flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-      backgroundColor: colors.card, borderRadius: 10, borderWidth: 1, borderColor: colors.border,
-      padding: 12, marginBottom: 8,
-    }}>
-      {children}
-    </View>
-  );
+function Card({ colors, children, onPress }: { colors: Colors; children: React.ReactNode; onPress?: () => void }) {
+  const style = {
+    flexDirection: 'row' as const, alignItems: 'flex-start' as const, gap: 10,
+    backgroundColor: colors.card, borderRadius: 10, borderWidth: 1, borderColor: colors.border,
+    padding: 12, marginBottom: 8,
+  };
+  if (onPress) {
+    return (
+      <TouchableOpacity style={style} onPress={onPress} activeOpacity={0.7}>
+        {children}
+      </TouchableOpacity>
+    );
+  }
+  return <View style={style}>{children}</View>;
 }
 
 function Badge({ label, isDark }: { label: string; isDark: boolean }) {

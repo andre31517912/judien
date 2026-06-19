@@ -151,7 +151,7 @@ export default function HomeTab() {
                 </View>
                 {item.group && (
                   <View style={styles.groupBadge}>
-                    <Text style={styles.groupBadgeText}>👥 {item.group.name}</Text>
+                    <Text style={styles.groupBadgeText}>{item.group.name}</Text>
                   </View>
                 )}
                 <Text style={styles.cardBody}>{item.body}</Text>
