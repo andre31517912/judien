@@ -61,9 +61,14 @@ export default function EventsTab() {
         </TouchableOpacity>
       ) : undefined,
       headerRight: !creating && user ? () => (
-        <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ marginRight: 16 }}>
-          <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Ionicons name="search-outline" size={22} color={INDIGO} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
+          </TouchableOpacity>
+        </View>
       ) : undefined,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps

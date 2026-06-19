@@ -51,6 +51,9 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ title: '', body: '' });
   const [editSaving, setEditSaving] = useState(false);
+  const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
+  const [newsCoverPreview, setNewsCoverPreview] = useState<string | null>(null);
+  const newsCoverFileRef = useRef<HTMLInputElement>(null);
 
   // ── Create Event inline form state ───────────────────────────────────────
   const [creatingEvent, setCreatingEvent] = useState(false);
@@ -103,11 +106,17 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
     if (!newsForm.body.trim()) { setNewsMsg(zh ? '請輸入內容' : 'Body is required.'); return; }
     setNewsSaving(true);
     try {
-      await apiFetch('/news', { method: 'POST', body: JSON.stringify({
+      const created = await apiFetch<News>('/news', { method: 'POST', body: JSON.stringify({
         title_en: newsForm.title, title_zh: newsForm.title,
         body_en: newsForm.body, body_zh: newsForm.body,
       }) });
+      if (newsCoverFile) {
+        await apiUpload(`/news/${created.id}/cover`, newsCoverFile).catch(() => {});
+      }
       setNewsForm({ title: '', body: '' });
+      setNewsCoverFile(null);
+      setNewsCoverPreview(null);
+      if (newsCoverFileRef.current) newsCoverFileRef.current.value = '';
       setComposing(false);
       loadNews();
     } catch (err: any) {
@@ -286,6 +295,25 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                 <textarea rows={3} className={inputCls} value={newsForm.body}
                   onChange={(e) => setNewsForm({ ...newsForm, body: e.target.value })} />
               </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
+                {newsCoverPreview ? (
+                  <div className="relative w-full h-28 rounded-lg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={newsCoverPreview} alt="preview" className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => { setNewsCoverFile(null); setNewsCoverPreview(null); if (newsCoverFileRef.current) newsCoverFileRef.current.value = ''; }}
+                      className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => newsCoverFileRef.current?.click()}
+                    className="w-full rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 py-3 text-xs text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition">
+                    {zh ? '點擊選擇圖片（選填）' : 'Click to add cover image (optional)'}
+                  </button>
+                )}
+                <input ref={newsCoverFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  const f = e.target.files?.[0]; if (!f) return; setNewsCoverFile(f); setNewsCoverPreview(URL.createObjectURL(f));
+                }} />
+              </div>
               <button type="submit" disabled={newsSaving} className="self-end bg-indigo-600 text-white text-sm px-5 py-2 rounded-xl hover:bg-indigo-700 disabled:opacity-60 font-medium transition-colors">
                 {newsSaving ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}
               </button>
@@ -331,16 +359,40 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                 const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
                 return (
                   <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
-                    <div className="absolute inset-0 bg-black/15" />
+                    <Link href={`/${params.locale}/news/${item.id}`} className="absolute inset-0 z-0 block">
+                      {item.coverImageUrl && (
+                        <Image src={resolveImageUrl(item.coverImageUrl)!} alt={zh ? item.title_zh : item.title_en} fill className="object-cover" />
+                      )}
+                      <div className="absolute inset-0 bg-black/15" />
+                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                        <div className={`flex-1 overflow-hidden ${(item.group || canEdit) ? 'mt-7' : ''}`}>
+                          <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
+                          <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                            {initial}
+                          </div>
+                          <div className="min-w-0">
+                            {item.createdBy?.displayName && (
+                              <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>
+                            )}
+                            <p className="text-[10px] text-white/60">
+                              {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                     {item.group && (
-                      <div className="absolute top-2.5 left-2.5 right-10 overflow-hidden">
+                      <div className="absolute top-2.5 left-2.5 right-10 overflow-hidden z-10">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-medium bg-black/25 backdrop-blur-sm text-white truncate max-w-full">
                           👥 {item.group.name}
                         </span>
                       </div>
                     )}
                     {canEdit && (
-                      <div className="absolute top-2 right-2 flex gap-1">
+                      <div className="absolute top-2 right-2 flex gap-1 z-10">
                         <button
                           onClick={() => { setEditingId(item.id); setEditForm({ title: zh ? item.title_zh : item.title_en, body: zh ? item.body_zh : item.body_en }); }}
                           className="w-6 h-6 rounded-full bg-black/30 text-white text-xs hover:bg-black/55 flex items-center justify-center backdrop-blur-sm"
@@ -353,25 +405,6 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                         >✕</button>
                       </div>
                     )}
-                    <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
-                      <div className={`flex-1 overflow-hidden ${(item.group || canEdit) ? 'mt-7' : ''}`}>
-                        <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
-                        <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
-                          {initial}
-                        </div>
-                        <div className="min-w-0">
-                          {item.createdBy?.displayName && (
-                            <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>
-                          )}
-                          <p className="text-[10px] text-white/60">
-                            {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 );
               })}

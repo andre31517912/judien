@@ -98,7 +98,6 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
   const [orderedGroups, setOrderedGroups] = useState<GroupListItem[]>([]);
-  const [filterQuery, setFilterQuery] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -145,21 +144,13 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '群組管理' : 'Groups'}</h1>
         <Link
           href={`/${params.locale}/admin/groups/new`}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
         >
           {zh ? '+ 建立群組' : '+ Create Group'}
         </Link>
       </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
-
-      {/* Filter */}
-      <input
-        value={filterQuery}
-        onChange={(e) => setFilterQuery(e.target.value)}
-        placeholder={zh ? '搜尋群組名稱…' : 'Filter by group name…'}
-        className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-      />
 
       {orderedGroups.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-10 text-center">
@@ -169,7 +160,7 @@ export default function AdminGroupsPage({ params }: { params: { locale: string }
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={orderedGroups.map((g) => g.group.id)} strategy={verticalListSortingStrategy}>
             <div className="grid gap-4">
-              {orderedGroups.filter((item) => !filterQuery.trim() || item.group.name.toLowerCase().includes(filterQuery.toLowerCase())).map((item) => (
+              {orderedGroups.map((item) => (
                 <SortableGroupRow key={item.group.id} item={item} locale={params.locale} zh={zh} />
               ))}
             </div>

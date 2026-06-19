@@ -103,9 +103,6 @@ export default function ProfileScreen() {
           <TouchableOpacity style={[styles.btn, { backgroundColor: '#7C3AED', marginTop: 12 }]} onPress={() => router.push('/admin/invites' as any)}>
             <Text style={styles.btnText}>{zh ? '📨 邀請連結' : '📨 Invite Links'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.btn, { backgroundColor: '#7C3AED', marginTop: 12 }]} onPress={() => router.push('/admin/lookup' as any)}>
-            <Text style={styles.btnText}>{zh ? '🔍 平台查詢' : '🔍 Platform Lookup'}</Text>
-          </TouchableOpacity>
         </>
       )}
 

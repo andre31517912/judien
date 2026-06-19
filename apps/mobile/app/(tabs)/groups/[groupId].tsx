@@ -450,7 +450,7 @@ export default function GroupDetailScreen() {
                 const [c1] = gradColors[hash % gradColors.length];
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 return (
-                  <View key={item.id} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }}>
+                  <TouchableOpacity key={item.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/news/${item.id}` as any)} activeOpacity={0.9} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }}>
                     <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
                     <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
                       <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 18 }} numberOfLines={4}>
@@ -466,7 +466,7 @@ export default function GroupDetailScreen() {
                         </Text>
                       </View>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 );
               })}
             </View>

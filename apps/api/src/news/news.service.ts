@@ -155,6 +155,12 @@ export class NewsService {
     await this.prisma.news.delete({ where: { id } });
   }
 
+  async findOne(id: string) {
+    const item = await this.prisma.news.findUnique({ where: { id }, include: this.newsInclude });
+    if (!item) throw new NotFoundException('News post not found.');
+    return item;
+  }
+
   private async findOrThrow(id: string) {
     const item = await this.prisma.news.findUnique({ where: { id } });
     if (!item) throw new NotFoundException('News post not found.');

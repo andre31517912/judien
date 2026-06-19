@@ -106,6 +106,9 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [editForm, setEditForm] = useState({ title: '', body: '' });
   const [editSaving, setEditSaving] = useState(false);
   const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [newsCoverFile, setNewsCoverFile] = useState<File | null>(null);
+  const [newsCoverPreview, setNewsCoverPreview] = useState<string | null>(null);
+  const newsCoverFileRef = useRef<HTMLInputElement>(null);
 
   type SubgroupInfo = { id: string; name: string; description: string };
   type RelationshipsData = {
@@ -204,7 +207,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     if (!newsForm.body.trim()) { setError(zh ? '請輸入內容。' : 'Body is required.'); return; }
     setNewsLoading(true);
     try {
-      await apiFetch('/news', {
+      const created = await apiFetch<News>('/news', {
         method: 'POST',
         body: JSON.stringify({
           groupId: params.groupId,
@@ -214,7 +217,13 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           body_zh: newsForm.body,
         }),
       });
+      if (newsCoverFile) {
+        await apiUpload(`/news/${created.id}/cover`, newsCoverFile).catch(() => {});
+      }
       setNewsForm({ title: '', body: '' });
+      setNewsCoverFile(null);
+      setNewsCoverPreview(null);
+      if (newsCoverFileRef.current) newsCoverFileRef.current.value = '';
       setComposingNews(false);
       setSuccess(zh ? '公告已發布。' : 'News posted.');
       await loadPage();
@@ -580,6 +589,25 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   onChange={(e) => setNewsForm({ ...newsForm, body: e.target.value })}
                   placeholder={zh ? '內容' : 'Body'}
                 />
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
+                  {newsCoverPreview ? (
+                    <div className="relative w-full h-28 rounded-lg overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={newsCoverPreview} alt="preview" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => { setNewsCoverFile(null); setNewsCoverPreview(null); if (newsCoverFileRef.current) newsCoverFileRef.current.value = ''; }}
+                        className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => newsCoverFileRef.current?.click()}
+                      className="w-full rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 py-3 text-xs text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition">
+                      {zh ? '點擊選擇圖片（選填）' : 'Click to add cover image (optional)'}
+                    </button>
+                  )}
+                  <input ref={newsCoverFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    const f = e.target.files?.[0]; if (!f) return; setNewsCoverFile(f); setNewsCoverPreview(URL.createObjectURL(f));
+                  }} />
+                </div>
                 <div className="flex justify-end">
                   <button
                     type="submit"
@@ -633,7 +661,25 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
                   return (
                     <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
-                      <div className="absolute inset-0 bg-black/15" />
+                      <Link href={`/${params.locale}/news/${item.id}`} className="absolute inset-0 z-0 block">
+                        {item.coverImageUrl && (
+                          <Image src={resolveImageUrl(item.coverImageUrl)!} alt={zh ? item.title_zh : item.title_en} fill className="object-cover" />
+                        )}
+                        <div className="absolute inset-0 bg-black/15" />
+                        <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
+                          <div className={`flex-1 overflow-hidden ${canEdit ? 'mt-7' : ''}`}>
+                            <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
+                            <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
+                            <div className="min-w-0">
+                              {item.createdBy?.displayName && <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>}
+                              <p className="text-[10px] text-white/60">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
                       {canEdit && (
                         <div className="absolute top-2 right-2 flex gap-1 z-10">
                           <button
@@ -646,19 +692,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                           >✕</button>
                         </div>
                       )}
-                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
-                        <div className={`flex-1 overflow-hidden ${canEdit ? 'mt-7' : ''}`}>
-                          <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{zh ? item.title_zh : item.title_en}</h2>
-                          <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{zh ? item.body_zh : item.body_en}</p>
-                        </div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
-                          <div className="min-w-0">
-                            {item.createdBy?.displayName && <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>}
-                            <p className="text-[10px] text-white/60">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   );
                 })}
@@ -1152,6 +1185,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         onClose={() => setShowRelationships(false)}
       />
     )}
+
     </>
   );
 }

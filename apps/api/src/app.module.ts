@@ -18,6 +18,7 @@ import { EventSeriesModule } from './event-series/event-series.module';
 import { InvitesModule } from './invites/invites.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AdminModule } from './admin/admin.module';
+import { SearchModule } from './search/search.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -47,6 +48,7 @@ import { HealthController } from './health/health.controller';
     InvitesModule,
     NotificationsModule,
     AdminModule,
+    SearchModule,
   ],
   controllers: [HealthController],
 })

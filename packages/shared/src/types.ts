@@ -82,6 +82,7 @@ export interface News {
   createdBy?: { id: string; displayName: string | null };
   createdAt: string;
   updatedAt: string;
+  coverImageUrl?: string | null;
 }
 
 // ─── RSVP ─────────────────────────────────────────────────────────────────────

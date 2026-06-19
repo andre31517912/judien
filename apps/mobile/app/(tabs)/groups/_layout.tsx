@@ -29,6 +29,7 @@ export default function GroupsLayout() {
       <Stack.Screen name="[groupId]" options={{ gestureEnabled: true, headerShown: false }} />
       <Stack.Screen name="[groupId]/settings" options={{ gestureEnabled: true, headerShown: false }} />
       <Stack.Screen name="[groupId]/events/[id]" options={{ gestureEnabled: true, headerShown: false }} />
+      <Stack.Screen name="[groupId]/news/[newsId]" options={{ gestureEnabled: true, headerShown: false }} />
     </Stack>
   );
 }

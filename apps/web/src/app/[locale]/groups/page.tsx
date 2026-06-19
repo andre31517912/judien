@@ -247,7 +247,7 @@ export default function MyGroupsPage({ params }: { params: { locale: string } })
       <div className="flex items-center justify-end gap-4">
         <Link
           href={`/${params.locale}/admin/groups/new`}
-          className="rounded-full bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 shadow-sm transition-colors"
         >
           {zh ? '+ 建立群組' : '+ Create Group'}
         </Link>

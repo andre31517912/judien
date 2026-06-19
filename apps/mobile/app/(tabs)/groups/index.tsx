@@ -84,10 +84,6 @@ export default function GroupsTab() {
   const [groups, setGroups] = useState<GroupListItem[]>([]);
   const [invites, setInvites] = useState<InviteItem[]>([]);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<GroupSearchResult[]>([]);
-
   const loadPage = useCallback(async (showSpinner = true) => {
     if (showSpinner) setLoading(true);
     try {
@@ -119,19 +115,6 @@ export default function GroupsTab() {
       Alert.alert('', action === 'accept' ? (zh ? '已接受邀請' : 'Invitation accepted') : (zh ? '已拒絕邀請' : 'Invitation declined'));
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to respond to invitation');
-    }
-  };
-
-  const runSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
-    try {
-      const found = await apiFetch<GroupSearchResult[]>(`/groups/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchResults(found);
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Search failed');
-    } finally {
-      setSearching(false);
     }
   };
 
@@ -183,40 +166,6 @@ export default function GroupsTab() {
           ))}
         </View>
       )}
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '搜尋群組' : 'Search Groups'}</Text>
-        <View style={styles.searchRow}>
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder={zh ? '輸入群組名稱' : 'Group name'}
-            style={styles.searchInput}
-            placeholderTextColor={colors.placeholder}
-            autoCapitalize="none"
-          />
-          <TouchableOpacity style={styles.primaryBtn} onPress={runSearch} disabled={searching || !searchQuery.trim()}>
-            <Text style={styles.primaryBtnText}>{searching ? (zh ? '搜尋中…' : 'Searching…') : (zh ? '搜尋' : 'Search')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {searchResults.map((g) => {
-          const alreadyMember = groups.some((m) => m.group.id === g.id);
-          return (
-            <View key={g.id} style={styles.card}>
-              <Text style={styles.cardTitle}>{g.name}</Text>
-              {g.description ? <Text style={styles.cardSub}>{g.description}</Text> : null}
-              {alreadyMember ? (
-                <Text style={styles.okText}>{zh ? '你已是此群組成員' : 'You are already a member'}</Text>
-              ) : (
-                <TouchableOpacity style={styles.secondaryBtn} onPress={() => requestJoin(g.id)}>
-                  <Text style={styles.secondaryBtnText}>{zh ? '申請加入' : 'Request to Join'}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          );
-        })}
-      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{zh ? '我的群組' : 'My Groups'}</Text>

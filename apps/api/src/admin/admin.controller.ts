@@ -12,11 +12,11 @@ import type { User } from '../__generated__/prisma';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  // GET /admin/search?q=&type=all|user|group
+  // GET /admin/search?q=&type=all|user|group|news|event
   @Get('search')
   search(
     @Query('q') q = '',
-    @Query('type') type: 'user' | 'group' | 'all' = 'all',
+    @Query('type') type: 'user' | 'group' | 'news' | 'event' | 'all' = 'all',
   ) {
     return this.adminService.search(q, type);
   }
@@ -52,5 +52,17 @@ export class AdminController {
   @Delete('groups/:groupId')
   deleteGroup(@Param('groupId') groupId: string) {
     return this.adminService.deleteGroup(groupId);
+  }
+
+  // DELETE /admin/news/:newsId
+  @Delete('news/:newsId')
+  deleteNews(@Param('newsId') newsId: string) {
+    return this.adminService.deleteNews(newsId);
+  }
+
+  // DELETE /admin/events/:eventId
+  @Delete('events/:eventId')
+  deleteEvent(@Param('eventId') eventId: string) {
+    return this.adminService.deleteEvent(eventId);
   }
 }

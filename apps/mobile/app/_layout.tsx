@@ -72,6 +72,7 @@ function AppShell() {
           <Stack.Screen name="admin/events/[id]/edit" options={{ headerShown: false }} />
           <Stack.Screen name="admin/invites" options={{ headerShown: false }} />
           <Stack.Screen name="admin/lookup" options={{ headerShown: false }} />
+          <Stack.Screen name="search" options={{ headerShown: false }} />
         </Stack>
       </AuthProvider>
     </>

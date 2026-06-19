@@ -128,13 +128,18 @@ export async function apiFetch<T>(
   return res.json() as Promise<T>;
 }
 
-/** Upload a file (multipart/form-data). Returns { url } of the saved file. */
-export async function apiUpload(file: File): Promise<{ url: string }> {
+/** Upload a file (multipart/form-data). Returns { url } of the saved file.
+ *  @param pathOrFile - Either a File (uploads to /upload) or a path string (e.g. `/news/:id/cover`)
+ *  @param file       - Required when pathOrFile is a string path
+ */
+export async function apiUpload(pathOrFile: File | string, file?: File): Promise<{ url: string }> {
+  const path = typeof pathOrFile === 'string' ? pathOrFile : '/upload';
+  const f = typeof pathOrFile === 'string' ? file! : pathOrFile;
   const form = new FormData();
-  form.append('file', file);
+  form.append('file', f);
   const headers: Record<string, string> = {};
   if (_accessToken) headers['Authorization'] = `Bearer ${_accessToken}`;
-  const res = await fetch(`${API_BASE}/upload`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
     credentials: 'include',
     body: form,

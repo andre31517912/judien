@@ -6,12 +6,17 @@ import type { User } from '../__generated__/prisma';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async search(q: string, type: 'user' | 'group' | 'all') {
+  async search(q: string, type: 'user' | 'group' | 'news' | 'event' | 'all') {
     const term = q.trim();
-    if (!term) return { users: [], groups: [] };
+    if (!term) return { users: [], groups: [], news: [], events: [] };
 
-    const [users, groups] = await Promise.all([
-      type !== 'group'
+    const wantUsers  = type === 'all' || type === 'user';
+    const wantGroups = type === 'all' || type === 'group';
+    const wantNews   = type === 'all' || type === 'news';
+    const wantEvents = type === 'all' || type === 'event';
+
+    const [users, groups, news, events] = await Promise.all([
+      wantUsers
         ? this.prisma.user.findMany({
             where: {
               OR: [
@@ -30,10 +35,10 @@ export class AdminService {
               lineUserId: true,
             },
             orderBy: { createdAt: 'desc' },
-            take: 50,
+            take: 30,
           })
         : Promise.resolve([]),
-      type !== 'user'
+      wantGroups
         ? this.prisma.group.findMany({
             where: { name: { contains: term, mode: 'insensitive' } },
             select: {
@@ -45,12 +50,57 @@ export class AdminService {
               createdBy: { select: { id: true, displayName: true, email: true } },
             },
             orderBy: { createdAt: 'desc' },
-            take: 50,
+            take: 30,
+          })
+        : Promise.resolve([]),
+      wantNews
+        ? this.prisma.news.findMany({
+            where: {
+              OR: [
+                { title_en: { contains: term, mode: 'insensitive' } },
+                { title_zh: { contains: term, mode: 'insensitive' } },
+                { body_en: { contains: term, mode: 'insensitive' } },
+                { body_zh: { contains: term, mode: 'insensitive' } },
+              ],
+            },
+            select: {
+              id: true,
+              title_en: true,
+              title_zh: true,
+              body_en: true,
+              body_zh: true,
+              createdAt: true,
+              createdBy: { select: { id: true, displayName: true } },
+              group: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 30,
+          })
+        : Promise.resolve([]),
+      wantEvents
+        ? this.prisma.event.findMany({
+            where: {
+              OR: [
+                { title: { contains: term, mode: 'insensitive' } },
+                { description: { contains: term, mode: 'insensitive' } },
+              ],
+            },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              startAt: true,
+              createdAt: true,
+              createdBy: { select: { id: true, displayName: true } },
+              group: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 30,
           })
         : Promise.resolve([]),
     ]);
 
-    return { users, groups };
+    return { users, groups, news, events };
   }
 
   async listUsers(page: number, pageSize: number) {
@@ -151,6 +201,20 @@ export class AdminService {
       await tx.user.delete({ where: { id: targetUserId } });
     });
 
+    return { deleted: true };
+  }
+
+  async deleteNews(newsId: string) {
+    const post = await this.prisma.news.findUnique({ where: { id: newsId } });
+    if (!post) throw new NotFoundException('Post not found.');
+    await this.prisma.news.delete({ where: { id: newsId } });
+    return { deleted: true };
+  }
+
+  async deleteEvent(eventId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+    await this.prisma.event.delete({ where: { id: eventId } });
     return { deleted: true };
   }
 

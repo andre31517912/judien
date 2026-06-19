@@ -113,9 +113,6 @@ export default function NavBar({ locale }: NavBarProps) {
                 <Link href={`/${locale}/admin/groups`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
                   {zh ? '群組管理' : 'Groups'}
                 </Link>
-                <Link href={`/${locale}/admin/lookup`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-                  {zh ? '查詢' : 'Lookup'}
-                </Link>
               </>
             ) : (
               <Link href={`/${locale}/groups`} className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">

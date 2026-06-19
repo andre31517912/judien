@@ -40,6 +40,12 @@ export class NewsController {
     return this.newsService.create(dto, user);
   }
 
+  @UseGuards(new OptionalJwtGuard())
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.newsService.findOne(id);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
   update(
