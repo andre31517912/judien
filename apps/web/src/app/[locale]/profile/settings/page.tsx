@@ -216,7 +216,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
           )}
           <button
             type="button"
-            onClick={() => photoUrl ? setShowPhotoMenu((v) => !v) : photoInputRef.current?.click()}
+            onClick={() => setShowPhotoMenu((v) => !v)}
             disabled={photoUploading}
             className={`absolute bottom-0 right-0 w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow-md transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}
           >
@@ -225,22 +225,34 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
-          {showPhotoMenu && photoUrl && (
+          {showPhotoMenu && (
             <div className="absolute bottom-9 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-20 min-w-[160px]">
-              <button
-                type="button"
-                onClick={() => { setShowPhotoMenu(false); handlePhotoDelete(); }}
-                className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-              >
-                {zh ? '移除照片' : 'Remove photo'}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowPhotoMenu(false); photoInputRef.current?.click(); }}
-                className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
-              >
-                {zh ? '更換照片' : 'Replace photo'}
-              </button>
+              {photoUrl ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => { setShowPhotoMenu(false); handlePhotoDelete(); }}
+                    className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  >
+                    {zh ? '移除照片' : 'Remove photo'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowPhotoMenu(false); photoInputRef.current?.click(); }}
+                    className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                  >
+                    {zh ? '更換照片' : 'Replace photo'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setShowPhotoMenu(false); photoInputRef.current?.click(); }}
+                  className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  {zh ? '上傳照片' : 'Upload photo'}
+                </button>
+              )}
             </div>
           )}
           <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />

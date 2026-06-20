@@ -40,7 +40,7 @@ export default function ProfileScreen() {
     finally { setPhotoUploading(false); }
   };
 
-  const handlePickPhoto = async () => {
+  const handlePickPhoto = () => {
     if (photoUrl) {
       Alert.alert(
         zh ? '大頭貼' : 'Profile Photo',
@@ -56,9 +56,16 @@ export default function ProfileScreen() {
           { text: zh ? '取消' : 'Cancel', style: 'cancel' },
         ]
       );
-      return;
+    } else {
+      Alert.alert(
+        zh ? '大頭貼' : 'Profile Photo',
+        undefined,
+        [
+          { text: zh ? '上傳照片' : 'Upload Photo', onPress: doPickFromLibrary },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
     }
-    await doPickFromLibrary();
   };
 
   const handleLogout = async () => { await logout(); };
@@ -85,7 +92,7 @@ export default function ProfileScreen() {
         {/* Card body */}
         <View style={styles.cardBody}>
           {/* Avatar overlapping the band */}
-          <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.photoWrapper} activeOpacity={0.85}>
+          <View style={styles.photoWrapper}>
             {photoUrl ? (
               <Image source={{ uri: photoUrl }} style={styles.photoAvatar} />
             ) : (
@@ -93,12 +100,12 @@ export default function ProfileScreen() {
                 <Ionicons name="person" size={40} color={colors.placeholder} />
               </View>
             )}
-            <View style={styles.cameraBtn}>
+            <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.cameraBtn} activeOpacity={0.75}>
               {photoUploading
                 ? <ActivityIndicator size="small" color="#fff" />
                 : <Ionicons name="camera" size={14} color="#fff" />}
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
 
           {photoUploading && <Text style={styles.uploadingText}>{zh ? '上傳中…' : 'Uploading…'}</Text>}
 

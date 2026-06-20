@@ -283,6 +283,11 @@ export class GroupsController {
     return this.groupsService.subgroups(groupId);
   }
 
+  @Get(':groupId/relationships')
+  groupRelationships(@Param('groupId') groupId: string) {
+    return this.groupsService.groupRelationships(groupId);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Patch(':groupId/parent')
   setParentGroup(
