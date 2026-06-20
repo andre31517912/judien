@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image,
 } from 'react-native';
@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../../context/theme.context';
 import { useAuth } from '../../../../context/auth.context';
 import JLogo from '../../../../components/JLogo';
+import DateTimeField from '../../../../components/DateTimeField';
 import type { Event, ReminderRule } from '@judien/shared';
 
 const INDIGO = '#4F46E5';
@@ -29,6 +30,30 @@ function minutesToLabel(m: number) {
   if (m >= 60) return `${m / 60} hour${m / 60 > 1 ? 's' : ''} before`;
   return `${m} min before`;
 }
+
+type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
+
+const FInput = React.memo(function FInput({
+  label, value, onChangeText, keyboard, multi,
+}: { label: string; value: string; onChangeText: (v: string) => void; keyboard?: any; multi?: boolean }) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{ fontSize: 13, fontWeight: '500', color: colors.subtext, marginBottom: 5 }}>{label}</Text>
+      <TextInput
+        style={[
+          { borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 11, fontSize: 15, color: colors.inputText, backgroundColor: colors.input },
+          multi ? { height: 90, textAlignVertical: 'top' as const } : null,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboard ?? 'default'}
+        multiline={multi}
+        placeholderTextColor={colors.placeholder}
+      />
+    </View>
+  );
+});
 
 export default function EditEventScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,6 +86,14 @@ export default function EditEventScreen() {
   const [customValue, setCustomValue] = useState('');
   const [customUnit, setCustomUnit] = useState<'hours' | 'days'>('hours');
   const [savingReminders, setSavingReminders] = useState(false);
+
+  // Invite
+  const [inviteeIds, setInviteeIds] = useState<string[]>([]);
+  const [inviteeList, setInviteeList] = useState<UserResult[]>([]);
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState<UserResult[]>([]);
+  const [userSearching, setUserSearching] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -96,6 +129,48 @@ export default function EditEventScreen() {
   }, [id]);
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
+
+  const searchUsers = async (q: string) => {
+    setUserQuery(q);
+    if (!q.trim()) { setUserResults([]); return; }
+    setUserSearching(true);
+    try {
+      const res = await apiFetch<UserResult[]>(`/users/search?q=${encodeURIComponent(q)}`);
+      setUserResults(Array.isArray(res) ? res : []);
+    } catch { setUserResults([]); }
+    finally { setUserSearching(false); }
+  };
+
+  const addInvitee = (u: UserResult) => {
+    if (inviteeIds.includes(u.id)) return;
+    setInviteeIds((prev) => [...prev, u.id]);
+    setInviteeList((prev) => [...prev, u]);
+    setUserResults([]);
+    setUserQuery('');
+  };
+
+  const removeInvitee = (userId: string) => {
+    setInviteeIds((prev) => prev.filter((x) => x !== userId));
+    setInviteeList((prev) => prev.filter((u) => u.id !== userId));
+  };
+
+  const handleSendInvites = async () => {
+    if (!inviteeIds.length) return;
+    setInviting(true);
+    try {
+      await apiFetch(`/events/${id}/invite-members`, {
+        method: 'POST',
+        body: JSON.stringify({ userIds: inviteeIds }),
+      });
+      Alert.alert('✓', zh ? `已送出 ${inviteeIds.length} 份邀請。` : `${inviteeIds.length} invitation(s) sent.`);
+      setInviteeIds([]);
+      setInviteeList([]);
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to send invitations.');
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const doPickCover = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -181,22 +256,6 @@ export default function EditEventScreen() {
     }
   };
 
-  const F = ({
-    label, k, keyboard = 'default', multi,
-  }: { label: string; k: keyof typeof form; keyboard?: any; multi?: boolean }) => (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={[styles.input, multi && { height: 90, textAlignVertical: 'top' }]}
-        value={form[k] as string}
-        onChangeText={set(k)}
-        keyboardType={keyboard}
-        multiline={multi}
-        placeholderTextColor={colors.placeholder}
-      />
-    </View>
-  );
-
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ backgroundColor: colors.headerBg, paddingTop: safeTop }}>
@@ -222,17 +281,37 @@ export default function EditEventScreen() {
           </Text>
         </View>
       ) : (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.pageTitle}>{t('events.editEvent')}</Text>
 
-      <F label={zh ? '標題' : 'Title'} k="title" />
-      <F label={zh ? '說明' : 'Description'} k="description" multi />
-      <F label={zh ? '地點' : 'Location'} k="location" />
-      <F label={zh ? '開始時間 (YYYY-MM-DDTHH:MM)' : 'Start (YYYY-MM-DDTHH:MM)'} k="startAt" />
-      <F label={zh ? '結束時間（選填）' : 'End (optional)'} k="endAt" />
-      <F label={zh ? '時區' : 'Timezone'} k="timezone" />
-      <F label={zh ? '費用' : 'Fee'} k="feeAmount" keyboard="numeric" />
-      <F label={zh ? '幣別' : 'Currency'} k="feeCurrency" />
+      <FInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} />
+      <FInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')} multi />
+      <FInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} />
+
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        <View style={{ flex: 1 }}>
+          <DateTimeField
+            label={zh ? '開始時間' : 'Start Time'}
+            value={form.startAt}
+            onChange={set('startAt')}
+            placeholder={zh ? '選擇日期時間' : 'Select date & time'}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <DateTimeField
+            label={zh ? '結束時間（選填）' : 'End Time (optional)'}
+            value={form.endAt}
+            onChange={set('endAt')}
+            placeholder={zh ? '選擇日期時間' : 'Select date & time'}
+            clearable
+          />
+        </View>
+      </View>
+
+      <FInput label={zh ? '時區' : 'Timezone'} value={form.timezone} onChangeText={set('timezone')} />
+      <FInput label={zh ? '費用' : 'Fee'} value={form.feeAmount} onChangeText={set('feeAmount')} keyboard="numeric" />
+      <FInput label={zh ? '幣別' : 'Currency'} value={form.feeCurrency} onChangeText={set('feeCurrency')} />
+
       <View style={styles.field}>
         <Text style={styles.label}>{zh ? '封面圖' : 'Cover Image'}</Text>
         <TouchableOpacity
@@ -248,6 +327,56 @@ export default function EditEventScreen() {
             </Text>
           )}
         </TouchableOpacity>
+      </View>
+
+      {/* Invite section */}
+      <View style={styles.field}>
+        <Text style={styles.label}>{zh ? '邀請用戶' : 'Invite People'}</Text>
+        <TextInput
+          style={styles.input}
+          value={userQuery}
+          onChangeText={searchUsers}
+          placeholder={zh ? '搜尋姓名、Email 或電話…' : 'Search name, email or phone…'}
+          placeholderTextColor={colors.placeholder}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {userSearching && <ActivityIndicator size="small" color={INDIGO} style={{ marginTop: 6, alignSelf: 'flex-start' }} />}
+        {userResults.filter((u) => !inviteeIds.includes(u.id)).map((u) => (
+          <View key={u.id} style={styles.userResultRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.userResultName}>{u.displayName ?? '—'}</Text>
+              {u.email ? <Text style={styles.userResultMeta}>{u.email}</Text> : null}
+            </View>
+            <TouchableOpacity style={styles.addUserBtn} onPress={() => addInvitee(u)}>
+              <Text style={styles.addUserBtnText}>{zh ? '新增' : 'Add'}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        {inviteeList.length > 0 && (
+          <View style={{ marginTop: 8, gap: 6 }}>
+            <Text style={{ fontSize: 12, color: colors.subtext }}>
+              {zh ? `已選 ${inviteeList.length} 人` : `${inviteeList.length} person(s) selected`}
+            </Text>
+            {inviteeList.map((u) => (
+              <View key={u.id} style={styles.inviteeRow}>
+                <Text style={{ flex: 1, fontSize: 14, color: colors.text }}>{u.displayName ?? u.email ?? '—'}</Text>
+                <TouchableOpacity onPress={() => removeInvitee(u.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="close-circle" size={20} color={colors.placeholder} />
+                </TouchableOpacity>
+              </View>
+            ))}
+            <TouchableOpacity
+              style={[styles.saveBtn, { opacity: inviting ? 0.6 : 1 }]}
+              onPress={handleSendInvites}
+              disabled={inviting}
+            >
+              <Text style={styles.saveBtnText}>
+                {inviting ? (zh ? '送出中…' : 'Sending…') : (zh ? `送出 ${inviteeList.length} 份邀請` : `Send ${inviteeList.length} Invitation(s)`)}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
@@ -387,6 +516,19 @@ const makeStyles = (colors: any) => StyleSheet.create({
     fontSize: 15,
     color: colors.inputText,
     backgroundColor: colors.input,
+  },
+  userResultRow: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+  },
+  userResultName: { fontSize: 14, fontWeight: '600', color: colors.text },
+  userResultMeta: { fontSize: 12, color: colors.subtext },
+  addUserBtn: { backgroundColor: INDIGO, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6 },
+  addUserBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+  inviteeRow: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card,
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8,
+    borderWidth: 1, borderColor: colors.border,
   },
   saveBtn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 10 },
   saveBtnText: { color: '#fff', fontWeight: '600', fontSize: 16 },

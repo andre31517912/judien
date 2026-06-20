@@ -36,17 +36,17 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Feed',
+          title: 'Home',
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
+      {/* events tab hidden — content merged into Home */}
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Events',
+          href: null,
           headerTitle: () => <JLogo />,
           headerStyle: { backgroundColor: colors.headerBg },
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

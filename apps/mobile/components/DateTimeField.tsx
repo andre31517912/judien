@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../context/theme.context';
 
 type Props = {
   label: string;
@@ -38,6 +39,7 @@ export default function DateTimeField({
   locale = 'en-US',
   clearable = false,
 }: Props) {
+  const { colors } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date');
   const [draftDate, setDraftDate] = useState<Date>(new Date());
@@ -61,7 +63,6 @@ export default function DateTimeField({
 
     const next = new Date(draftDate);
 
-    // iOS spinner should not auto-advance; users confirm using Next/Confirm actions.
     if (Platform.OS === 'ios') {
       if (pickerMode === 'date') {
         next.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
@@ -87,40 +88,60 @@ export default function DateTimeField({
   };
 
   return (
-    <View style={styles.field}>
-      <View style={styles.labelRow}>
-        <Text style={styles.label}>{label}</Text>
+    <View style={{ marginBottom: 14 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+        <Text style={{ fontSize: 13, fontWeight: '500', color: colors.subtext ?? colors.text }}>{label}</Text>
         {clearable && value ? (
           <TouchableOpacity onPress={() => onChange('')}>
-            <Text style={styles.clearText}>Clear</Text>
+            <Text style={{ fontSize: 12, color: colors.placeholder, fontWeight: '600' }}>Clear</Text>
           </TouchableOpacity>
         ) : null}
       </View>
 
-      <TouchableOpacity style={styles.inputButton} onPress={openPicker} activeOpacity={0.8}>
-        <Text style={value ? styles.valueText : styles.placeholderText}>
+      <TouchableOpacity
+        style={{
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 8,
+          paddingHorizontal: 10,
+          paddingVertical: 12,
+          backgroundColor: colors.input,
+        }}
+        onPress={openPicker}
+        activeOpacity={0.8}
+      >
+        <Text style={{ fontSize: 15, color: parsedValue ? colors.inputText : colors.placeholder }}>
           {parsedValue ? formatDisplayValue(parsedValue, locale) : placeholder}
         </Text>
       </TouchableOpacity>
 
       {pickerVisible ? (
-        <View style={styles.pickerWrap}>
-          <Text style={styles.helperText}>{pickerMode === 'date' ? 'Select date' : 'Select time'}</Text>
+        <View style={{
+          marginTop: 8,
+          borderWidth: 1,
+          borderColor: colors.border,
+          borderRadius: 10,
+          backgroundColor: colors.card,
+          padding: 8,
+        }}>
+          <Text style={{ fontSize: 12, color: colors.placeholder, marginBottom: 4 }}>
+            {pickerMode === 'date' ? 'Select date' : 'Select time'}
+          </Text>
           <DateTimePicker
             value={draftDate}
             mode={pickerMode}
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={handlePickerChange}
           />
-          <View style={styles.actionsRow}>
+          <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', gap: 10 }}>
             <TouchableOpacity
               onPress={() => {
                 setPickerVisible(false);
                 setPickerMode('date');
               }}
-              style={styles.cancelBtn}
+              style={{ paddingHorizontal: 6, paddingVertical: 4 }}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 13, fontWeight: '600' }}>Cancel</Text>
             </TouchableOpacity>
             {Platform.OS === 'ios' ? (
               <TouchableOpacity
@@ -133,9 +154,11 @@ export default function DateTimeField({
                   setPickerVisible(false);
                   setPickerMode('date');
                 }}
-                style={styles.confirmBtn}
+                style={{ paddingHorizontal: 6, paddingVertical: 4 }}
               >
-                <Text style={styles.confirmText}>{pickerMode === 'date' ? 'Next' : 'Confirm'}</Text>
+                <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>
+                  {pickerMode === 'date' ? 'Next' : 'Confirm'}
+                </Text>
               </TouchableOpacity>
             ) : null}
           </View>
@@ -144,34 +167,3 @@ export default function DateTimeField({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  field: { marginBottom: 14 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-  label: { fontSize: 13, fontWeight: '500', color: '#374151' },
-  clearText: { fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  inputButton: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-  },
-  valueText: { fontSize: 15, color: '#111827' },
-  placeholderText: { fontSize: 15, color: '#9CA3AF' },
-  pickerWrap: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    padding: 8,
-  },
-  helperText: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
-  actionsRow: { flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', gap: 10 },
-  cancelBtn: { alignSelf: 'flex-end', paddingHorizontal: 6, paddingVertical: 4 },
-  cancelText: { color: '#4F46E5', fontSize: 13, fontWeight: '600' },
-  confirmBtn: { paddingHorizontal: 6, paddingVertical: 4 },
-  confirmText: { color: '#4F46E5', fontSize: 13, fontWeight: '700' },
-});

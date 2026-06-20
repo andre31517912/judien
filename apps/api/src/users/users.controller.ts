@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Delete, Body, Param, NotFoundException, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Body, Param, Query, NotFoundException, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from './users.service';
@@ -13,6 +13,13 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly prisma: PrismaService,
   ) {}
+
+  // GET /api/users/search?q= — search users by name/email/phone (must come before :id)
+  @UseGuards(AuthGuard('jwt'))
+  @Get('search')
+  searchUsers(@Query('q') q = '') {
+    return this.usersService.searchUsers(q);
+  }
 
   // GET /api/users/:id — public profile
   @Get(':id')

@@ -783,9 +783,9 @@ export default function GroupSettingsScreen() {
 
             {relationships?.parentGroup ? (
               <View style={{ gap: 8 }}>
-                <View style={[styles.reqRow, { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF', flexDirection: 'row', alignItems: 'center' }]}>
+                <View style={[styles.reqRow, { flexDirection: 'row', alignItems: 'center' }]}>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.reqPrimary, { color: isDark ? '#818CF8' : '#4338CA' }]}>{relationships.parentGroup.name}</Text>
+                    <Text style={styles.reqPrimary}>{relationships.parentGroup.name}</Text>
                     <Text style={styles.reqMeta}>{zh ? '目前的父群組' : 'Current parent group'}</Text>
                   </View>
                   <TouchableOpacity style={styles.unlinkBtn} onPress={unlinkParent} disabled={unlinkingParent}>

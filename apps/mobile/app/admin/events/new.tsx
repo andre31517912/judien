@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TextInput, TouchableOpacity, ActivityIndicator,
   StyleSheet, ScrollView, Alert, Image, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,35 @@ import type { Event } from '@judien/shared';
 import DateTimeField from '../../../components/DateTimeField';
 
 const INDIGO = '#4F46E5';
+
+type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
+
+const FieldInput = React.memo(function FieldInput({
+  label, value, onChangeText, placeholder, multiline, keyboardType,
+}: {
+  label: string; value: string; onChangeText: (v: string) => void;
+  placeholder?: string; multiline?: boolean; keyboardType?: any;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ marginBottom: 14 }}>
+      <Text style={{ fontSize: 13, fontWeight: '500', color: colors.text, marginBottom: 4 }}>{label}</Text>
+      <TextInput
+        style={[
+          { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 9, fontSize: 15, color: colors.inputText, backgroundColor: colors.input },
+          multiline ? { height: 88, paddingTop: 9 } : null,
+        ]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={colors.placeholder}
+        keyboardType={keyboardType ?? 'default'}
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
+      />
+    </View>
+  );
+});
 
 export default function NewEventScreen() {
   const router = useRouter();
@@ -36,8 +65,39 @@ export default function NewEventScreen() {
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Invite
+  const [inviteeIds, setInviteeIds] = useState<string[]>([]);
+  const [inviteeList, setInviteeList] = useState<UserResult[]>([]);
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState<UserResult[]>([]);
+  const [userSearching, setUserSearching] = useState(false);
+
   const set = (k: keyof typeof form) => (val: string) =>
     setForm((prev) => ({ ...prev, [k]: val }));
+
+  const searchUsers = async (q: string) => {
+    setUserQuery(q);
+    if (!q.trim()) { setUserResults([]); return; }
+    setUserSearching(true);
+    try {
+      const res = await apiFetch<UserResult[]>(`/users/search?q=${encodeURIComponent(q)}`);
+      setUserResults(Array.isArray(res) ? res : []);
+    } catch { setUserResults([]); }
+    finally { setUserSearching(false); }
+  };
+
+  const addInvitee = (u: UserResult) => {
+    if (inviteeIds.includes(u.id)) return;
+    setInviteeIds((prev) => [...prev, u.id]);
+    setInviteeList((prev) => [...prev, u]);
+    setUserResults([]);
+    setUserQuery('');
+  };
+
+  const removeInvitee = (userId: string) => {
+    setInviteeIds((prev) => prev.filter((id) => id !== userId));
+    setInviteeList((prev) => prev.filter((u) => u.id !== userId));
+  };
 
   const doPickImage = async () => {
     if (Platform.OS !== 'web') {
@@ -74,8 +134,6 @@ export default function NewEventScreen() {
     await doPickImage();
   };
 
-  /** Normalise "YYYY-MM-DD HH:MM" (space) to ISO "YYYY-MM-DDTHH:MM" before parsing.
-   *  Hermes does not guarantee parsing of non-ISO date strings. */
   const toISO = (s: string): string => new Date(s.trim().replace(' ', 'T')).toISOString();
 
   const handleCreate = async () => {
@@ -84,11 +142,11 @@ export default function NewEventScreen() {
       return;
     }
     if (form.startAt && isNaN(new Date(form.startAt.trim().replace(' ', 'T')).getTime())) {
-      Alert.alert('Invalid date', 'Start date must be in YYYY-MM-DD HH:MM format.');
+      Alert.alert('Invalid date', 'Start date must be valid.');
       return;
     }
     if (form.endAt && isNaN(new Date(form.endAt.trim().replace(' ', 'T')).getTime())) {
-      Alert.alert('Invalid date', 'End date must be in YYYY-MM-DD HH:MM format.');
+      Alert.alert('Invalid date', 'End date must be valid.');
       return;
     }
     setSubmitting(true);
@@ -111,6 +169,12 @@ export default function NewEventScreen() {
         ...(groupId ? { groupId } : {}),
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
+      if (inviteeIds.length > 0) {
+        await apiFetch(`/events/${ev.id}/invite-members`, {
+          method: 'POST',
+          body: JSON.stringify({ userIds: inviteeIds }),
+        }).catch(() => {});
+      }
       router.replace(`/events/${ev.id}`);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to create event.');
@@ -120,27 +184,6 @@ export default function NewEventScreen() {
   };
 
   const styles = useMemo(() => makeStyles(colors), [colors]);
-
-  const Field = ({
-    label, value, onChangeText, placeholder, multiline, keyboardType,
-  }: {
-    label: string; value: string; onChangeText: (v: string) => void;
-    placeholder?: string; multiline?: boolean; keyboardType?: any;
-  }) => (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={[styles.input, multiline && styles.inputMulti]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={colors.placeholder}
-        keyboardType={keyboardType ?? 'default'}
-        multiline={multiline}
-        textAlignVertical={multiline ? 'top' : 'center'}
-      />
-    </View>
-  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -161,26 +204,27 @@ export default function NewEventScreen() {
       <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text ?? '#111', marginBottom: 16 }}>
         {zh ? (groupId ? '在群組建立活動' : '建立活動') : (groupId ? 'Create Event in Group' : 'Create Event')}
       </Text>
-      <Field label="Title" value={form.title} onChangeText={set('title')} placeholder="Event name" />
-      <Field label="Location" value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
-      <Field label="Description" value={form.description} onChangeText={set('description')}
-        placeholder="What's this event about?" multiline />
+
+      <FieldInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} placeholder={zh ? '活動名稱' : 'Event name'} />
+      <FieldInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
+      <FieldInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')}
+        placeholder={zh ? '活動說明' : "What's this event about?"} multiline />
 
       <View style={styles.row}>
         <View style={styles.half}>
           <DateTimeField
-            label="Start"
+            label={zh ? '開始' : 'Start'}
             value={form.startAt}
             onChange={set('startAt')}
-            placeholder="Select date and time"
+            placeholder={zh ? '選擇日期時間' : 'Select date and time'}
           />
         </View>
         <View style={styles.half}>
           <DateTimeField
-            label="End (optional)"
+            label={zh ? '結束（選填）' : 'End (optional)'}
             value={form.endAt}
             onChange={set('endAt')}
-            placeholder="Select date and time"
+            placeholder={zh ? '選擇日期時間' : 'Select date and time'}
             clearable
           />
         </View>
@@ -188,19 +232,19 @@ export default function NewEventScreen() {
 
       <View style={styles.row}>
         <View style={[styles.half, { flex: 1.5 }]}>
-          <Field label="Timezone" value={form.timezone} onChangeText={set('timezone')} />
+          <FieldInput label={zh ? '時區' : 'Timezone'} value={form.timezone} onChangeText={set('timezone')} />
         </View>
         <View style={styles.half}>
-          <Field label="Fee" value={form.feeAmount} onChangeText={set('feeAmount')}
+          <FieldInput label={zh ? '費用' : 'Fee'} value={form.feeAmount} onChangeText={set('feeAmount')}
             placeholder="0" keyboardType="numeric" />
         </View>
         <View style={styles.half}>
-          <Field label="Currency" value={form.feeCurrency} onChangeText={set('feeCurrency')} />
+          <FieldInput label={zh ? '幣別' : 'Currency'} value={form.feeCurrency} onChangeText={set('feeCurrency')} />
         </View>
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>Cover Photo (optional)</Text>
+        <Text style={styles.label}>{zh ? '封面圖片（選填）' : 'Cover Photo (optional)'}</Text>
         <TouchableOpacity style={styles.photoPicker} onPress={pickImage} activeOpacity={0.7}>
           {coverUri ? (
             <Image source={{ uri: coverUri }} style={styles.photoPreview} />
@@ -213,13 +257,54 @@ export default function NewEventScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Invite section */}
+      <View style={styles.field}>
+        <Text style={styles.label}>{zh ? '邀請用戶（選填）' : 'Invite People (optional)'}</Text>
+        <TextInput
+          style={styles.input}
+          value={userQuery}
+          onChangeText={searchUsers}
+          placeholder={zh ? '搜尋姓名、Email 或電話…' : 'Search name, email or phone…'}
+          placeholderTextColor={colors.placeholder}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {userSearching && <ActivityIndicator size="small" color={INDIGO} style={{ marginTop: 6, alignSelf: 'flex-start' }} />}
+        {userResults.filter((u) => !inviteeIds.includes(u.id)).map((u) => (
+          <View key={u.id} style={styles.userResultRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.userResultName}>{u.displayName ?? '—'}</Text>
+              {u.email ? <Text style={styles.userResultMeta}>{u.email}</Text> : null}
+            </View>
+            <TouchableOpacity style={styles.addUserBtn} onPress={() => addInvitee(u)}>
+              <Text style={styles.addUserBtnText}>{zh ? '新增' : 'Add'}</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        {inviteeList.length > 0 && (
+          <View style={{ marginTop: 8, gap: 6 }}>
+            <Text style={{ fontSize: 12, color: colors.subtext }}>
+              {zh ? `已加入 ${inviteeList.length} 人` : `${inviteeList.length} person(s) to invite`}
+            </Text>
+            {inviteeList.map((u) => (
+              <View key={u.id} style={styles.inviteeRow}>
+                <Text style={{ flex: 1, fontSize: 14, color: colors.text }}>{u.displayName ?? u.email ?? '—'}</Text>
+                <TouchableOpacity onPress={() => removeInvitee(u.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="close-circle" size={20} color={colors.placeholder} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+
       <TouchableOpacity
         style={[styles.btn, submitting && styles.btnDisabled]}
         onPress={handleCreate}
         disabled={submitting}
         activeOpacity={0.8}
       >
-        <Text style={styles.btnText}>{submitting ? 'Creating…' : 'Create Event'}</Text>
+        <Text style={styles.btnText}>{submitting ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立活動' : 'Create Event')}</Text>
       </TouchableOpacity>
     </ScrollView>
     </View>
@@ -233,7 +318,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     field: { marginBottom: 14 },
     label: { fontSize: 13, fontWeight: '500', color: colors.text, marginBottom: 4 },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 9, fontSize: 15, color: colors.inputText, backgroundColor: colors.input },
-    inputMulti: { height: 88, paddingTop: 9 },
     row: { flexDirection: 'row', gap: 10 },
     half: { flex: 1 },
     photoPicker: {
@@ -245,9 +329,20 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
     photoIcon: { fontSize: 36 },
     photoHint: { fontSize: 13, color: colors.placeholder },
-    removePhoto: { marginTop: 6 },
-    removePhotoText: { fontSize: 13, color: '#EF4444' },
-    btn: { backgroundColor: '#4F46E5', borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
+    userResultRow: {
+      flexDirection: 'row', alignItems: 'center', paddingVertical: 8,
+      borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
+    },
+    userResultName: { fontSize: 14, fontWeight: '600', color: colors.text },
+    userResultMeta: { fontSize: 12, color: colors.subtext },
+    addUserBtn: { backgroundColor: INDIGO, borderRadius: 6, paddingHorizontal: 12, paddingVertical: 6 },
+    addUserBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+    inviteeRow: {
+      flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card,
+      borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8,
+      borderWidth: 1, borderColor: colors.border,
+    },
+    btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
     btnDisabled: { opacity: 0.6 },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
   });

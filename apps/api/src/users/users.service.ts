@@ -10,6 +10,23 @@ const LINE_EMAIL_SUFFIX = '@line.local';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async searchUsers(q: string) {
+    const term = q.trim();
+    if (!term) return [];
+    return this.prisma.user.findMany({
+      where: {
+        OR: [
+          { displayName: { contains: term, mode: 'insensitive' } },
+          { email: { contains: term, mode: 'insensitive' } },
+          { phoneE164: { contains: term } },
+        ],
+      },
+      select: { id: true, displayName: true, email: true, phoneE164: true },
+      take: 15,
+      orderBy: { displayName: 'asc' },
+    });
+  }
+
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Omit<User, 'passwordHash'>> {
     const current = await this.prisma.user.findUnique({
       where: { id: userId },
