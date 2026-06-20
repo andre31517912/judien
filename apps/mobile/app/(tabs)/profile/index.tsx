@@ -51,7 +51,7 @@ export default function ProfileScreen() {
       <Stack.Screen options={{
         headerRight: () => (
           <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
-            <Ionicons name="search-outline" size={22} color={INDIGO} />
+            <Ionicons name="search" size={24} color={INDIGO} />
           </TouchableOpacity>
         ),
       }} />

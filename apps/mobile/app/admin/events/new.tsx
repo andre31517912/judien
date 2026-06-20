@@ -135,7 +135,9 @@ export default function NewEventScreen() {
             <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
           </TouchableOpacity>
           <JLogo />
-          <View style={{ minWidth: 60 }} />
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ minWidth: 60, alignItems: 'flex-end', paddingRight: 8 }}>
+            <Ionicons name="search" size={24} color={INDIGO} />
+          </TouchableOpacity>
         </View>
       </View>
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">

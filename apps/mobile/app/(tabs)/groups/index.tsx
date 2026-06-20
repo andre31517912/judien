@@ -71,12 +71,12 @@ export default function GroupsTab() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginRight: 8 }}>
           <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ padding: 8 }}>
-            <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
+            <Ionicons name="add" size={26} color={INDIGO} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
-            <Ionicons name="search-outline" size={22} color={INDIGO} />
+            <Ionicons name="search" size={24} color={INDIGO} />
           </TouchableOpacity>
         </View>
       ),

@@ -112,12 +112,12 @@ export default function HomeTab() {
             </TouchableOpacity>
           ) : undefined,
           headerRight: user && !composing ? () => (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginRight: 8 }}>
               <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ padding: 8 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
-                <Text style={styles.headerBtn}>＋</Text>
+                <Ionicons name="add" size={26} color={INDIGO} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
-                <Ionicons name="search-outline" size={22} color={INDIGO} />
+                <Ionicons name="search" size={24} color={INDIGO} />
               </TouchableOpacity>
             </View>
           ) : undefined,
@@ -208,7 +208,7 @@ const INDIGO = '#4F46E5';
 function makeStyles(colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
     container: { padding: 20, backgroundColor: colors.bg, flexGrow: 1 },
-    headerBtn: { color: INDIGO, fontSize: 24, fontWeight: '400' },
+    headerBtn: { color: INDIGO, fontSize: 24, fontWeight: '700' },
     backBtn: { color: INDIGO, fontSize: 17 },
     form: { backgroundColor: colors.card, borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: colors.border },
     formLabel: { fontSize: 13, fontWeight: '500', color: colors.subtext, marginBottom: 4, marginTop: 10 },

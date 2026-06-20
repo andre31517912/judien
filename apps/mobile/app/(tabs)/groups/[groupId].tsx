@@ -122,20 +122,27 @@ export default function GroupDetailScreen() {
           <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
-      headerRight: canManageGroup ? () => (
-        <TouchableOpacity
-          onPress={() => router.push(`/groups/${groupId}/settings`)}
-          style={{ marginRight: 16 }}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="settings-outline" size={22} color={colors.text} />
-          {joinRequests.length > 0 && (
-            <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
-            </View>
+      headerRight: () => (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginRight: 8 }}>
+          {canManageGroup && (
+            <TouchableOpacity
+              onPress={() => router.push(`/groups/${groupId}/settings`)}
+              style={{ padding: 8 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="settings-outline" size={22} color={colors.text} />
+              {joinRequests.length > 0 && (
+                <View style={{ position: 'absolute', top: 4, right: 4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           )}
-        </TouchableOpacity>
-      ) : undefined,
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Ionicons name="search" size={24} color={INDIGO} />
+          </TouchableOpacity>
+        </View>
+      ),
     });
   }, [zh, colors.headerBg, colors.text, canManageGroup, joinRequests.length, groupId]);
 

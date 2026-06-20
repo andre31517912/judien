@@ -25,7 +25,11 @@ export default function ProfileLayout() {
     }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ gestureEnabled: true, headerShown: false }} />
-      <Stack.Screen name="[userId]" options={{ gestureEnabled: true, title: '' }} />
+      <Stack.Screen name="[userId]" options={{ gestureEnabled: true, title: '', headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 4 }}>
+          <Ionicons name="search" size={24} color={INDIGO} />
+        </TouchableOpacity>
+      ) }} />
     </Stack>
   );
 }

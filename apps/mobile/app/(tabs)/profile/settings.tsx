@@ -41,7 +41,11 @@ export default function ProfileSettingsScreen() {
           <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
       ),
-      headerRight: undefined,
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+          <Ionicons name="search" size={24} color={INDIGO} />
+        </TouchableOpacity>
+      ),
     });
     return () => {
       navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
