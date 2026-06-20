@@ -4,7 +4,7 @@ import {
   StyleSheet, ScrollView, Alert, Image, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch, apiUpload } from '../../../lib/api';
@@ -18,6 +18,7 @@ const INDIGO = '#4F46E5';
 
 export default function NewEventScreen() {
   const router = useRouter();
+  const { groupId } = useLocalSearchParams<{ groupId?: string }>();
   const { colors } = useTheme();
   const { i18n } = useTranslation();
   const zh = i18n.language === 'zh';
@@ -91,6 +92,7 @@ export default function NewEventScreen() {
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         feeCurrency: form.feeCurrency || 'TWD',
         coverImageUrl,
+        ...(groupId ? { groupId } : {}),
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
       router.replace(`/events/${ev.id}`);
@@ -138,6 +140,9 @@ export default function NewEventScreen() {
       </View>
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
 
+      <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text ?? '#111', marginBottom: 16 }}>
+        {zh ? (groupId ? '在群組建立活動' : '建立活動') : (groupId ? 'Create Event in Group' : 'Create Event')}
+      </Text>
       <Field label="Title" value={form.title} onChangeText={set('title')} placeholder="Event name" />
       <Field label="Location" value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
       <Field label="Description" value={form.description} onChangeText={set('description')}

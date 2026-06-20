@@ -4,10 +4,13 @@ import {
   ActivityIndicator, RefreshControl, Animated, PanResponder, Alert,
 } from 'react-native';
 import { useRouter, useFocusEffect, Stack } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import JLogo from '../../components/JLogo';
 import { apiFetch } from '../../lib/api';
 import { useTheme } from '../../context/theme.context';
 import { useTranslation } from 'react-i18next';
+
+const INDIGO = '#4F46E5';
 
 type AppNotification = {
   id: string;
@@ -166,7 +169,15 @@ export default function NotificationsTab() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      <Stack.Screen options={{ headerTitle: () => <JLogo />, headerStyle: { backgroundColor: colors.headerBg } }} />
+      <Stack.Screen options={{
+        headerTitle: () => <JLogo />,
+        headerStyle: { backgroundColor: colors.headerBg },
+        headerRight: () => (
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+            <Ionicons name="search-outline" size={22} color={INDIGO} />
+          </TouchableOpacity>
+        ),
+      }} />
       {notifications.some((n) => !n.read) && (
         <TouchableOpacity style={[styles.markAllBtn, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={markAllRead}>
           <Text style={styles.markAllText}>{zh ? '全部標為已讀' : 'Mark all as read'}</Text>

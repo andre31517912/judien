@@ -258,6 +258,7 @@ exports.Prisma.NewsScalarFieldEnum = {
   groupId: 'groupId',
   title: 'title',
   body: 'body',
+  coverImageUrl: 'coverImageUrl',
   createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

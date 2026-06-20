@@ -14914,6 +14914,7 @@ export namespace Prisma {
     groupId: string | null
     title: string | null
     body: string | null
+    coverImageUrl: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14924,6 +14925,7 @@ export namespace Prisma {
     groupId: string | null
     title: string | null
     body: string | null
+    coverImageUrl: string | null
     createdById: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -14934,6 +14936,7 @@ export namespace Prisma {
     groupId: number
     title: number
     body: number
+    coverImageUrl: number
     createdById: number
     createdAt: number
     updatedAt: number
@@ -14946,6 +14949,7 @@ export namespace Prisma {
     groupId?: true
     title?: true
     body?: true
+    coverImageUrl?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -14956,6 +14960,7 @@ export namespace Prisma {
     groupId?: true
     title?: true
     body?: true
+    coverImageUrl?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -14966,6 +14971,7 @@ export namespace Prisma {
     groupId?: true
     title?: true
     body?: true
+    coverImageUrl?: true
     createdById?: true
     createdAt?: true
     updatedAt?: true
@@ -15049,6 +15055,7 @@ export namespace Prisma {
     groupId: string | null
     title: string
     body: string
+    coverImageUrl: string | null
     createdById: string
     createdAt: Date
     updatedAt: Date
@@ -15076,6 +15083,7 @@ export namespace Prisma {
     groupId?: boolean
     title?: boolean
     body?: boolean
+    coverImageUrl?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15088,6 +15096,7 @@ export namespace Prisma {
     groupId?: boolean
     title?: boolean
     body?: boolean
+    coverImageUrl?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15100,6 +15109,7 @@ export namespace Prisma {
     groupId?: boolean
     title?: boolean
     body?: boolean
+    coverImageUrl?: boolean
     createdById?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -15125,6 +15135,7 @@ export namespace Prisma {
       groupId: string | null
       title: string
       body: string
+      coverImageUrl: string | null
       createdById: string
       createdAt: Date
       updatedAt: Date
@@ -15527,6 +15538,7 @@ export namespace Prisma {
     readonly groupId: FieldRef<"News", 'String'>
     readonly title: FieldRef<"News", 'String'>
     readonly body: FieldRef<"News", 'String'>
+    readonly coverImageUrl: FieldRef<"News", 'String'>
     readonly createdById: FieldRef<"News", 'String'>
     readonly createdAt: FieldRef<"News", 'DateTime'>
     readonly updatedAt: FieldRef<"News", 'DateTime'>
@@ -24527,6 +24539,7 @@ export namespace Prisma {
     groupId: 'groupId',
     title: 'title',
     body: 'body',
+    coverImageUrl: 'coverImageUrl',
     createdById: 'createdById',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -25883,6 +25896,7 @@ export namespace Prisma {
     groupId?: StringNullableFilter<"News"> | string | null
     title?: StringFilter<"News"> | string
     body?: StringFilter<"News"> | string
+    coverImageUrl?: StringNullableFilter<"News"> | string | null
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -25895,6 +25909,7 @@ export namespace Prisma {
     groupId?: SortOrderInput | SortOrder
     title?: SortOrder
     body?: SortOrder
+    coverImageUrl?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25910,6 +25925,7 @@ export namespace Prisma {
     groupId?: StringNullableFilter<"News"> | string | null
     title?: StringFilter<"News"> | string
     body?: StringFilter<"News"> | string
+    coverImageUrl?: StringNullableFilter<"News"> | string | null
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -25922,6 +25938,7 @@ export namespace Prisma {
     groupId?: SortOrderInput | SortOrder
     title?: SortOrder
     body?: SortOrder
+    coverImageUrl?: SortOrderInput | SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -25938,6 +25955,7 @@ export namespace Prisma {
     groupId?: StringNullableWithAggregatesFilter<"News"> | string | null
     title?: StringWithAggregatesFilter<"News"> | string
     body?: StringWithAggregatesFilter<"News"> | string
+    coverImageUrl?: StringNullableWithAggregatesFilter<"News"> | string | null
     createdById?: StringWithAggregatesFilter<"News"> | string
     createdAt?: DateTimeWithAggregatesFilter<"News"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"News"> | Date | string
@@ -27689,6 +27707,7 @@ export namespace Prisma {
     id?: string
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutNewsInput
@@ -27700,6 +27719,7 @@ export namespace Prisma {
     groupId?: string | null
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27709,6 +27729,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutNewsNestedInput
@@ -27720,6 +27741,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27730,6 +27752,7 @@ export namespace Prisma {
     groupId?: string | null
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -27739,6 +27762,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27748,6 +27772,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29485,6 +29510,7 @@ export namespace Prisma {
     groupId?: SortOrder
     title?: SortOrder
     body?: SortOrder
+    coverImageUrl?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29495,6 +29521,7 @@ export namespace Prisma {
     groupId?: SortOrder
     title?: SortOrder
     body?: SortOrder
+    coverImageUrl?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29505,6 +29532,7 @@ export namespace Prisma {
     groupId?: SortOrder
     title?: SortOrder
     body?: SortOrder
+    coverImageUrl?: SortOrder
     createdById?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33192,6 +33220,7 @@ export namespace Prisma {
     id?: string
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutNewsInput
@@ -33202,6 +33231,7 @@ export namespace Prisma {
     groupId?: string | null
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34008,6 +34038,7 @@ export namespace Prisma {
     groupId?: StringNullableFilter<"News"> | string | null
     title?: StringFilter<"News"> | string
     body?: StringFilter<"News"> | string
+    coverImageUrl?: StringNullableFilter<"News"> | string | null
     createdById?: StringFilter<"News"> | string
     createdAt?: DateTimeFilter<"News"> | Date | string
     updatedAt?: DateTimeFilter<"News"> | Date | string
@@ -38599,6 +38630,7 @@ export namespace Prisma {
     id?: string
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutNewsInput
@@ -38608,6 +38640,7 @@ export namespace Prisma {
     id?: string
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -42364,6 +42397,7 @@ export namespace Prisma {
     groupId?: string | null
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -42759,6 +42793,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutNewsNestedInput
@@ -42769,6 +42804,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42778,6 +42814,7 @@ export namespace Prisma {
     groupId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43872,6 +43909,7 @@ export namespace Prisma {
     id?: string
     title?: string
     body?: string
+    coverImageUrl?: string | null
     createdById: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44203,6 +44241,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutNewsNestedInput
@@ -44212,6 +44251,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44221,6 +44261,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     body?: StringFieldUpdateOperationsInput | string
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

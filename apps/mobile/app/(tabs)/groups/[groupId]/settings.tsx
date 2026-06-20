@@ -20,7 +20,7 @@ function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'roster';
+type Tab = 'general' | 'roster' | 'hierarchy';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -80,6 +80,18 @@ export default function GroupSettingsScreen() {
 
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
 
+  // Hierarchy
+  type RelNode = { id: string; name: string };
+  type Relationships = { parentGroup: RelNode | null; subgroups: RelNode[] };
+  const [relationships, setRelationships] = useState<Relationships | null>(null);
+  const [parentSearchQuery, setParentSearchQuery] = useState('');
+  const [parentSearchResults, setParentSearchResults] = useState<{ id: string; name: string; description: string }[]>([]);
+  const [parentSearching, setParentSearching] = useState(false);
+  const [sendingRelReq, setSendingRelReq] = useState(false);
+  const [unlinkingParent, setUnlinkingParent] = useState(false);
+  type RelationshipRequest = { id: string; status: string; targetGroup: RelNode; sourceGroup: RelNode; createdAt: string };
+  const [relRequests, setRelRequests] = useState<RelationshipRequest[]>([]);
+
   // Report
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
   const [reportLoading, setReportLoading] = useState(false);
@@ -128,9 +140,11 @@ export default function GroupSettingsScreen() {
   const loadData = async () => {
     if (!groupId) return;
     try {
-      const [myGroups, reqData] = await Promise.all([
+      const [myGroups, reqData, relData, relReqData] = await Promise.all([
         apiFetch<Array<{ group: { discoverableBySearch: boolean; photoUrl?: string | null } }>>('/groups/me'),
         apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => []),
+        apiFetch<Relationships>(`/groups/${groupId}/relationships`).catch(() => null),
+        apiFetch<RelationshipRequest[]>(`/groups/${groupId}/relationship-requests`).catch(() => []),
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
       if (current) {
@@ -141,9 +155,56 @@ export default function GroupSettingsScreen() {
         setIsGroupAdmin((current as any).membership?.role === 'GROUP_ADMIN' || (current.group as any).createdById === user?.id);
       }
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
+      if (relData) setRelationships(relData);
+      setRelRequests((relReqData ?? []).filter((r) => r.status === 'PENDING'));
     } catch {
       setJoinRequests([]);
     }
+  };
+
+  const searchGroupsForParent = async (q: string) => {
+    if (!q.trim()) { setParentSearchResults([]); return; }
+    setParentSearching(true);
+    try {
+      const res = await apiFetch<{ groups: { id: string; name: string; description: string }[] }>(`/search?q=${encodeURIComponent(q)}`);
+      setParentSearchResults((res as any).groups ?? []);
+    } catch { setParentSearchResults([]); }
+    finally { setParentSearching(false); }
+  };
+
+  const sendRelationshipRequest = async (targetGroupId: string) => {
+    if (!groupId) return;
+    setSendingRelReq(true);
+    try {
+      await apiFetch(`/groups/${groupId}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: targetGroupId }),
+      });
+      Alert.alert('✓', zh ? '父群組申請已送出，等待對方管理員審核。' : 'Parent group request sent, awaiting approval.');
+      setParentSearchQuery('');
+      setParentSearchResults([]);
+      await loadData();
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to send request.'); }
+    finally { setSendingRelReq(false); }
+  };
+
+  const unlinkParent = async () => {
+    if (!groupId) return;
+    Alert.alert(
+      zh ? '移除父群組' : 'Remove Parent Group',
+      zh ? '確定要解除與父群組的關聯嗎？' : 'Remove the parent group link?',
+      [
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: zh ? '移除' : 'Remove', style: 'destructive', onPress: async () => {
+          setUnlinkingParent(true);
+          try {
+            await apiFetch(`/groups/${groupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
+            await loadData();
+          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to unlink.'); }
+          finally { setUnlinkingParent(false); }
+        }},
+      ]
+    );
   };
 
   useEffect(() => { loadData(); }, [groupId]);
@@ -329,6 +390,7 @@ export default function GroupSettingsScreen() {
   const TABS: { key: Tab; label: string }[] = [
     { key: 'general', label: zh ? '設定' : 'Settings' },
     { key: 'roster', label: joinRequests.length > 0 ? `${zh ? '成員' : 'Members'} (${joinRequests.length})` : (zh ? '成員' : 'Members') },
+    { key: 'hierarchy', label: relRequests.length > 0 ? `${zh ? '層級' : 'Hierarchy'} (${relRequests.length})` : (zh ? '層級' : 'Hierarchy') },
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -572,6 +634,103 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
+
+      {/* Hierarchy */}
+      {tab === 'hierarchy' && (
+        <View style={{ gap: 12 }}>
+          {/* Current parent */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{zh ? '父群組' : 'Parent Group'}</Text>
+            {relationships?.parentGroup ? (
+              <View style={{ gap: 8 }}>
+                <View style={[styles.reqRow, { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF' }]}>
+                  <Text style={[styles.reqPrimary, { color: isDark ? '#818CF8' : '#4338CA' }]}>{relationships.parentGroup.name}</Text>
+                  <Text style={styles.reqMeta}>{zh ? '目前的父群組' : 'Current parent group'}</Text>
+                </View>
+                <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: '#EF4444', opacity: unlinkingParent ? 0.5 : 1 }]} onPress={unlinkParent} disabled={unlinkingParent}>
+                  <Text style={styles.primaryBtnText}>{unlinkingParent ? (zh ? '移除中…' : 'Removing…') : (zh ? '移除父群組' : 'Remove Parent Group')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.muted}>{zh ? '此群組目前沒有父群組。' : 'This group has no parent group.'}</Text>
+            )}
+          </View>
+
+          {/* Subgroups */}
+          {(relationships?.subgroups?.length ?? 0) > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>{zh ? '子群組' : 'Subgroups'}</Text>
+              {relationships!.subgroups.map((sg) => (
+                <View key={sg.id} style={styles.reqRow}>
+                  <Text style={styles.reqPrimary}>{sg.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Pending relationship requests */}
+          {relRequests.length > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>{zh ? `待審核層級申請 (${relRequests.length})` : `Pending Hierarchy Requests (${relRequests.length})`}</Text>
+              {relRequests.map((req) => (
+                <View key={req.id} style={styles.reqRow}>
+                  <Text style={styles.reqPrimary}>{req.sourceGroup?.name ?? ''} → {req.targetGroup?.name ?? ''}</Text>
+                  <Text style={styles.reqMeta}>{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity style={styles.approveBtn} onPress={async () => {
+                      try {
+                        await apiFetch(`/groups/relationship-requests/${req.id}/review`, { method: 'POST', body: JSON.stringify({ action: 'approve' }) });
+                        await loadData();
+                      } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+                    }}>
+                      <Text style={styles.approveBtnText}>{zh ? '核准' : 'Approve'}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.rejectBtn} onPress={async () => {
+                      try {
+                        await apiFetch(`/groups/relationship-requests/${req.id}/review`, { method: 'POST', body: JSON.stringify({ action: 'reject' }) });
+                        await loadData();
+                      } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+                    }}>
+                      <Text style={styles.rejectBtnText}>{zh ? '拒絕' : 'Reject'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Request a parent group */}
+          {!relationships?.parentGroup && (
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>{zh ? '申請加入父群組' : 'Request Parent Group'}</Text>
+              <Text style={styles.muted}>{zh ? '搜尋並申請將此群組設為另一個群組的子群組。需要對方管理員核准。' : 'Search and request to make this group a child of another group. Requires approval from that group\'s admin.'}</Text>
+              <TextInput
+                style={[styles.input, { marginTop: 8 }]}
+                value={parentSearchQuery}
+                onChangeText={(v) => { setParentSearchQuery(v); searchGroupsForParent(v); }}
+                placeholder={zh ? '搜尋群組…' : 'Search groups…'}
+                placeholderTextColor={colors.placeholder}
+              />
+              {parentSearching && <Text style={styles.muted}>{zh ? '搜尋中…' : 'Searching…'}</Text>}
+              {parentSearchResults.map((g) => (
+                <View key={g.id} style={styles.reqRow}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={styles.reqPrimary}>{g.name}</Text>
+                    {g.description ? <Text style={styles.reqMeta} numberOfLines={1}>{g.description}</Text> : null}
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.approveBtn, { opacity: sendingRelReq ? 0.5 : 1 }]}
+                    onPress={() => sendRelationshipRequest(g.id)}
+                    disabled={sendingRelReq}
+                  >
+                    <Text style={styles.approveBtnText}>{zh ? '申請' : 'Request'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Donations — commented out, work in progress */}
       {false && tab === ('donations' as Tab) && (

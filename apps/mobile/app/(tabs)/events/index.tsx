@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
-  View, Text, FlatList, ScrollView, TouchableOpacity, TextInput,
-  StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl,
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  StyleSheet, ActivityIndicator, Image, Alert, Platform, RefreshControl, Dimensions,
 } from 'react-native';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import JLogo from '../../../components/JLogo';
@@ -239,53 +239,69 @@ export default function EventsTab() {
         </ScrollView>
       )}
 
-      {/* ── Events list ── */}
+      {/* ── Events grid ── */}
       {!creating && (
         loading ? (
           <ActivityIndicator style={{ marginTop: 40 }} />
         ) : (
-          <FlatList
-            data={events}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ padding: 16, gap: 12, backgroundColor: colors.bg }}
+          <ScrollView
+            contentContainerStyle={{ padding: 12, backgroundColor: colors.bg, flexGrow: 1 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadEvents(scope, page, true); }} tintColor={colors.subtext} />}
-            ListEmptyComponent={
+          >
+            {events.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyEmoji}>📅</Text>
                 <Text style={styles.empty}>{zh ? '沒有活動' : 'No events'}</Text>
               </View>
-            }
-            renderItem={({ item }) => {
-              const title = item.title;
-              const location = item.location;
-              const date = new Date(item.startAt).toLocaleDateString();
-              const fee = item.feeAmount ? `${item.feeCurrency} ${item.feeAmount}` : (zh ? '免費' : 'Free');
-              const coverUri = resolveImageUrl(item.coverImageUrl);
-              return (
-                <View style={styles.card}>
-                  <TouchableOpacity style={{ flexDirection: 'row', gap: 12, flex: 1 }} onPress={() => router.push(`/events/${item.id}`)}>
-                    <View style={[styles.thumbnail, { backgroundColor: coverUri ? colors.border : '#4F46E5' }]}>
-                      {coverUri && <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />}
-                    </View>
-                    <View style={styles.cardBody}>
-                      {(item as any).seriesTitle && (
-                        <View style={styles.seriesBadge}>
-                          <Text style={styles.seriesBadgeText}>
-                            📚 {(item as any).seriesTitle}{(item as any).partNumber ? ` #${(item as any).partNumber}` : ''}
-                          </Text>
+            ) : (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {events.map((item) => {
+                  const tileSize = (Dimensions.get('window').width - 32) / 2;
+                  const dayStr = new Date(item.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
+                  const timeStr = new Date(item.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+                  const isFree = !item.feeAmount;
+                  const fee = item.feeAmount ? `${item.feeCurrency} ${item.feeAmount}` : (zh ? '免費' : 'Free');
+                  const coverUri = resolveImageUrl(item.coverImageUrl);
+                  const isPast = scope === 'past';
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      onPress={() => router.push(`/events/${item.id}`)}
+                      style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5', opacity: isPast ? 0.75 : 1 }}
+                      activeOpacity={0.85}
+                    >
+                      {coverUri ? (
+                        <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                      ) : null}
+                      <View style={{ position: 'absolute', top: 8, right: 8 }}>
+                        <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                          <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
                         </View>
-                      )}
-                      <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
-                      {item.groupName && <Text style={styles.cardGroup}>{item.groupName}</Text>}
-                      <Text style={styles.cardMeta}>{date}</Text>
-                      {location ? <Text style={[styles.cardMeta, { color: colors.subtext }]} numberOfLines={1}>{location}</Text> : null}
-                      <Text style={styles.rsvpRow}>✓ {item.rsvpCounts.GOING}  ✗ {item.rsvpCounts.NO}</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              );
-            }}
-          />
+                      </View>
+                      {(item as any).seriesTitle ? (
+                        <View style={{ position: 'absolute', top: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+                          <Text style={{ color: '#A5B4FC', fontSize: 9, fontWeight: '700' }}>📚 {(item as any).partNumber ? `#${(item as any).partNumber}` : ''}</Text>
+                        </View>
+                      ) : null}
+                      <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', padding: 10 }}>
+                        <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
+                          <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{item.title}</Text>
+                          {item.location ? (
+                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.location}</Text>
+                          ) : null}
+                          {item.groupName ? (
+                            <Text style={{ color: '#A5B4FC', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.groupName}</Text>
+                          ) : null}
+                          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {item.rsvpCounts.GOING}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </ScrollView>
         )
       )}
     </View>

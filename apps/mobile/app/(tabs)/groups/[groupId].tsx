@@ -15,7 +15,8 @@ import {
 import { Stack, useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import JLogo from '../../../components/JLogo';
-import { apiFetch } from '../../../lib/api';
+import { apiFetch, apiUpload } from '../../../lib/api';
+import * as ImagePicker from 'expo-image-picker';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/auth.context';
@@ -103,6 +104,7 @@ export default function GroupDetailScreen() {
 
   const [composingNews, setComposingNews] = useState(false);
   const [newsBody, setNewsBody] = useState('');
+  const [newsCoverUri, setNewsCoverUri] = useState<string | null>(null);
   const [newsSubmitting, setNewsSubmitting] = useState(false);
   const isGroupAdmin = useMemo(() => groupItem?.membership.role === 'GROUP_ADMIN', [groupItem]);
   const canManageGroup = useMemo(() => isGroupAdmin || user?.role === 'ADMIN', [isGroupAdmin, user?.role]);
@@ -274,17 +276,25 @@ export default function GroupDetailScreen() {
     finally { setNicknameSaving(false); }
   };
 
+  const pickNewsImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!status || status !== 'granted') { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.5 });
+    if (!result.canceled && result.assets[0]) setNewsCoverUri(result.assets[0].uri);
+  };
+
   const submitNews = async () => {
-    if (!newsTitle.trim()) { Alert.alert('', zh ? '請輸入標題' : 'Please enter a title.'); return; }
     if (!newsBody.trim()) { Alert.alert('', zh ? '請輸入內容' : 'Please enter content.'); return; }
     setNewsSubmitting(true);
     try {
+      let coverImageUrl: string | null = null;
+      if (newsCoverUri) { const up = await apiUpload(newsCoverUri); coverImageUrl = up.url; }
       const created = await apiFetch<News>('/news', {
         method: 'POST',
-        body: JSON.stringify({ body: newsBody.trim(), groupId }),
+        body: JSON.stringify({ body: newsBody.trim(), groupId, coverImageUrl }),
       });
       setNews((prev) => [created, ...prev]);
-      setNewsBody(''); setComposingNews(false);
+      setNewsBody(''); setNewsCoverUri(null); setComposingNews(false);
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to post.'); }
     finally { setNewsSubmitting(false); }
   };
@@ -398,7 +408,7 @@ export default function GroupDetailScreen() {
             style={styles.tabAddBtn}
             onPress={() => {
               if (tab === 'feed') { setComposingNews(true); }
-              else { router.push('/(tabs)/events' as any); }
+              else { router.push(`/admin/events/new?groupId=${groupId}` as any); }
             }}
             accessibilityLabel={zh ? '新增' : 'Add'}
             activeOpacity={0.7}
@@ -424,6 +434,21 @@ export default function GroupDetailScreen() {
                 maxLength={5000}
                 autoFocus
               />
+              <TouchableOpacity style={styles.composeImageBtn} onPress={pickNewsImage} activeOpacity={0.7}>
+                {newsCoverUri ? (
+                  <Image source={{ uri: newsCoverUri }} style={styles.composeImagePreview} />
+                ) : (
+                  <View style={styles.composeImagePlaceholder}>
+                    <Ionicons name="image-outline" size={18} color={colors.placeholder} />
+                    <Text style={styles.composeImageHint}>{zh ? '新增圖片（選填）' : 'Add image (optional)'}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              {newsCoverUri && (
+                <TouchableOpacity onPress={() => setNewsCoverUri(null)} style={{ marginTop: 4 }}>
+                  <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除圖片' : 'Remove image'}</Text>
+                </TouchableOpacity>
+              )}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
                   style={[styles.composeBtn, (newsSubmitting || !newsBody.trim()) && { opacity: 0.6 }]}
@@ -432,7 +457,7 @@ export default function GroupDetailScreen() {
                 >
                   <Text style={styles.composeBtnText}>{newsSubmitting ? (zh ? '發布中…' : 'Posting…') : (zh ? '發布' : 'Post')}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.composeCancelBtn} onPress={() => { setComposingNews(false); setNewsBody(''); }}>
+                <TouchableOpacity style={styles.composeCancelBtn} onPress={() => { setComposingNews(false); setNewsBody(''); setNewsCoverUri(null); }}>
                   <Text style={styles.composeCancelText}>{zh ? '取消' : 'Cancel'}</Text>
                 </TouchableOpacity>
               </View>
@@ -818,6 +843,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       minHeight: 80, fontSize: 14, color: colors.text,
       paddingTop: 6,
     },
+    composeImageBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: 'hidden', marginTop: 8 },
+    composeImagePlaceholder: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 10 },
+    composeImageHint: { fontSize: 12, color: colors.placeholder },
+    composeImagePreview: { width: '100%', height: 140, resizeMode: 'cover' },
     composeBtn: { backgroundColor: INDIGO, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 },
     composeBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
     composeCancelBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 },

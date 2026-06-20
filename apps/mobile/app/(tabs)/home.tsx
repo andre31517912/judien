@@ -2,14 +2,15 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, TextInput,
   StyleSheet, ActivityIndicator, Alert, RefreshControl,
-  KeyboardAvoidingView, Platform,
+  KeyboardAvoidingView, Platform, Image,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import JLogo from '../../components/JLogo';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
-import { apiFetch } from '../../lib/api';
+import { apiFetch, apiUpload } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
 import type { News } from '@judien/shared';
 
@@ -19,6 +20,7 @@ export default function HomeTab() {
   const { t, i18n } = useTranslation();
   const zh = i18n.language === 'zh';
   const isAdmin = user?.role === 'ADMIN';
+  const router = useRouter();
 
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,7 @@ export default function HomeTab() {
   const [loadError, setLoadError] = useState('');
   const [composing, setComposing] = useState(false);
   const [form, setForm] = useState({ body: '' });
+  const [coverUri, setCoverUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async (silent = false) => {
@@ -46,12 +49,24 @@ export default function HomeTab() {
 
   const handleRefresh = () => { setRefreshing(true); load(true); };
 
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.5 });
+    if (!result.canceled && result.assets[0]) setCoverUri(result.assets[0].uri);
+  };
+
   const handleCreate = async () => {
     if (!form.body.trim()) { Alert.alert(zh ? '請輸入內容' : 'Content required', zh ? '內容不能為空。' : 'Please enter some content.'); return; }
     setSaving(true);
     try {
-      await apiFetch('/news', { method: 'POST', body: JSON.stringify({ body: form.body }) });
+      let coverImageUrl: string | null = null;
+      if (coverUri) { const up = await apiUpload(coverUri); coverImageUrl = up.url; }
+      await apiFetch('/news', { method: 'POST', body: JSON.stringify({ body: form.body, coverImageUrl }) });
       setForm({ body: '' });
+      setCoverUri(null);
       setComposing(false);
       load();
     } catch (err: any) {
@@ -91,15 +106,20 @@ export default function HomeTab() {
           headerTitle: composing ? (zh ? '發布公告' : 'Create Post') : () => <JLogo />,
           headerStyle: { backgroundColor: colors.headerBg },
           headerLeft: composing ? () => (
-            <TouchableOpacity onPress={() => setComposing(false)} activeOpacity={0.7} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => { setComposing(false); setCoverUri(null); setForm({ body: '' }); }} activeOpacity={0.7} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }}>
               <Ionicons name="chevron-back" size={28} color={INDIGO} />
               <Text style={styles.backBtn}>{zh ? '返回' : 'Back'}</Text>
             </TouchableOpacity>
           ) : undefined,
           headerRight: user && !composing ? () => (
-            <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ marginRight: 16 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
-              <Text style={styles.headerBtn}>＋</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
+              <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
+                <Ionicons name="search-outline" size={22} color={INDIGO} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ padding: 8 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
+                <Text style={styles.headerBtn}>＋</Text>
+              </TouchableOpacity>
+            </View>
           ) : undefined,
         }} />
 
@@ -115,6 +135,21 @@ export default function HomeTab() {
               maxLength={5000}
               autoFocus
             />
+            <TouchableOpacity style={styles.imagePickerBtn} onPress={pickImage} activeOpacity={0.7}>
+              {coverUri ? (
+                <Image source={{ uri: coverUri }} style={styles.imagePreview} />
+              ) : (
+                <View style={styles.imagePickerPlaceholder}>
+                  <Ionicons name="image-outline" size={20} color={colors.placeholder} />
+                  <Text style={styles.imagePickerText}>{zh ? '新增圖片（選填）' : 'Add image (optional)'}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            {coverUri && (
+              <TouchableOpacity onPress={() => setCoverUri(null)} style={{ marginTop: 4 }}>
+                <Text style={{ fontSize: 13, color: '#EF4444' }}>{zh ? '移除圖片' : 'Remove image'}</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={[styles.submitBtn, (saving || !form.body.trim()) && { opacity: 0.5 }]} onPress={handleCreate} disabled={saving || !form.body.trim()}>
               <Text style={styles.submitBtnText}>{saving ? (zh ? '發布中…' : 'Posting…') : t('home.createPost')}</Text>
             </TouchableOpacity>
@@ -179,6 +214,10 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     formLabel: { fontSize: 13, fontWeight: '500', color: colors.subtext, marginBottom: 4, marginTop: 10 },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10, fontSize: 14, backgroundColor: colors.input, color: colors.inputText },
     multiline: { minHeight: 70, textAlignVertical: 'top' },
+    imagePickerBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 10, overflow: 'hidden', marginTop: 10 },
+    imagePickerPlaceholder: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12 },
+    imagePickerText: { fontSize: 13, color: colors.placeholder },
+    imagePreview: { width: '100%', height: 160, resizeMode: 'cover' },
     submitBtn: { backgroundColor: INDIGO, borderRadius: 8, padding: 14, alignItems: 'center', marginTop: 14 },
     submitBtnText: { color: '#fff', fontWeight: '600' },
     empty: { alignItems: 'center', marginTop: 60 },

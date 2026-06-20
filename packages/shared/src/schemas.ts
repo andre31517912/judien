@@ -138,6 +138,7 @@ export const CreateNewsSchema = z.object({
   groupId: z.string().min(1).optional(),
   title: z.string().max(300).default(''),
   body: z.string().max(10000).default(''),
+  coverImageUrl: z.string().url().nullable().optional(),
 });
 export type CreateNewsDto = z.infer<typeof CreateNewsSchema>;
 

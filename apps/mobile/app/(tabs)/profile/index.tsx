@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
 import { apiFetch, apiUpload } from '../../../lib/api';
@@ -47,6 +48,13 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Stack.Screen options={{
+        headerRight: () => (
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+            <Ionicons name="search-outline" size={22} color={INDIGO} />
+          </TouchableOpacity>
+        ),
+      }} />
 
       {/* Profile card */}
       <View style={styles.profileCard}>
