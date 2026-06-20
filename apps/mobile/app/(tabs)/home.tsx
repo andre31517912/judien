@@ -113,11 +113,11 @@ export default function HomeTab() {
           ) : undefined,
           headerRight: user && !composing ? () => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
-              <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
-                <Ionicons name="search-outline" size={22} color={INDIGO} />
-              </TouchableOpacity>
               <TouchableOpacity onPress={() => setComposing(true)} activeOpacity={0.7} style={{ padding: 8 }} accessibilityLabel={zh ? '建立公告' : 'Create post'}>
                 <Text style={styles.headerBtn}>＋</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
+                <Ionicons name="search-outline" size={22} color={INDIGO} />
               </TouchableOpacity>
             </View>
           ) : undefined,

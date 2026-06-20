@@ -62,11 +62,11 @@ export default function EventsTab() {
       ) : undefined,
       headerRight: !creating && user ? () => (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 8 }}>
-          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
-            <Ionicons name="search-outline" size={22} color={INDIGO} />
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => setCreating(true)} activeOpacity={0.7} style={{ padding: 8 }}>
             <Text style={{ color: INDIGO, fontSize: 24, fontWeight: '400' }}>＋</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
+            <Ionicons name="search-outline" size={22} color={INDIGO} />
           </TouchableOpacity>
         </View>
       ) : undefined,

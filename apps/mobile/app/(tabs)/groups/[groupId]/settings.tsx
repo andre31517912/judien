@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform, Share } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, Clipboard, Image, Modal, KeyboardAvoidingView, Platform, Share, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useNavigation, useRouter, useFocusEffect } from 'expo-router';
 import JLogo from '../../../../components/JLogo';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,14 +83,32 @@ export default function GroupSettingsScreen() {
   // Hierarchy
   type RelNode = { id: string; name: string };
   type Relationships = { parentGroup: RelNode | null; subgroups: RelNode[] };
+  type RelationshipRequest = { id: string; status: string; sourceGroupId: string; sourceGroupName: string; targetGroupId: string; targetGroupName: string; createdAt: string };
   const [relationships, setRelationships] = useState<Relationships | null>(null);
+  const [incomingRelRequests, setIncomingRelRequests] = useState<RelationshipRequest[]>([]);
+  const [outgoingRelRequests, setOutgoingRelRequests] = useState<RelationshipRequest[]>([]);
+  // Parent management
   const [parentSearchQuery, setParentSearchQuery] = useState('');
   const [parentSearchResults, setParentSearchResults] = useState<{ id: string; name: string; description: string }[]>([]);
   const [parentSearching, setParentSearching] = useState(false);
   const [sendingRelReq, setSendingRelReq] = useState(false);
   const [unlinkingParent, setUnlinkingParent] = useState(false);
-  type RelationshipRequest = { id: string; status: string; targetGroup: RelNode; sourceGroup: RelNode; createdAt: string };
-  const [relRequests, setRelRequests] = useState<RelationshipRequest[]>([]);
+  const [showCreateParent, setShowCreateParent] = useState(false);
+  const [newParentName, setNewParentName] = useState('');
+  const [newParentDesc, setNewParentDesc] = useState('');
+  const [creatingParent, setCreatingParent] = useState(false);
+  // Child management
+  const [childSearchQuery, setChildSearchQuery] = useState('');
+  const [childSearchResults, setChildSearchResults] = useState<{ id: string; name: string; description: string }[]>([]);
+  const [childSearching, setChildSearching] = useState(false);
+  const [linkingChild, setLinkingChild] = useState(false);
+  const [unlinkingChildId, setUnlinkingChildId] = useState<string | null>(null);
+  const [showCreateChild, setShowCreateChild] = useState(false);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildDesc, setNewChildDesc] = useState('');
+  const [childMemberIds, setChildMemberIds] = useState<string[]>([]);
+  const [creatingChild, setCreatingChild] = useState(false);
+  const [hierarchyMembers, setHierarchyMembers] = useState<RosterMember[]>([]);
 
   // Report
   const [reportYear, setReportYear] = useState(new Date().getFullYear());
@@ -140,11 +158,12 @@ export default function GroupSettingsScreen() {
   const loadData = async () => {
     if (!groupId) return;
     try {
-      const [myGroups, reqData, relData, relReqData] = await Promise.all([
+      const [myGroups, reqData, relData, relReqData, mems] = await Promise.all([
         apiFetch<Array<{ group: { discoverableBySearch: boolean; photoUrl?: string | null } }>>('/groups/me'),
         apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => []),
         apiFetch<Relationships>(`/groups/${groupId}/relationships`).catch(() => null),
-        apiFetch<RelationshipRequest[]>(`/groups/${groupId}/relationship-requests`).catch(() => []),
+        apiFetch<{ incoming: RelationshipRequest[]; outgoing: RelationshipRequest[] }>(`/groups/${groupId}/relationship-requests`).catch(() => ({ incoming: [], outgoing: [] })),
+        apiFetch<RosterMember[]>(`/groups/${groupId}/members`).catch(() => []),
       ]);
       const current = myGroups.find((m: any) => m.group.id === groupId);
       if (current) {
@@ -156,7 +175,9 @@ export default function GroupSettingsScreen() {
       }
       setJoinRequests((reqData ?? []).filter((req) => req.status === 'PENDING'));
       if (relData) setRelationships(relData);
-      setRelRequests((relReqData ?? []).filter((r) => r.status === 'PENDING'));
+      setIncomingRelRequests((relReqData?.incoming ?? []).filter((r) => r.status === 'PENDING'));
+      setOutgoingRelRequests((relReqData?.outgoing ?? []).filter((r) => r.status === 'PENDING'));
+      setHierarchyMembers(mems ?? []);
     } catch {
       setJoinRequests([]);
     }
@@ -166,10 +187,20 @@ export default function GroupSettingsScreen() {
     if (!q.trim()) { setParentSearchResults([]); return; }
     setParentSearching(true);
     try {
-      const res = await apiFetch<{ groups: { id: string; name: string; description: string }[] }>(`/search?q=${encodeURIComponent(q)}`);
-      setParentSearchResults((res as any).groups ?? []);
+      const res = await apiFetch<{ id: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(q)}`);
+      setParentSearchResults(Array.isArray(res) ? res : []);
     } catch { setParentSearchResults([]); }
     finally { setParentSearching(false); }
+  };
+
+  const searchGroupsForChild = async (q: string) => {
+    if (!q.trim()) { setChildSearchResults([]); return; }
+    setChildSearching(true);
+    try {
+      const res = await apiFetch<{ id: string; name: string; description: string }[]>(`/groups/search?q=${encodeURIComponent(q)}`);
+      setChildSearchResults(Array.isArray(res) ? res : []);
+    } catch { setChildSearchResults([]); }
+    finally { setChildSearching(false); }
   };
 
   const sendRelationshipRequest = async (targetGroupId: string) => {
@@ -186,6 +217,73 @@ export default function GroupSettingsScreen() {
       await loadData();
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to send request.'); }
     finally { setSendingRelReq(false); }
+  };
+
+  const linkExistingChild = async (childGroupId: string) => {
+    if (!groupId) return;
+    setLinkingChild(true);
+    try {
+      await apiFetch(`/groups/${childGroupId}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: groupId }),
+      });
+      Alert.alert('✓', zh ? '申請已送出，等待對方管理員審核。' : 'Request sent, awaiting approval from that group\'s admin.');
+      setChildSearchQuery('');
+      setChildSearchResults([]);
+      await loadData();
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+    finally { setLinkingChild(false); }
+  };
+
+  const createParentGroup = async () => {
+    if (!newParentName.trim()) { Alert.alert('', zh ? '請輸入群組名稱' : 'Name required'); return; }
+    setCreatingParent(true);
+    try {
+      const newGroup = await apiFetch<{ id: string }>('/groups', {
+        method: 'POST',
+        body: JSON.stringify({ name: newParentName.trim(), description: newParentDesc.trim() }),
+      });
+      const req = await apiFetch<{ id: string }>(`/groups/${groupId}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: newGroup.id }),
+      });
+      await apiFetch(`/groups/relationship-requests/${req.id}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approve' }),
+      });
+      setNewParentName('');
+      setNewParentDesc('');
+      setShowCreateParent(false);
+      await loadData();
+      Alert.alert('✓', zh ? '父群組已建立並連結。' : 'Parent group created and linked.');
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+    finally { setCreatingParent(false); }
+  };
+
+  const createChildGroup = async () => {
+    if (!newChildName.trim()) { Alert.alert('', zh ? '請輸入群組名稱' : 'Name required'); return; }
+    setCreatingChild(true);
+    try {
+      const newGroup = await apiFetch<{ id: string }>('/groups', {
+        method: 'POST',
+        body: JSON.stringify({ name: newChildName.trim(), description: newChildDesc.trim(), ...(childMemberIds.length > 0 ? { initialMemberIds: childMemberIds } : {}) }),
+      });
+      const req = await apiFetch<{ id: string }>(`/groups/${newGroup.id}/relationship-requests`, {
+        method: 'POST',
+        body: JSON.stringify({ parentGroupId: groupId }),
+      });
+      await apiFetch(`/groups/relationship-requests/${req.id}/review`, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'approve' }),
+      });
+      setNewChildName('');
+      setNewChildDesc('');
+      setChildMemberIds([]);
+      setShowCreateChild(false);
+      await loadData();
+      Alert.alert('✓', zh ? '子群組已建立並連結。' : 'Child group created and linked.');
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+    finally { setCreatingChild(false); }
   };
 
   const unlinkParent = async () => {
@@ -205,6 +303,36 @@ export default function GroupSettingsScreen() {
         }},
       ]
     );
+  };
+
+  const unlinkChild = async (childGroupId: string, childName: string) => {
+    if (!groupId) return;
+    Alert.alert(
+      zh ? '移除子群組' : 'Remove Child Group',
+      zh ? `確定要解除與「${childName}」的連結嗎？` : `Remove link with "${childName}"?`,
+      [
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        { text: zh ? '移除' : 'Remove', style: 'destructive', onPress: async () => {
+          setUnlinkingChildId(childGroupId);
+          try {
+            await apiFetch(`/groups/${childGroupId}/parent`, { method: 'PATCH', body: JSON.stringify({ parentGroupId: null }) });
+            await loadData();
+          } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+          finally { setUnlinkingChildId(null); }
+        }},
+      ]
+    );
+  };
+
+  const reviewRelRequest = async (reqId: string, action: 'approve' | 'reject') => {
+    try {
+      await apiFetch(`/groups/relationship-requests/${reqId}/review`, { method: 'POST', body: JSON.stringify({ action }) });
+      await loadData();
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+  };
+
+  const toggleChildMember = (userId: string) => {
+    setChildMemberIds((prev) => prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]);
   };
 
   useEffect(() => { loadData(); }, [groupId]);
@@ -390,7 +518,7 @@ export default function GroupSettingsScreen() {
   const TABS: { key: Tab; label: string }[] = [
     { key: 'general', label: zh ? '設定' : 'Settings' },
     { key: 'roster', label: joinRequests.length > 0 ? `${zh ? '成員' : 'Members'} (${joinRequests.length})` : (zh ? '成員' : 'Members') },
-    { key: 'hierarchy', label: relRequests.length > 0 ? `${zh ? '層級' : 'Hierarchy'} (${relRequests.length})` : (zh ? '層級' : 'Hierarchy') },
+    { key: 'hierarchy', label: incomingRelRequests.length > 0 ? `${zh ? '層級' : 'Hierarchy'} (${incomingRelRequests.length})` : (zh ? '層級' : 'Hierarchy') },
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -638,59 +766,238 @@ export default function GroupSettingsScreen() {
       {/* Hierarchy */}
       {tab === 'hierarchy' && (
         <View style={{ gap: 12 }}>
-          {/* Current parent */}
+
+          {/* ── PARENT GROUP ─────────────────────────────────── */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>{zh ? '父群組' : 'Parent Group'}</Text>
+
             {relationships?.parentGroup ? (
               <View style={{ gap: 8 }}>
-                <View style={[styles.reqRow, { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF' }]}>
-                  <Text style={[styles.reqPrimary, { color: isDark ? '#818CF8' : '#4338CA' }]}>{relationships.parentGroup.name}</Text>
-                  <Text style={styles.reqMeta}>{zh ? '目前的父群組' : 'Current parent group'}</Text>
+                <View style={[styles.reqRow, { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF', flexDirection: 'row', alignItems: 'center' }]}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.reqPrimary, { color: isDark ? '#818CF8' : '#4338CA' }]}>{relationships.parentGroup.name}</Text>
+                    <Text style={styles.reqMeta}>{zh ? '目前的父群組' : 'Current parent group'}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.unlinkBtn} onPress={unlinkParent} disabled={unlinkingParent}>
+                    {unlinkingParent
+                      ? <ActivityIndicator size="small" color="#DC2626" />
+                      : <Text style={styles.unlinkBtnText}>{zh ? '移除' : 'Remove'}</Text>}
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={[styles.primaryBtn, { backgroundColor: '#EF4444', opacity: unlinkingParent ? 0.5 : 1 }]} onPress={unlinkParent} disabled={unlinkingParent}>
-                  <Text style={styles.primaryBtnText}>{unlinkingParent ? (zh ? '移除中…' : 'Removing…') : (zh ? '移除父群組' : 'Remove Parent Group')}</Text>
-                </TouchableOpacity>
               </View>
             ) : (
               <Text style={styles.muted}>{zh ? '此群組目前沒有父群組。' : 'This group has no parent group.'}</Text>
             )}
+
+            {/* Search existing group to set as parent */}
+            {!relationships?.parentGroup && (
+              <View style={{ gap: 6, marginTop: 4 }}>
+                <Text style={styles.fieldLabel}>{zh ? '搜尋現有群組設為父群組' : 'Search existing group to set as parent'}</Text>
+                <Text style={styles.muted}>{zh ? '需要對方管理員核准。' : 'Requires approval from that group\'s admin.'}</Text>
+                <TextInput
+                  style={styles.input}
+                  value={parentSearchQuery}
+                  onChangeText={(v) => { setParentSearchQuery(v); searchGroupsForParent(v); }}
+                  placeholder={zh ? '搜尋群組…' : 'Search groups…'}
+                  placeholderTextColor={colors.placeholder}
+                />
+                {parentSearching && <ActivityIndicator size="small" color={INDIGO} style={{ alignSelf: 'flex-start' }} />}
+                {parentSearchResults.map((g) => (
+                  <View key={g.id} style={[styles.reqRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={styles.reqPrimary}>{g.name}</Text>
+                      {g.description ? <Text style={styles.reqMeta} numberOfLines={1}>{g.description}</Text> : null}
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.approveBtn, { opacity: sendingRelReq ? 0.5 : 1 }]}
+                      onPress={() => sendRelationshipRequest(g.id)}
+                      disabled={sendingRelReq}
+                    >
+                      <Text style={styles.approveBtnText}>{zh ? '申請' : 'Request'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Create new parent group */}
+            {!relationships?.parentGroup && (
+              <View style={{ marginTop: 4 }}>
+                <TouchableOpacity
+                  style={[styles.roleBtn, showCreateParent && styles.roleBtnActive, { alignSelf: 'flex-start', paddingHorizontal: 14 }]}
+                  onPress={() => setShowCreateParent((v) => !v)}
+                >
+                  <Text style={[styles.roleBtnText, showCreateParent && styles.roleBtnTextActive]}>
+                    {zh ? (showCreateParent ? '取消建立' : '＋ 建立新父群組') : (showCreateParent ? 'Cancel' : '＋ Create New Parent Group')}
+                  </Text>
+                </TouchableOpacity>
+                {showCreateParent && (
+                  <View style={{ gap: 8, marginTop: 8 }}>
+                    <TextInput
+                      style={styles.input}
+                      value={newParentName}
+                      onChangeText={setNewParentName}
+                      placeholder={zh ? '父群組名稱（必填）' : 'Parent group name (required)'}
+                      placeholderTextColor={colors.placeholder}
+                    />
+                    <TextInput
+                      style={[styles.input, styles.textArea]}
+                      value={newParentDesc}
+                      onChangeText={setNewParentDesc}
+                      placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+                      placeholderTextColor={colors.placeholder}
+                      multiline
+                    />
+                    <TouchableOpacity
+                      style={[styles.primaryBtn, { opacity: creatingParent ? 0.5 : 1 }]}
+                      onPress={createParentGroup}
+                      disabled={creatingParent}
+                    >
+                      <Text style={styles.primaryBtnText}>{creatingParent ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立並連結父群組' : 'Create & Link Parent Group')}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
 
-          {/* Subgroups */}
-          {(relationships?.subgroups?.length ?? 0) > 0 && (
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>{zh ? '子群組' : 'Subgroups'}</Text>
-              {relationships!.subgroups.map((sg) => (
-                <View key={sg.id} style={styles.reqRow}>
-                  <Text style={styles.reqPrimary}>{sg.name}</Text>
+          {/* ── CHILD GROUPS ─────────────────────────────────── */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{zh ? '子群組' : 'Child Groups'}</Text>
+
+            {(relationships?.subgroups?.length ?? 0) === 0 ? (
+              <Text style={styles.muted}>{zh ? '此群組目前沒有子群組。' : 'No child groups yet.'}</Text>
+            ) : (
+              relationships!.subgroups.map((sg) => (
+                <View key={sg.id} style={[styles.reqRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                  <Text style={[styles.reqPrimary, { flex: 1 }]}>{sg.name}</Text>
+                  <TouchableOpacity
+                    style={[styles.unlinkBtn, { opacity: unlinkingChildId === sg.id ? 0.5 : 1 }]}
+                    onPress={() => unlinkChild(sg.id, sg.name)}
+                    disabled={unlinkingChildId === sg.id}
+                  >
+                    {unlinkingChildId === sg.id
+                      ? <ActivityIndicator size="small" color="#DC2626" />
+                      : <Text style={styles.unlinkBtnText}>{zh ? '移除' : 'Remove'}</Text>}
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+
+            {/* Link existing group as child */}
+            <View style={{ gap: 6, marginTop: 4 }}>
+              <Text style={styles.fieldLabel}>{zh ? '搜尋現有群組設為子群組' : 'Search existing group to add as child'}</Text>
+              <TextInput
+                style={styles.input}
+                value={childSearchQuery}
+                onChangeText={(v) => { setChildSearchQuery(v); searchGroupsForChild(v); }}
+                placeholder={zh ? '搜尋群組…' : 'Search groups…'}
+                placeholderTextColor={colors.placeholder}
+              />
+              {childSearching && <ActivityIndicator size="small" color={INDIGO} style={{ alignSelf: 'flex-start' }} />}
+              {childSearchResults.map((g) => (
+                <View key={g.id} style={[styles.reqRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={styles.reqPrimary}>{g.name}</Text>
+                    {g.description ? <Text style={styles.reqMeta} numberOfLines={1}>{g.description}</Text> : null}
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.approveBtn, { opacity: linkingChild ? 0.5 : 1 }]}
+                    onPress={() => linkExistingChild(g.id)}
+                    disabled={linkingChild}
+                  >
+                    <Text style={styles.approveBtnText}>{zh ? '申請' : 'Request'}</Text>
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>
-          )}
 
-          {/* Pending relationship requests */}
-          {relRequests.length > 0 && (
+            {/* Create new child group */}
+            <View style={{ marginTop: 4 }}>
+              <TouchableOpacity
+                style={[styles.roleBtn, showCreateChild && styles.roleBtnActive, { alignSelf: 'flex-start', paddingHorizontal: 14 }]}
+                onPress={() => setShowCreateChild((v) => !v)}
+              >
+                <Text style={[styles.roleBtnText, showCreateChild && styles.roleBtnTextActive]}>
+                  {zh ? (showCreateChild ? '取消建立' : '＋ 建立新子群組') : (showCreateChild ? 'Cancel' : '＋ Create New Child Group')}
+                </Text>
+              </TouchableOpacity>
+              {showCreateChild && (
+                <View style={{ gap: 8, marginTop: 8 }}>
+                  <TextInput
+                    style={styles.input}
+                    value={newChildName}
+                    onChangeText={setNewChildName}
+                    placeholder={zh ? '子群組名稱（必填）' : 'Child group name (required)'}
+                    placeholderTextColor={colors.placeholder}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={newChildDesc}
+                    onChangeText={setNewChildDesc}
+                    placeholder={zh ? '描述（選填）' : 'Description (optional)'}
+                    placeholderTextColor={colors.placeholder}
+                    multiline
+                  />
+                  {hierarchyMembers.length > 0 && (
+                    <View style={{ gap: 4 }}>
+                      <Text style={styles.fieldLabel}>{zh ? '將現有成員加入子群組（可多選）' : 'Pull existing members into child group (optional)'}</Text>
+                      <View style={{ gap: 4 }}>
+                        {hierarchyMembers.map((m) => {
+                          const selected = childMemberIds.includes(m.userId);
+                          return (
+                            <TouchableOpacity
+                              key={m.userId}
+                              style={[styles.memberCheckRow, selected && styles.memberCheckRowSelected]}
+                              onPress={() => toggleChildMember(m.userId)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                                {selected && <Text style={styles.checkmark}>✓</Text>}
+                              </View>
+                              <View style={{ flex: 1 }}>
+                                <Text style={[styles.reqPrimary, selected && { color: isDark ? '#818CF8' : '#4338CA' }]}>
+                                  {m.groupNickname ?? m.displayName ?? m.email ?? m.userId}
+                                </Text>
+                                {m.email ? <Text style={styles.reqMeta}>{m.email}</Text> : null}
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                      {childMemberIds.length > 0 && (
+                        <Text style={[styles.muted, { color: isDark ? '#818CF8' : '#4338CA' }]}>
+                          {zh ? `已選 ${childMemberIds.length} 人` : `${childMemberIds.length} member${childMemberIds.length > 1 ? 's' : ''} selected`}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    style={[styles.primaryBtn, { opacity: creatingChild ? 0.5 : 1 }]}
+                    onPress={createChildGroup}
+                    disabled={creatingChild}
+                  >
+                    <Text style={styles.primaryBtnText}>{creatingChild ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立並連結子群組' : 'Create & Link Child Group')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* ── INCOMING REQUESTS ────────────────────────────── */}
+          {incomingRelRequests.length > 0 && (
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>{zh ? `待審核層級申請 (${relRequests.length})` : `Pending Hierarchy Requests (${relRequests.length})`}</Text>
-              {relRequests.map((req) => (
+              <Text style={styles.sectionTitle}>{zh ? `收到的層級申請 (${incomingRelRequests.length})` : `Incoming Hierarchy Requests (${incomingRelRequests.length})`}</Text>
+              <Text style={styles.muted}>{zh ? '有群組申請成為此群組的子群組。' : 'These groups are requesting to become a child of this group.'}</Text>
+              {incomingRelRequests.map((req) => (
                 <View key={req.id} style={styles.reqRow}>
-                  <Text style={styles.reqPrimary}>{req.sourceGroup?.name ?? ''} → {req.targetGroup?.name ?? ''}</Text>
-                  <Text style={styles.reqMeta}>{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
+                  <Text style={styles.reqPrimary}>{req.sourceGroupName}</Text>
+                  <Text style={styles.reqMeta}>{zh ? '申請成為子群組' : 'Requesting to become a child group'} · {new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
                   <View style={styles.actionsRow}>
-                    <TouchableOpacity style={styles.approveBtn} onPress={async () => {
-                      try {
-                        await apiFetch(`/groups/relationship-requests/${req.id}/review`, { method: 'POST', body: JSON.stringify({ action: 'approve' }) });
-                        await loadData();
-                      } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
-                    }}>
+                    <TouchableOpacity style={styles.approveBtn} onPress={() => reviewRelRequest(req.id, 'approve')}>
                       <Text style={styles.approveBtnText}>{zh ? '核准' : 'Approve'}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.rejectBtn} onPress={async () => {
-                      try {
-                        await apiFetch(`/groups/relationship-requests/${req.id}/review`, { method: 'POST', body: JSON.stringify({ action: 'reject' }) });
-                        await loadData();
-                      } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
-                    }}>
+                    <TouchableOpacity style={styles.rejectBtn} onPress={() => reviewRelRequest(req.id, 'reject')}>
                       <Text style={styles.rejectBtnText}>{zh ? '拒絕' : 'Reject'}</Text>
                     </TouchableOpacity>
                   </View>
@@ -699,36 +1006,20 @@ export default function GroupSettingsScreen() {
             </View>
           )}
 
-          {/* Request a parent group */}
-          {!relationships?.parentGroup && (
+          {/* ── OUTGOING REQUESTS ────────────────────────────── */}
+          {outgoingRelRequests.length > 0 && (
             <View style={styles.card}>
-              <Text style={styles.sectionTitle}>{zh ? '申請加入父群組' : 'Request Parent Group'}</Text>
-              <Text style={styles.muted}>{zh ? '搜尋並申請將此群組設為另一個群組的子群組。需要對方管理員核准。' : 'Search and request to make this group a child of another group. Requires approval from that group\'s admin.'}</Text>
-              <TextInput
-                style={[styles.input, { marginTop: 8 }]}
-                value={parentSearchQuery}
-                onChangeText={(v) => { setParentSearchQuery(v); searchGroupsForParent(v); }}
-                placeholder={zh ? '搜尋群組…' : 'Search groups…'}
-                placeholderTextColor={colors.placeholder}
-              />
-              {parentSearching && <Text style={styles.muted}>{zh ? '搜尋中…' : 'Searching…'}</Text>}
-              {parentSearchResults.map((g) => (
-                <View key={g.id} style={styles.reqRow}>
-                  <View style={{ flex: 1, gap: 2 }}>
-                    <Text style={styles.reqPrimary}>{g.name}</Text>
-                    {g.description ? <Text style={styles.reqMeta} numberOfLines={1}>{g.description}</Text> : null}
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.approveBtn, { opacity: sendingRelReq ? 0.5 : 1 }]}
-                    onPress={() => sendRelationshipRequest(g.id)}
-                    disabled={sendingRelReq}
-                  >
-                    <Text style={styles.approveBtnText}>{zh ? '申請' : 'Request'}</Text>
-                  </TouchableOpacity>
+              <Text style={styles.sectionTitle}>{zh ? `已送出的申請 (${outgoingRelRequests.length})` : `Outgoing Requests (${outgoingRelRequests.length})`}</Text>
+              <Text style={styles.muted}>{zh ? '等待對方管理員審核。' : 'Waiting for approval from the other group\'s admin.'}</Text>
+              {outgoingRelRequests.map((req) => (
+                <View key={req.id} style={styles.reqRow}>
+                  <Text style={styles.reqPrimary}>{zh ? '申請加入' : 'Requesting to join'}: {req.targetGroupName}</Text>
+                  <Text style={styles.reqMeta}>{new Date(req.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
                 </View>
               ))}
             </View>
           )}
+
         </View>
       )}
 
@@ -947,5 +1238,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     donationHintTitle: { fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase', letterSpacing: 0.5 },
     donationHintText: { fontSize: 11, color: colors.subtext },
     donationHintExample: { fontSize: 11, color: colors.placeholder, fontStyle: 'italic' },
+    memberCheckRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10 },
+    memberCheckRowSelected: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF' },
+    checkbox: { width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+    checkboxSelected: { borderColor: INDIGO, backgroundColor: INDIGO },
+    checkmark: { color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 14 },
   });
 }
