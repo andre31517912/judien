@@ -219,7 +219,10 @@ export default function GroupSettingsScreen() {
       setParentSearchQuery('');
       setParentSearchResults([]);
       await loadData();
-    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to send request.'); }
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to send request.');
+      await loadData();
+    }
     finally { setSendingRelReq(false); }
   };
 
@@ -235,7 +238,10 @@ export default function GroupSettingsScreen() {
       setChildSearchQuery('');
       setChildSearchResults([]);
       await loadData();
-    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed.');
+      await loadData();
+    }
     finally { setLinkingChild(false); }
   };
 

@@ -26,7 +26,7 @@ export default function ProfileScreen() {
     if (user) setPhotoUrl((user as any).photoUrl ?? null);
   }, [user]);
 
-  const handlePickPhoto = async () => {
+  const doPickFromLibrary = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.5 });
@@ -38,6 +38,27 @@ export default function ProfileScreen() {
       setPhotoUrl(url);
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Upload failed'); }
     finally { setPhotoUploading(false); }
+  };
+
+  const handlePickPhoto = async () => {
+    if (photoUrl) {
+      Alert.alert(
+        zh ? '大頭貼' : 'Profile Photo',
+        undefined,
+        [
+          { text: zh ? '移除照片' : 'Remove Photo', style: 'destructive', onPress: async () => {
+            try {
+              await apiFetch('/users/me', { method: 'PATCH', body: JSON.stringify({ photoUrl: null }) });
+              setPhotoUrl(null);
+            } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
+          }},
+          { text: zh ? '更換照片' : 'Replace Photo', onPress: doPickFromLibrary },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await doPickFromLibrary();
   };
 
   const handleLogout = async () => { await logout(); };

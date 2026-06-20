@@ -97,7 +97,7 @@ export default function EditEventScreen() {
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
 
-  const pickCover = async () => {
+  const doPickCover = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required');
@@ -120,6 +120,22 @@ export default function EditEventScreen() {
     } finally {
       setCoverUploading(false);
     }
+  };
+
+  const pickCover = async () => {
+    if (form.coverImageUrl) {
+      Alert.alert(
+        zh ? '封面圖片' : 'Cover Photo',
+        undefined,
+        [
+          { text: zh ? '移除圖片' : 'Remove', style: 'destructive', onPress: () => setForm((f) => ({ ...f, coverImageUrl: '' })) },
+          { text: zh ? '更換圖片' : 'Replace', onPress: doPickCover },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await doPickCover();
   };
 
   const addReminder = (minutes: number) => {
@@ -219,28 +235,19 @@ export default function EditEventScreen() {
       <F label={zh ? '幣別' : 'Currency'} k="feeCurrency" />
       <View style={styles.field}>
         <Text style={styles.label}>{zh ? '封面圖' : 'Cover Image'}</Text>
-        {form.coverImageUrl ? (
-          <Image source={{ uri: form.coverImageUrl }} style={{ width: '100%', height: 180, borderRadius: 10, marginBottom: 8 }} resizeMode="cover" />
-        ) : null}
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <TouchableOpacity
-            style={[styles.input, { justifyContent: 'center', alignItems: 'center', flex: 1 }]}
-            onPress={pickCover}
-            disabled={coverUploading}
-          >
+        <TouchableOpacity
+          style={[styles.input, { justifyContent: 'center', alignItems: 'center' }]}
+          onPress={pickCover}
+          disabled={coverUploading}
+        >
+          {form.coverImageUrl && !coverUploading ? (
+            <Image source={{ uri: form.coverImageUrl }} style={{ width: '100%', height: 180, borderRadius: 8 }} resizeMode="cover" />
+          ) : (
             <Text style={{ color: INDIGO, fontWeight: '600', fontSize: 14 }}>
-              {coverUploading ? (zh ? '上傳中…' : 'Uploading…') : (form.coverImageUrl ? (zh ? '更換圖片' : 'Change Photo') : (zh ? '上傳封面圖' : 'Upload Cover Photo'))}
+              {coverUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '點擊上傳或更換封面圖' : 'Tap to upload cover photo')}
             </Text>
-          </TouchableOpacity>
-          {form.coverImageUrl ? (
-            <TouchableOpacity
-              style={[styles.input, { justifyContent: 'center', alignItems: 'center' }]}
-              onPress={() => setForm((f) => ({ ...f, coverImageUrl: '' }))}
-            >
-              <Text style={{ color: '#EF4444', fontWeight: '600', fontSize: 14 }}>{zh ? '移除' : 'Remove'}</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>

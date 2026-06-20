@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -33,6 +33,8 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   type Invite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
   const [allInvites, setAllInvites] = useState<Invite[]>([]);
@@ -212,13 +214,36 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               </svg>
             </div>
           )}
-          <label className={`absolute bottom-0 right-0 w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow-md transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}>
-            <input type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
+          <button
+            type="button"
+            onClick={() => photoUrl ? setShowPhotoMenu((v) => !v) : photoInputRef.current?.click()}
+            disabled={photoUploading}
+            className={`absolute bottom-0 right-0 w-8 h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 flex items-center justify-center cursor-pointer shadow-md transition ${photoUploading ? 'opacity-50 pointer-events-none' : ''}`}
+          >
             <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-          </label>
+          </button>
+          {showPhotoMenu && photoUrl && (
+            <div className="absolute bottom-9 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-20 min-w-[160px]">
+              <button
+                type="button"
+                onClick={() => { setShowPhotoMenu(false); handlePhotoDelete(); }}
+                className="block w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                {zh ? '移除照片' : 'Remove photo'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowPhotoMenu(false); photoInputRef.current?.click(); }}
+                className="block w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+              >
+                {zh ? '更換照片' : 'Replace photo'}
+              </button>
+            </div>
+          )}
+          <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
         </div>
         <div className="flex flex-col gap-1">
           <p className="text-sm font-semibold text-gray-800 dark:text-white">{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</p>
@@ -228,11 +253,6 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
             <span className={`self-start text-xs font-medium px-2.5 py-1 rounded-full ${user.role === 'ADMIN' ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}>
               {user.role === 'ADMIN' ? (zh ? '管理員' : 'Admin') : (zh ? '用戶' : 'User')}
             </span>
-          )}
-          {photoUrl && (
-            <button type="button" onClick={handlePhotoDelete} className="text-xs text-red-500 hover:text-red-600 text-left mt-1">
-              {zh ? '刪除大頭照' : 'Remove photo'}
-            </button>
           )}
         </div>
       </div>

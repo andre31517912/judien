@@ -39,7 +39,7 @@ export default function NewEventScreen() {
   const set = (k: keyof typeof form) => (val: string) =>
     setForm((prev) => ({ ...prev, [k]: val }));
 
-  const pickImage = async () => {
+  const doPickImage = async () => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -56,6 +56,22 @@ export default function NewEventScreen() {
     if (!result.canceled && result.assets[0]) {
       setCoverUri(result.assets[0].uri);
     }
+  };
+
+  const pickImage = async () => {
+    if (coverUri) {
+      Alert.alert(
+        zh ? '封面圖片' : 'Cover Photo',
+        undefined,
+        [
+          { text: zh ? '移除圖片' : 'Remove', style: 'destructive', onPress: () => setCoverUri(null) },
+          { text: zh ? '更換圖片' : 'Replace', onPress: doPickImage },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await doPickImage();
   };
 
   /** Normalise "YYYY-MM-DD HH:MM" (space) to ISO "YYYY-MM-DDTHH:MM" before parsing.
@@ -191,15 +207,10 @@ export default function NewEventScreen() {
           ) : (
             <View style={styles.photoPlaceholder}>
               <Text style={styles.photoIcon}>🖼️</Text>
-              <Text style={styles.photoHint}>Tap to upload a photo</Text>
+              <Text style={styles.photoHint}>{zh ? '點擊上傳封面圖' : 'Tap to upload a photo'}</Text>
             </View>
           )}
         </TouchableOpacity>
-        {coverUri && (
-          <TouchableOpacity onPress={() => setCoverUri(null)} style={styles.removePhoto}>
-            <Text style={styles.removePhotoText}>Remove photo</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <TouchableOpacity

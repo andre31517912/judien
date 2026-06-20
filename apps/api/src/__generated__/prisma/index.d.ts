@@ -3132,6 +3132,7 @@ export namespace Prisma {
     passwordHash: string | null
     phoneE164: string | null
     displayName: string | null
+    photoUrl: string | null
     preferredLanguage: string | null
     colorTheme: string | null
     role: $Enums.Role | null
@@ -3151,6 +3152,7 @@ export namespace Prisma {
     passwordHash: string | null
     phoneE164: string | null
     displayName: string | null
+    photoUrl: string | null
     preferredLanguage: string | null
     colorTheme: string | null
     role: $Enums.Role | null
@@ -3170,6 +3172,7 @@ export namespace Prisma {
     passwordHash: number
     phoneE164: number
     displayName: number
+    photoUrl: number
     preferredLanguage: number
     colorTheme: number
     role: number
@@ -3191,6 +3194,7 @@ export namespace Prisma {
     passwordHash?: true
     phoneE164?: true
     displayName?: true
+    photoUrl?: true
     preferredLanguage?: true
     colorTheme?: true
     role?: true
@@ -3210,6 +3214,7 @@ export namespace Prisma {
     passwordHash?: true
     phoneE164?: true
     displayName?: true
+    photoUrl?: true
     preferredLanguage?: true
     colorTheme?: true
     role?: true
@@ -3229,6 +3234,7 @@ export namespace Prisma {
     passwordHash?: true
     phoneE164?: true
     displayName?: true
+    photoUrl?: true
     preferredLanguage?: true
     colorTheme?: true
     role?: true
@@ -3321,6 +3327,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164: string | null
     displayName: string | null
+    photoUrl: string | null
     preferredLanguage: string
     colorTheme: string
     role: $Enums.Role
@@ -3357,6 +3364,7 @@ export namespace Prisma {
     passwordHash?: boolean
     phoneE164?: boolean
     displayName?: boolean
+    photoUrl?: boolean
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
@@ -3401,6 +3409,7 @@ export namespace Prisma {
     passwordHash?: boolean
     phoneE164?: boolean
     displayName?: boolean
+    photoUrl?: boolean
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
@@ -3420,6 +3429,7 @@ export namespace Prisma {
     passwordHash?: boolean
     phoneE164?: boolean
     displayName?: boolean
+    photoUrl?: boolean
     preferredLanguage?: boolean
     colorTheme?: boolean
     role?: boolean
@@ -3496,6 +3506,7 @@ export namespace Prisma {
       passwordHash: string
       phoneE164: string | null
       displayName: string | null
+      photoUrl: string | null
       preferredLanguage: string
       colorTheme: string
       role: $Enums.Role
@@ -3929,6 +3940,7 @@ export namespace Prisma {
     readonly passwordHash: FieldRef<"User", 'String'>
     readonly phoneE164: FieldRef<"User", 'String'>
     readonly displayName: FieldRef<"User", 'String'>
+    readonly photoUrl: FieldRef<"User", 'String'>
     readonly preferredLanguage: FieldRef<"User", 'String'>
     readonly colorTheme: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
@@ -24376,6 +24388,7 @@ export namespace Prisma {
     passwordHash: 'passwordHash',
     phoneE164: 'phoneE164',
     displayName: 'displayName',
+    photoUrl: 'photoUrl',
     preferredLanguage: 'preferredLanguage',
     colorTheme: 'colorTheme',
     role: 'role',
@@ -24941,6 +24954,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     phoneE164?: StringNullableFilter<"User"> | string | null
     displayName?: StringNullableFilter<"User"> | string | null
+    photoUrl?: StringNullableFilter<"User"> | string | null
     preferredLanguage?: StringFilter<"User"> | string
     colorTheme?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
@@ -24984,6 +24998,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
+    photoUrl?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
@@ -25032,6 +25047,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     passwordHash?: StringFilter<"User"> | string
     displayName?: StringNullableFilter<"User"> | string | null
+    photoUrl?: StringNullableFilter<"User"> | string | null
     preferredLanguage?: StringFilter<"User"> | string
     colorTheme?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
@@ -25073,6 +25089,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     phoneE164?: SortOrderInput | SortOrder
     displayName?: SortOrderInput | SortOrder
+    photoUrl?: SortOrderInput | SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
@@ -25098,6 +25115,7 @@ export namespace Prisma {
     passwordHash?: StringWithAggregatesFilter<"User"> | string
     phoneE164?: StringNullableWithAggregatesFilter<"User"> | string | null
     displayName?: StringNullableWithAggregatesFilter<"User"> | string | null
+    photoUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
     preferredLanguage?: StringWithAggregatesFilter<"User"> | string
     colorTheme?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
@@ -26681,6 +26699,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -26724,6 +26743,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -26767,6 +26787,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -26810,6 +26831,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -26853,6 +26875,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -26872,6 +26895,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -26891,6 +26915,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -28752,6 +28777,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     phoneE164?: SortOrder
     displayName?: SortOrder
+    photoUrl?: SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
@@ -28771,6 +28797,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     phoneE164?: SortOrder
     displayName?: SortOrder
+    photoUrl?: SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
@@ -28790,6 +28817,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     phoneE164?: SortOrder
     displayName?: SortOrder
+    photoUrl?: SortOrder
     preferredLanguage?: SortOrder
     colorTheme?: SortOrder
     role?: SortOrder
@@ -34503,6 +34531,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -34545,6 +34574,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -34878,6 +34908,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -34920,6 +34951,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -35255,6 +35287,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -35297,6 +35330,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -35420,6 +35454,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -35462,6 +35497,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -35628,6 +35664,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -35670,6 +35707,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -35845,6 +35883,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -35887,6 +35926,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36063,6 +36103,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36105,6 +36146,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36152,6 +36194,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36194,6 +36237,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36317,6 +36361,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36359,6 +36404,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36412,6 +36458,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36454,6 +36501,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36555,6 +36603,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36597,6 +36646,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36720,6 +36770,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36762,6 +36813,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -36863,6 +36915,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -36905,6 +36958,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -37083,6 +37137,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37125,6 +37180,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37267,6 +37323,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -37309,6 +37366,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -37426,6 +37484,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37468,6 +37527,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37693,6 +37753,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -37735,6 +37796,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -37858,6 +37920,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37900,6 +37963,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -37995,6 +38059,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -38037,6 +38102,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -38154,6 +38220,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -38196,6 +38263,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -38238,6 +38306,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -38280,6 +38349,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -38831,6 +38901,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -38873,6 +38944,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39166,6 +39238,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39208,6 +39281,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39308,6 +39382,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39350,6 +39425,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39408,6 +39484,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39450,6 +39527,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39562,6 +39640,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39604,6 +39683,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39646,6 +39726,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39688,6 +39769,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39735,6 +39817,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39777,6 +39860,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -39888,6 +39972,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39930,6 +40015,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -39983,6 +40069,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40025,6 +40112,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40179,6 +40267,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40221,6 +40310,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40268,6 +40358,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40310,6 +40401,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40427,6 +40519,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40469,6 +40562,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40522,6 +40616,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40564,6 +40659,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -40712,6 +40808,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40754,6 +40851,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40801,6 +40899,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -40843,6 +40942,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41019,6 +41119,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41061,6 +41162,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41114,6 +41216,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41156,6 +41259,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41251,6 +41355,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41293,6 +41398,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41340,6 +41446,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41382,6 +41489,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41499,6 +41607,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41541,6 +41650,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41594,6 +41704,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41636,6 +41747,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41678,6 +41790,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41720,6 +41833,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41767,6 +41881,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41809,6 +41924,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -41867,6 +41983,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41909,6 +42026,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -41962,6 +42080,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -42004,6 +42123,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -42046,6 +42166,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -42088,6 +42209,7 @@ export namespace Prisma {
     passwordHash: string
     phoneE164?: string | null
     displayName?: string | null
+    photoUrl?: string | null
     preferredLanguage?: string
     colorTheme?: string
     role?: $Enums.Role
@@ -42199,6 +42321,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
@@ -42241,6 +42364,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
     displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     preferredLanguage?: StringFieldUpdateOperationsInput | string
     colorTheme?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role

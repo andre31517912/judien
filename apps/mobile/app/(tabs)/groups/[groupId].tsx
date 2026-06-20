@@ -283,11 +283,27 @@ export default function GroupDetailScreen() {
     finally { setNicknameSaving(false); }
   };
 
-  const pickNewsImage = async () => {
+  const doPickNewsImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!status || status !== 'granted') { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.5 });
     if (!result.canceled && result.assets[0]) setNewsCoverUri(result.assets[0].uri);
+  };
+
+  const pickNewsImage = async () => {
+    if (newsCoverUri) {
+      Alert.alert(
+        zh ? '封面圖片' : 'Cover Photo',
+        undefined,
+        [
+          { text: zh ? '移除圖片' : 'Remove', style: 'destructive', onPress: () => setNewsCoverUri(null) },
+          { text: zh ? '更換圖片' : 'Replace', onPress: doPickNewsImage },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await doPickNewsImage();
   };
 
   const submitNews = async () => {
@@ -451,11 +467,6 @@ export default function GroupDetailScreen() {
                   </View>
                 )}
               </TouchableOpacity>
-              {newsCoverUri && (
-                <TouchableOpacity onPress={() => setNewsCoverUri(null)} style={{ marginTop: 4 }}>
-                  <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除圖片' : 'Remove image'}</Text>
-                </TouchableOpacity>
-              )}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TouchableOpacity
                   style={[styles.composeBtn, (newsSubmitting || !newsBody.trim()) && { opacity: 0.6 }]}

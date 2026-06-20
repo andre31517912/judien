@@ -49,13 +49,29 @@ export default function HomeTab() {
 
   const handleRefresh = () => { setRefreshing(true); load(true); };
 
-  const pickImage = async () => {
+  const doPickImage = async () => {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') { Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required'); return; }
     }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [4, 3], quality: 0.5 });
     if (!result.canceled && result.assets[0]) setCoverUri(result.assets[0].uri);
+  };
+
+  const pickImage = async () => {
+    if (coverUri) {
+      Alert.alert(
+        zh ? '封面圖片' : 'Cover Photo',
+        undefined,
+        [
+          { text: zh ? '移除圖片' : 'Remove', style: 'destructive', onPress: () => setCoverUri(null) },
+          { text: zh ? '更換圖片' : 'Replace', onPress: doPickImage },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ]
+      );
+      return;
+    }
+    await doPickImage();
   };
 
   const handleCreate = async () => {
@@ -145,11 +161,6 @@ export default function HomeTab() {
                 </View>
               )}
             </TouchableOpacity>
-            {coverUri && (
-              <TouchableOpacity onPress={() => setCoverUri(null)} style={{ marginTop: 4 }}>
-                <Text style={{ fontSize: 13, color: '#EF4444' }}>{zh ? '移除圖片' : 'Remove image'}</Text>
-              </TouchableOpacity>
-            )}
             <TouchableOpacity style={[styles.submitBtn, (saving || !form.body.trim()) && { opacity: 0.5 }]} onPress={handleCreate} disabled={saving || !form.body.trim()}>
               <Text style={styles.submitBtnText}>{saving ? (zh ? '發布中…' : 'Posting…') : t('home.createPost')}</Text>
             </TouchableOpacity>
