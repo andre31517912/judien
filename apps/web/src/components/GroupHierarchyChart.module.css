@@ -212,6 +212,36 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+.nodeBoxLocked {
+  background: #f9fafb;
+  border: 1.5px dashed #d1d5db;
+  color: #9ca3af;
+  cursor: default;
+}
+
+.nodeBoxLocked:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+:global(.dark) .nodeBoxLocked {
+  background: #1f2937;
+  border-color: #374151;
+  color: #6b7280;
+}
+
+.legendDotLocked {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px dashed #d1d5db;
+  flex-shrink: 0;
+}
+
+:global(.dark) .legendDotLocked {
+  border-color: #374151;
+}
+
 /* Loading spinner */
 .spinner {
   width: 20px;

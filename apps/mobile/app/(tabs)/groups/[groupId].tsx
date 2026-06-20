@@ -4,6 +4,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -92,6 +93,9 @@ export default function GroupDetailScreen() {
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [relationships, setRelationships] = useState<GroupRelationships | null>(null);
 
+  const [showHierarchy, setShowHierarchy] = useState(false);
+  const [myGroupIds, setMyGroupIds] = useState<string[]>([]);
+
   const [memberSearch, setMemberSearch] = useState('');
   const [editingNicknameFor, setEditingNicknameFor] = useState<string | null>(null);
   const [nicknameInput, setNicknameInput] = useState('');
@@ -159,6 +163,7 @@ export default function GroupDetailScreen() {
 
       const current = myGroups.find((item) => item.group.id === groupId) ?? null;
       setGroupItem(current);
+      setMyGroupIds(myGroups.map((g) => g.group.id));
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
@@ -359,6 +364,14 @@ export default function GroupDetailScreen() {
               <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
             ) : null}
           </View>
+          <TouchableOpacity
+            onPress={() => setShowHierarchy(true)}
+            style={styles.hierarchyBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="git-network-outline" size={14} color={INDIGO} />
+            <Text style={styles.hierarchyBtnText}>{zh ? '層級' : 'Hierarchy'}</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -556,6 +569,127 @@ export default function GroupDetailScreen() {
         </ScrollView>
       )}
 
+      {/* ── Hierarchy Modal ── */}
+      <Modal visible={showHierarchy} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowHierarchy(false)}>
+        <View style={[styles.hierModalHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <Text style={[styles.hierModalTitle, { color: colors.text }]}>{zh ? '群組層級' : 'Group Hierarchy'}</Text>
+          <TouchableOpacity onPress={() => setShowHierarchy(false)} style={styles.hierModalClose} activeOpacity={0.7}>
+            <Ionicons name="close" size={22} color={colors.subtext} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={{ backgroundColor: colors.bg }} contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+          {!relationships ? (
+            <Text style={{ color: colors.placeholder, textAlign: 'center', marginTop: 40 }}>{zh ? '無層級資料' : 'No hierarchy data'}</Text>
+          ) : (() => {
+            const lineage = relationships.lineage ?? [];
+            const tree = relationships.tree ?? [];
+            const ancestors = lineage.filter((n) => n.id !== groupId);
+            return (
+              <View style={{ gap: 6 }}>
+                {/* Legend */}
+                <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: INDIGO }} />
+                    <Text style={{ fontSize: 11, color: colors.subtext }}>{zh ? '目前群組' : 'Current'}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.border }} />
+                    <Text style={{ fontSize: 11, color: colors.subtext }}>{zh ? '其他群組' : 'Other group'}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <View style={{ width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.border }} />
+                    <Text style={{ fontSize: 11, color: colors.subtext }}>{zh ? '未加入' : 'Not joined'}</Text>
+                  </View>
+                </View>
+
+                {/* Ancestor chain */}
+                {ancestors.map((ancestor, i) => {
+                  const isMember = myGroupIds.includes(ancestor.id);
+                  return (
+                    <View key={ancestor.id} style={{ marginLeft: i * 16 }}>
+                      {isMember ? (
+                        <TouchableOpacity
+                          onPress={() => { setShowHierarchy(false); router.push(`/(tabs)/groups/${ancestor.id}` as any); }}
+                          style={[styles.hierNode, { borderColor: colors.border, backgroundColor: colors.card }]}
+                          activeOpacity={0.75}
+                        >
+                          <Text style={[styles.hierNodeText, { color: colors.text }]} numberOfLines={1}>{ancestor.name}</Text>
+                          <Ionicons name="chevron-forward" size={14} color={colors.placeholder} />
+                        </TouchableOpacity>
+                      ) : (
+                        <View style={[styles.hierNode, { borderColor: colors.border, borderStyle: 'dashed', backgroundColor: colors.bg }]}>
+                          <Text style={[styles.hierNodeText, { color: colors.placeholder }]} numberOfLines={1}>{ancestor.name}</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+
+                {/* Current group */}
+                <View style={{ marginLeft: ancestors.length * 16 }}>
+                  <View style={[styles.hierNode, { borderColor: INDIGO, borderWidth: 2, backgroundColor: isDark ? 'rgba(99,102,241,0.15)' : '#EEF2FF' }]}>
+                    <Text style={[styles.hierNodeText, { color: isDark ? '#A5B4FC' : '#4338CA', fontWeight: '700' }]} numberOfLines={1}>{groupItem.group.name}</Text>
+                    <View style={{ backgroundColor: INDIGO, borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1 }}>
+                      <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{zh ? '目前' : 'YOU'}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Children */}
+                {tree.map((child) => {
+                  const isMember = myGroupIds.includes(child.id);
+                  return (
+                    <View key={child.id} style={{ marginLeft: (ancestors.length + 1) * 16, gap: 6 }}>
+                      {isMember ? (
+                        <TouchableOpacity
+                          onPress={() => { setShowHierarchy(false); router.push(`/(tabs)/groups/${child.id}` as any); }}
+                          style={[styles.hierNode, { borderColor: colors.border, backgroundColor: colors.card }]}
+                          activeOpacity={0.75}
+                        >
+                          <Text style={[styles.hierNodeText, { color: colors.text }]} numberOfLines={1}>{child.name}</Text>
+                          <Ionicons name="chevron-forward" size={14} color={colors.placeholder} />
+                        </TouchableOpacity>
+                      ) : (
+                        <View style={[styles.hierNode, { borderColor: colors.border, borderStyle: 'dashed', backgroundColor: colors.bg }]}>
+                          <Text style={[styles.hierNodeText, { color: colors.placeholder }]} numberOfLines={1}>{child.name}</Text>
+                        </View>
+                      )}
+                      {child.children?.map((grandchild) => {
+                        const gcMember = myGroupIds.includes(grandchild.id);
+                        return (
+                          <View key={grandchild.id} style={{ marginLeft: 16 }}>
+                            {gcMember ? (
+                              <TouchableOpacity
+                                onPress={() => { setShowHierarchy(false); router.push(`/(tabs)/groups/${grandchild.id}` as any); }}
+                                style={[styles.hierNode, { borderColor: colors.border, backgroundColor: colors.card }]}
+                                activeOpacity={0.75}
+                              >
+                                <Text style={[styles.hierNodeText, { color: colors.text }]} numberOfLines={1}>{grandchild.name}</Text>
+                                <Ionicons name="chevron-forward" size={14} color={colors.placeholder} />
+                              </TouchableOpacity>
+                            ) : (
+                              <View style={[styles.hierNode, { borderColor: colors.border, borderStyle: 'dashed', backgroundColor: colors.bg }]}>
+                                <Text style={[styles.hierNodeText, { color: colors.placeholder }]} numberOfLines={1}>{grandchild.name}</Text>
+                              </View>
+                            )}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                })}
+
+                {ancestors.length === 0 && tree.length === 0 && (
+                  <Text style={{ color: colors.placeholder, textAlign: 'center', marginTop: 20, fontSize: 13 }}>
+                    {zh ? '此群組目前沒有上下層群組' : 'This group has no parent or child groups yet'}
+                  </Text>
+                )}
+              </View>
+            );
+          })()}
+        </ScrollView>
+      </Modal>
+
       {/* ── Members ── */}
       {tab === 'members' && (
         <ScrollView contentContainerStyle={styles.tabContent}>
@@ -702,6 +836,15 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     groupTitle: { fontSize: 22, fontWeight: '800', color: colors.text, lineHeight: 28 },
     groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
     breadcrumb: { fontSize: 11, color: colors.placeholder },
+
+    hierarchyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isDark ? 'rgba(79,70,229,0.15)' : '#EEF2FF', flexShrink: 0 },
+    hierarchyBtnText: { fontSize: 12, fontWeight: '600', color: INDIGO },
+
+    hierModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
+    hierModalTitle: { fontSize: 17, fontWeight: '700' },
+    hierModalClose: { padding: 4 },
+    hierNode: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
+    hierNodeText: { fontSize: 14, fontWeight: '500', flex: 1 },
 
     tabBar: { backgroundColor: colors.bg, paddingHorizontal: 12, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border },
     tabPillWrap: { flex: 1, backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 4 },

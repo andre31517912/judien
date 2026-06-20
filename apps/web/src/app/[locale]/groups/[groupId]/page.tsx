@@ -8,6 +8,9 @@ import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
+import type { HierarchyData } from '@/components/GroupHierarchyChart';
+
+const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -107,6 +110,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [composingNews, setComposingNews] = useState(false);
   const [composingEvent, setComposingEvent] = useState(false);
 
+  // Hierarchy chart
+  const [showChart, setShowChart] = useState(false);
+  const [hierarchyData, setHierarchyData] = useState<HierarchyData | null>(null);
+  const [hierarchyLoading, setHierarchyLoading] = useState(false);
+  const [myGroupIds, setMyGroupIds] = useState<string[]>([]);
+
   // Inline edit state for news
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ body: '' });
@@ -131,6 +140,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
       const current = myGroups.find((item) => item.group.id === params.groupId) ?? null;
       setGroupItem(current);
+      setMyGroupIds(myGroups.map((g) => g.group.id));
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
@@ -364,6 +374,20 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
+  const handleOpenChart = async () => {
+    setShowChart(true);
+    if (hierarchyData) return;
+    setHierarchyLoading(true);
+    try {
+      const data = await apiFetch<HierarchyData>(`/groups/${params.groupId}/relationships`);
+      setHierarchyData(data);
+    } catch {
+      // silently fail — chart shows "no data"
+    } finally {
+      setHierarchyLoading(false);
+    }
+  };
+
   const handleReviewJoinRequest = async (requestId: string, action: 'approve' | 'reject') => {
     setReviewingId(requestId);
     setError('');
@@ -427,6 +451,26 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
   return (
     <>
+    {showChart && hierarchyData && (
+      <GroupHierarchyChart
+        data={hierarchyData}
+        currentGroupId={params.groupId}
+        locale={params.locale}
+        loading={hierarchyLoading}
+        onClose={() => setShowChart(false)}
+        memberGroupIds={myGroupIds}
+      />
+    )}
+    {showChart && hierarchyLoading && !hierarchyData && (
+      <GroupHierarchyChart
+        data={{ parentGroup: null, subgroups: [] }}
+        currentGroupId={params.groupId}
+        locale={params.locale}
+        loading={true}
+        onClose={() => setShowChart(false)}
+        memberGroupIds={myGroupIds}
+      />
+    )}
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -451,6 +495,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
             )}
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleOpenChart}
+              className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+            >
+              {zh ? '🗂 層級圖' : '🗂 Hierarchy'}
+            </button>
             {isGroupAdmin && (
               <>
                 {joinRequests.length > 0 && (

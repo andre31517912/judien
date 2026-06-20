@@ -28,6 +28,7 @@ interface Props {
   locale: string;
   loading?: boolean;
   onClose: () => void;
+  memberGroupIds?: string[];
 }
 
 function buildTree(data: HierarchyData, currentGroupId: string): TreeNode_ | null {
@@ -83,36 +84,46 @@ function buildTree(data: HierarchyData, currentGroupId: string): TreeNode_ | nul
   return node;
 }
 
-function NodeLabel({ node, locale }: { node: TreeNode_; locale: string }) {
+function NodeLabel({ node, locale, memberGroupIds }: { node: TreeNode_; locale: string; memberGroupIds?: string[] }) {
+  const canAccess = !memberGroupIds || memberGroupIds.includes(node.id);
+  if (canAccess) {
+    return (
+      <div className={styles.nodeLabelWrap}>
+        <Link
+          href={`/${locale}/groups/${node.id}`}
+          className={`${styles.nodeBox} ${node.isCurrent ? styles.nodeBoxCurrent : styles.nodeBoxDefault}`}
+          title={node.name}
+        >
+          {node.name}
+        </Link>
+      </div>
+    );
+  }
   return (
     <div className={styles.nodeLabelWrap}>
-      <Link
-        href={`/${locale}/groups/${node.id}`}
-        className={`${styles.nodeBox} ${node.isCurrent ? styles.nodeBoxCurrent : styles.nodeBoxDefault}`}
-        title={node.name}
-      >
+      <span className={`${styles.nodeBox} ${styles.nodeBoxLocked}`} title={node.name}>
         {node.name}
-      </Link>
+      </span>
     </div>
   );
 }
 
-function SubTree({ node, locale }: { node: TreeNode_; locale: string }) {
+function SubTree({ node, locale, memberGroupIds }: { node: TreeNode_; locale: string; memberGroupIds?: string[] }) {
   if (node.children.length === 0) {
     return (
-      <TreeNode label={<NodeLabel node={node} locale={locale} />} />
+      <TreeNode label={<NodeLabel node={node} locale={locale} memberGroupIds={memberGroupIds} />} />
     );
   }
   return (
-    <TreeNode label={<NodeLabel node={node} locale={locale} />}>
+    <TreeNode label={<NodeLabel node={node} locale={locale} memberGroupIds={memberGroupIds} />}>
       {node.children.map((child) => (
-        <SubTree key={child.id} node={child} locale={locale} />
+        <SubTree key={child.id} node={child} locale={locale} memberGroupIds={memberGroupIds} />
       ))}
     </TreeNode>
   );
 }
 
-export default function GroupHierarchyChart({ data, currentGroupId, locale, loading, onClose }: Props) {
+export default function GroupHierarchyChart({ data, currentGroupId, locale, loading, onClose, memberGroupIds }: Props) {
   const zh = locale === 'zh';
 
   useEffect(() => {
@@ -141,6 +152,12 @@ export default function GroupHierarchyChart({ data, currentGroupId, locale, load
                 <span className={styles.legendDotGray} />
                 {zh ? '其他群組' : 'Other group'}
               </span>
+              {memberGroupIds && (
+                <span className={styles.legendDot}>
+                  <span className={styles.legendDotLocked} />
+                  {zh ? '未加入' : 'Not joined'}
+                </span>
+              )}
             </span>
           </div>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
@@ -153,14 +170,14 @@ export default function GroupHierarchyChart({ data, currentGroupId, locale, load
           ) : root ? (
             <div className={styles.tree}>
               <Tree
-                label={<NodeLabel node={root} locale={locale} />}
+                label={<NodeLabel node={root} locale={locale} memberGroupIds={memberGroupIds} />}
                 lineWidth="2px"
                 lineColor="#6366f1"
                 lineBorderRadius="6px"
                 nodePadding="8px"
               >
                 {root.children.map((child) => (
-                  <SubTree key={child.id} node={child} locale={locale} />
+                  <SubTree key={child.id} node={child} locale={locale} memberGroupIds={memberGroupIds} />
                 ))}
               </Tree>
             </div>
