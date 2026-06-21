@@ -6,7 +6,7 @@ import { useAuth } from '../context/auth.context';
 import CompleteProfileModal from './CompleteProfileModal';
 import SetPasswordModal from './SetPasswordModal';
 
-const PUBLIC_SUFFIXES = ['/login', '/signup', '/forgot-password', '/privacy-policy', '/terms-of-use', '/privacy-practice'];
+const PUBLIC_SUFFIXES = ['/login', '/signup', '/forgot-password', '/privacy-policy', '/terms-of-use', '/privacy-practice', '/support'];
 
 /** Placeholder emails created by the system — not real identifiers. */
 function isPlaceholderEmail(email: string | null): boolean {
