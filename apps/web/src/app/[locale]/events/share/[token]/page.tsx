@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { apiFetch, resolveImageUrl } from '../../../../../lib/api';
 import { useAuth } from '../../../../../context/auth.context';
 import type { EventWithCounts } from '@judien/shared';
@@ -17,6 +17,7 @@ export default function SharedEventPage() {
   const token = params.token;
   const zh = locale === 'zh';
   const { user, signup } = useAuth();
+  const router = useRouter();
 
   const [event, setEvent] = useState<EventWithCounts | null>(null);
   const [guests, setGuests] = useState<Guests | null>(null);
@@ -56,8 +57,9 @@ export default function SharedEventPage() {
   useEffect(() => { refresh(); }, [token]);
 
   const handleSignupAndRsvp = async () => {
-    if (!form.name.trim() || !form.email.trim() || !form.phone.trim() || !form.password.trim()) {
-      setError(zh ? '請填寫所有欄位。' : 'Please fill in all fields.');
+    const emailOrPhone = form.email.trim() || form.phone.trim();
+    if (!form.name.trim() || !emailOrPhone || !form.password.trim()) {
+      setError(zh ? '請填寫姓名、Email 或電話，以及密碼。' : 'Please enter your name, email or phone, and a password.');
       return;
     }
     setSaving(true);
@@ -65,8 +67,8 @@ export default function SharedEventPage() {
     try {
       await signup({
         displayName: form.name.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
+        ...(form.email.trim() ? { email: form.email.trim() } : {}),
+        ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
         password: form.password,
         preferredLanguage: zh ? 'zh' : 'en',
       });
@@ -76,6 +78,9 @@ export default function SharedEventPage() {
       });
       setRsvpDone(true);
       await refresh();
+      if (event?.id) {
+        router.push(`/${locale}/events/${event.id}`);
+      }
     } catch (err: unknown) {
       setError((err as Error).message ?? (zh ? '建立帳號失敗，請再試一次。' : 'Failed to create account. Please try again.'));
     } finally {
@@ -228,7 +233,7 @@ export default function SharedEventPage() {
                   placeholder={zh ? '電子郵件' : 'Email'} type="email" autoComplete="email"
                   className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 <input value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                  placeholder={zh ? '電話 (+886...)' : 'Phone (+886...)'} type="tel" autoComplete="tel"
+                  placeholder={zh ? '電話（選填）' : 'Phone (optional)'} type="tel" autoComplete="tel"
                   className="rounded-lg border border-gray-300 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                 <input value={form.password} onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
                   placeholder={zh ? '密碼（至少 8 字元）' : 'Password (min. 8 chars)'} type="password" autoComplete="new-password"

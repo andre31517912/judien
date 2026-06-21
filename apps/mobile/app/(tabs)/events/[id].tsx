@@ -13,6 +13,7 @@ import {
   Linking,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
@@ -27,6 +28,7 @@ import { Ionicons } from '@expo/vector-icons';
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
 type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
+type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
 
 const INDIGO = '#4F46E5';
 
@@ -105,15 +107,17 @@ export default function EventDetailScreen() {
 
   const [showBlast, setShowBlast] = useState(false);
   const [blastMsg, setBlastMsg] = useState('');
-  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL', 'IN_APP']);
-  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('rsvped');
+  const [blastChannels, setBlastChannels] = useState<string[]>(['IN_APP']);
+  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('invited');
   const [blastSending, setBlastSending] = useState(false);
   const [blastResult, setBlastResult] = useState('');
 
-  const [directInviteId, setDirectInviteId] = useState('');
+  const [showDirectInvite, setShowDirectInvite] = useState(false);
+  const [directInviteQuery, setDirectInviteQuery] = useState('');
+  const [directInviteSearchResults, setDirectInviteSearchResults] = useState<UserResult[]>([]);
+  const [directInviteSearchLoading, setDirectInviteSearchLoading] = useState(false);
   const [directInviteLoading, setDirectInviteLoading] = useState(false);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
-  const [showDirectInvite, setShowDirectInvite] = useState(false);
 
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
@@ -226,24 +230,32 @@ export default function EventDetailScreen() {
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
-  const handleDirectInvite = async () => {
-    if (!directInviteId.trim()) return;
+  const searchInviteUsers = async (q: string) => {
+    setDirectInviteQuery(q);
+    setDirectInviteMsg('');
+    if (!q.trim()) { setDirectInviteSearchResults([]); return; }
+    setDirectInviteSearchLoading(true);
+    try {
+      const res = await apiFetch<UserResult[]>(`/users/search?q=${encodeURIComponent(q)}`);
+      setDirectInviteSearchResults(Array.isArray(res) ? res : []);
+    } catch { setDirectInviteSearchResults([]); }
+    finally { setDirectInviteSearchLoading(false); }
+  };
+
+  const handleInviteUser = async (u: UserResult) => {
     setDirectInviteLoading(true);
     setDirectInviteMsg('');
     try {
-      const res = await apiFetch<{ displayName: string | null; status: string }>(`/events/${id}/direct-invite`, {
+      await apiFetch(`/events/${id}/invite-members`, {
         method: 'POST',
-        body: JSON.stringify({ identifier: directInviteId.trim() }),
+        body: JSON.stringify({ userIds: [u.id] }),
       });
-      if (res.status === 'already_rsvpd') {
-        setDirectInviteMsg(zh ? `${res.displayName ?? directInviteId} 已回覆 RSVP。` : `${res.displayName ?? directInviteId} has already RSVPed.`);
-      } else {
-        setDirectInviteMsg(zh ? `已邀請 ${res.displayName ?? directInviteId}。` : `Invited ${res.displayName ?? directInviteId}.`);
-        setDirectInviteId('');
-        setGuests(null);
-      }
+      setDirectInviteMsg(zh ? `已邀請 ${u.displayName ?? u.email ?? ''}。` : `Invited ${u.displayName ?? u.email ?? ''}.`);
+      setDirectInviteSearchResults([]);
+      setDirectInviteQuery('');
+      setGuests(null);
     } catch (err: any) {
-      setDirectInviteMsg(err.message ?? (zh ? '找不到該用戶。' : 'User not found.'));
+      setDirectInviteMsg(err.message ?? (zh ? '邀請失敗。' : 'Failed to invite.'));
     } finally { setDirectInviteLoading(false); }
   };
 
@@ -462,13 +474,13 @@ export default function EventDetailScreen() {
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>📣 Message attendees</Text>
+                <Text style={styles.blastToggleText}>📣 {zh ? '發送群組訊息' : 'Send Text Blast'}</Text>
               </TouchableOpacity>
               {showBlast && (
                 <View style={styles.blastForm}>
-                  <Text style={styles.blastLabel}>Send via</Text>
+                  <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
                   <View style={styles.blastAudienceRow}>
-                    {([['EMAIL', '✉️ Email'], ['IN_APP', '🔔 In-App']] as const).map(([ch, label]) => (
+                    {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email' : '✉️ Email']] as const).map(([ch, label]) => (
                       <TouchableOpacity key={ch}
                         onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
                         style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
@@ -476,13 +488,13 @@ export default function EventDetailScreen() {
                       </TouchableOpacity>
                     ))}
                   </View>
-                  <Text style={styles.blastLabel}>Send to</Text>
+                  <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
                   <View style={styles.blastAudienceRow}>
-                    {(['rsvped', 'invited'] as const).map((a) => (
+                    {(['invited', 'rsvped'] as const).map((a) => (
                       <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
                         style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive]}>
                         <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
-                          {a === 'rsvped' ? 'RSVPed' : 'Invited'}
+                          {a === 'invited' ? (zh ? '已邀請' : 'Invited') : (zh ? '已回覆' : 'RSVP')}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -511,31 +523,47 @@ export default function EventDetailScreen() {
             </View>
           )}
 
-          {/* Direct Invite (event creator/admin) */}
+          {/* Invite / Add Guest (event creator/admin) */}
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowDirectInvite(!showDirectInvite)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>✉️ {zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</Text>
+                <Text style={styles.blastToggleText}>👥 {zh ? '邀請/新增賓客' : 'Invite/Add Guest'}</Text>
               </TouchableOpacity>
               {showDirectInvite && (
                 <View style={styles.blastForm}>
-                  <Text style={styles.blastLabel}>{zh ? '輸入已註冊用戶的 Email 或手機號碼' : 'Enter email or phone of a registered user'}</Text>
+                  <Text style={styles.blastLabel}>{zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}</Text>
                   <TextInput
-                    style={styles.blastInput}
-                    placeholder={zh ? 'Email 或手機號碼' : 'Email or phone number'}
+                    style={styles.inviteSearchInput}
+                    placeholder={zh ? '搜尋用戶…' : 'Search users…'}
                     placeholderTextColor={colors.placeholder}
-                    value={directInviteId}
-                    onChangeText={setDirectInviteId}
+                    value={directInviteQuery}
+                    onChangeText={searchInviteUsers}
                     autoCapitalize="none"
-                    keyboardType="email-address"
                   />
-                  <TouchableOpacity
-                    style={[styles.blastSendBtn, { backgroundColor: '#16A34A', opacity: directInviteLoading || !directInviteId.trim() ? 0.5 : 1 }]}
-                    onPress={handleDirectInvite}
-                    disabled={directInviteLoading || !directInviteId.trim()}
-                  >
-                    <Text style={styles.blastSendBtnText}>{directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}</Text>
-                  </TouchableOpacity>
+                  {directInviteSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ marginBottom: 8 }} />}
+                  {directInviteSearchResults.length > 0 && (
+                    <View style={styles.inviteResultsList}>
+                      {directInviteSearchResults.map((u) => (
+                        <TouchableOpacity
+                          key={u.id}
+                          style={styles.inviteResultItem}
+                          onPress={() => handleInviteUser(u)}
+                          disabled={directInviteLoading}
+                          activeOpacity={0.7}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.inviteResultName}>{u.displayName ?? (zh ? '未知' : 'Unknown')}</Text>
+                            {(u.email || u.phoneE164) && (
+                              <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
+                            )}
+                          </View>
+                          {directInviteLoading
+                            ? <ActivityIndicator size="small" color={INDIGO} />
+                            : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                   {!!directInviteMsg && (
                     <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
                   )}
@@ -835,10 +863,16 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   audienceBtnActive: { backgroundColor: INDIGO, borderColor: INDIGO },
   audienceBtnText: { fontSize: 13, color: colors.text },
   audienceBtnTextActive: { color: '#fff' },
-  blastInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 10, minHeight: 80, textAlignVertical: 'top', color: colors.inputText, backgroundColor: colors.input },
-  blastSendBtn: { backgroundColor: INDIGO, borderRadius: 8, padding: 12, alignItems: 'center' },
+  blastInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10, fontSize: 14, marginBottom: 10, minHeight: 80, textAlignVertical: 'top' as const, color: colors.inputText, backgroundColor: colors.input },
+  blastSendBtn: { backgroundColor: INDIGO, borderRadius: 8, padding: 12, alignItems: 'center' as const },
   blastSendBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  blastResult: { marginTop: 8, fontSize: 13, textAlign: 'center' },
+  blastResult: { marginTop: 8, fontSize: 13, textAlign: 'center' as const },
+  inviteSearchInput: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, fontSize: 14, marginBottom: 10, color: colors.inputText, backgroundColor: colors.input },
+  inviteResultsList: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, overflow: 'hidden', marginBottom: 8 },
+  inviteResultItem: { flexDirection: 'row' as const, alignItems: 'center' as const, padding: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, backgroundColor: colors.card, gap: 8 },
+  inviteResultName: { fontSize: 13, fontWeight: '600', color: colors.text },
+  inviteResultSub: { fontSize: 11, color: colors.placeholder, marginTop: 1 },
+  inviteResultAction: { fontSize: 12, fontWeight: '700', color: INDIGO },
 
   // Comments
   sectionTitle: { fontSize: 18, fontWeight: '600', color: colors.text, marginTop: 28, marginBottom: 16 },
