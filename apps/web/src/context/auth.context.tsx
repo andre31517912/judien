@@ -10,7 +10,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (identifier: string, password: string) => Promise<AuthUser>;
-  signup: (data: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => Promise<void>;
+  signup: (data: { email?: string; password: string; phone?: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data.user;
   };
 
-  const signup = async (body: { email?: string; password: string; phone: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => {
+  const signup = async (body: { email?: string; password: string; phone?: string; displayName?: string; preferredLanguage: 'en' | 'zh'; inviteToken?: string }) => {
     const data = await apiFetch<{ user: AuthUser; accessToken: string; refreshToken?: string }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(body),
