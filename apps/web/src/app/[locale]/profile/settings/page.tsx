@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
 export default function ProfileSettingsPage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
@@ -178,6 +179,13 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
     <div className="py-6 px-4">
       {/* Compact page header */}
       <div className="flex items-center gap-3 mb-6">
+        <Link
+          href={`/${params.locale}/profile`}
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          {zh ? '返回' : 'Back'}
+        </Link>
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{zh ? '編輯個人資料' : 'Edit Profile'}</h1>
       </div>
 

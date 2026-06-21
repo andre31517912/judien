@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import { useAuth } from '@/context/auth.context';
@@ -245,6 +246,13 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
       {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
+        <Link
+          href={`/${params.locale}/events/${params.id}`}
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition mr-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          {zh ? '返回' : 'Back'}
+        </Link>
         <button
           type="button"
           onClick={doUpdate}

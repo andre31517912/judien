@@ -405,7 +405,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     }
   };
 
-  if (loading || pageLoading) {
+  if ((loading || pageLoading) && !groupItem) {
     return <p className="py-16 text-center text-gray-400">{zh ? '載入中…' : 'Loading…'}</p>;
   }
 
@@ -472,6 +472,15 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       />
     )}
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+      <div className="px-4 pt-4 sm:px-6 lg:px-8">
+        <Link
+          href={`/${params.locale}/groups`}
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition w-fit mb-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          {zh ? '返回群組列表' : 'Back to Groups'}
+        </Link>
+      </div>
       {/* ── Group cover header ── */}
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Banner */}

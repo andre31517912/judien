@@ -405,7 +405,7 @@ export default function GroupSettingsScreen() {
     );
   };
 
-  const pickPhoto = async () => {
+  const doPickGroupPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required');
@@ -414,8 +414,8 @@ export default function GroupSettingsScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
+      aspect: [3, 1],
+      quality: 0.7,
     });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
@@ -427,6 +427,22 @@ export default function GroupSettingsScreen() {
       Alert.alert('Error', err.message ?? 'Upload failed');
     } finally {
       setPhotoUploading(false);
+    }
+  };
+
+  const handleGroupPhotoPress = () => {
+    if (photoUrl) {
+      Alert.alert(
+        zh ? '群組照片' : 'Group Photo',
+        undefined,
+        [
+          { text: zh ? '移除照片' : 'Remove Photo', style: 'destructive', onPress: () => setPhotoUrl(null) },
+          { text: zh ? '更換照片' : 'Replace Photo', onPress: doPickGroupPhoto },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ],
+      );
+    } else {
+      doPickGroupPhoto();
     }
   };
 
@@ -553,25 +569,28 @@ export default function GroupSettingsScreen() {
 
           {/* Photo */}
           <Text style={styles.fieldLabel}>{zh ? '群組照片' : 'Group Photo'}</Text>
-          <View style={{ alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity
+            onPress={handleGroupPhotoPress}
+            disabled={photoUploading}
+            style={styles.groupPhotoArea}
+            activeOpacity={0.7}
+          >
             {photoUrl ? (
-              <Image source={{ uri: photoUrl }} style={styles.photoPreview} />
+              <Image source={{ uri: photoUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
             ) : (
-              <View style={styles.photoPlaceholder}>
-                <Text style={styles.photoPlaceholderText}>{groupName.charAt(0).toUpperCase() || '?'}</Text>
+              <View style={styles.groupPhotoInner}>
+                <Ionicons name="image-outline" size={36} color={colors.placeholder} />
+                <Text style={styles.groupPhotoLabel}>{zh ? '點擊上傳封面' : 'Tap to upload'}</Text>
               </View>
             )}
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity style={styles.photoBtn} onPress={pickPhoto} disabled={photoUploading}>
-                <Text style={styles.photoBtnText}>{photoUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '上傳照片' : 'Upload Photo')}</Text>
-              </TouchableOpacity>
-              {photoUrl && (
-                <TouchableOpacity style={[styles.photoBtn, styles.photoBtnDanger]} onPress={() => setPhotoUrl(null)}>
-                  <Text style={[styles.photoBtnText, { color: '#DC2626' }]}>{zh ? '刪除照片' : 'Remove Photo'}</Text>
-                </TouchableOpacity>
+            <View style={styles.cameraBadge}>
+              {photoUploading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="camera" size={14} color="#fff" />
               )}
             </View>
-          </View>
+          </TouchableOpacity>
 
           <Text style={styles.fieldLabel}>{zh ? '群組名稱' : 'Group Name'}</Text>
           <TextInput
@@ -1194,12 +1213,10 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     fieldLabel: { fontSize: 13, fontWeight: '500', color: colors.subtext },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, fontSize: 14, backgroundColor: colors.input, color: colors.inputText },
     textArea: { minHeight: 80, textAlignVertical: 'top' },
-    photoPreview: { width: 88, height: 88, borderRadius: 44 },
-    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
-    photoPlaceholderText: { fontSize: 32, fontWeight: '700', color: INDIGO },
-    photoBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.card },
-    photoBtnDanger: { borderColor: '#FECACA', backgroundColor: '#FFF5F5' },
-    photoBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
+    groupPhotoArea: { width: '100%', aspectRatio: 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
+    groupPhotoInner: { alignItems: 'center', gap: 8 },
+    groupPhotoLabel: { fontSize: 13, color: colors.placeholder },
+    cameraBadge: { position: 'absolute', bottom: 8, right: 8, width: 30, height: 30, borderRadius: 15, backgroundColor: INDIGO, justifyContent: 'center', alignItems: 'center' },
     roleRow: { flexDirection: 'row', gap: 8 },
     roleBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 8, alignItems: 'center' },
     roleBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },

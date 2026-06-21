@@ -148,9 +148,11 @@ export default function GroupDetailScreen() {
 
   useFocusEffect(useCallback(() => {
     configureHeader();
+    loadPage();
     return () => {
       navigation.getParent()?.setOptions({ headerLeft: undefined, headerRight: undefined });
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [configureHeader]));
 
   // Re-configure when async data loads while screen is already focused
@@ -197,8 +199,6 @@ export default function GroupDetailScreen() {
       setLoading(false);
     }
   }, [groupId]);
-
-  useEffect(() => { loadPage(); }, [loadPage]);
 
   const loadPastEvents = useCallback(async () => {
     if (!groupId || pastLoaded) return;
@@ -342,7 +342,7 @@ export default function GroupDetailScreen() {
       });
   }, [members, memberSearch]);
 
-  if (loading) {
+  if (loading && !groupItem) {
     return <View style={styles.center}><ActivityIndicator color={colors.subtext} /></View>;
   }
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { apiFetch, resolveImageUrl } from '../../../../lib/api';
@@ -387,6 +388,15 @@ export default function EventDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <Link
+          href={`/${locale}/events`}
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition w-fit"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          {zh ? '返回活動列表' : 'Back to Events'}
+        </Link>
+      </div>
       {showDeleteModal && (
         <ConfirmModal
           title={zh ? '刪除活動' : 'Delete Event'}
@@ -456,7 +466,7 @@ export default function EventDetailPage() {
         {event.groupName && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦團體' : 'Hosted by'}</span>
-            <span className="text-indigo-600 font-medium">{event.groupName}</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-medium">{event.groupName}</span>
           </div>
         )}
         {(event as any).createdByName && (
@@ -687,7 +697,7 @@ export default function EventDetailPage() {
                   ['EMAIL', '✉️ Email'],
                   ['IN_APP', '🔔 In-App'],
                 ] as const).map(([ch, label]) => (
-                  <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
+                  <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition text-gray-900 dark:text-gray-100 ${
                     blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
@@ -703,7 +713,7 @@ export default function EventDetailPage() {
                   ['rsvped', 'RSVPed Only'],
                   ['invited', 'All Invited'],
                 ] as [typeof blastAudience, string][]).map(([val, label]) => (
-                  <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition ${
+                  <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition text-gray-900 dark:text-gray-100 ${
                     blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
                   }`}>
                     <input type="radio" name="blastAudience" className="sr-only" checked={blastAudience === val} onChange={() => setBlastAudience(val)} />
@@ -866,7 +876,7 @@ export default function EventDetailPage() {
                       return (
                         <div key={reply.id} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5">
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs text-gray-500 font-medium">{reply.userHandle}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{reply.userHandle}</p>
                             {canDeleteReply && (
                               <button
                                 onClick={() => handleDeleteComment(reply.id)}

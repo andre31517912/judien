@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -110,6 +110,14 @@ export default function GroupsTab() {
   useEffect(() => {
     if (!authLoading) loadPage();
   }, [loadPage, authLoading]);
+
+  // Refresh silently on focus return so group photo changes from settings are visible
+  const initialFocusDone = useRef(false);
+  useFocusEffect(useCallback(() => {
+    if (!initialFocusDone.current) { initialFocusDone.current = true; return; }
+    if (!authLoading) loadPage(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading]));
 
   const respondInvite = async (token: string, action: 'accept' | 'decline') => {
     try {
