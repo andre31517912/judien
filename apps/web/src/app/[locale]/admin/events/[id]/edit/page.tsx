@@ -351,7 +351,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
       {/* ── Invite Group Members ────────────────────────────────────────────── */}
       {groupMembers.length > 0 && (
         <section>
-          <h2 className="text-xl font-semibold mb-1 dark:text-white">{zh ? '邀請群組成員' : 'Invite Group Members'}</h2>
+          <h2 className="text-xl font-semibold mb-1 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
             {zh ? '選擇要邀請到此活動的成員，系統將傳送通知給他們。' : 'Select members to invite to this event. They will receive an in-app, email, or LINE notification.'}
           </p>

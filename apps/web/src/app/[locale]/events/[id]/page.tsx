@@ -647,7 +647,7 @@ export default function EventDetailPage() {
       {/* Direct invite by email/phone (event creator/admin) */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-green-200 dark:border-green-900/40 rounded-xl p-5 bg-green-50/40 dark:bg-gray-900/50">
-          <h2 className="text-base font-semibold mb-1 dark:text-white">{zh ? '邀請指定用戶' : 'Invite by Email / Phone'}</h2>
+          <h2 className="text-base font-semibold mb-1 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{zh ? '輸入已註冊用戶的電子郵件或手機號碼，將其加入受邀名單並發送通知。' : 'Enter the email or phone of a registered user to add them to the invite list and send a notification.'}</p>
           <form onSubmit={handleDirectInvite} className="flex gap-2 flex-wrap">
             <input
@@ -676,7 +676,7 @@ export default function EventDetailPage() {
       {/* Send Message Blast (admin or event creator) */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
-          <h2 className="text-lg font-semibold mb-1 dark:text-white">Send Message</h2>
+          <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '群組訊息' : 'Text Blast'}</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Send a message to attendees right now.</p>
           <div className="flex flex-col gap-4">
             <div>

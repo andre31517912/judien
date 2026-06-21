@@ -474,7 +474,7 @@ export default function EventDetailScreen() {
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>📣 {zh ? '發送群組訊息' : 'Send Text Blast'}</Text>
+                <Text style={styles.blastToggleText}>📣 {zh ? '群組訊息' : 'Text Blast'}</Text>
               </TouchableOpacity>
               {showBlast && (
                 <View style={styles.blastForm}>
@@ -527,7 +527,7 @@ export default function EventDetailScreen() {
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
             <View style={styles.blastSection}>
               <TouchableOpacity onPress={() => setShowDirectInvite(!showDirectInvite)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>👥 {zh ? '邀請/新增賓客' : 'Invite/Add Guest'}</Text>
+                <Text style={styles.blastToggleText}>👥 {zh ? '邀請賓客' : 'Invite Guest'}</Text>
               </TouchableOpacity>
               {showDirectInvite && (
                 <View style={styles.blastForm}>

@@ -18,6 +18,12 @@ export default function Footer({ locale }: { locale: string }) {
         >
           {zh ? '使用條款' : 'Terms of Use'}
         </Link>
+        <Link
+          href={`/${locale}/support`}
+          className="hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+        >
+          {zh ? '支援' : 'Support'}
+        </Link>
       </div>
     </footer>
   );
