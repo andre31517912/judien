@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Stack } from 'expo-router';
+import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
 import { apiFetch, apiUpload } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
 import i18n from '../../../lib/i18n';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -16,8 +15,23 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const router = useRouter();
+  const navigation = useNavigation();
   const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
+
+  useFocusEffect(useCallback(() => {
+    navigation.getParent()?.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+          <Ionicons name="search" size={24} color={INDIGO} />
+        </TouchableOpacity>
+      ),
+    });
+    return () => {
+      navigation.getParent()?.setOptions({ headerRight: undefined });
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zh, colors.headerBg]));
 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -76,13 +90,6 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Stack.Screen options={{
-        headerRight: () => (
-          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
-            <Ionicons name="search" size={24} color={INDIGO} />
-          </TouchableOpacity>
-        ),
-      }} />
 
       {/* Profile card */}
       <View style={styles.profileCard}>

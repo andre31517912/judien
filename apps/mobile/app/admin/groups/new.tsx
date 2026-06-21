@@ -38,7 +38,7 @@ export default function NewGroupScreen() {
   const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
   const { top: safeTop } = useSafeAreaInsets();
 
-  const pickPhoto = async () => {
+  const doPickPhoto = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
       Alert.alert('', zh ? '需要相簿權限' : 'Photo library permission required');
@@ -47,8 +47,8 @@ export default function NewGroupScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
+      aspect: [3, 1],
+      quality: 0.7,
     });
     if (result.canceled) return;
     const uri = result.assets[0].uri;
@@ -60,6 +60,22 @@ export default function NewGroupScreen() {
       Alert.alert('Error', err.message ?? 'Upload failed');
     } finally {
       setPhotoUploading(false);
+    }
+  };
+
+  const handlePhotoPress = () => {
+    if (photoUrl) {
+      Alert.alert(
+        zh ? '群組照片' : 'Group Photo',
+        undefined,
+        [
+          { text: zh ? '移除照片' : 'Remove Photo', style: 'destructive', onPress: () => setPhotoUrl(null) },
+          { text: zh ? '更換照片' : 'Replace Photo', onPress: doPickPhoto },
+          { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+        ],
+      );
+    } else {
+      void doPickPhoto();
     }
   };
 
@@ -143,25 +159,21 @@ export default function NewGroupScreen() {
         {/* Photo upload */}
         <View style={styles.field}>
           <Text style={styles.label}>{zh ? '群組照片（選填）' : 'Group Photo (optional)'}</Text>
-          <View style={{ alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity onPress={handlePhotoPress} disabled={photoUploading} style={styles.groupPhotoArea} activeOpacity={0.7}>
             {photoUrl ? (
-              <Image source={{ uri: photoUrl }} style={styles.photoPreview} />
+              <Image source={{ uri: photoUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
             ) : (
-              <View style={styles.photoPlaceholder}>
-                <Text style={styles.photoPlaceholderText}>{name.charAt(0).toUpperCase() || '?'}</Text>
+              <View style={styles.groupPhotoInner}>
+                <Ionicons name="image-outline" size={36} color={colors.placeholder} />
+                <Text style={styles.groupPhotoLabel}>{zh ? '上傳照片' : 'Upload Photo'}</Text>
               </View>
             )}
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity style={styles.photoBtn} onPress={pickPhoto} disabled={photoUploading}>
-                <Text style={styles.photoBtnText}>{photoUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '上傳照片' : 'Upload Photo')}</Text>
-              </TouchableOpacity>
-              {photoUrl && (
-                <TouchableOpacity style={[styles.photoBtn, styles.photoBtnDanger]} onPress={() => setPhotoUrl(null)}>
-                  <Text style={[styles.photoBtnText, { color: '#DC2626' }]}>{zh ? '移除' : 'Remove'}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
+            {photoUploading && (
+              <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator color="#fff" />
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.field}>
@@ -255,12 +267,9 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     readonlyInput: { backgroundColor: colors.bg, color: colors.placeholder },
     textArea: { minHeight: 96 },
     helperText: { fontSize: 12, color: colors.placeholder },
-    photoPreview: { width: 88, height: 88, borderRadius: 44 },
-    photoPlaceholder: { width: 88, height: 88, borderRadius: 44, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
-    photoPlaceholderText: { fontSize: 32, fontWeight: '700', color: '#4F46E5' },
-    photoBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: colors.card },
-    photoBtnDanger: { borderColor: '#FECACA', backgroundColor: '#FFF5F5' },
-    photoBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
+    groupPhotoArea: { width: '100%', aspectRatio: 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
+    groupPhotoInner: { alignItems: 'center', gap: 8 },
+    groupPhotoLabel: { fontSize: 13, color: colors.placeholder },
     privacyCard: { gap: 12, backgroundColor: colors.bg, borderRadius: 12, padding: 12 },
     privacyNote: { fontSize: 12, color: colors.subtext },
     createBtn: { backgroundColor: '#4F46E5', borderRadius: 10, paddingVertical: 14, alignItems: 'center' },

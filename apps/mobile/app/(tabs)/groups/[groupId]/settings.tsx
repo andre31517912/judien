@@ -580,16 +580,14 @@ export default function GroupSettingsScreen() {
             ) : (
               <View style={styles.groupPhotoInner}>
                 <Ionicons name="image-outline" size={36} color={colors.placeholder} />
-                <Text style={styles.groupPhotoLabel}>{zh ? '點擊上傳封面' : 'Tap to upload'}</Text>
+                <Text style={styles.groupPhotoLabel}>{zh ? '上傳照片' : 'Upload Photo'}</Text>
               </View>
             )}
-            <View style={styles.cameraBadge}>
-              {photoUploading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="camera" size={14} color="#fff" />
-              )}
-            </View>
+            {photoUploading && (
+              <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator color="#fff" />
+              </View>
+            )}
           </TouchableOpacity>
 
           <Text style={styles.fieldLabel}>{zh ? '群組名稱' : 'Group Name'}</Text>
@@ -1216,7 +1214,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     groupPhotoArea: { width: '100%', aspectRatio: 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
     groupPhotoInner: { alignItems: 'center', gap: 8 },
     groupPhotoLabel: { fontSize: 13, color: colors.placeholder },
-    cameraBadge: { position: 'absolute', bottom: 8, right: 8, width: 30, height: 30, borderRadius: 15, backgroundColor: INDIGO, justifyContent: 'center', alignItems: 'center' },
     roleRow: { flexDirection: 'row', gap: 8 },
     roleBtn: { flex: 1, borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingVertical: 8, alignItems: 'center' },
     roleBtnActive: { borderColor: INDIGO, backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF' },

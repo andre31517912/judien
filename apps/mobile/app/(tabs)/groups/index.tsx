@@ -71,14 +71,9 @@ export default function GroupsTab() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginRight: 8 }}>
-          <TouchableOpacity onPress={() => router.push('/admin/groups/new')} activeOpacity={0.7} style={{ padding: 8 }}>
-            <Ionicons name="add" size={26} color={INDIGO} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
-            <Ionicons name="search" size={24} color={INDIGO} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+          <Ionicons name="search" size={24} color={INDIGO} />
+        </TouchableOpacity>
       ),
       headerLeft: undefined,
     });
@@ -146,43 +141,58 @@ export default function GroupsTab() {
 
   const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
 
+  const tabRowEl = (
+    <View style={styles.tabRow}>
+      <View style={styles.tabPills}>
+        <View style={[styles.pill, styles.pillActive]}>
+          <Text style={[styles.pillText, styles.pillTextActive]}>{zh ? '我的群組' : 'My Groups'}</Text>
+        </View>
+      </View>
+      <TouchableOpacity style={styles.plusBtn} onPress={() => router.push('/admin/groups/new')} activeOpacity={0.75}>
+        <Ionicons name="add" size={22} color="#fff" />
+      </TouchableOpacity>
+    </View>
+  );
+
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={colors.subtext} />
+      <View style={styles.screen}>
+        {tabRowEl}
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.subtext} />
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
-    >
-
-      {invites.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{zh ? `待回覆邀請 (${invites.length})` : `Pending Invitations (${invites.length})`}</Text>
-          {invites.map((inv) => (
-            <View key={inv.id} style={styles.card}>
-              <Text style={styles.cardTitle}>{inv.group.name}</Text>
-              {inv.group.description ? <Text style={styles.cardSub}>{inv.group.description}</Text> : null}
-              <Text style={styles.metaText}>{zh ? '到期：' : 'Expires: '}{new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
-              <View style={styles.actionsRow}>
-                <TouchableOpacity style={styles.primaryBtn} onPress={() => respondInvite(inv.token, 'accept')}>
-                  <Text style={styles.primaryBtnText}>{zh ? '接受' : 'Accept'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.secondaryBtn} onPress={() => respondInvite(inv.token, 'decline')}>
-                  <Text style={styles.secondaryBtnText}>{zh ? '拒絕' : 'Decline'}</Text>
-                </TouchableOpacity>
+    <View style={styles.screen}>
+      {tabRowEl}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadPage(false); }} tintColor={colors.subtext} />}
+      >
+        {invites.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{zh ? `待回覆邀請 (${invites.length})` : `Pending Invitations (${invites.length})`}</Text>
+            {invites.map((inv) => (
+              <View key={inv.id} style={styles.card}>
+                <Text style={styles.cardTitle}>{inv.group.name}</Text>
+                {inv.group.description ? <Text style={styles.cardSub}>{inv.group.description}</Text> : null}
+                <Text style={styles.metaText}>{zh ? '到期：' : 'Expires: '}{new Date(inv.expiresAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}</Text>
+                <View style={styles.actionsRow}>
+                  <TouchableOpacity style={styles.primaryBtn} onPress={() => respondInvite(inv.token, 'accept')}>
+                    <Text style={styles.primaryBtnText}>{zh ? '接受' : 'Accept'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.secondaryBtn} onPress={() => respondInvite(inv.token, 'decline')}>
+                    <Text style={styles.secondaryBtnText}>{zh ? '拒絕' : 'Decline'}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
-      )}
+            ))}
+          </View>
+        )}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>{zh ? '我的群組' : 'My Groups'}</Text>
         {groups.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>👥</Text>
@@ -205,17 +215,34 @@ export default function GroupsTab() {
             </View>
           </TouchableOpacity>
         ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 function makeStyles(colors: ReturnType<typeof import('../../../context/theme.context').useTheme>['colors'], isDark: boolean) {
   return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg },
-    container: { padding: 16, gap: 16, backgroundColor: colors.bg, flexGrow: 1 },
+    container: { padding: 16, gap: 12, backgroundColor: colors.bg, flexGrow: 1 },
     section: { gap: 10 },
     sectionTitle: { fontSize: 16, fontWeight: '700', color: colors.text },
+    tabRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      backgroundColor: colors.card,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.border,
+      gap: 8,
+    },
+    tabPills: { flex: 1, flexDirection: 'row', gap: 6 },
+    pill: { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg },
+    pillActive: { backgroundColor: INDIGO, borderColor: INDIGO },
+    pillText: { fontSize: 13, fontWeight: '600', color: colors.subtext },
+    pillTextActive: { color: '#fff' },
+    plusBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: INDIGO, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     card: {
       backgroundColor: colors.card,
       borderRadius: 12,

@@ -1,5 +1,6 @@
-import { Tabs, Redirect } from 'expo-router';
+import { Tabs, Redirect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
 import { useAuth } from '../../context/auth.context';
 import { useTheme } from '../../context/theme.context';
 import { useEffect, useState } from 'react';
@@ -21,17 +22,25 @@ function useUnreadCount() {
   return count;
 }
 
+const INDIGO = '#4F46E5';
+
 export default function TabsLayout() {
   const { user, loading } = useAuth();
   const { colors } = useTheme();
+  const router = useRouter();
   const unread = useUnreadCount();
   if (!loading && !user) return <Redirect href="/(auth)/login" />;
   return (
     <Tabs screenOptions={{
       tabBarStyle: { backgroundColor: colors.tabBar, borderTopColor: colors.border },
-      tabBarActiveTintColor: '#4F46E5',
+      tabBarActiveTintColor: INDIGO,
       tabBarInactiveTintColor: colors.subtext,
       tabBarItemStyle: { paddingTop: 10, paddingBottom: 0 },
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8, marginRight: 8 }}>
+          <Ionicons name="search" size={24} color={INDIGO} />
+        </TouchableOpacity>
+      ),
     }}>
       <Tabs.Screen
         name="home"
