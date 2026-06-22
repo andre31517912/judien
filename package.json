@@ -20,6 +20,8 @@
     "mobile:ios": "pnpm --filter @judien/mobile build:ios",
     "mobile:android": "pnpm --filter @judien/mobile build:android",
     "mobile:submit": "pnpm --filter @judien/mobile submit",
+    "mobile:submit:ios": "cd apps/mobile && eas submit --platform ios",
+    "mobile:submit:android": "cd apps/mobile && eas submit --platform android",
     "save": "git add . && git commit -m"
   },
   "pnpm": {

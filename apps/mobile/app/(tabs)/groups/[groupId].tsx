@@ -124,20 +124,6 @@ export default function GroupDetailScreen() {
       ),
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, marginRight: 8 }}>
-          {canManageGroup && (
-            <TouchableOpacity
-              onPress={() => router.push(`/groups/${groupId}/settings`)}
-              style={{ padding: 8 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="settings-outline" size={22} color={colors.text} />
-              {joinRequests.length > 0 && (
-                <View style={{ position: 'absolute', top: 4, right: 4, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#fff', fontSize: 8, fontWeight: '700' }}>{joinRequests.length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          )}
           <TouchableOpacity onPress={() => router.push('/search' as any)} activeOpacity={0.7} style={{ padding: 8 }}>
             <Ionicons name="search" size={24} color={INDIGO} />
           </TouchableOpacity>
@@ -397,14 +383,29 @@ export default function GroupDetailScreen() {
               <Text style={styles.groupDesc}>{groupItem.group.description}</Text>
             ) : null}
           </View>
-          <TouchableOpacity
-            onPress={() => setShowHierarchy(true)}
-            style={styles.hierarchyBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="git-network-outline" size={14} color={INDIGO} />
-            <Text style={styles.hierarchyBtnText}>{zh ? '層級' : 'Hierarchy'}</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              onPress={() => setShowHierarchy(true)}
+              style={styles.hierarchyBtn}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="git-network-outline" size={16} color={INDIGO} />
+            </TouchableOpacity>
+            {canManageGroup && (
+              <TouchableOpacity
+                onPress={() => router.push(`/groups/${groupId}/settings`)}
+                style={styles.gearBtn}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="settings-outline" size={16} color={colors.subtext} />
+                {joinRequests.length > 0 && (
+                  <View style={styles.gearBadge}>
+                    <Text style={styles.gearBadgeText}>{joinRequests.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -436,7 +437,7 @@ export default function GroupDetailScreen() {
             accessibilityLabel={zh ? '新增' : 'Add'}
             activeOpacity={0.7}
           >
-            <Text style={styles.tabAddBtnText}>＋</Text>
+            <Ionicons name="add" size={22} color="#fff" />
           </TouchableOpacity>
         )}
       </View>
@@ -846,8 +847,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     photoBannerPlaceholder: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoBannerIcon: { fontSize: 40, opacity: 0.5 },
 
-    tabAddBtn: { backgroundColor: INDIGO, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, marginLeft: 8 },
-    tabAddBtnText: { color: '#fff', fontSize: 18, fontWeight: '600', lineHeight: 22 },
+    tabAddBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: INDIGO, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
 
     composeBox: {
       backgroundColor: colors.card, borderRadius: 14, padding: 14,
@@ -884,8 +884,11 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     groupDesc: { fontSize: 13, color: colors.subtext, lineHeight: 18 },
     breadcrumb: { fontSize: 11, color: colors.placeholder },
 
-    hierarchyBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isDark ? 'rgba(79,70,229,0.15)' : '#EEF2FF', flexShrink: 0 },
-    hierarchyBtnText: { fontSize: 12, fontWeight: '600', color: INDIGO },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
+    hierarchyBtn: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: isDark ? '#4338CA' : '#C7D2FE', backgroundColor: isDark ? 'rgba(79,70,229,0.15)' : '#EEF2FF' },
+    gearBtn: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card },
+    gearBadge: { position: 'absolute', top: -3, right: -3, backgroundColor: '#EF4444', borderRadius: 999, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' },
+    gearBadgeText: { color: '#fff', fontSize: 8, fontWeight: '700' },
 
     hierModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
     hierModalTitle: { fontSize: 17, fontWeight: '700' },
