@@ -391,34 +391,6 @@ export default function EventDetailScreen() {
               <TouchableOpacity style={styles.exportBtn} onPress={handleExportCsv}>
                 <Text style={styles.exportBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => {
-                  Alert.alert(
-                    zh ? '刪除活動' : 'Delete Event',
-                    zh
-                      ? `確定要永久刪除「${event.title}」嗎？此操作無法恢復。`
-                      : `Are you sure you want to delete "${event.title}"? This cannot be undone.`,
-                    [
-                      { text: zh ? '取消' : 'Cancel', style: 'cancel' },
-                      {
-                        text: zh ? '確定刪除' : 'Delete',
-                        style: 'destructive',
-                        onPress: async () => {
-                          try {
-                            await apiFetch(`/events/${id}`, { method: 'DELETE' });
-                            router.replace('/(tabs)/events');
-                          } catch (err: any) {
-                            Alert.alert('Error', err.message ?? 'Failed to delete event');
-                          }
-                        },
-                      },
-                    ],
-                  );
-                }}
-              >
-                <Text style={styles.deleteBtnText}>{zh ? '刪除' : 'Delete'}</Text>
-              </TouchableOpacity>
             </View>
           )}
 

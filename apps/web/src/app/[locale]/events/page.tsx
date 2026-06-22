@@ -61,8 +61,8 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   const [eventMsg, setEventMsg] = useState('');
   const [eventForm, setEventForm] = useState({
     title: '', description: '', location: '',
-    startAt: '', endAt: '', timezone: 'Asia/Taipei',
-    feeAmount: '', feeCurrency: 'TWD',
+    startAt: '', endAt: '',
+    feeAmount: '',
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -150,13 +150,11 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         location: eventForm.location,
         startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
         endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
-        timezone: eventForm.timezone,
         feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
-        feeCurrency: eventForm.feeCurrency || 'TWD',
         coverImageUrl,
       };
       await apiFetch<EventWithCounts>('/events', { method: 'POST', body: JSON.stringify(body) });
-      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' });
       setCoverFile(null);
       setCoverPreview(null);
       setCreatingEvent(false);
@@ -431,6 +429,10 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             />
           </div>
           <div>
+            <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
+            <input type="number" className={inputCls} value={eventForm.feeAmount} onChange={setEF('feeAmount')} placeholder="0" />
+          </div>
+          <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '描述' : 'Description'}</label>
             <textarea rows={3} className={`${inputCls} resize-none`} value={eventForm.description} onChange={setEF('description')} placeholder="What's this event about?" />
           </div>
@@ -442,20 +444,6 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '結束（選填）' : 'End (optional)'}</label>
               <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '時區' : 'Timezone'}</label>
-              <input className={inputCls} value={eventForm.timezone} onChange={setEF('timezone')} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '費用' : 'Fee'}</label>
-              <input type="number" className={inputCls} value={eventForm.feeAmount} onChange={setEF('feeAmount')} placeholder="0" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '幣別' : 'Currency'}</label>
-              <input className={inputCls} value={eventForm.feeCurrency} onChange={setEF('feeCurrency')} />
             </div>
           </div>
           <div>

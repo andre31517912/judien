@@ -68,7 +68,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
   const [newsForm, setNewsForm] = useState({ body: '' });
   const [newsLoading, setNewsLoading] = useState(false);
   const [composingEvent, setComposingEvent] = useState(false);
-  const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+  const [eventForm, setEventForm] = useState({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' });
   const [eventLoading, setEventLoading] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -260,9 +260,9 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
       }
       await apiFetch('/events', {
         method: 'POST',
-        body: JSON.stringify({ groupId: params.groupId, title: eventForm.title, description: eventForm.description, location: eventForm.location, startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined, endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : undefined, timezone: eventForm.timezone, feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : undefined, feeCurrency: eventForm.feeCurrency, ...(coverImageUrl ? { coverImageUrl } : {}) }),
+        body: JSON.stringify({ groupId: params.groupId, title: eventForm.title, description: eventForm.description, location: eventForm.location, startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined, endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : undefined, feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : undefined, ...(coverImageUrl ? { coverImageUrl } : {}) }),
       });
-      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' });
       setCoverFile(null);
       setCoverPreview(null);
       setComposingEvent(false);
@@ -365,7 +365,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
           )}
           {(isGroupAdmin || isPlatformAdmin) && (viewTab === 'upcoming' || viewTab === 'past') && (
             <button
-              onClick={() => { setComposingEvent((v) => !v); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); }}
+              onClick={() => { setComposingEvent((v) => !v); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' }); }}
               className="shrink-0 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 font-medium transition-colors"
             >
               {composingEvent ? (zh ? '取消' : 'Cancel') : `＋ ${zh ? '建立活動' : 'Create Event'}`}
@@ -486,6 +486,10 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
                 <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
+                  <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                </div>
                 <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -495,20 +499,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
-                    <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
-                    <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-                    <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                   </div>
                 </div>
                 <div>
@@ -540,7 +530,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
                     {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
                   </button>
-                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
                     {zh ? '取消' : 'Cancel'}
                   </button>
                 </div>
@@ -593,6 +583,10 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <h3 className="text-sm font-semibold text-gray-800 dark:text-white">{zh ? '建立活動' : 'Create Event'}</h3>
                 <input required value={eventForm.title} onChange={(e) => setEventForm((f) => ({ ...f, title: e.target.value }))} placeholder={zh ? '活動名稱' : 'Event title'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <input value={eventForm.location} onChange={(e) => setEventForm((f) => ({ ...f, location: e.target.value }))} placeholder={zh ? '地點' : 'Location'} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
+                  <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                </div>
                 <textarea value={eventForm.description} onChange={(e) => setEventForm((f) => ({ ...f, description: e.target.value }))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} rows={2} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -602,20 +596,6 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '時區' : 'Timezone'}</label>
-                    <input value={eventForm.timezone} onChange={(e) => setEventForm((f) => ({ ...f, timezone: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用' : 'Fee'}</label>
-                    <input type="number" min="0" value={eventForm.feeAmount} onChange={(e) => setEventForm((f) => ({ ...f, feeAmount: e.target.value }))} placeholder="0" className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-                    <input value={eventForm.feeCurrency} onChange={(e) => setEventForm((f) => ({ ...f, feeCurrency: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
                   </div>
                 </div>
                 <div>
@@ -647,7 +627,7 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                   <button type="submit" disabled={eventLoading || !eventForm.title.trim() || !eventForm.startAt} className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50">
                     {eventLoading ? (zh ? '建立中…' : 'Creating…') : (zh ? '建立' : 'Create')}
                   </button>
-                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <button type="button" onClick={() => { setComposingEvent(false); setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' }); setCoverFile(null); setCoverPreview(null); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800">
                     {zh ? '取消' : 'Cancel'}
                   </button>
                 </div>

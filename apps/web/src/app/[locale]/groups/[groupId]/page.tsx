@@ -82,9 +82,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     location: '',
     startAt: '',
     endAt: '',
-    timezone: 'Asia/Taipei',
     feeAmount: '',
-    feeCurrency: 'TWD',
   });
   const [eventLoading, setEventLoading] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -248,9 +246,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           location: eventForm.location,
           startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
           endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
-          timezone: eventForm.timezone,
           feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
-          feeCurrency: eventForm.feeCurrency || 'TWD',
           coverImageUrl,
         }),
       });
@@ -260,9 +256,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         location: '',
         startAt: '',
         endAt: '',
-        timezone: 'Asia/Taipei',
         feeAmount: '',
-        feeCurrency: 'TWD',
       });
       setCoverFile(null);
       setCoverPreview(null);
@@ -711,18 +705,30 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                   placeholder={zh ? '活動名稱' : 'Event title'}
                 />
+                <input
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={eventForm.location}
+                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  placeholder={zh ? '地點（選填）' : 'Location (optional)'}
+                />
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={eventForm.feeAmount}
+                    onChange={(e) => setEventForm({ ...eventForm, feeAmount: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
                 <textarea
                   rows={2}
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   placeholder={zh ? '描述（選填）' : 'Description (optional)'}
-                />
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={eventForm.location}
-                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                  placeholder={zh ? '地點（選填）' : 'Location (optional)'}
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -732,31 +738,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束時間（選填）' : 'End (optional)'}</label>
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.feeAmount}
-                      onChange={(e) => setEventForm({ ...eventForm, feeAmount: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-                    <select
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.feeCurrency}
-                      onChange={(e) => setEventForm({ ...eventForm, feeCurrency: e.target.value })}
-                    >
-                      <option value="TWD">TWD</option>
-                      <option value="USD">USD</option>
-                    </select>
                   </div>
                 </div>
                 <div>
@@ -849,18 +830,30 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                   placeholder={zh ? '活動名稱' : 'Event title'}
                 />
+                <input
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={eventForm.location}
+                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  placeholder={zh ? '地點（選填）' : 'Location (optional)'}
+                />
+                <div>
+                  <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={eventForm.feeAmount}
+                    onChange={(e) => setEventForm({ ...eventForm, feeAmount: e.target.value })}
+                    placeholder="0"
+                  />
+                </div>
                 <textarea
                   rows={2}
                   className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
                   placeholder={zh ? '描述（選填）' : 'Description (optional)'}
-                />
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  value={eventForm.location}
-                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                  placeholder={zh ? '地點（選填）' : 'Location (optional)'}
                 />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -870,31 +863,6 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束時間（選填）' : 'End (optional)'}</label>
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.feeAmount}
-                      onChange={(e) => setEventForm({ ...eventForm, feeAmount: e.target.value })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '幣別' : 'Currency'}</label>
-                    <select
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.feeCurrency}
-                      onChange={(e) => setEventForm({ ...eventForm, feeCurrency: e.target.value })}
-                    >
-                      <option value="TWD">TWD</option>
-                      <option value="USD">USD</option>
-                    </select>
                   </div>
                 </div>
                 <div>

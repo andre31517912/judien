@@ -75,9 +75,7 @@ export default function EditEventScreen() {
     location: '',
     startAt: '',
     endAt: '',
-    timezone: 'Asia/Taipei',
     feeAmount: '',
-    feeCurrency: 'TWD',
     coverImageUrl: '',
   });
 
@@ -106,9 +104,7 @@ export default function EditEventScreen() {
         location: ev.location,
         startAt: ev.startAt ? ev.startAt.replace('Z', '').slice(0, 16) : '',
         endAt: ev.endAt ? ev.endAt.replace('Z', '').slice(0, 16) : '',
-        timezone: ev.timezone,
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
-        feeCurrency: ev.feeCurrency,
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
@@ -229,9 +225,7 @@ export default function EditEventScreen() {
         location: form.location,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
-        timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
-        feeCurrency: form.feeCurrency,
         coverImageUrl: form.coverImageUrl || null,
       };
       await apiFetch(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
@@ -285,8 +279,9 @@ export default function EditEventScreen() {
       <Text style={styles.pageTitle}>{t('events.editEvent')}</Text>
 
       <FInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} />
-      <FInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')} multi />
       <FInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} />
+      <FInput label={zh ? '費用（選填）' : 'Fee (optional)'} value={form.feeAmount} onChangeText={set('feeAmount')} keyboard="numeric" />
+      <FInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')} multi />
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
         <View style={{ flex: 1 }}>
@@ -308,9 +303,6 @@ export default function EditEventScreen() {
         </View>
       </View>
 
-      <FInput label={zh ? '時區' : 'Timezone'} value={form.timezone} onChangeText={set('timezone')} />
-      <FInput label={zh ? '費用' : 'Fee'} value={form.feeAmount} onChangeText={set('feeAmount')} keyboard="numeric" />
-      <FInput label={zh ? '幣別' : 'Currency'} value={form.feeCurrency} onChangeText={set('feeCurrency')} />
 
       <View style={styles.field}>
         <Text style={styles.label}>{zh ? '封面圖' : 'Cover Image'}</Text>

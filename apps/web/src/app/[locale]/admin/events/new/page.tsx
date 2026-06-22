@@ -25,9 +25,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     location: '',
     startAt: '',
     endAt: '',
-    timezone: 'Asia/Taipei',
     feeAmount: '',
-    feeCurrency: 'TWD',
     commentsEnabled: true,
     messagingEnabled: true,
   });
@@ -59,9 +57,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         location: form.location,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
-        timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
-        feeCurrency: form.feeCurrency || 'TWD',
         coverImageUrl,
         commentsEnabled: form.commentsEnabled,
         messagingEnabled: form.messagingEnabled,
@@ -97,6 +93,10 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             showMapPreview={false}
           />
         </Field>
+        <Field label="Fee (optional)">
+          <input type="number" value={form.feeAmount} onChange={set('feeAmount')}
+            placeholder="0" className={inp} />
+        </Field>
         <Field label="Description">
           <textarea value={form.description} onChange={set('description')}
             placeholder="What's this event about?" rows={4}
@@ -108,18 +108,6 @@ export default function NewEventPage({ params }: { params: { locale: string } })
           </Field>
           <Field label="End (optional)">
             <DateTimeInput value={form.endAt} onChange={(v) => setForm((f) => ({ ...f, endAt: v }))} placeholder="Select end date & time" clearable />
-          </Field>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="Timezone">
-            <input value={form.timezone} onChange={set('timezone')} className={inp} />
-          </Field>
-          <Field label="Fee">
-            <input type="number" value={form.feeAmount} onChange={set('feeAmount')}
-              placeholder="0" className={inp} />
-          </Field>
-          <Field label="Currency">
-            <input value={form.feeCurrency} onChange={set('feeCurrency')} className={inp} />
           </Field>
         </div>
 

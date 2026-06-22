@@ -93,9 +93,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         location: ev.location,
         startAt: (ev.startAt ?? '').replace('Z', '').slice(0, 16),
         endAt: (ev.endAt ?? '').replace('Z', '').slice(0, 16),
-        timezone: ev.timezone,
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
-        feeCurrency: ev.feeCurrency,
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       if (ev.groupId) {
@@ -139,9 +137,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         location: form.location,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
-        timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
-        feeCurrency: form.feeCurrency,
         coverImageUrl: form.coverImageUrl || null,
       };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
@@ -288,6 +284,9 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               onChange={(v) => setForm((f) => ({ ...f, location: v }))}
             />
           </Field>
+          <Field label="Fee (optional)">
+            <input type="number" value={form.feeAmount ?? ''} onChange={set('feeAmount')} placeholder="0" className={inp} />
+          </Field>
           <Field label="Description">
             <textarea value={form.description ?? ''} onChange={set('description')} rows={3} className={inp} />
           </Field>
@@ -297,17 +296,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             </Field>
             <Field label="End (optional)">
               <DateTimeInput value={form.endAt ?? ''} onChange={(v) => setForm((f) => ({ ...f, endAt: v }))} placeholder="Select end date & time" clearable />
-            </Field>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Field label="Timezone">
-              <input value={form.timezone ?? ''} onChange={set('timezone')} className={inp} />
-            </Field>
-            <Field label="Fee">
-              <input type="number" value={form.feeAmount ?? ''} onChange={set('feeAmount')} placeholder="0" className={inp} />
-            </Field>
-            <Field label="Currency">
-              <input value={form.feeCurrency ?? ''} onChange={set('feeCurrency')} className={inp} />
             </Field>
           </div>
           <Field label="Cover Photo">

@@ -58,9 +58,7 @@ export default function NewEventScreen() {
     location: '',
     startAt: '',
     endAt: '',
-    timezone: 'Asia/Taipei',
     feeAmount: '',
-    feeCurrency: 'TWD',
   });
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -162,9 +160,7 @@ export default function NewEventScreen() {
         location: form.location,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
-        timezone: form.timezone,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
-        feeCurrency: form.feeCurrency || 'TWD',
         coverImageUrl,
         ...(groupId ? { groupId } : {}),
       };
@@ -207,6 +203,7 @@ export default function NewEventScreen() {
 
       <FieldInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} placeholder={zh ? '活動名稱' : 'Event name'} />
       <FieldInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
+      <FieldInput label={zh ? '費用（選填）' : 'Fee (optional)'} value={form.feeAmount} onChangeText={set('feeAmount')} placeholder="0" keyboardType="numeric" />
       <FieldInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')}
         placeholder={zh ? '活動說明' : "What's this event about?"} multiline />
 
@@ -230,18 +227,6 @@ export default function NewEventScreen() {
         </View>
       </View>
 
-      <View style={styles.row}>
-        <View style={[styles.half, { flex: 1.5 }]}>
-          <FieldInput label={zh ? '時區' : 'Timezone'} value={form.timezone} onChangeText={set('timezone')} />
-        </View>
-        <View style={styles.half}>
-          <FieldInput label={zh ? '費用' : 'Fee'} value={form.feeAmount} onChangeText={set('feeAmount')}
-            placeholder="0" keyboardType="numeric" />
-        </View>
-        <View style={styles.half}>
-          <FieldInput label={zh ? '幣別' : 'Currency'} value={form.feeCurrency} onChangeText={set('feeCurrency')} />
-        </View>
-      </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>{zh ? '封面圖片（選填）' : 'Cover Photo (optional)'}</Text>
