@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../context/theme.context';
 
 type Props = {
@@ -52,6 +52,7 @@ export default function DateTimeField({
     setPickerVisible(true);
   };
 
+  // Android: two native dialogs, date then time
   const handleAndroidChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (event.type === 'dismissed') {
       setPickerVisible(false);
@@ -101,7 +102,7 @@ export default function DateTimeField({
         </Text>
       </TouchableOpacity>
 
-      {/* Android: native dialog pickers, no container needed */}
+      {/* Android: native dialog — renders outside view hierarchy automatically */}
       {pickerVisible && Platform.OS === 'android' ? (
         <DateTimePicker
           key={pickerMode}
@@ -112,51 +113,60 @@ export default function DateTimeField({
         />
       ) : null}
 
-      {/* iOS: inline calendar+time picker — avoids blank spinner rendering bug */}
-      {pickerVisible && Platform.OS === 'ios' ? (
-        <View style={{
-          marginTop: 8,
-          borderWidth: 1,
-          borderColor: colors.border,
-          borderRadius: 12,
-          backgroundColor: colors.card,
-          overflow: 'hidden',
-        }}>
-          <DateTimePicker
-            value={draftDate}
-            mode="datetime"
-            display="inline"
-            onChange={(_, date) => { if (date) setDraftDate(date); }}
-            accentColor="#4F46E5"
-            style={{ backgroundColor: colors.card }}
+      {/* iOS: bottom-sheet Modal so the picker is outside any ScrollView */}
+      {Platform.OS === 'ios' ? (
+        <Modal
+          visible={pickerVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setPickerVisible(false)}
+        >
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' }}
+            activeOpacity={1}
+            onPress={() => setPickerVisible(false)}
           />
           <View style={{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            gap: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingBottom: 34,
           }}>
-            <TouchableOpacity
-              onPress={() => setPickerVisible(false)}
-              style={{ paddingHorizontal: 8, paddingVertical: 6 }}
-            >
-              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 14, fontWeight: '600' }}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                onChange(formatLocalDateTimeValue(draftDate));
-                setPickerVisible(false);
-              }}
-              style={{ paddingHorizontal: 8, paddingVertical: 6 }}
-            >
-              <Text style={{ color: '#4F46E5', fontSize: 14, fontWeight: '700' }}>Confirm</Text>
-            </TouchableOpacity>
+            {/* Header bar */}
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 20,
+              paddingVertical: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+            }}>
+              <TouchableOpacity onPress={() => setPickerVisible(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.subtext ?? colors.placeholder }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  onChange(formatLocalDateTimeValue(draftDate));
+                  setPickerVisible(false);
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Confirm</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Inline datetime picker — reliable when not inside a ScrollView */}
+            <DateTimePicker
+              value={draftDate}
+              mode="datetime"
+              display="inline"
+              onChange={(_, date) => { if (date) setDraftDate(date); }}
+              accentColor="#4F46E5"
+              style={{ backgroundColor: colors.card, alignSelf: 'center' }}
+            />
           </View>
-        </View>
+        </Modal>
       ) : null}
     </View>
   );

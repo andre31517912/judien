@@ -39,8 +39,18 @@ function toOutput(year: number, month: number, day: number, h: number, m: number
 
 function toDisplay(year: number, month: number, day: number, h: number, m: number) {
   return new Date(year, month, day, h, m).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit',
+    month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true,
   });
+}
+
+// 24h → 12h
+function to12(h24: number): { h12: number; ampm: 'AM' | 'PM' } {
+  return { h12: h24 % 12 || 12, ampm: h24 >= 12 ? 'PM' : 'AM' };
+}
+// 12h → 24h
+function to24(h12: number, ampm: 'AM' | 'PM'): number {
+  if (ampm === 'AM') return h12 === 12 ? 0 : h12;
+  return h12 === 12 ? 12 : h12 + 12;
 }
 
 interface Props {
@@ -54,8 +64,9 @@ interface Props {
 export default function DateTimeInput({ value, onChange, placeholder = 'Select date & time', clearable = false, className = '' }: Props) {
   const today = new Date();
   const todayKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-
   const parsed = parse(value);
+
+  const initTime = (h24: number) => to12(h24);
 
   const [open, setOpen] = useState(false);
   const [viewYear, setViewYear] = useState(parsed?.year ?? today.getFullYear());
@@ -64,7 +75,8 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
   const [selDay, setSelDay] = useState<{ year: number; month: number; day: number } | null>(
     parsed ? { year: parsed.year, month: parsed.month, day: parsed.day } : null
   );
-  const [hour, setHour] = useState(parsed?.hour ?? 9);
+  const [hour12, setHour12] = useState(() => initTime(parsed?.hour ?? 9).h12);
+  const [ampm, setAmpm] = useState<'AM' | 'PM'>(() => initTime(parsed?.hour ?? 9).ampm);
   const [minute, setMinute] = useState(parsed?.minute ?? 0);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,15 +84,13 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
   useEffect(() => {
     const p = parse(value);
     if (p) {
-      setViewYear(p.year);
-      setViewMonth(p.month);
+      setViewYear(p.year); setViewMonth(p.month);
       setSelDay({ year: p.year, month: p.month, day: p.day });
       setSelKey(`${p.year}-${p.month}-${p.day}`);
-      setHour(p.hour);
-      setMinute(p.minute);
+      const t = to12(p.hour);
+      setHour12(t.h12); setAmpm(t.ampm); setMinute(p.minute);
     } else {
-      setSelDay(null);
-      setSelKey(null);
+      setSelDay(null); setSelKey(null);
     }
   }, [value]);
 
@@ -99,11 +109,12 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
       setViewYear(p.year); setViewMonth(p.month);
       setSelDay({ year: p.year, month: p.month, day: p.day });
       setSelKey(`${p.year}-${p.month}-${p.day}`);
-      setHour(p.hour); setMinute(p.minute);
+      const t = to12(p.hour);
+      setHour12(t.h12); setAmpm(t.ampm); setMinute(p.minute);
     } else {
       setViewYear(today.getFullYear()); setViewMonth(today.getMonth());
       setSelDay(null); setSelKey(null);
-      setHour(9); setMinute(0);
+      setHour12(9); setAmpm('AM'); setMinute(0);
     }
     setOpen(true);
   };
@@ -117,15 +128,9 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
     else setViewMonth(m => m + 1);
   };
 
-  const pickDay = (day: number) => {
-    const d = { year: viewYear, month: viewMonth, day };
-    setSelDay(d);
-    setSelKey(`${viewYear}-${viewMonth}-${day}`);
-  };
-
   const confirm = () => {
     if (!selDay) return;
-    onChange(toOutput(selDay.year, selDay.month, selDay.day, hour, minute));
+    onChange(toOutput(selDay.year, selDay.month, selDay.day, to24(hour12, ampm), minute));
     setOpen(false);
   };
 
@@ -137,7 +142,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
       <button
         type="button"
         onClick={openPicker}
-        className="w-full flex items-center gap-2 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 focus-within:border-indigo-500 transition text-left group"
+        className="w-full flex items-center gap-2 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 bg-white dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition text-left"
       >
         <IconCalendar />
         <span className={`flex-1 text-sm ${parsed ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}`}>
@@ -194,7 +199,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
                 <button
                   key={i}
                   type="button"
-                  onClick={() => pickDay(day)}
+                  onClick={() => { setSelDay({ year: viewYear, month: viewMonth, day }); setSelKey(key); }}
                   className={[
                     'w-full aspect-square flex items-center justify-center rounded-full text-[13px] transition',
                     isSel
@@ -213,25 +218,43 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
           {/* Divider */}
           <div className="border-t border-gray-100 dark:border-gray-800 my-3" />
 
-          {/* Time picker */}
+          {/* Time picker — 12h */}
           <div className="flex items-center gap-2">
             <IconClock />
-            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-1.5 border border-gray-200 dark:border-gray-700 flex-1">
+            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 border border-gray-200 dark:border-gray-700">
               <input
-                type="number" min={0} max={23}
-                value={hour}
-                onChange={e => setHour(Math.min(23, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-                className="w-8 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                type="number" min={1} max={12}
+                value={hour12}
+                onChange={e => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v)) setHour12(Math.min(12, Math.max(1, v)));
+                }}
+                className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              <span className="text-gray-400 font-semibold">:</span>
+              <span className="text-gray-400 font-semibold text-sm">:</span>
               <input
                 type="number" min={0} max={59}
                 value={pad(minute)}
-                onChange={e => setMinute(Math.min(59, Math.max(0, parseInt(e.target.value, 10) || 0)))}
-                className="w-8 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                onChange={e => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v)) setMinute(Math.min(59, Math.max(0, v)));
+                }}
+                className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
-            <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap">24 h</span>
+            {/* AM / PM toggle */}
+            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold">
+              {(['AM', 'PM'] as const).map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setAmpm(p)}
+                  className={`px-2.5 py-1.5 transition ${ampm === p ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Footer */}

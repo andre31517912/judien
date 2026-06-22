@@ -121,15 +121,11 @@ export default function HomeTab() {
   };
 
   const handlePlusPress = () => {
-    Alert.alert(
-      zh ? '新增' : 'Create',
-      undefined,
-      [
-        { text: zh ? '發布公告' : 'Create Post', onPress: () => { setActiveTab('feed'); setComposing(true); } },
-        { text: zh ? '建立活動' : 'Create Event', onPress: () => router.push('/admin/events/new' as any) },
-        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
-      ]
-    );
+    if (activeTab === 'feed') {
+      setComposing(true);
+    } else {
+      router.push('/admin/events/new' as any);
+    }
   };
 
   const styles = useMemo(() => makeStyles(colors, isDark), [colors, isDark]);
