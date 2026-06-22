@@ -115,7 +115,17 @@ export default function DateTimeField({
         </Text>
       </TouchableOpacity>
 
-      {pickerVisible ? (
+      {pickerVisible && Platform.OS === 'android' ? (
+        <DateTimePicker
+          key={pickerMode}
+          value={draftDate}
+          mode={pickerMode}
+          display="default"
+          onChange={handlePickerChange}
+        />
+      ) : null}
+
+      {pickerVisible && Platform.OS === 'ios' ? (
         <View style={{
           marginTop: 8,
           borderWidth: 1,
@@ -130,37 +140,32 @@ export default function DateTimeField({
           <DateTimePicker
             value={draftDate}
             mode={pickerMode}
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display="spinner"
             onChange={handlePickerChange}
           />
           <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', gap: 10 }}>
             <TouchableOpacity
+              onPress={() => { setPickerVisible(false); setPickerMode('date'); }}
+              style={{ paddingHorizontal: 6, paddingVertical: 4 }}
+            >
+              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 13, fontWeight: '600' }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => {
+                if (pickerMode === 'date') {
+                  setPickerMode('time');
+                  return;
+                }
+                onChange(formatLocalDateTimeValue(draftDate));
                 setPickerVisible(false);
                 setPickerMode('date');
               }}
               style={{ paddingHorizontal: 6, paddingVertical: 4 }}
             >
-              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 13, fontWeight: '600' }}>Cancel</Text>
+              <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>
+                {pickerMode === 'date' ? 'Next' : 'Confirm'}
+              </Text>
             </TouchableOpacity>
-            {Platform.OS === 'ios' ? (
-              <TouchableOpacity
-                onPress={() => {
-                  if (pickerMode === 'date') {
-                    setPickerMode('time');
-                    return;
-                  }
-                  onChange(formatLocalDateTimeValue(draftDate));
-                  setPickerVisible(false);
-                  setPickerMode('date');
-                }}
-                style={{ paddingHorizontal: 6, paddingVertical: 4 }}
-              >
-                <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>
-                  {pickerMode === 'date' ? 'Next' : 'Confirm'}
-                </Text>
-              </TouchableOpacity>
-            ) : null}
           </View>
         </View>
       ) : null}
