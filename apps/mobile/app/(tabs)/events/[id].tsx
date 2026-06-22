@@ -413,7 +413,7 @@ export default function EventDetailScreen() {
             {(event as any).createdByName && (
               <Text style={styles.meta}>👤 {(event as any).createdByName}</Text>
             )}
-            <Text style={styles.meta}>📅 {dateStr} ({event.timezone})</Text>
+            <Text style={styles.meta}>📅 {dateStr}{event.timezone ? ` (${event.timezone})` : ''}</Text>
             {location ? (
               <TouchableOpacity onPress={() => {
                 const q = encodeURIComponent(location);

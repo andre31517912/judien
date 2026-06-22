@@ -496,7 +496,7 @@ export default function EventDetailPage() {
         )}
         <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '時間' : 'Time'}</span>
-          <span>{startDate} ({event.timezone})</span>
+          <span>{startDate}{event.timezone ? ` (${event.timezone})` : ''}</span>
         </div>
         {location && (
           <div className="flex gap-2">
