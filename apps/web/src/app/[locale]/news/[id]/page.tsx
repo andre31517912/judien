@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { apiFetch, resolveImageUrl } from '@/lib/api';
 import type { News } from '@judien/shared';
 
@@ -30,8 +31,22 @@ export default function NewsDetailPage() {
   const body = post.body;
   const coverUrl = resolveImageUrl(post.coverImageUrl ?? null);
 
+  const backHref = post.groupId
+    ? `/${params.locale}/groups/${post.groupId}`
+    : `/${params.locale}`;
+  const backLabel = post.groupId
+    ? (zh ? '← 返回社群' : '← Back to Group')
+    : (zh ? '← 返回動態' : '← Back to Feed');
+
   return (
     <div className="flex flex-col gap-6">
+      <Link
+        href={backHref}
+        className="self-start text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+      >
+        {backLabel}
+      </Link>
+
       {coverUrl && (
         <div className="relative w-full h-56 rounded-xl overflow-hidden">
           <Image src={coverUrl} alt={title} fill className="object-cover" />

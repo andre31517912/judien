@@ -99,9 +99,9 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
       let url = n.actionUrl;
       // /feed has no web route → go to home
       if (url === '/feed') url = '/';
-      // /groups/{id}/news/{newsId} → web shows posts on the group page itself
-      const groupNewsMatch = url.match(/^\/groups\/([^/]+)\/news\/[^/]+$/);
-      if (groupNewsMatch) url = `/groups/${groupNewsMatch[1]}`;
+      // /groups/{groupId}/news/{newsId} → web post detail is at /news/{newsId}
+      const groupNewsMatch = url.match(/^\/groups\/[^/]+\/news\/([^/]+)$/);
+      if (groupNewsMatch) url = `/news/${groupNewsMatch[1]}`;
       router.push(`/${locale}${url}`);
     }
   };
