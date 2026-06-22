@@ -19,13 +19,28 @@ type AppNotification = {
   body: string;
   read: boolean;
   actionUrl: string | null;
+  groupId: string | null;
   createdAt: string;
 };
 
 function resolveRoute(actionUrl: string | null): string | null {
   if (!actionUrl) return null;
+  // /events/{id}
   const eventMatch = actionUrl.match(/^\/events\/([^/]+)$/);
   if (eventMatch) return `/events/${eventMatch[1]}`;
+  // /groups/{groupId}/news/{newsId} → group post detail
+  const groupNewsMatch = actionUrl.match(/^\/groups\/([^/]+)\/news\/([^/]+)$/);
+  if (groupNewsMatch) return `/groups/${groupNewsMatch[1]}/news/${groupNewsMatch[2]}`;
+  // /groups/{groupId}/events/{eventId} → group event detail
+  const groupEventMatch = actionUrl.match(/^\/groups\/([^/]+)\/events\/([^/]+)$/);
+  if (groupEventMatch) return `/groups/${groupEventMatch[1]}/events/${groupEventMatch[2]}`;
+  // /groups/{groupId} or /groups/{groupId}/... → group page
+  const groupMatch = actionUrl.match(/^\/groups\/([^/]+)/);
+  if (groupMatch) return `/groups/${groupMatch[1]}`;
+  // /admin/groups/{groupId}/... → no admin on mobile, go to group page
+  const adminGroupMatch = actionUrl.match(/^\/admin\/groups\/([^/]+)/);
+  if (adminGroupMatch) return `/groups/${adminGroupMatch[1]}`;
+  // /feed or /news → home
   if (actionUrl === '/feed' || actionUrl.startsWith('/news')) return '/(tabs)/home';
   return null;
 }
@@ -141,7 +156,7 @@ export default function NotificationsTab() {
       apiFetch(`/notifications/${n.id}/read`, { method: 'PATCH' }).catch(() => {});
       setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x));
     }
-    const route = resolveRoute(n.actionUrl);
+    const route = resolveRoute(n.actionUrl) ?? (n.groupId ? `/groups/${n.groupId}` : null);
     if (route) router.push(route as any);
   };
 

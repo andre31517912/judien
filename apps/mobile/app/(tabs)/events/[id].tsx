@@ -104,6 +104,7 @@ export default function EventDetailScreen() {
   const [showGuests, setShowGuests] = useState(false);
   const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING'>('GOING');
   const [guestSearch, setGuestSearch] = useState('');
+  const [goingList, setGoingList] = useState<GuestEntry[]>([]);
 
   const [showBlast, setShowBlast] = useState(false);
   const [blastMsg, setBlastMsg] = useState('');
@@ -137,6 +138,9 @@ export default function EventDetailScreen() {
       .catch(() => setFetchFailed(true));
     apiFetch<Comment[] | { data: Comment[] }>(`/events/${id}/comments`)
       .then((res) => setComments(Array.isArray(res) ? res : res.data))
+      .catch(() => {});
+    apiFetch<{ GOING: GuestEntry[] }>(`/events/${id}/rsvp/guests`)
+      .then((res) => setGoingList(res.GOING ?? []))
       .catch(() => {});
   }, [id]);
 
@@ -430,123 +434,140 @@ export default function EventDetailScreen() {
             <Text style={styles.count}>✗ {event.rsvpCounts.NO} {isPast ? (zh ? '缺席' : 'Did Not Attend') : t('rsvp.notGoing')}</Text>
           </View>
 
+          {/* Guest List + Share row (above action buttons) */}
           <View style={styles.rsvpRow}>
-            {user && !isPast && rsvpBtn('GOING', t('rsvp.going'))}
-            {user && !isPast && rsvpBtn('NO', t('rsvp.notGoing'))}
             <TouchableOpacity style={styles.rsvpBtn} onPress={loadGuests} disabled={guestsLoading}>
               <Text style={styles.rsvpBtnText}>{guestsLoading ? (zh ? '載入中…' : 'Loading…') : (zh ? '賓客名單' : 'Guest List')}</Text>
             </TouchableOpacity>
             {!isPast && user && (
-              <TouchableOpacity style={[styles.rsvpBtn, styles.shareBtn]} onPress={handleCreateShareLink} disabled={inviteLoading}>
-                <Text style={styles.shareBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享' : '🔗 Share')}</Text>
+              <TouchableOpacity style={styles.rsvpBtn} onPress={handleCreateShareLink} disabled={inviteLoading}>
+                <Text style={styles.rsvpBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享' : '🔗 Share')}</Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
-            <View style={styles.blastSection}>
-              <TouchableOpacity onPress={() => setShowBlast(!showBlast)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>📣 {zh ? '群組訊息' : 'Text Blast'}</Text>
+          {/* RSVP + admin action row */}
+          <View style={styles.rsvpRow}>
+            {user && !isPast && rsvpBtn('GOING', t('rsvp.going'))}
+            {user && !isPast && rsvpBtn('NO', t('rsvp.notGoing'))}
+            {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
+              <TouchableOpacity
+                style={[styles.rsvpBtn, showBlast && styles.rsvpBtnActive]}
+                onPress={() => setShowBlast(!showBlast)}
+              >
+                <Text style={[styles.rsvpBtnText, showBlast && styles.rsvpBtnTextActive]}>
+                  {zh ? '📣 發訊息' : '📣 Share Text'}
+                </Text>
               </TouchableOpacity>
-              {showBlast && (
-                <View style={styles.blastForm}>
-                  <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
-                  <View style={styles.blastAudienceRow}>
-                    {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email' : '✉️ Email']] as const).map(([ch, label]) => (
-                      <TouchableOpacity key={ch}
-                        onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
-                        style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
-                        <Text style={[styles.audienceBtnText, blastChannels.includes(ch) && styles.audienceBtnTextActive]}>{label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
-                  <View style={styles.blastAudienceRow}>
-                    {(['invited', 'rsvped'] as const).map((a) => (
-                      <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
-                        style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive]}>
-                        <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
-                          {a === 'invited' ? (zh ? '已邀請' : 'Invited') : (zh ? '已回覆' : 'RSVP')}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <TextInput
-                    style={styles.blastInput}
-                    placeholder="Enter message…"
-                    placeholderTextColor={colors.placeholder}
-                    value={blastMsg}
-                    onChangeText={setBlastMsg}
-                    multiline
-                    numberOfLines={3}
-                  />
-                  <TouchableOpacity
-                    style={[styles.blastSendBtn, (blastSending || !blastMsg.trim() || blastChannels.length === 0) && { opacity: 0.5 }]}
-                    onPress={handleBlastSend}
-                    disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
-                  >
-                    <Text style={styles.blastSendBtnText}>{blastSending ? 'Sending…' : 'Send Now'}</Text>
+            )}
+            {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
+              <TouchableOpacity
+                style={[styles.rsvpBtn, showDirectInvite && styles.rsvpBtnActive]}
+                onPress={() => setShowDirectInvite(!showDirectInvite)}
+              >
+                <Text style={[styles.rsvpBtnText, showDirectInvite && styles.rsvpBtnTextActive]}>
+                  {zh ? '👥 邀請賓客' : '👥 Invite Guest'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Share Text form */}
+          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showBlast && (
+            <View style={[styles.blastForm, { marginTop: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }]}>
+              <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
+              <View style={styles.blastAudienceRow}>
+                {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email' : '✉️ Email']] as const).map(([ch, label]) => (
+                  <TouchableOpacity key={ch}
+                    onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
+                    style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
+                    <Text style={[styles.audienceBtnText, blastChannels.includes(ch) && styles.audienceBtnTextActive]}>{label}</Text>
                   </TouchableOpacity>
-                  {!!blastResult && (
-                    <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444' }]}>{blastResult}</Text>
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Invite / Add Guest (event creator/admin) */}
-          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
-            <View style={styles.blastSection}>
-              <TouchableOpacity onPress={() => setShowDirectInvite(!showDirectInvite)} style={styles.blastToggle}>
-                <Text style={styles.blastToggleText}>👥 {zh ? '邀請賓客' : 'Invite Guest'}</Text>
+                ))}
+              </View>
+              <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
+              <View style={styles.blastAudienceRow}>
+                {(['invited', 'rsvped'] as const).map((a) => (
+                  <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
+                    style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive]}>
+                    <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
+                      {a === 'invited' ? (zh ? '已邀請' : 'Invited') : (zh ? '已回覆' : 'RSVP')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TextInput
+                style={styles.blastInput}
+                placeholder="Enter message…"
+                placeholderTextColor={colors.placeholder}
+                value={blastMsg}
+                onChangeText={setBlastMsg}
+                multiline
+                numberOfLines={3}
+              />
+              <TouchableOpacity
+                style={[styles.blastSendBtn, (blastSending || !blastMsg.trim() || blastChannels.length === 0) && { opacity: 0.5 }]}
+                onPress={handleBlastSend}
+                disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
+              >
+                <Text style={styles.blastSendBtnText}>{blastSending ? 'Sending…' : 'Send Now'}</Text>
               </TouchableOpacity>
-              {showDirectInvite && (
-                <View style={styles.blastForm}>
-                  <Text style={styles.blastLabel}>{zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}</Text>
-                  <TextInput
-                    style={styles.inviteSearchInput}
-                    placeholder={zh ? '搜尋用戶…' : 'Search users…'}
-                    placeholderTextColor={colors.placeholder}
-                    value={directInviteQuery}
-                    onChangeText={searchInviteUsers}
-                    autoCapitalize="none"
-                  />
-                  {directInviteSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ marginBottom: 8 }} />}
-                  {directInviteSearchResults.length > 0 && (
-                    <View style={styles.inviteResultsList}>
-                      {directInviteSearchResults.map((u) => (
-                        <TouchableOpacity
-                          key={u.id}
-                          style={styles.inviteResultItem}
-                          onPress={() => handleInviteUser(u)}
-                          disabled={directInviteLoading}
-                          activeOpacity={0.7}
-                        >
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.inviteResultName}>{u.displayName ?? (zh ? '未知' : 'Unknown')}</Text>
-                            {(u.email || u.phoneE164) && (
-                              <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
-                            )}
-                          </View>
-                          {directInviteLoading
-                            ? <ActivityIndicator size="small" color={INDIGO} />
-                            : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
-                  {!!directInviteMsg && (
-                    <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
-                  )}
-                </View>
+              {!!blastResult && (
+                <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444' }]}>{blastResult}</Text>
               )}
             </View>
           )}
 
-          {/* Comments section */}
-          <Text style={styles.sectionTitle}>{t('comments.title')}</Text>
-          {comments.length === 0 && <Text style={styles.empty}>{t('comments.noComments')}</Text>}
+          {/* Invite Guest form */}
+          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showDirectInvite && (
+            <View style={[styles.blastForm, { marginTop: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }]}>
+              <Text style={styles.blastLabel}>{zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}</Text>
+              <TextInput
+                style={styles.inviteSearchInput}
+                placeholder={zh ? '搜尋用戶…' : 'Search users…'}
+                placeholderTextColor={colors.placeholder}
+                value={directInviteQuery}
+                onChangeText={searchInviteUsers}
+                autoCapitalize="none"
+              />
+              {directInviteSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ marginBottom: 8 }} />}
+              {directInviteSearchResults.length > 0 && (
+                <View style={styles.inviteResultsList}>
+                  {directInviteSearchResults.map((u) => (
+                    <TouchableOpacity
+                      key={u.id}
+                      style={styles.inviteResultItem}
+                      onPress={() => handleInviteUser(u)}
+                      disabled={directInviteLoading}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.inviteResultName}>{u.displayName ?? (zh ? '未知' : 'Unknown')}</Text>
+                        {(u.email || u.phoneE164) && (
+                          <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
+                        )}
+                      </View>
+                      {directInviteLoading
+                        ? <ActivityIndicator size="small" color={INDIGO} />
+                        : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+              {!!directInviteMsg && (
+                <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
+              )}
+            </View>
+          )}
+
+          {/* Feed section */}
+          <Text style={styles.sectionTitle}>{zh ? '動態' : 'Feed'}</Text>
+          {goingList.map((g, i) => (
+            <View key={`going-${i}`} style={styles.feedGoingItem}>
+              <Text style={styles.feedGoingText}>✓ {g.displayName ?? g.handle} {zh ? '要參加' : 'is going'}</Text>
+            </View>
+          ))}
+          {comments.length === 0 && goingList.length === 0 && <Text style={styles.empty}>{zh ? '還沒有動態' : 'No feeds yet'}</Text>}
           {comments.map((c) => {
             const isOwn = user?.id === c.userId;
             const canDelete = isOwn || isAdmin;
@@ -823,8 +844,6 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   rsvpBtnActive: { backgroundColor: INDIGO, borderColor: INDIGO },
   rsvpBtnText: { fontSize: 14, color: colors.text },
   rsvpBtnTextActive: { color: '#fff' },
-  shareBtn: { backgroundColor: '#06B6D4', borderColor: '#06B6D4' },
-  shareBtnText: { fontSize: 14, color: '#fff' },
   blastSection: { marginTop: 20, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: 'hidden' },
   blastToggle: { padding: 14, backgroundColor: colors.card },
   blastToggleText: { fontSize: 14, fontWeight: '600', color: colors.text },
@@ -849,6 +868,8 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   // Comments
   sectionTitle: { fontSize: 18, fontWeight: '600', color: colors.text, marginTop: 28, marginBottom: 16 },
   empty: { color: colors.placeholder, fontSize: 14, marginBottom: 8 },
+  feedGoingItem: { backgroundColor: colors.card, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8, borderWidth: 1, borderColor: colors.border },
+  feedGoingText: { fontSize: 13, color: colors.subtext },
   commentWrapper: { marginBottom: 14 },
   comment: { backgroundColor: colors.card, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: colors.border },
   commentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },

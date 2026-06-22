@@ -21,6 +21,14 @@ type Comment = {
   replies?: Comment[];
 };
 
+type UserResult = {
+  id: string;
+  displayName: string | null;
+  handle: string;
+  email?: string | null;
+  phoneE164?: string | null;
+};
+
 export default function EventDetailPage() {
   const params = useParams<{ locale: string; id: string }>();
   const router = useRouter();
@@ -106,30 +114,38 @@ export default function EventDetailPage() {
   };
 
   // direct invite state
-  const [directInviteId, setDirectInviteId] = useState('');
+  const [directInviteQuery, setDirectInviteQuery] = useState('');
+  const [directInviteSearchResults, setDirectInviteSearchResults] = useState<UserResult[]>([]);
+  const [directInviteSearchLoading, setDirectInviteSearchLoading] = useState(false);
   const [directInviteLoading, setDirectInviteLoading] = useState(false);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
 
-  const handleDirectInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!directInviteId.trim()) return;
+  const searchInviteUsers = async (q: string) => {
+    setDirectInviteQuery(q);
+    setDirectInviteMsg('');
+    if (!q.trim()) { setDirectInviteSearchResults([]); return; }
+    setDirectInviteSearchLoading(true);
+    try {
+      const res = await apiFetch<UserResult[]>(`/users/search?q=${encodeURIComponent(q)}`);
+      setDirectInviteSearchResults(Array.isArray(res) ? res : []);
+    } catch { setDirectInviteSearchResults([]); }
+    finally { setDirectInviteSearchLoading(false); }
+  };
+
+  const handleInviteUser = async (u: UserResult) => {
     setDirectInviteLoading(true);
     setDirectInviteMsg('');
     try {
-      const res = await apiFetch<{ displayName: string | null; status: string }>(`/events/${params.id}/direct-invite`, {
+      await apiFetch(`/events/${params.id}/invite-members`, {
         method: 'POST',
-        body: JSON.stringify({ identifier: directInviteId.trim() }),
+        body: JSON.stringify({ userIds: [u.id] }),
       });
-      if (res.status === 'already_rsvpd') {
-        setDirectInviteMsg(zh ? `${res.displayName ?? directInviteId} 已回覆 RSVP。` : `${res.displayName ?? directInviteId} has already RSVPed.`);
-      } else {
-        setDirectInviteMsg(zh ? `已邀請 ${res.displayName ?? directInviteId}，並已發送通知。` : `Invited ${res.displayName ?? directInviteId} and sent notification.`);
-        setDirectInviteId('');
-        setGuests(null);
-        if (showGuests) loadGuests();
-      }
+      setDirectInviteMsg(zh ? `已邀請 ${u.displayName ?? u.handle}。` : `Invited ${u.displayName ?? u.handle}.`);
+      setDirectInviteSearchResults([]);
+      setDirectInviteQuery('');
+      setGuests(null);
     } catch (err: unknown) {
-      setDirectInviteMsg((err as Error).message ?? (zh ? '找不到該用戶。' : 'User not found.'));
+      setDirectInviteMsg((err as Error).message ?? (zh ? '邀請失敗。' : 'Failed to invite.'));
     } finally { setDirectInviteLoading(false); }
   };
 
@@ -156,7 +172,8 @@ export default function EventDetailPage() {
     }
   };
 
-  // comments state
+  // feed state
+  const [goingList, setGoingList] = useState<GuestEntry[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentBody, setCommentBody] = useState('');
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -230,10 +247,12 @@ export default function EventDetailPage() {
     Promise.all([
       apiFetch<EventWithCounts>(`/events/${params.id}`),
       apiFetch<Comment[]>(`/events/${params.id}/comments`).catch(() => [] as Comment[]),
-    ]).then(([ev, commentsData]) => {
+      apiFetch<{ GOING: GuestEntry[] }>(`/events/${params.id}/rsvp/guests`).catch(() => ({ GOING: [] })),
+    ]).then(([ev, commentsData, rsvpData]) => {
       setEvent(ev);
       setRsvpStatus(ev.myRsvp);
       setComments(Array.isArray(commentsData) ? commentsData : []);
+      setGoingList(rsvpData.GOING ?? []);
       setLoading(false);
       if (ev.groupId) {
         const gid = ev.groupId;
@@ -644,29 +663,44 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      {/* Direct invite by email/phone (event creator/admin) */}
+      {/* Invite Guest by search (event creator/admin) */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
         <section className="border border-dashed border-green-200 dark:border-green-900/40 rounded-xl p-5 bg-green-50/40 dark:bg-gray-900/50">
-          <h2 className="text-base font-semibold mb-1 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{zh ? '輸入已註冊用戶的電子郵件或手機號碼，將其加入受邀名單並發送通知。' : 'Enter the email or phone of a registered user to add them to the invite list and send a notification.'}</p>
-          <form onSubmit={handleDirectInvite} className="flex gap-2 flex-wrap">
-            <input
-              type="text"
-              value={directInviteId}
-              onChange={(e) => setDirectInviteId(e.target.value)}
-              placeholder={zh ? 'Email 或手機號碼' : 'Email or phone number'}
-              className="flex-1 min-w-48 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-            <button
-              type="submit"
-              disabled={directInviteLoading || !directInviteId.trim()}
-              className="rounded-xl bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 disabled:opacity-50"
-            >
-              {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
-            </button>
-          </form>
+          <h2 className="text-base font-semibold mb-3 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
+          <input
+            type="text"
+            value={directInviteQuery}
+            onChange={(e) => searchInviteUsers(e.target.value)}
+            placeholder={zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}
+            className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
+          />
+          {directInviteSearchLoading && (
+            <p className="text-sm text-gray-400 mb-2">{zh ? '搜尋中…' : 'Searching…'}</p>
+          )}
+          {directInviteSearchResults.length > 0 && (
+            <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
+              {directInviteSearchResults.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => handleInviteUser(u)}
+                  disabled={directInviteLoading}
+                  className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 disabled:opacity-50 transition"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{u.displayName ?? u.handle}</p>
+                    {(u.email || u.phoneE164) && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</p>
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 ml-3 shrink-0">
+                    {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           {directInviteMsg && (
-            <p className={`mt-2 text-sm ${directInviteMsg.startsWith('Invited') || directInviteMsg.startsWith('已邀請') ? 'text-green-600' : directInviteMsg.includes('already') || directInviteMsg.includes('已回覆') ? 'text-amber-500' : 'text-red-500'}`}>
+            <p className={`text-sm ${directInviteMsg.startsWith('Invited') || directInviteMsg.startsWith('已邀請') ? 'text-green-600' : 'text-red-500'}`}>
               {directInviteMsg}
             </p>
           )}
@@ -740,9 +774,9 @@ export default function EventDetailPage() {
         </section>
       )}
 
-      {/* Comments */}
+      {/* Feed */}
       <section>
-        <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '留言' : 'Comments'}</h2>
+        <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '動態' : 'Feed'}</h2>
 
         {user && (
           <form onSubmit={handleComment} className="flex gap-2 mb-4">
@@ -762,8 +796,18 @@ export default function EventDetailPage() {
           </form>
         )}
 
-        {comments.length === 0 && (
-          <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '目前沒有留言。' : 'No comments yet.'}</p>
+        {goingList.length > 0 && (
+          <div className="flex flex-col gap-2 mb-3">
+            {goingList.map((g, i) => (
+              <div key={i} className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                ✓ {g.displayName ?? g.handle} {zh ? '要參加' : 'is going'}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {comments.length === 0 && goingList.length === 0 && (
+          <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '還沒有動態。' : 'No feeds yet.'}</p>
         )}
 
         <div className="flex flex-col gap-3">

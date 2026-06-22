@@ -111,7 +111,7 @@ export class NewsService {
         type: 'NEWS_PUBLISHED' as const,
         title: news.title || 'New announcement',
         body: `${authorName} published a new post.`,
-        actionUrl: `/feed`,
+        actionUrl: news.groupId ? `/groups/${news.groupId}/news/${news.id}` : `/feed`,
         groupId: news.groupId ?? undefined,
       })),
     );

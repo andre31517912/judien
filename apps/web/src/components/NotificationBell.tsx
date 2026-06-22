@@ -96,7 +96,13 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
     if (!n.read) markRead(n.id);
     if (n.actionUrl) {
       setOpen(false);
-      router.push(`/${locale}${n.actionUrl}`);
+      let url = n.actionUrl;
+      // /feed has no web route → go to home
+      if (url === '/feed') url = '/';
+      // /groups/{id}/news/{newsId} → web shows posts on the group page itself
+      const groupNewsMatch = url.match(/^\/groups\/([^/]+)\/news\/[^/]+$/);
+      if (groupNewsMatch) url = `/groups/${groupNewsMatch[1]}`;
+      router.push(`/${locale}${url}`);
     }
   };
 
