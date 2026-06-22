@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Modal, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../context/theme.context';
 
 type Props = {
@@ -33,46 +33,44 @@ export default function DateTimeField({
 }: Props) {
   const { colors, isDark } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(false);
-  const [step, setStep] = useState<'date' | 'time'>('date'); // iOS two-step
-  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date'); // Android
-  const [draftDate, setDraftDate] = useState<Date>(new Date());
+  const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date'); // Android only
+  // Separate drafts so date and time pickers don't fight each other on re-render
+  const [draftDay, setDraftDay] = useState<Date>(new Date());
+  const [draftTime, setDraftTime] = useState<Date>(new Date());
 
   const parsedValue = useMemo(() => parseLocalDateTime(value), [value]);
 
   const openPicker = () => {
-    setDraftDate(parsedValue ?? new Date());
-    setStep('date');
+    const base = parsedValue ?? new Date();
+    setDraftDay(new Date(base));
+    setDraftTime(new Date(base));
     setPickerMode('date');
     setPickerVisible(true);
   };
 
-  const handleAndroidChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const dismiss = () => setPickerVisible(false);
+
+  const confirm = () => {
+    const combined = new Date(draftDay);
+    combined.setHours(draftTime.getHours(), draftTime.getMinutes(), 0, 0);
+    onChange(formatLocalDateTimeValue(combined));
+    setPickerVisible(false);
+  };
+
+  // Android: two sequential native dialogs
+  const handleAndroidChange = (event: DateTimePickerEvent, selected?: Date) => {
     if (event.type === 'dismissed') { setPickerVisible(false); setPickerMode('date'); return; }
-    if (!selectedDate) return;
-    const next = new Date(draftDate);
+    if (!selected) return;
     if (pickerMode === 'date') {
-      next.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-      setDraftDate(next);
+      setDraftDay(selected);
       setPickerMode('time');
       return;
     }
-    next.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
-    onChange(formatLocalDateTimeValue(next));
-    setDraftDate(next);
+    const combined = new Date(draftDay);
+    combined.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
+    onChange(formatLocalDateTimeValue(combined));
     setPickerVisible(false);
     setPickerMode('date');
-  };
-
-  const handleIOSDateChange = (_: DateTimePickerEvent, date?: Date) => {
-    if (date) setDraftDate(date);
-  };
-
-  const dismiss = () => { setPickerVisible(false); setStep('date'); };
-
-  const confirm = () => {
-    onChange(formatLocalDateTimeValue(draftDate));
-    setPickerVisible(false);
-    setStep('date');
   };
 
   return (
@@ -87,7 +85,7 @@ export default function DateTimeField({
         ) : null}
       </View>
 
-      {/* Trigger */}
+      {/* Trigger button */}
       <TouchableOpacity
         style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 12, backgroundColor: colors.input }}
         onPress={openPicker}
@@ -98,26 +96,24 @@ export default function DateTimeField({
         </Text>
       </TouchableOpacity>
 
-      {/* ── Android: native dialog (no container needed) ── */}
+      {/* ── Android: sequential native dialogs ── */}
       {pickerVisible && Platform.OS === 'android' ? (
         <DateTimePicker
           key={pickerMode}
-          value={draftDate}
+          value={pickerMode === 'date' ? draftDay : draftTime}
           mode={pickerMode}
           display="default"
           onChange={handleAndroidChange}
         />
       ) : null}
 
-      {/* ── iOS: two-step bottom-sheet Modal ── */}
+      {/* ── iOS: bottom-sheet Modal — calendar + time spinner together ── */}
       {Platform.OS === 'ios' ? (
         <Modal visible={pickerVisible} transparent animationType="slide" onRequestClose={dismiss}>
-          {/* Backdrop */}
+          {/* Backdrop tap to dismiss */}
           <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} activeOpacity={1} onPress={dismiss} />
 
-          {/* Sheet */}
           <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 40 }}>
-
             {/* Header */}
             <View style={{
               flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -127,45 +123,38 @@ export default function DateTimeField({
               <TouchableOpacity onPress={dismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                 <Text style={{ fontSize: 15, fontWeight: '600', color: colors.subtext ?? colors.placeholder }}>Cancel</Text>
               </TouchableOpacity>
-
-              <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>
-                {step === 'date' ? 'Select Date' : 'Select Time'}
-              </Text>
-
-              {step === 'date' ? (
-                <TouchableOpacity onPress={() => setStep('time')} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Next →</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={confirm} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Confirm</Text>
-                </TouchableOpacity>
-              )}
+              <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>Select Date & Time</Text>
+              <TouchableOpacity onPress={confirm} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Confirm</Text>
+              </TouchableOpacity>
             </View>
 
-            {/* Step 1: inline calendar — date only, no time wheel, full contrast */}
-            {step === 'date' ? (
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+              {/* Calendar — date only, clean with no time wheel */}
               <DateTimePicker
-                value={draftDate}
+                value={draftDay}
                 mode="date"
                 display="inline"
-                onChange={handleIOSDateChange}
+                onChange={(_, date) => { if (date) setDraftDay(date); }}
                 accentColor="#4F46E5"
                 themeVariant={isDark ? 'dark' : 'light'}
                 style={{ alignSelf: 'center', backgroundColor: colors.card }}
               />
-            ) : (
-              /* Step 2: spinner time wheel — works in Modal, no blank issue */
+
+              {/* Divider */}
+              <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 20 }} />
+
+              {/* Time spinner — clean wheel, no gray calendar overlap */}
               <DateTimePicker
-                value={draftDate}
+                value={draftTime}
                 mode="time"
                 display="spinner"
-                onChange={handleIOSDateChange}
+                onChange={(_, date) => { if (date) setDraftTime(date); }}
                 accentColor="#4F46E5"
                 themeVariant={isDark ? 'dark' : 'light'}
-                style={{ height: 180, backgroundColor: colors.card }}
+                style={{ height: 140, backgroundColor: colors.card }}
               />
-            )}
+            </ScrollView>
           </View>
         </Modal>
       ) : null}
