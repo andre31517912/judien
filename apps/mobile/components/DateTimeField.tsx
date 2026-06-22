@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../context/theme.context';
 
 type Props = {
@@ -47,39 +47,25 @@ export default function DateTimeField({
   const parsedValue = useMemo(() => parseLocalDateTime(value), [value]);
 
   const openPicker = () => {
-    const base = parsedValue ?? new Date();
-    setDraftDate(base);
+    setDraftDate(parsedValue ?? new Date());
     setPickerMode('date');
     setPickerVisible(true);
   };
 
-  const handlePickerChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleAndroidChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (event.type === 'dismissed') {
       setPickerVisible(false);
       setPickerMode('date');
       return;
     }
     if (!selectedDate) return;
-
     const next = new Date(draftDate);
-
-    if (Platform.OS === 'ios') {
-      if (pickerMode === 'date') {
-        next.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-      } else {
-        next.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
-      }
-      setDraftDate(next);
-      return;
-    }
-
     if (pickerMode === 'date') {
       next.setFullYear(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
       setDraftDate(next);
       setPickerMode('time');
       return;
     }
-
     next.setHours(selectedDate.getHours(), selectedDate.getMinutes(), 0, 0);
     onChange(formatLocalDateTimeValue(next));
     setDraftDate(next);
@@ -115,56 +101,59 @@ export default function DateTimeField({
         </Text>
       </TouchableOpacity>
 
+      {/* Android: native dialog pickers, no container needed */}
       {pickerVisible && Platform.OS === 'android' ? (
         <DateTimePicker
           key={pickerMode}
           value={draftDate}
           mode={pickerMode}
           display="default"
-          onChange={handlePickerChange}
+          onChange={handleAndroidChange}
         />
       ) : null}
 
+      {/* iOS: inline calendar+time picker — avoids blank spinner rendering bug */}
       {pickerVisible && Platform.OS === 'ios' ? (
         <View style={{
           marginTop: 8,
           borderWidth: 1,
           borderColor: colors.border,
-          borderRadius: 10,
+          borderRadius: 12,
           backgroundColor: colors.card,
-          padding: 8,
+          overflow: 'hidden',
         }}>
-          <Text style={{ fontSize: 12, color: colors.placeholder, marginBottom: 4 }}>
-            {pickerMode === 'date' ? 'Select date' : 'Select time'}
-          </Text>
           <DateTimePicker
             value={draftDate}
-            mode={pickerMode}
-            display="spinner"
-            onChange={handlePickerChange}
+            mode="datetime"
+            display="inline"
+            onChange={(_, date) => { if (date) setDraftDate(date); }}
+            accentColor="#4F46E5"
+            style={{ backgroundColor: colors.card }}
           />
-          <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', gap: 10 }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            gap: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+          }}>
             <TouchableOpacity
-              onPress={() => { setPickerVisible(false); setPickerMode('date'); }}
-              style={{ paddingHorizontal: 6, paddingVertical: 4 }}
+              onPress={() => setPickerVisible(false)}
+              style={{ paddingHorizontal: 8, paddingVertical: 6 }}
             >
-              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 13, fontWeight: '600' }}>Cancel</Text>
+              <Text style={{ color: colors.subtext ?? colors.placeholder, fontSize: 14, fontWeight: '600' }}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                if (pickerMode === 'date') {
-                  setPickerMode('time');
-                  return;
-                }
                 onChange(formatLocalDateTimeValue(draftDate));
                 setPickerVisible(false);
-                setPickerMode('date');
               }}
-              style={{ paddingHorizontal: 6, paddingVertical: 4 }}
+              style={{ paddingHorizontal: 8, paddingVertical: 6 }}
             >
-              <Text style={{ color: '#4F46E5', fontSize: 13, fontWeight: '700' }}>
-                {pickerMode === 'date' ? 'Next' : 'Confirm'}
-              </Text>
+              <Text style={{ color: '#4F46E5', fontSize: 14, fontWeight: '700' }}>Confirm</Text>
             </TouchableOpacity>
           </View>
         </View>
