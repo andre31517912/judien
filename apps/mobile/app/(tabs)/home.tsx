@@ -231,11 +231,21 @@ export default function HomeTab() {
                 <Text style={styles.emptyText}>{zh ? '沒有動態' : 'No posts yet'}</Text>
               </View>
             ) : news.map((item) => (
-              <View key={item.id} style={styles.card}>
+              <TouchableOpacity
+                key={item.id}
+                style={styles.card}
+                activeOpacity={0.75}
+                onPress={() => {
+                  const route = item.groupId
+                    ? `/groups/${item.groupId}/news/${item.id}`
+                    : `/news/${item.id}`;
+                  router.push(route as any);
+                }}
+              >
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
                   {(isAdmin || item.createdById === user?.id) && (
-                    <TouchableOpacity onPress={() => handleDeletePost(item.id)} style={{ padding: 4 }}>
+                    <TouchableOpacity onPress={(e) => { e.stopPropagation?.(); handleDeletePost(item.id); }} style={{ padding: 4 }}>
                       <Text style={{ fontSize: 16 }}>🗑</Text>
                     </TouchableOpacity>
                   )}
@@ -250,7 +260,7 @@ export default function HomeTab() {
                   {item.createdBy?.displayName ? `${item.createdBy.displayName} · ` : ''}
                   {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' })}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         )

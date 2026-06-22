@@ -28,6 +28,9 @@ function resolveRoute(actionUrl: string | null): string | null {
   // /events/{id}
   const eventMatch = actionUrl.match(/^\/events\/([^/]+)$/);
   if (eventMatch) return `/events/${eventMatch[1]}`;
+  // /news/{newsId} → global news detail
+  const globalNewsMatch = actionUrl.match(/^\/news\/([^/]+)$/);
+  if (globalNewsMatch) return `/news/${globalNewsMatch[1]}`;
   // /groups/{groupId}/news/{newsId} → group post detail
   const groupNewsMatch = actionUrl.match(/^\/groups\/([^/]+)\/news\/([^/]+)$/);
   if (groupNewsMatch) return `/groups/${groupNewsMatch[1]}/news/${groupNewsMatch[2]}`;

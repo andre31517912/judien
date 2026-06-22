@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-
-const INDIGO = '#4F46E5';
-import { apiFetch } from '../../../../../lib/api';
+import { apiFetch } from '../../../../lib/api';
 import type { News } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../../../../context/theme.context';
+import { useTheme } from '../../../../context/theme.context';
 
-export default function NewsDetailScreen() {
-  const { newsId, groupId } = useLocalSearchParams<{ newsId: string; groupId: string }>();
+const INDIGO = '#4F46E5';
+
+export default function GlobalNewsDetailScreen() {
+  const { newsId } = useLocalSearchParams<{ newsId: string }>();
   const { i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const zh = i18n.language === 'zh';
@@ -31,6 +31,20 @@ export default function NewsDetailScreen() {
     ? (post.coverImageUrl.startsWith('http') ? post.coverImageUrl : `${apiBase}${post.coverImageUrl}`)
     : null;
 
+  const backLabel = post?.groupId
+    ? (zh ? '← 返回社群' : '← Back to Group')
+    : (zh ? '← 返回動態' : '← Back to Feed');
+
+  const handleBack = () => {
+    if (post?.groupId) {
+      router.push(`/groups/${post.groupId}` as any);
+    } else if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/(tabs)/home' as any);
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -38,16 +52,13 @@ export default function NewsDetailScreen() {
         {loading ? (
           <ActivityIndicator color={INDIGO} style={{ marginTop: 40 }} />
         ) : !post ? (
-          <Text style={{ color: '#EF4444', textAlign: 'center', marginTop: 40 }}>{zh ? '找不到此文章。' : 'Post not found.'}</Text>
+          <Text style={{ color: '#EF4444', textAlign: 'center', marginTop: 40 }}>
+            {zh ? '找不到此文章。' : 'Post not found.'}
+          </Text>
         ) : (
           <>
-            <TouchableOpacity
-              onPress={() => router.canGoBack() ? router.back() : router.push(`/groups/${groupId}` as any)}
-              style={{ marginBottom: 16 }}
-            >
-              <Text style={{ color: INDIGO, fontSize: 14, fontWeight: '600' }}>
-                {zh ? '← 返回社群' : '← Back to Group'}
-              </Text>
+            <TouchableOpacity onPress={handleBack} style={{ marginBottom: 16 }}>
+              <Text style={{ color: INDIGO, fontSize: 14, fontWeight: '600' }}>{backLabel}</Text>
             </TouchableOpacity>
 
             {coverUrl && (

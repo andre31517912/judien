@@ -97,11 +97,12 @@ export default function NotificationBell({ locale }: NotificationBellProps) {
     if (n.actionUrl) {
       setOpen(false);
       let url = n.actionUrl;
-      // /feed has no web route → go to home
+      // legacy /feed → home (old notifications in DB)
       if (url === '/feed') url = '/';
-      // /groups/{groupId}/news/{newsId} → web post detail is at /news/{newsId}
+      // /groups/{groupId}/news/{newsId} → /news/{newsId} (web post detail route)
       const groupNewsMatch = url.match(/^\/groups\/[^/]+\/news\/([^/]+)$/);
       if (groupNewsMatch) url = `/news/${groupNewsMatch[1]}`;
+      // /news/{newsId} works directly as-is
       router.push(`/${locale}${url}`);
     }
   };
