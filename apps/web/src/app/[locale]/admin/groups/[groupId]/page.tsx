@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
+import DateTimeInput from '@/components/DateTimeInput';
 
 type AdminGroupItem = {
   group: {
@@ -489,11 +490,11 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
-                    <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <DateTimeInput value={eventForm.startAt} onChange={(v) => setEventForm((f) => ({ ...f, startAt: v }))} placeholder={zh ? '選擇開始時間' : 'Select start'} />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
-                    <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
@@ -596,11 +597,11 @@ export default function AdminGroupPage({ params }: { params: { locale: string; g
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始' : 'Start'}</label>
-                    <input required type="datetime-local" value={eventForm.startAt} onChange={(e) => setEventForm((f) => ({ ...f, startAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <DateTimeInput value={eventForm.startAt} onChange={(v) => setEventForm((f) => ({ ...f, startAt: v }))} placeholder={zh ? '選擇開始時間' : 'Select start'} />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束（選填）' : 'End (optional)'}</label>
-                    <input type="datetime-local" value={eventForm.endAt} onChange={(e) => setEventForm((f) => ({ ...f, endAt: e.target.value }))} className="w-full rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white" />
+                    <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">

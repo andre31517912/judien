@@ -10,6 +10,7 @@ import { useAuth } from '../../../context/auth.context';
 import type { EventWithCounts, PaginatedResponse, News } from '@judien/shared';
 
 const LocationPicker = dynamic(() => import('../../../components/LocationPickerInner'), { ssr: false });
+import DateTimeInput from '../../../components/DateTimeInput';
 
 type PageScope = 'home' | 'future' | 'past';
 
@@ -436,11 +437,11 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '開始' : 'Start'}</label>
-              <input type="datetime-local" className={inputCls} value={eventForm.startAt} onChange={setEF('startAt')} />
+              <DateTimeInput value={eventForm.startAt} onChange={(v) => setEventForm((f) => ({ ...f, startAt: v }))} placeholder={zh ? '選擇開始時間' : 'Select start'} />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '結束（選填）' : 'End (optional)'}</label>
-              <input type="datetime-local" className={inputCls} value={eventForm.endAt} onChange={setEF('endAt')} />
+              <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

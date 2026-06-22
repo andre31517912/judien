@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useAuth } from '@/context/auth.context';
 import type { Event } from '@judien/shared';
+import DateTimeInput from '@/components/DateTimeInput';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -103,10 +104,10 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label="Start">
-            <input type="datetime-local" value={form.startAt} onChange={set('startAt')} className={inp} />
+            <DateTimeInput value={form.startAt} onChange={(v) => setForm((f) => ({ ...f, startAt: v }))} placeholder="Select start date & time" />
           </Field>
           <Field label="End (optional)">
-            <input type="datetime-local" value={form.endAt} onChange={set('endAt')} className={inp} />
+            <DateTimeInput value={form.endAt} onChange={(v) => setForm((f) => ({ ...f, endAt: v }))} placeholder="Select end date & time" clearable />
           </Field>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

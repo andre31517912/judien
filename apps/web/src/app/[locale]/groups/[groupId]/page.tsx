@@ -9,6 +9,7 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import type { HierarchyData } from '@/components/GroupHierarchyChart';
+import DateTimeInput from '@/components/DateTimeInput';
 
 const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 
@@ -726,21 +727,11 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始時間' : 'Start'}</label>
-                    <input
-                      type="datetime-local"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.startAt}
-                      onChange={(e) => setEventForm({ ...eventForm, startAt: e.target.value })}
-                    />
+                    <DateTimeInput value={eventForm.startAt} onChange={(v) => setEventForm({ ...eventForm, startAt: v })} placeholder={zh ? '選擇開始時間' : 'Select start'} />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束時間（選填）' : 'End (optional)'}</label>
-                    <input
-                      type="datetime-local"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.endAt}
-                      onChange={(e) => setEventForm({ ...eventForm, endAt: e.target.value })}
-                    />
+                    <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -874,21 +865,11 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '開始時間' : 'Start'}</label>
-                    <input
-                      type="datetime-local"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.startAt}
-                      onChange={(e) => setEventForm({ ...eventForm, startAt: e.target.value })}
-                    />
+                    <DateTimeInput value={eventForm.startAt} onChange={(v) => setEventForm({ ...eventForm, startAt: v })} placeholder={zh ? '選擇開始時間' : 'Select start'} />
                   </div>
                   <div>
                     <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '結束時間（選填）' : 'End (optional)'}</label>
-                    <input
-                      type="datetime-local"
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      value={eventForm.endAt}
-                      onChange={(e) => setEventForm({ ...eventForm, endAt: e.target.value })}
-                    />
+                    <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
