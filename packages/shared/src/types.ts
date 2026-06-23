@@ -63,6 +63,7 @@ export interface EventWithCounts extends Event {
   myRsvp: RSVPStatus | null; // populated when authenticated
   shareToken?: string | null;
   isPast?: boolean;
+  createdByName?: string | null;
 }
 
 // ─── News ────────────────────────────────────────────────────────────────────

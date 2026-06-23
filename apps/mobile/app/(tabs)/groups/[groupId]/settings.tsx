@@ -40,7 +40,7 @@ export default function GroupSettingsScreen() {
       headerLeft: () => (
         <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
           <Ionicons name="chevron-back" size={28} color={INDIGO} />
-          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
+          <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '群組首頁' : 'Group Home'}</Text>
         </TouchableOpacity>
       ),
       headerRight: () => (

@@ -160,7 +160,7 @@ export default function EventDetailPage() {
       }
     }
     const rows = ['Name,Email,Phone,Status'];
-    for (const g of (data.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc((g as any).phone ?? ''), esc('Invited')].join(','));
+    for (const g of (data.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Invited')].join(','));
     for (const g of (data.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
     for (const g of (data.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
     for (const g of (data.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
@@ -177,7 +177,7 @@ export default function EventDetailPage() {
   const [directInviteQuery, setDirectInviteQuery] = useState('');
   const [directInviteSearchResults, setDirectInviteSearchResults] = useState<UserResult[]>([]);
   const [directInviteSearchLoading, setDirectInviteSearchLoading] = useState(false);
-  const [directInviteLoading, setDirectInviteLoading] = useState(false);
+  const [directInviteLoading, setDirectInviteLoading] = useState<string | null>(null);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
   // invite section tab: 'search' | 'roster'
   const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
@@ -241,7 +241,8 @@ export default function EventDetailPage() {
   };
 
   const handleInviteUser = async (u: UserResult) => {
-    setDirectInviteLoading(true);
+    if (directInviteLoading) return;
+    setDirectInviteLoading(u.id);
     setDirectInviteMsg('');
     try {
       await apiFetch(`/events/${params.id}/invite-members`, {
@@ -256,7 +257,7 @@ export default function EventDetailPage() {
       setGuests(null);
     } catch (err: unknown) {
       setDirectInviteMsg((err as Error).message ?? (zh ? '邀請失敗。' : 'Failed to invite.'));
-    } finally { setDirectInviteLoading(false); }
+    } finally { setDirectInviteLoading(null); }
   };
 
   // blast state
@@ -637,10 +638,10 @@ export default function EventDetailPage() {
             <span className="text-indigo-600 dark:text-indigo-400 font-medium">{event.groupName}</span>
           </div>
         )}
-        {(event as any).createdByName && (
+        {event.createdByName && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦人' : 'Host'}</span>
-            <span>{(event as any).createdByName}</span>
+            <span>{event.createdByName}</span>
           </div>
         )}
         <div className="flex gap-2">
@@ -743,7 +744,7 @@ export default function EventDetailPage() {
           <div className="w-full sm:max-w-md bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl p-6 flex flex-col gap-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-gray-900 dark:text-white">{zh ? '同行者' : 'Your Guests'}</h3>
-              <button onClick={() => setShowPlusOneModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
+              <button onClick={() => setShowPlusOneModal(false)} aria-label={zh ? '關閉' : 'Close'} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
             </div>
 
             {myPlusOnes.length > 0 && (
@@ -849,7 +850,7 @@ export default function EventDetailPage() {
                       <div className="min-w-0">
                         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
                         {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
-                        {isEventAdmin && (g as any).phone && <p className="text-xs text-gray-400 truncate">{(g as any).phone}</p>}
+                        {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                       </div>
                     </div>
                   ));
@@ -862,16 +863,16 @@ export default function EventDetailPage() {
               return rows.length === 0
                 ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{emptyMsg}</p>
                 : rows.map((g, i) => (
-                  <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${(g as any).plusOneOf ? 'pl-8 bg-gray-50/50 dark:bg-gray-800/30' : ''}`}>
+                  <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${g.plusOneOf ? 'pl-8 bg-gray-50/50 dark:bg-gray-800/30' : ''}`}>
                     <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                       {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
-                        {(g as any).plusOneOf && (
-                          <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
-                            {zh ? `同 ${(g as any).plusOneOf} 來` : `+1 of ${(g as any).plusOneOf}`}
+                        {g.plusOneOf && (
+                          <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded max-w-[120px] truncate">
+                            {zh ? `同 ${g.plusOneOf} 來` : `+1 of ${g.plusOneOf}`}
                           </span>
                         )}
                       </div>
@@ -902,7 +903,7 @@ export default function EventDetailPage() {
               onClick={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'roster' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
-              {zh ? '新增至名單' : 'Add to Roster'}
+              {zh ? '新增嘉賓' : 'Add Guests'}
             </button>
           </div>
 
@@ -924,7 +925,7 @@ export default function EventDetailPage() {
                     <button
                       key={u.id}
                       onClick={() => handleInviteUser(u)}
-                      disabled={directInviteLoading}
+                      disabled={!!directInviteLoading}
                       className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 disabled:opacity-50 transition"
                     >
                       <div>
@@ -934,7 +935,7 @@ export default function EventDetailPage() {
                         )}
                       </div>
                       <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 ml-3 shrink-0">
-                        {directInviteLoading ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
+                        {directInviteLoading === u.id ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
                       </span>
                     </button>
                   ))}
@@ -949,6 +950,9 @@ export default function EventDetailPage() {
           ) : (
             <div className="flex flex-col gap-3">
               {/* Existing roster guests */}
+              {rosterGuests.length === 0 && (
+                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚未新增任何嘉賓。' : 'No guests added yet.'}</p>
+              )}
               {rosterGuests.length > 0 && (
                 <ul className="flex flex-col gap-2">
                   {rosterGuests.map((g) => (
@@ -1051,6 +1055,10 @@ export default function EventDetailPage() {
       <section>
         <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '動態' : 'Feed'}</h2>
 
+        {comments.length === 0 && goingList.length === 0 && (
+          <p className="text-sm text-gray-400 dark:text-gray-500 mb-3">{zh ? '還沒有動態。' : 'No feeds yet.'}</p>
+        )}
+
         {user && (
           <form onSubmit={handleComment} className="flex flex-col gap-2 mb-4">
             <div className="flex gap-2">
@@ -1082,10 +1090,6 @@ export default function EventDetailPage() {
               </div>
             ))}
           </div>
-        )}
-
-        {comments.length === 0 && goingList.length === 0 && (
-          <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '還沒有動態。' : 'No feeds yet.'}</p>
         )}
 
         <div className="flex flex-col gap-3">

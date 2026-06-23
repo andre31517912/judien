@@ -100,6 +100,15 @@ export class GroupsController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get(':groupId/info')
+  groupInfo(
+    @Param('groupId') groupId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.groupsService.getGroupInfo(groupId, user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get(':groupId/members')
   members(
     @Param('groupId') groupId: string,

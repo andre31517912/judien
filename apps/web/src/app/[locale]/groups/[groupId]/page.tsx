@@ -137,14 +137,23 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         ),
       ]);
 
-      const current = myGroups.find((item) => item.group.id === params.groupId) ?? null;
-      setGroupItem(current);
+      let current = myGroups.find((item) => item.group.id === params.groupId) ?? null;
       setMyGroupIds(myGroups.map((g) => g.group.id));
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
 
-      // Load join requests for group admins.
+      // Platform admins who aren't group members still get full admin view.
+      if (!current && user?.role === 'ADMIN') {
+        const groupInfo = await apiFetch<{ id: string; pid: string; name: string; description: string; photoUrl: string | null }>(`/groups/${params.groupId}/info`);
+        current = {
+          group: groupInfo,
+          membership: { role: 'GROUP_ADMIN', status: 'ACCEPTED', joinedAt: null },
+        };
+      }
+      setGroupItem(current);
+
+      // Load join requests for group admins (including platform admins acting as group admin).
       if (current?.membership.status === 'ACCEPTED') {
         if (current?.membership.role === 'GROUP_ADMIN') {
           const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${params.groupId}/join-requests`).catch(() => [] as JoinRequest[]);

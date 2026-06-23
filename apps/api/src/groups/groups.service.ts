@@ -1096,6 +1096,23 @@ export class GroupsService {
     }
   }
 
+  async getGroupInfo(groupId: string, user: User) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: { id: true, pid: true, name: true, description: true, photoUrl: true },
+    });
+    if (!group) throw new NotFoundException('Group not found.');
+    const membership = await this.prisma.groupMembership.findUnique({
+      where: { groupId_userId: { groupId, userId: user.id } },
+      select: { role: true, status: true },
+    });
+    const isPlatformAdmin = user.role === 'ADMIN';
+    if (!isPlatformAdmin && membership?.status !== 'ACCEPTED') {
+      throw new ForbiddenException('Not a member of this group.');
+    }
+    return group;
+  }
+
   private async ensureGroupExists(groupId: string) {
     const group = await this.prisma.group.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException('Group not found.');

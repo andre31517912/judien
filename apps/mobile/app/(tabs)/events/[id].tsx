@@ -118,7 +118,7 @@ export default function EventDetailScreen() {
   const [directInviteQuery, setDirectInviteQuery] = useState('');
   const [directInviteSearchResults, setDirectInviteSearchResults] = useState<UserResult[]>([]);
   const [directInviteSearchLoading, setDirectInviteSearchLoading] = useState(false);
-  const [directInviteLoading, setDirectInviteLoading] = useState(false);
+  const [directInviteLoading, setDirectInviteLoading] = useState<string | null>(null);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
 
   const [myPlusOnes, setMyPlusOnes] = useState<PlusOne[]>([]);
@@ -376,7 +376,8 @@ export default function EventDetailScreen() {
   };
 
   const handleInviteUser = async (u: UserResult) => {
-    setDirectInviteLoading(true);
+    if (directInviteLoading) return;
+    setDirectInviteLoading(u.id);
     setDirectInviteMsg('');
     try {
       await apiFetch(`/events/${id}/invite-members`, {
@@ -390,7 +391,7 @@ export default function EventDetailScreen() {
       setGuests(null);
     } catch (err: any) {
       setDirectInviteMsg(`ERR:${err.message ?? (zh ? '邀請失敗。' : 'Failed to invite.')}`);
-    } finally { setDirectInviteLoading(false); }
+    } finally { setDirectInviteLoading(null); }
   };
 
   const handleBlastSend = async () => {
@@ -549,10 +550,10 @@ export default function EventDetailScreen() {
             </View>
           )}
 
-          {(event as any).seriesTitle && (
+          {event.seriesId && event.partNumber && (
             <View style={styles.seriesBadge}>
               <Text style={styles.seriesBadgeText}>
-                📚 {(event as any).seriesTitle}{(event as any).partNumber ? ` #${(event as any).partNumber}` : ''}
+                📚 {zh ? '系列' : 'Series'} #{event.partNumber}
               </Text>
             </View>
           )}
@@ -561,8 +562,8 @@ export default function EventDetailScreen() {
           {event.groupName && <Text style={styles.groupBadge}>{event.groupName}</Text>}
 
           <View style={styles.metaBlock}>
-            {(event as any).createdByName && (
-              <Text style={styles.meta}>👤 {(event as any).createdByName}</Text>
+            {event.createdByName && (
+              <Text style={styles.meta}>👤 {event.createdByName}</Text>
             )}
             <Text style={styles.meta}>📅 {dateStr}{event.timezone ? ` (${event.timezone})` : ''}</Text>
             {location ? (
@@ -615,7 +616,7 @@ export default function EventDetailScreen() {
                 onPress={() => setShowBlast(!showBlast)}
               >
                 <Text style={[styles.rsvpBtnText, showBlast && styles.rsvpBtnTextActive]}>
-                  {zh ? '📣 發訊息' : '📣 Share Text'}
+                  {zh ? '📣 發訊息' : '📣 Send Message'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -748,7 +749,7 @@ export default function EventDetailScreen() {
                   onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
                   style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'roster' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'roster' ? colors.text : colors.subtext }}>{zh ? '新增至名單' : 'Add to Roster'}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'roster' ? colors.text : colors.subtext }}>{zh ? '新增嘉賓' : 'Add Guests'}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -770,7 +771,7 @@ export default function EventDetailScreen() {
                           key={u.id}
                           style={styles.inviteResultItem}
                           onPress={() => handleInviteUser(u)}
-                          disabled={directInviteLoading}
+                          disabled={!!directInviteLoading}
                           activeOpacity={0.7}
                         >
                           <View style={{ flex: 1 }}>
@@ -779,7 +780,7 @@ export default function EventDetailScreen() {
                               <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
                             )}
                           </View>
-                          {directInviteLoading
+                          {directInviteLoading === u.id
                             ? <ActivityIndicator size="small" color={INDIGO} />
                             : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
                         </TouchableOpacity>
@@ -1000,8 +1001,8 @@ export default function EventDetailScreen() {
               <View style={styles.guestTabRow}>
                 {([
                   ['INVITED',  zh ? '已邀請' : 'Invited',    guests?.INVITED.length ?? 0],
-                  ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? 0],
-                  ['NO',       zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? 0],
+                  ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? event.rsvpCounts.GOING],
+                  ['NO',       zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? event.rsvpCounts.NO],
                   ...(guests?.PENDING !== undefined ? [['PENDING', zh ? '未回應' : 'Unresponded', guests.PENDING.length] as [typeof activeGuestTab, string, number]] : []),
                 ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
                   <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
@@ -1025,7 +1026,7 @@ export default function EventDetailScreen() {
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
                           {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && (g as any).phone && <Text style={styles.guestHandle}>{(g as any).phone}</Text>}
+                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>
                       ));
                   }
@@ -1037,12 +1038,12 @@ export default function EventDetailScreen() {
                   return rows.length === 0
                     ? <Text style={styles.empty}>{emptyMsg}</Text>
                     : rows.map((g, i) => (
-                      <View key={i} style={[styles.guestRow, (g as any).plusOneOf ? { paddingLeft: 12, opacity: 0.85 } : {}]}>
+                      <View key={i} style={[styles.guestRow, g.plusOneOf ? { paddingLeft: 12, opacity: 0.85 } : {}]}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                          {(g as any).plusOneOf && (
-                            <Text style={{ fontSize: 11, color: colors.subtext, backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                              {zh ? `同 ${(g as any).plusOneOf} 來` : `+1 of ${(g as any).plusOneOf}`}
+                          {g.plusOneOf && (
+                            <Text numberOfLines={1} style={{ fontSize: 11, color: colors.subtext, backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, flexShrink: 1, maxWidth: 140 }}>
+                              {zh ? `同 ${g.plusOneOf} 來` : `+1 of ${g.plusOneOf}`}
                             </Text>
                           )}
                         </View>

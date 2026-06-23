@@ -799,11 +799,12 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       <div className="flex items-center gap-3">
         <Link
           href={`/${params.locale}/groups/${params.groupId}`}
-          className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition shrink-0"
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
+          {zh ? '返回群組首頁' : 'Return to Group Home'}
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
