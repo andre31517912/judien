@@ -264,7 +264,7 @@ model RSVP {
 
 model RSVPPlusOne {
   id           String   @id @default(cuid())
-  rsvpId       String
+  rsvpId       String?
   eventId      String
   name         String
   email        String?
@@ -273,8 +273,8 @@ model RSVPPlusOne {
   notes        String?
   createdAt    DateTime @default(now())
 
-  rsvp  RSVP  @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rsvp  RSVP?  @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
+  event Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([rsvpId])
   @@index([eventId])

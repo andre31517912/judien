@@ -152,14 +152,28 @@ export class RsvpService {
       }
     }
 
+    // Creator-added roster guests (rsvpId = null): always merged into INVITED
+    const rosterGuests = await (this.prisma as any).rSVPPlusOne.findMany({
+      where: { eventId, rsvpId: null },
+      orderBy: { createdAt: 'asc' },
+    });
+    const rosterEntries = rosterGuests.map((g: any) => ({
+      name: g.name,
+      email: isCallerAdmin ? (g.email ?? null) : null,
+      ...(isCallerAdmin && g.phone ? { phone: g.phone } : {}),
+    }));
+
     // INVITED bucket: for group events, all group members are considered invited
     let invited: { name: string; email: string | null; phone?: string | null }[] | undefined;
     if (event.groupId) {
-      invited = memberships.map((m) => ({
-        name: m.groupNickname ?? m.user.displayName ?? '',
-        email: isCallerAdmin ? (m.user.email ?? null) : null,
-        ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
-      }));
+      invited = [
+        ...memberships.map((m) => ({
+          name: m.groupNickname ?? m.user.displayName ?? '',
+          email: isCallerAdmin ? (m.user.email ?? null) : null,
+          ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
+        })),
+        ...rosterEntries,
+      ];
     }
 
     // PENDING bucket: members/invitees who haven't replied
@@ -181,14 +195,16 @@ export class RsvpService {
         include: { acceptedBy: { select: { id: true, displayName: true, email: true, phoneE164: true } } },
       });
 
-      // INVITED bucket for normal events: show direct invites (created with guestEmail set)
+      // INVITED bucket for normal events: show direct invites + creator-added roster guests
       const directInvites = invites.filter((inv) => inv.guestEmail && !inv.acceptedByUserId);
-      if (directInvites.length > 0) {
-        invited = directInvites.map((inv) => ({
-          name: inv.guestName ?? inv.guestEmail ?? '',
-          email: isCallerAdmin ? (inv.guestEmail ?? null) : null,
-          ...(isCallerAdmin && inv.guestPhone ? { phone: inv.guestPhone } : {}),
-        }));
+      const invitedFromInvites = directInvites.map((inv) => ({
+        name: inv.guestName ?? inv.guestEmail ?? '',
+        email: isCallerAdmin ? (inv.guestEmail ?? null) : null,
+        ...(isCallerAdmin && inv.guestPhone ? { phone: inv.guestPhone } : {}),
+      }));
+      const combined = [...invitedFromInvites, ...rosterEntries];
+      if (combined.length > 0) {
+        invited = combined;
       }
 
       const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
@@ -295,6 +311,52 @@ export class RsvpService {
         userAgent: meta.userAgent,
       },
     });
+  }
+
+  private async canManageEvent(eventId: string, userId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (user?.role === 'ADMIN' || event.createdById === userId) return event;
+    if (event.groupId) {
+      const m = await (this.prisma.groupMembership as any).findUnique({
+        where: { groupId_userId: { groupId: event.groupId, userId } },
+        select: { role: true, status: true },
+      });
+      if (m?.status === 'ACCEPTED' && m?.role === 'GROUP_ADMIN') return event;
+    }
+    throw new ForbiddenException('Only the event creator or admin can manage this event\'s roster.');
+  }
+
+  async getRosterGuests(eventId: string, userId: string) {
+    await this.canManageEvent(eventId, userId);
+    return (this.prisma as any).rSVPPlusOne.findMany({
+      where: { eventId, rsvpId: null },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async addRosterGuest(eventId: string, userId: string, dto: PlusOneDto) {
+    await this.canManageEvent(eventId, userId);
+    return (this.prisma as any).rSVPPlusOne.create({
+      data: {
+        rsvpId: null,
+        eventId,
+        name: dto.name,
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
+        relationship: dto.relationship ?? null,
+        notes: dto.notes ?? null,
+      },
+    });
+  }
+
+  async removeRosterGuest(eventId: string, userId: string, guestId: string) {
+    await this.canManageEvent(eventId, userId);
+    const guest = await (this.prisma as any).rSVPPlusOne.findUnique({ where: { id: guestId } });
+    if (!guest || guest.eventId !== eventId || guest.rsvpId !== null) throw new NotFoundException('Roster guest not found.');
+    await (this.prisma as any).rSVPPlusOne.delete({ where: { id: guestId } });
+    return { removed: true };
   }
 
   async getMyPlusOnes(eventId: string, userId: string) {

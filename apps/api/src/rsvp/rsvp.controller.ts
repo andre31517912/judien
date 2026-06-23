@@ -82,6 +82,39 @@ export class RsvpController {
     return this.rsvpService.remove(eventId, user.id);
   }
 
+  // GET /api/events/:eventId/roster-guests — creator/admin: view manually added roster guests
+  @UseGuards(AuthGuard('jwt'))
+  @Get('events/:eventId/roster-guests')
+  getRosterGuests(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.getRosterGuests(eventId, user.id);
+  }
+
+  // POST /api/events/:eventId/roster-guests — creator/admin: add a guest to the roster
+  @UseGuards(AuthGuard('jwt'))
+  @Post('events/:eventId/roster-guests')
+  addRosterGuest(
+    @Param('eventId') eventId: string,
+    @Body(new ZodValidationPipe(PlusOneSchema)) dto: PlusOneDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.addRosterGuest(eventId, user.id, dto);
+  }
+
+  // DELETE /api/events/:eventId/roster-guests/:id — creator/admin: remove a roster guest
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('events/:eventId/roster-guests/:id')
+  @HttpCode(HttpStatus.OK)
+  removeRosterGuest(
+    @Param('eventId') eventId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.removeRosterGuest(eventId, user.id, id);
+  }
+
   // GET /api/events/:eventId/rsvp/plus-ones — current user's plus-ones for this event
   @UseGuards(AuthGuard('jwt'))
   @Get('events/:eventId/rsvp/plus-ones')

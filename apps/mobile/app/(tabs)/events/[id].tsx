@@ -122,6 +122,7 @@ export default function EventDetailScreen() {
   const [directInviteMsg, setDirectInviteMsg] = useState('');
 
   const [myPlusOnes, setMyPlusOnes] = useState<PlusOne[]>([]);
+  const [showPlusOneModal, setShowPlusOneModal] = useState(false);
   const [showPlusOneForm, setShowPlusOneForm] = useState(false);
   const [poName, setPoName] = useState('');
   const [poContact, setPoContact] = useState('');
@@ -129,6 +130,16 @@ export default function EventDetailScreen() {
   const [poNotes, setPoNotes] = useState('');
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
+
+  // invite tab: 'search' | 'roster'
+  const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
+  const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
+  const [rgName, setRgName] = useState('');
+  const [rgContact, setRgContact] = useState('');
+  const [rgRelationship, setRgRelationship] = useState('');
+  const [rgNotes, setRgNotes] = useState('');
+  const [rgLoading, setRgLoading] = useState(false);
+  const [rgMsg, setRgMsg] = useState('');
 
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
@@ -225,6 +236,41 @@ export default function EventDetailScreen() {
       await apiFetch(`/events/${id}/rsvp/plus-ones/${plusOneId}`, { method: 'DELETE' });
       setMyPlusOnes((prev) => prev.filter((p) => p.id !== plusOneId));
       setGuests(null);
+    } catch {}
+  };
+
+  const loadRosterGuests = async () => {
+    try {
+      const data = await apiFetch<PlusOne[]>(`/events/${id}/roster-guests`);
+      setRosterGuests(Array.isArray(data) ? data : []);
+    } catch { setRosterGuests([]); }
+  };
+
+  const handleAddRosterGuest = async () => {
+    if (!rgName.trim()) return;
+    setRgLoading(true); setRgMsg('');
+    try {
+      const isEmail = rgContact.includes('@');
+      await apiFetch(`/events/${id}/roster-guests`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: rgName.trim(),
+          ...(isEmail ? { email: rgContact.trim() } : rgContact.trim() ? { phone: rgContact.trim() } : {}),
+          ...(rgRelationship.trim() ? { relationship: rgRelationship.trim() } : {}),
+          ...(rgNotes.trim() ? { notes: rgNotes.trim() } : {}),
+        }),
+      });
+      setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes('');
+      setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
+      loadRosterGuests();
+    } catch { setRgMsg(zh ? '新增失敗，請再試。' : 'Failed to add. Please try again.'); }
+    finally { setRgLoading(false); }
+  };
+
+  const handleRemoveRosterGuest = async (gid: string) => {
+    try {
+      await apiFetch(`/events/${id}/roster-guests/${gid}`, { method: 'DELETE' });
+      setRosterGuests((prev) => prev.filter((g) => g.id !== gid));
     } catch {}
   };
 
@@ -522,6 +568,14 @@ export default function EventDetailScreen() {
           <View style={styles.rsvpRow}>
             {user && !isPast && rsvpBtn('GOING', t('rsvp.going'))}
             {user && !isPast && rsvpBtn('NO', t('rsvp.notGoing'))}
+            {myRsvp === 'GOING' && user && !isPast && (
+              <TouchableOpacity
+                style={[styles.rsvpBtn]}
+                onPress={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); }}
+              >
+                <Text style={styles.rsvpBtnText}>{zh ? '帶同行者' : '+ Guest'}</Text>
+              </TouchableOpacity>
+            )}
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
               <TouchableOpacity
                 style={[styles.rsvpBtn, showBlast && styles.rsvpBtnActive]}
@@ -535,7 +589,7 @@ export default function EventDetailScreen() {
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
               <TouchableOpacity
                 style={[styles.rsvpBtn, showDirectInvite && styles.rsvpBtnActive]}
-                onPress={() => setShowDirectInvite(!showDirectInvite)}
+                onPress={() => { setShowDirectInvite(!showDirectInvite); setInviteTab('search'); setRgMsg(''); }}
               >
                 <Text style={[styles.rsvpBtnText, showDirectInvite && styles.rsvpBtnTextActive]}>
                   {zh ? '👥 邀請賓客' : '👥 Invite Guest'}
@@ -544,78 +598,61 @@ export default function EventDetailScreen() {
             )}
           </View>
 
-          {/* Plus-one panel — shown when user is Going */}
-          {myRsvp === 'GOING' && user && !isPast && (
-            <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, marginTop: 8 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{zh ? '帶朋友來？' : 'Bringing anyone?'}</Text>
-                <TouchableOpacity onPress={() => { setShowPlusOneForm((v) => !v); setPoMsg(''); }}>
-                  <Text style={{ fontSize: 13, color: INDIGO }}>{showPlusOneForm ? (zh ? '取消' : 'Cancel') : (zh ? '+ 新增' : '+ Add')}</Text>
-                </TouchableOpacity>
+          {/* Plus-one modal */}
+          <Modal visible={showPlusOneModal} transparent animationType="slide" onRequestClose={() => setShowPlusOneModal(false)}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, justifyContent: 'flex-end' }}>
+              <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setShowPlusOneModal(false)} />
+              <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: safeBottom + 20, maxHeight: '80%' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.text }}>{zh ? '同行者' : 'Your Guests'}</Text>
+                  <TouchableOpacity onPress={() => setShowPlusOneModal(false)}>
+                    <Text style={{ fontSize: 20, color: colors.subtext, lineHeight: 24 }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                  {myPlusOnes.map((po) => (
+                    <View key={po.id} style={{ backgroundColor: isDark ? '#1F2937' : '#F9FAFB', borderRadius: 8, padding: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
+                        {po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
+                        {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
+                        {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
+                      </View>
+                      <TouchableOpacity onPress={() => handleRemovePlusOne(po.id)} style={{ marginLeft: 8 }}>
+                        <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  {!showPlusOneForm ? (
+                    <TouchableOpacity
+                      onPress={() => { setShowPlusOneForm(true); setPoMsg(''); }}
+                      style={{ borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 }}
+                    >
+                      <Text style={{ fontSize: 14, color: colors.subtext }}>{zh ? '+ 新增同行者' : '+ Add a guest'}</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={{ gap: 8, marginTop: 4 }}>
+                      <TextInput style={styles.editInput} placeholder={zh ? '姓名 *' : 'Name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} autoFocus />
+                      <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email' : 'Phone / Email'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
+                      <TextInput style={styles.editInput} placeholder={zh ? '關係（例：伴侶、朋友）' : 'Relationship (e.g. partner, friend)'} placeholderTextColor={colors.placeholder} value={poRelationship} onChangeText={setPoRelationship} maxLength={100} />
+                      <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={poNotes} onChangeText={setPoNotes} multiline numberOfLines={3} maxLength={500} />
+                      {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
+                      <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+                        <TouchableOpacity onPress={() => { setShowPlusOneForm(false); setPoMsg(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
+                          <Text style={{ fontSize: 14, color: colors.text }}>{zh ? '取消' : 'Cancel'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]} onPress={handleAddPlusOne} disabled={!poName.trim() || poLoading}>
+                          <Text style={styles.modalPrimaryBtnText}>{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增' : 'Add')}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+                </ScrollView>
               </View>
-
-              {myPlusOnes.map((po) => (
-                <View key={po.id} style={{ backgroundColor: colors.card, borderRadius: 8, padding: 10, marginBottom: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
-                    {po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
-                    {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
-                    {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
-                  </View>
-                  <TouchableOpacity onPress={() => handleRemovePlusOne(po.id)} style={{ marginLeft: 8 }}>
-                    <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-
-              {showPlusOneForm && (
-                <View style={{ gap: 8, marginTop: 4 }}>
-                  <TextInput
-                    style={styles.editInput}
-                    placeholder={zh ? '姓名 *' : 'Name *'}
-                    placeholderTextColor={colors.placeholder}
-                    value={poName}
-                    onChangeText={setPoName}
-                    maxLength={100}
-                  />
-                  <TextInput
-                    style={styles.editInput}
-                    placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'}
-                    placeholderTextColor={colors.placeholder}
-                    value={poContact}
-                    onChangeText={setPoContact}
-                    maxLength={100}
-                  />
-                  <TextInput
-                    style={styles.editInput}
-                    placeholder={zh ? '關係（例：伴侶、朋友）（選填）' : 'Relationship (e.g. partner, friend) (optional)'}
-                    placeholderTextColor={colors.placeholder}
-                    value={poRelationship}
-                    onChangeText={setPoRelationship}
-                    maxLength={100}
-                  />
-                  <TextInput
-                    style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]}
-                    placeholder={zh ? '備註（選填）' : 'Notes (optional)'}
-                    placeholderTextColor={colors.placeholder}
-                    value={poNotes}
-                    onChangeText={setPoNotes}
-                    multiline
-                    numberOfLines={3}
-                    maxLength={500}
-                  />
-                  {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
-                  <TouchableOpacity
-                    style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]}
-                    onPress={handleAddPlusOne}
-                    disabled={!poName.trim() || poLoading}
-                  >
-                    <Text style={styles.modalPrimaryBtnText}>{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增同行者' : 'Add guest')}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
+            </KeyboardAvoidingView>
+          </Modal>
 
           {/* Share Text form */}
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showBlast && (
@@ -666,41 +703,88 @@ export default function EventDetailScreen() {
           {/* Invite Guest form */}
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showDirectInvite && (
             <View style={[styles.blastForm, { marginTop: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }]}>
-              <Text style={styles.blastLabel}>{zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}</Text>
-              <TextInput
-                style={styles.inviteSearchInput}
-                placeholder={zh ? '搜尋用戶…' : 'Search users…'}
-                placeholderTextColor={colors.placeholder}
-                value={directInviteQuery}
-                onChangeText={searchInviteUsers}
-                autoCapitalize="none"
-              />
-              {directInviteSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ marginBottom: 8 }} />}
-              {directInviteSearchResults.length > 0 && (
-                <View style={styles.inviteResultsList}>
-                  {directInviteSearchResults.map((u) => (
-                    <TouchableOpacity
-                      key={u.id}
-                      style={styles.inviteResultItem}
-                      onPress={() => handleInviteUser(u)}
-                      disabled={directInviteLoading}
-                      activeOpacity={0.7}
-                    >
+              {/* Tabs */}
+              <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#374151' : '#F3F4F6', borderRadius: 8, padding: 3, marginBottom: 12 }}>
+                <TouchableOpacity
+                  onPress={() => setInviteTab('search')}
+                  style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'search' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'search' ? colors.text : colors.subtext }}>{zh ? '搜尋用戶' : 'Search Users'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); }}
+                  style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'roster' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'roster' ? colors.text : colors.subtext }}>{zh ? '新增至名單' : 'Add to Roster'}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {inviteTab === 'search' ? (
+                <>
+                  <TextInput
+                    style={styles.inviteSearchInput}
+                    placeholder={zh ? '搜尋用戶…' : 'Search users…'}
+                    placeholderTextColor={colors.placeholder}
+                    value={directInviteQuery}
+                    onChangeText={searchInviteUsers}
+                    autoCapitalize="none"
+                  />
+                  {directInviteSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ marginBottom: 8 }} />}
+                  {directInviteSearchResults.length > 0 && (
+                    <View style={styles.inviteResultsList}>
+                      {directInviteSearchResults.map((u) => (
+                        <TouchableOpacity
+                          key={u.id}
+                          style={styles.inviteResultItem}
+                          onPress={() => handleInviteUser(u)}
+                          disabled={directInviteLoading}
+                          activeOpacity={0.7}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.inviteResultName}>{u.displayName ?? (zh ? '未知' : 'Unknown')}</Text>
+                            {(u.email || u.phoneE164) && (
+                              <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
+                            )}
+                          </View>
+                          {directInviteLoading
+                            ? <ActivityIndicator size="small" color={INDIGO} />
+                            : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+                  {!!directInviteMsg && (
+                    <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
+                  )}
+                </>
+              ) : (
+                <View style={{ gap: 8 }}>
+                  {rosterGuests.map((g) => (
+                    <View key={g.id} style={{ backgroundColor: isDark ? '#1F2937' : '#F9FAFB', borderRadius: 8, padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.inviteResultName}>{u.displayName ?? (zh ? '未知' : 'Unknown')}</Text>
-                        {(u.email || u.phoneE164) && (
-                          <Text style={styles.inviteResultSub}>{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</Text>
-                        )}
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{g.name}</Text>
+                        {g.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{g.relationship}</Text> : null}
+                        {(g.email || g.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{g.email ?? g.phone}</Text> : null}
+                        {g.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{g.notes}</Text> : null}
                       </View>
-                      {directInviteLoading
-                        ? <ActivityIndicator size="small" color={INDIGO} />
-                        : <Text style={styles.inviteResultAction}>{zh ? '邀請' : 'Invite'}</Text>}
-                    </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRemoveRosterGuest(g.id)} style={{ marginLeft: 8 }}>
+                        <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text>
+                      </TouchableOpacity>
+                    </View>
                   ))}
+                  <TextInput style={styles.editInput} placeholder={zh ? '姓名 *' : 'Name *'} placeholderTextColor={colors.placeholder} value={rgName} onChangeText={setRgName} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email' : 'Phone / Email'} placeholderTextColor={colors.placeholder} value={rgContact} onChangeText={setRgContact} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '關係（例：朋友、同事）' : 'Relationship (e.g. friend, colleague)'} placeholderTextColor={colors.placeholder} value={rgRelationship} onChangeText={setRgRelationship} maxLength={100} />
+                  <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={rgNotes} onChangeText={setRgNotes} multiline numberOfLines={3} maxLength={500} />
+                  {!!rgMsg && <Text style={{ fontSize: 12, color: rgMsg.includes('失敗') || rgMsg.includes('Failed') ? '#EF4444' : '#16A34A' }}>{rgMsg}</Text>}
+                  <TouchableOpacity
+                    style={[styles.modalPrimaryBtn, { backgroundColor: '#16A34A' }, (!rgName.trim() || rgLoading) && { opacity: 0.5 }]}
+                    onPress={handleAddRosterGuest}
+                    disabled={!rgName.trim() || rgLoading}
+                  >
+                    <Text style={styles.modalPrimaryBtnText}>{rgLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增至名單' : 'Add to Roster')}</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-              {!!directInviteMsg && (
-                <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
               )}
             </View>
           )}
