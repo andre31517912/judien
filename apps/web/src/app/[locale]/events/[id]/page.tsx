@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
@@ -60,6 +60,13 @@ export default function EventDetailPage() {
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
 
+  // loading guards
+  const [rsvpLoading, setRsvpLoading] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState('');
+  const [replyLoading, setReplyLoading] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const loadMyPlusOnes = async () => {
     try {
       const data = await apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`);
@@ -96,7 +103,9 @@ export default function EventDetailPage() {
       await apiFetch(`/events/${params.id}/rsvp/plus-ones/${id}`, { method: 'DELETE' });
       setMyPlusOnes((prev) => prev.filter((p) => p.id !== id));
       setGuests(null);
-    } catch {}
+    } catch {
+      setPoMsg(zh ? '移除失敗，請再試。' : 'Failed to remove. Please try again.');
+    }
   };
   type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
@@ -204,6 +213,7 @@ export default function EventDetailPage() {
       });
       setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes('');
       setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
+      setTimeout(() => setRgMsg(''), 4000);
       loadRosterGuests();
     } catch { setRgMsg(zh ? '新增失敗，請再試。' : 'Failed to add. Please try again.'); }
     finally { setRgLoading(false); }
@@ -213,7 +223,9 @@ export default function EventDetailPage() {
     try {
       await apiFetch(`/events/${params.id}/roster-guests/${id}`, { method: 'DELETE' });
       setRosterGuests((prev) => prev.filter((g) => g.id !== id));
-    } catch {}
+    } catch {
+      setRgMsg(zh ? '移除失敗，請再試。' : 'Failed to remove. Please try again.');
+    }
   };
 
   const searchInviteUsers = async (q: string) => {
@@ -236,7 +248,9 @@ export default function EventDetailPage() {
         method: 'POST',
         body: JSON.stringify({ userIds: [u.id] }),
       });
-      setDirectInviteMsg(zh ? `已邀請 ${u.displayName ?? u.handle}。` : `Invited ${u.displayName ?? u.handle}.`);
+      const msg = zh ? `已邀請 ${u.displayName ?? u.handle}。` : `Invited ${u.displayName ?? u.handle}.`;
+      setDirectInviteMsg(msg);
+      setTimeout(() => setDirectInviteMsg(''), 4000);
       setDirectInviteSearchResults([]);
       setDirectInviteQuery('');
       setGuests(null);
@@ -263,6 +277,7 @@ export default function EventDetailPage() {
       });
       setBlastResult('✓ Message sent');
       setBlastMsg('');
+      setTimeout(() => setBlastResult(''), 5000);
     } catch (err: unknown) {
       setBlastResult('Failed to send. Please try again.');
     }
@@ -305,8 +320,9 @@ export default function EventDetailPage() {
 
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(inviteLink);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     setCopyDone(true);
-    setTimeout(() => setCopyDone(false), 2000);
+    copyTimeoutRef.current = setTimeout(() => setCopyDone(false), 2000);
   };
 
   // event series state
@@ -318,7 +334,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason;
+  const anyModalOpen = showInviteModal || showNoReason || showPlusOneModal || showDeleteModal || showGuests;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -327,6 +343,8 @@ export default function EventDetailPage() {
           setShowInviteModal(false);
           setShowNoReason(false);
           setShowGuests(false);
+          setShowPlusOneModal(false);
+          setShowDeleteModal(false);
         }
       };
       document.addEventListener('keydown', onKey);
@@ -366,110 +384,141 @@ export default function EventDetailPage() {
   }, [params.id]);
 
   const handleRsvp = async (status: 'GOING' | 'NO') => {
-    if (!user) return;
-    // Clicking NO when not already NO → show the reason prompt instead of submitting
+    if (!user || rsvpLoading) return;
     if (status === 'NO' && rsvpStatus !== 'NO') {
       setShowNoReason(true);
       setNoReason('');
       return;
     }
     setShowNoReason(false);
-    if (rsvpStatus === status) {
-      await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
-      setRsvpStatus(null);
-      setMyPlusOnes([]);
-    } else {
-      await apiFetch(`/events/${params.id}/rsvp`, {
-        method: 'POST',
-        body: JSON.stringify({ status }),
-      });
-      setRsvpStatus(status);
-      if (status === 'GOING') {
-        apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
-      } else {
+    setRsvpLoading(true);
+    try {
+      if (rsvpStatus === status) {
+        await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
+        setRsvpStatus(null);
         setMyPlusOnes([]);
+      } else {
+        await apiFetch(`/events/${params.id}/rsvp`, {
+          method: 'POST',
+          body: JSON.stringify({ status }),
+        });
+        setRsvpStatus(status);
+        if (status === 'GOING') {
+          apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
+        } else {
+          setMyPlusOnes([]);
+        }
       }
-    }
-    // Refresh counts + guest list
-    const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
-    setEvent(ev);
-    if (showGuests) {
-      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
-      setGuests(data);
-    } else {
+      const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
+      setEvent(ev);
       setGuests(null);
+    } catch (err: any) {
+      alert(err.message ?? (zh ? 'RSVP 更新失敗，請再試。' : 'Failed to update RSVP. Please try again.'));
+    } finally {
+      setRsvpLoading(false);
     }
   };
 
   const handleConfirmNo = async () => {
-    if (!user) return;
+    if (!user || rsvpLoading) return;
     setShowNoReason(false);
-    await apiFetch(`/events/${params.id}/rsvp`, {
-      method: 'POST',
-      body: JSON.stringify({ status: 'NO', ...(noReason.trim() ? { declineReason: noReason.trim() } : {}) }),
-    });
-    setRsvpStatus('NO');
-    setNoReason('');
-    const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
-    setEvent(ev);
-    if (showGuests) {
-      const data = await apiFetch<Guests>(`/events/${params.id}/rsvp/guests`);
-      setGuests(data);
-    } else {
+    setRsvpLoading(true);
+    try {
+      await apiFetch(`/events/${params.id}/rsvp`, {
+        method: 'POST',
+        body: JSON.stringify({ status: 'NO', ...(noReason.trim() ? { declineReason: noReason.trim() } : {}) }),
+      });
+      setRsvpStatus('NO');
+      setNoReason('');
+      setMyPlusOnes([]);
+      const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
+      setEvent(ev);
       setGuests(null);
+    } catch (err: any) {
+      alert(err.message ?? (zh ? 'RSVP 更新失敗，請再試。' : 'Failed to update RSVP. Please try again.'));
+    } finally {
+      setRsvpLoading(false);
     }
   };
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentBody.trim()) return;
-    const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ body: commentBody.trim() }),
-    });
-    setComments((prev) => [...prev, created]);
-    setCommentBody('');
+    if (!commentBody.trim() || commentLoading) return;
+    setCommentLoading(true);
+    setCommentError('');
+    try {
+      const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ body: commentBody.trim() }),
+      });
+      setComments((prev) => [...prev, created]);
+      setCommentBody('');
+    } catch (err: any) {
+      setCommentError(err.message ?? (zh ? '留言失敗，請再試。' : 'Failed to post comment. Please try again.'));
+    } finally {
+      setCommentLoading(false);
+    }
   };
 
   const handleReply = async (e: React.FormEvent, parentId: string) => {
     e.preventDefault();
-    if (!replyBody.trim()) return;
-    const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ body: replyBody.trim(), parentId }),
-    });
-    setComments((prev) =>
-      prev.map((c) =>
-        c.id === parentId ? { ...c, replies: [...(c.replies ?? []), created] } : c,
-      ),
-    );
-    setReplyBody('');
-    setReplyingToId(null);
+    if (!replyBody.trim() || replyLoading) return;
+    setReplyLoading(true);
+    try {
+      const created = await apiFetch<Comment>(`/events/${params.id}/comments`, {
+        method: 'POST',
+        body: JSON.stringify({ body: replyBody.trim(), parentId }),
+      });
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === parentId ? { ...c, replies: [...(c.replies ?? []), created] } : c,
+        ),
+      );
+      setReplyBody('');
+      setReplyingToId(null);
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '回覆失敗，請再試。' : 'Failed to post reply. Please try again.'));
+    } finally {
+      setReplyLoading(false);
+    }
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    await apiFetch(`/events/${params.id}/comments/${commentId}`, { method: 'DELETE' });
-    setComments((prev) =>
-      prev
-        .filter((c) => c.id !== commentId)
-        .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) })),
-    );
+    try {
+      await apiFetch(`/events/${params.id}/comments/${commentId}`, { method: 'DELETE' });
+      setComments((prev) =>
+        prev
+          .filter((c) => c.id !== commentId)
+          .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) })),
+      );
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '刪除失敗，請再試。' : 'Failed to delete. Please try again.'));
+    }
   };
 
   const handleEditComment = async (commentId: string) => {
     if (!editCommentBody.trim()) return;
-    const updated = await apiFetch<Comment>(`/events/${params.id}/comments/${commentId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ body: editCommentBody.trim() }),
-    });
-    setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, body: updated.body } : c)));
-    setEditingCommentId(null);
-    setEditCommentBody('');
+    try {
+      const updated = await apiFetch<Comment>(`/events/${params.id}/comments/${commentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ body: editCommentBody.trim() }),
+      });
+      setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, body: updated.body } : c)));
+      setEditingCommentId(null);
+      setEditCommentBody('');
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '儲存失敗，請再試。' : 'Failed to save. Please try again.'));
+    }
   };
 
   const handleDeleteEvent = async () => {
-    await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
-    router.push(`/${locale}/events`);
+    try {
+      await apiFetch(`/events/${params.id}`, { method: 'DELETE' });
+      router.push(`/${locale}/events`);
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '刪除失敗，請再試。' : 'Failed to delete event. Please try again.'));
+      setShowDeleteModal(false);
+    }
   };
 
   if (loading) return (
@@ -500,13 +549,14 @@ export default function EventDetailPage() {
     <button
       key={status}
       onClick={() => handleRsvp(status)}
-      className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
+      disabled={rsvpLoading}
+      className={`px-4 py-2 rounded-xl text-sm font-medium border transition disabled:opacity-60 ${
         rsvpStatus === status
           ? 'bg-indigo-600 text-white border-indigo-600'
           : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400'
       }`}
     >
-      {label}
+      {rsvpLoading ? '…' : label}
     </button>
   );
 
@@ -636,7 +686,7 @@ export default function EventDetailPage() {
           </button>
           {rsvpStatus === 'GOING' && user && !isPast && (
             <button
-              onClick={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); }}
+              onClick={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes(''); }}
               className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
             >
               {zh ? '帶同行者' : '+ Guest'}
@@ -843,13 +893,13 @@ export default function EventDetailPage() {
           {/* Tabs */}
           <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
-              onClick={() => setInviteTab('search')}
+              onClick={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'search' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               {zh ? '搜尋用戶' : 'Search Users'}
             </button>
             <button
-              onClick={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); }}
+              onClick={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'roster' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               {zh ? '新增至名單' : 'Add to Roster'}
@@ -1002,20 +1052,25 @@ export default function EventDetailPage() {
         <h2 className="text-lg font-semibold mb-3 dark:text-white">{zh ? '動態' : 'Feed'}</h2>
 
         {user && (
-          <form onSubmit={handleComment} className="flex gap-2 mb-4">
-            <input
-              value={commentBody}
-              onChange={(e) => setCommentBody(e.target.value)}
-              placeholder={zh ? '寫下留言…' : 'Write a comment…'}
-              maxLength={1000}
-              className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-            <button
-              type="submit"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700"
-            >
-              {zh ? '送出' : 'Post'}
-            </button>
+          <form onSubmit={handleComment} className="flex flex-col gap-2 mb-4">
+            <div className="flex gap-2">
+              <input
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                placeholder={zh ? '寫下留言…' : 'Write a comment…'}
+                maxLength={1000}
+                disabled={commentLoading}
+                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-60"
+              />
+              <button
+                type="submit"
+                disabled={commentLoading || !commentBody.trim()}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {commentLoading ? '…' : (zh ? '送出' : 'Post')}
+              </button>
+            </div>
+            {commentError && <p className="text-xs text-red-500">{commentError}</p>}
           </form>
         )}
 
@@ -1122,14 +1177,16 @@ export default function EventDetailPage() {
                         onChange={(e) => setReplyBody(e.target.value)}
                         placeholder={zh ? '寫下回覆…' : 'Write a reply…'}
                         maxLength={1000}
-                        className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                        disabled={replyLoading}
+                        className="flex-1 border border-indigo-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-60"
                         autoFocus
                       />
                       <button
                         type="submit"
-                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-indigo-700"
+                        disabled={replyLoading || !replyBody.trim()}
+                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium hover:bg-indigo-700 disabled:opacity-50"
                       >
-                        {zh ? '送出' : 'Reply'}
+                        {replyLoading ? '…' : (zh ? '送出' : 'Reply')}
                       </button>
                     </form>
                   </div>

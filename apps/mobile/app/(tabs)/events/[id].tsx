@@ -67,7 +67,7 @@ export default function EventDetailScreen() {
       headerTitle: () => <JLogo />,
       headerStyle: { backgroundColor: colors.headerBg },
       headerLeft: () => (
-        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 4, flexDirection: 'row', alignItems: 'center' }} activeOpacity={0.7} accessibilityLabel={zh ? '返回' : 'Go back'} accessibilityRole="button">
           <Ionicons name="chevron-back" size={28} color={INDIGO} />
           <Text style={{ color: INDIGO, fontSize: 17 }}>{zh ? '返回' : 'Back'}</Text>
         </TouchableOpacity>
@@ -131,6 +131,10 @@ export default function EventDetailScreen() {
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
 
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState('');
+  const [replyLoading, setReplyLoading] = useState(false);
+
   // invite tab: 'search' | 'roster'
   const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
   const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
@@ -189,6 +193,7 @@ export default function EventDetailScreen() {
       const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
       setEvent(ev);
       setMyRsvp(ev.myRsvp);
+      setGuests(null);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to update RSVP.');
     }
@@ -262,6 +267,7 @@ export default function EventDetailScreen() {
       });
       setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes('');
       setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
+      setTimeout(() => setRgMsg(''), 4000);
       loadRosterGuests();
     } catch { setRgMsg(zh ? '新增失敗，請再試。' : 'Failed to add. Please try again.'); }
     finally { setRgLoading(false); }
@@ -271,7 +277,9 @@ export default function EventDetailScreen() {
     try {
       await apiFetch(`/events/${id}/roster-guests/${gid}`, { method: 'DELETE' });
       setRosterGuests((prev) => prev.filter((g) => g.id !== gid));
-    } catch {}
+    } catch {
+      Alert.alert(zh ? '移除失敗' : 'Remove failed', zh ? '請稍後再試。' : 'Please try again.');
+    }
   };
 
   const handleCreateShareLink = async () => {
@@ -376,11 +384,12 @@ export default function EventDetailScreen() {
         body: JSON.stringify({ userIds: [u.id] }),
       });
       setDirectInviteMsg(zh ? `已邀請 ${u.displayName ?? u.email ?? ''}。` : `Invited ${u.displayName ?? u.email ?? ''}.`);
+      setTimeout(() => setDirectInviteMsg(''), 4000);
       setDirectInviteSearchResults([]);
       setDirectInviteQuery('');
       setGuests(null);
     } catch (err: any) {
-      setDirectInviteMsg(err.message ?? (zh ? '邀請失敗。' : 'Failed to invite.'));
+      setDirectInviteMsg(`ERR:${err.message ?? (zh ? '邀請失敗。' : 'Failed to invite.')}`);
     } finally { setDirectInviteLoading(false); }
   };
 
@@ -395,6 +404,7 @@ export default function EventDetailScreen() {
       });
       setBlastResult(`✓ Sent to ${res.sent} people`);
       setBlastMsg('');
+      setTimeout(() => setBlastResult(''), 5000);
     } catch (err: any) {
       setBlastResult('Failed to send. Please try again.');
     } finally {
@@ -403,23 +413,35 @@ export default function EventDetailScreen() {
   };
 
   const handleComment = async () => {
-    if (!commentBody.trim()) return;
-    const c = await apiFetch<Comment>(`/events/${id}/comments`, {
-      method: 'POST', body: JSON.stringify({ body: commentBody.trim() }),
-    });
-    setComments((prev) => [...prev, c]);
-    setCommentBody('');
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    if (!commentBody.trim() || commentLoading) return;
+    setCommentLoading(true);
+    setCommentError('');
+    try {
+      const c = await apiFetch<Comment>(`/events/${id}/comments`, {
+        method: 'POST', body: JSON.stringify({ body: commentBody.trim() }),
+      });
+      setComments((prev) => [...prev, c]);
+      setCommentBody('');
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    } catch (err: any) {
+      setCommentError(err.message ?? (zh ? '留言失敗，請再試。' : 'Failed to post. Please try again.'));
+    } finally {
+      setCommentLoading(false);
+    }
   };
 
   const handleEditComment = async (commentId: string) => {
     if (!editCommentBody.trim()) return;
-    const updated = await apiFetch<Comment>(`/comments/${commentId}`, {
-      method: 'PATCH', body: JSON.stringify({ body: editCommentBody.trim() }),
-    });
-    setComments((prev) => prev.map((c) => c.id === commentId ? { ...c, body: updated.body } : c));
-    setEditingCommentId(null);
-    setEditCommentBody('');
+    try {
+      const updated = await apiFetch<Comment>(`/comments/${commentId}`, {
+        method: 'PATCH', body: JSON.stringify({ body: editCommentBody.trim() }),
+      });
+      setComments((prev) => prev.map((c) => c.id === commentId ? { ...c, body: updated.body } : c));
+      setEditingCommentId(null);
+      setEditCommentBody('');
+    } catch (err: any) {
+      Alert.alert(zh ? '儲存失敗' : 'Save failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    }
   };
 
   const handleDeleteComment = async (commentId: string) => {
@@ -431,11 +453,15 @@ export default function EventDetailScreen() {
         {
           text: t('common.delete'), style: 'destructive',
           onPress: async () => {
-            await apiFetch(`/comments/${commentId}`, { method: 'DELETE' });
-            setComments((prev) =>
-              prev.filter((c) => c.id !== commentId)
-                  .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) }))
-            );
+            try {
+              await apiFetch(`/comments/${commentId}`, { method: 'DELETE' });
+              setComments((prev) =>
+                prev.filter((c) => c.id !== commentId)
+                    .map((c) => ({ ...c, replies: (c.replies ?? []).filter((r) => r.id !== commentId) }))
+              );
+            } catch (err: any) {
+              Alert.alert(zh ? '刪除失敗' : 'Delete failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+            }
           },
         },
       ],
@@ -443,15 +469,22 @@ export default function EventDetailScreen() {
   };
 
   const handleReply = async (parentCommentId: string) => {
-    if (!replyBody.trim()) return;
-    const reply = await apiFetch<Comment>(`/events/${id}/comments`, {
-      method: 'POST', body: JSON.stringify({ body: replyBody.trim(), replyToId: parentCommentId }),
-    });
-    setComments((prev) =>
-      prev.map((c) => c.id === parentCommentId ? { ...c, replies: [...(c.replies ?? []), reply] } : c)
-    );
-    setReplyBody('');
-    setReplyingToId(null);
+    if (!replyBody.trim() || replyLoading) return;
+    setReplyLoading(true);
+    try {
+      const reply = await apiFetch<Comment>(`/events/${id}/comments`, {
+        method: 'POST', body: JSON.stringify({ body: replyBody.trim(), replyToId: parentCommentId }),
+      });
+      setComments((prev) =>
+        prev.map((c) => c.id === parentCommentId ? { ...c, replies: [...(c.replies ?? []), reply] } : c)
+      );
+      setReplyBody('');
+      setReplyingToId(null);
+    } catch (err: any) {
+      Alert.alert(zh ? '回覆失敗' : 'Reply failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setReplyLoading(false);
+    }
   };
 
   if (!event) {
@@ -503,7 +536,7 @@ export default function EventDetailScreen() {
       >
         {resolveImageUrl(event.coverImageUrl) && (
           <View style={[styles.coverWrapper, { backgroundColor: colors.border }]}>
-            <Image source={{ uri: resolveImageUrl(event.coverImageUrl)! }} style={styles.cover} />
+            <Image source={{ uri: resolveImageUrl(event.coverImageUrl)! }} style={styles.cover} accessibilityLabel={title} accessibilityRole="image" />
           </View>
         )}
         <View style={styles.body}>
@@ -571,7 +604,7 @@ export default function EventDetailScreen() {
             {myRsvp === 'GOING' && user && !isPast && (
               <TouchableOpacity
                 style={[styles.rsvpBtn]}
-                onPress={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); }}
+                onPress={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes(''); }}
               >
                 <Text style={styles.rsvpBtnText}>{zh ? '帶同行者' : '+ Guest'}</Text>
               </TouchableOpacity>
@@ -589,7 +622,7 @@ export default function EventDetailScreen() {
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
               <TouchableOpacity
                 style={[styles.rsvpBtn, showDirectInvite && styles.rsvpBtnActive]}
-                onPress={() => { setShowDirectInvite(!showDirectInvite); setInviteTab('search'); setRgMsg(''); }}
+                onPress={() => { setShowDirectInvite((v) => !v); setInviteTab('search'); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); }}
               >
                 <Text style={[styles.rsvpBtnText, showDirectInvite && styles.rsvpBtnTextActive]}>
                   {zh ? '👥 邀請賓客' : '👥 Invite Guest'}
@@ -640,7 +673,7 @@ export default function EventDetailScreen() {
                       <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={poNotes} onChangeText={setPoNotes} multiline numberOfLines={3} maxLength={500} />
                       {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
                       <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
-                        <TouchableOpacity onPress={() => { setShowPlusOneForm(false); setPoMsg(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
+                        <TouchableOpacity onPress={() => { setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
                           <Text style={{ fontSize: 14, color: colors.text }}>{zh ? '取消' : 'Cancel'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]} onPress={handleAddPlusOne} disabled={!poName.trim() || poLoading}>
@@ -706,13 +739,13 @@ export default function EventDetailScreen() {
               {/* Tabs */}
               <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#374151' : '#F3F4F6', borderRadius: 8, padding: 3, marginBottom: 12 }}>
                 <TouchableOpacity
-                  onPress={() => setInviteTab('search')}
+                  onPress={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
                   style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'search' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
                 >
                   <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'search' ? colors.text : colors.subtext }}>{zh ? '搜尋用戶' : 'Search Users'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); }}
+                  onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
                   style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'roster' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
                 >
                   <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'roster' ? colors.text : colors.subtext }}>{zh ? '新增至名單' : 'Add to Roster'}</Text>
@@ -754,7 +787,9 @@ export default function EventDetailScreen() {
                     </View>
                   )}
                   {!!directInviteMsg && (
-                    <Text style={[styles.blastResult, { color: directInviteMsg.includes('已邀請') || directInviteMsg.includes('Invited') ? '#16A34A' : '#EF4444' }]}>{directInviteMsg}</Text>
+                    <Text style={[styles.blastResult, { color: directInviteMsg.startsWith('ERR:') ? '#EF4444' : '#16A34A' }]}>
+                      {directInviteMsg.startsWith('ERR:') ? directInviteMsg.slice(4) : directInviteMsg}
+                    </Text>
                   )}
                 </>
               ) : (
@@ -870,8 +905,14 @@ export default function EventDetailScreen() {
                       multiline
                       autoFocus
                     />
-                    <TouchableOpacity style={styles.postReplyBtn} onPress={() => handleReply(c.id)}>
-                      <Text style={styles.postBtnText}>{t('comments.post')}</Text>
+                    <TouchableOpacity
+                      style={[styles.postReplyBtn, (!replyBody.trim() || replyLoading) && { opacity: 0.5 }]}
+                      onPress={() => handleReply(c.id)}
+                      disabled={!replyBody.trim() || replyLoading}
+                      accessibilityLabel={zh ? '送出回覆' : 'Post reply'}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.postBtnText}>{replyLoading ? '…' : t('comments.post')}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1029,22 +1070,28 @@ export default function EventDetailScreen() {
       {/* Sticky comment input bar — lives outside ScrollView so keyboard pushes it up */}
       {user && (
         <View style={[styles.inputBar, { paddingBottom: safeBottom > 0 ? safeBottom : 12 }]}>
-          <TextInput
-            style={styles.inputBarField}
-            placeholder={t('comments.placeholder')}
-            placeholderTextColor={colors.placeholder}
-            value={commentBody}
-            onChangeText={setCommentBody}
-            multiline
-            numberOfLines={1}
-            maxLength={2000}
-          />
+          <View style={{ flex: 1 }}>
+            <TextInput
+              style={styles.inputBarField}
+              placeholder={t('comments.placeholder')}
+              placeholderTextColor={colors.placeholder}
+              value={commentBody}
+              onChangeText={(v) => { setCommentBody(v); if (commentError) setCommentError(''); }}
+              multiline
+              numberOfLines={1}
+              maxLength={2000}
+              editable={!commentLoading}
+            />
+            {!!commentError && <Text style={{ fontSize: 11, color: '#EF4444', paddingHorizontal: 4, paddingTop: 2 }}>{commentError}</Text>}
+          </View>
           <TouchableOpacity
-            style={[styles.inputBarSend, !commentBody.trim() && { opacity: 0.4 }]}
+            style={[styles.inputBarSend, (!commentBody.trim() || commentLoading) && { opacity: 0.4 }]}
             onPress={handleComment}
-            disabled={!commentBody.trim()}
+            disabled={!commentBody.trim() || commentLoading}
+            accessibilityLabel={zh ? '送出留言' : 'Post comment'}
+            accessibilityRole="button"
           >
-            <Text style={styles.inputBarSendText}>↑</Text>
+            <Text style={styles.inputBarSendText}>{commentLoading ? '…' : '↑'}</Text>
           </TouchableOpacity>
         </View>
       )}
