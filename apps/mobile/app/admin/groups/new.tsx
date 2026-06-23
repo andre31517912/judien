@@ -188,20 +188,6 @@ export default function NewGroupScreen() {
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>{zh ? '群組 PID' : 'Group PID'}</Text>
-          <TextInput
-            value={suggestedPid}
-            editable={false}
-            style={[styles.input, styles.readonlyInput]}
-            placeholder={zh ? '將根據群組名稱自動產生' : 'Auto-generated from the group name'}
-            placeholderTextColor={colors.placeholder}
-          />
-          <Text style={styles.helperText}>
-            {zh ? 'PID 會根據群組名稱自動產生，預設不會被搜尋到。' : 'PID is auto-generated from the group name and is private by default.'}
-          </Text>
-        </View>
-
-        <View style={styles.field}>
           <Text style={styles.label}>{zh ? '描述' : 'Description'}</Text>
           <TextInput
             value={description}
@@ -264,7 +250,6 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       color: colors.inputText,
       fontSize: 15,
     },
-    readonlyInput: { backgroundColor: colors.bg, color: colors.placeholder },
     textArea: { minHeight: 96 },
     helperText: { fontSize: 12, color: colors.placeholder },
     groupPhotoArea: { width: '100%', aspectRatio: 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
