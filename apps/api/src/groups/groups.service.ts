@@ -993,12 +993,64 @@ export class GroupsService {
     return { results };
   }
 
+  // Returns all descendant group IDs (children, grandchildren, …) for a given group.
+  async getDescendantGroupIds(groupId: string): Promise<string[]> {
+    const ids: string[] = [];
+    const queue = [groupId];
+    while (queue.length) {
+      const parentId = queue.shift()!;
+      const children = await this.prisma.group.findMany({
+        where: { parentGroupId: parentId },
+        select: { id: true },
+      });
+      for (const child of children) {
+        ids.push(child.id);
+        queue.push(child.id);
+      }
+    }
+    return ids;
+  }
+
+  // Returns all ancestor group IDs (parent, grandparent, …) for a given group.
+  async getAncestorGroupIds(groupId: string): Promise<string[]> {
+    const ids: string[] = [];
+    let current = await this.prisma.group.findUnique({ where: { id: groupId }, select: { parentGroupId: true } });
+    while (current?.parentGroupId) {
+      ids.push(current.parentGroupId);
+      current = await this.prisma.group.findUnique({ where: { id: current.parentGroupId }, select: { parentGroupId: true } });
+    }
+    return ids;
+  }
+
+  // Returns deduplicated user IDs of all members across all descendant groups.
+  async getAllDescendantMemberUserIds(groupId: string, excludeUserId?: string): Promise<string[]> {
+    const descendantIds = await this.getDescendantGroupIds(groupId);
+    if (descendantIds.length === 0) return [];
+    const memberships = await this.prisma.groupMembership.findMany({
+      where: {
+        groupId: { in: descendantIds },
+        status: 'ACCEPTED',
+        ...(excludeUserId ? { userId: { not: excludeUserId } } : {}),
+      },
+      select: { userId: true },
+    });
+    return [...new Set(memberships.map((m) => m.userId))];
+  }
+
   async canAccessGroup(groupId: string, userId?: string) {
     if (!userId) return false;
+    // Direct membership check
     const membership = await this.prisma.groupMembership.findUnique({
       where: { groupId_userId: { groupId, userId } },
     });
-    return membership?.status === 'ACCEPTED';
+    if (membership?.status === 'ACCEPTED') return true;
+    // Child group members can access parent group events (one-way: parent → child)
+    const descendantIds = await this.getDescendantGroupIds(groupId);
+    if (descendantIds.length === 0) return false;
+    const childMembership = await this.prisma.groupMembership.findFirst({
+      where: { groupId: { in: descendantIds }, userId, status: 'ACCEPTED' },
+    });
+    return !!childMembership;
   }
 
   async canManageGroupContent(groupId: string | undefined | null, user: User) {

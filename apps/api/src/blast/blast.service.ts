@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { MessagingService } from '../messaging/messaging.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { GroupsService } from '../groups/groups.service';
 import type { BlastDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 
@@ -20,6 +21,7 @@ export class BlastService {
     private readonly prisma: PrismaService,
     private readonly messaging: MessagingService,
     private readonly notifications: NotificationsService,
+    private readonly groupsService: GroupsService,
   ) {}
 
   async send(eventId: string, dto: BlastDto, actor: User) {
@@ -51,13 +53,26 @@ export class BlastService {
       });
       users = rsvps.map((r) => r.user as RecipientUser);
     } else {
-      // 'invited': for group events → all accepted group members; for non-group → RSVPers + invite acceptors
+      // 'invited': for group events → all accepted group members + descendant group members; for non-group → RSVPers + invite acceptors
       if (event.groupId) {
         const members = await (this.prisma.groupMembership as any).findMany({
           where: { groupId: event.groupId, status: 'ACCEPTED' },
           include: { user: true },
         }) as { user: RecipientUser }[];
-        users = members.map((m) => m.user);
+        const directUsers = members.map((m) => m.user as RecipientUser);
+        const directUserIds = new Set(directUsers.map((u) => u.id));
+        // Also include members of descendant (child) groups
+        const descendantUserIds = await this.groupsService.getAllDescendantMemberUserIds(event.groupId);
+        const extraIds = descendantUserIds.filter((id) => !directUserIds.has(id));
+        if (extraIds.length > 0) {
+          const extraUsers = await this.prisma.user.findMany({
+            where: { id: { in: extraIds } },
+            select: { id: true, email: true, lineUserId: true, preferredLanguage: true, muteEmail: true, muteLinePush: true },
+          });
+          users = [...directUsers, ...extraUsers as RecipientUser[]];
+        } else {
+          users = directUsers;
+        }
       } else {
         const [rsvps, invites] = await Promise.all([
           this.prisma.rSVP.findMany({ where: { eventId }, include: { user: true } }),

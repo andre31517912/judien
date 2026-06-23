@@ -45,8 +45,58 @@ export default function EventDetailPage() {
   const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
   // guest list
-  type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+  type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };
   type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
+  type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; notes?: string | null };
+
+  // plus-ones state
+  const [myPlusOnes, setMyPlusOnes] = useState<PlusOne[]>([]);
+  const [showPlusOneForm, setShowPlusOneForm] = useState(false);
+  const [poName, setPoName] = useState('');
+  const [poContact, setPoContact] = useState('');
+  const [poRelationship, setPoRelationship] = useState('');
+  const [poNotes, setPoNotes] = useState('');
+  const [poLoading, setPoLoading] = useState(false);
+  const [poMsg, setPoMsg] = useState('');
+
+  const loadMyPlusOnes = async () => {
+    try {
+      const data = await apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`);
+      setMyPlusOnes(data);
+    } catch { setMyPlusOnes([]); }
+  };
+
+  const handleAddPlusOne = async () => {
+    if (!poName.trim()) return;
+    setPoLoading(true);
+    setPoMsg('');
+    try {
+      const isEmail = poContact.includes('@');
+      await apiFetch(`/events/${params.id}/rsvp/plus-ones`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: poName.trim(),
+          ...(isEmail ? { email: poContact.trim() } : poContact.trim() ? { phone: poContact.trim() } : {}),
+          ...(poRelationship.trim() ? { relationship: poRelationship.trim() } : {}),
+          ...(poNotes.trim() ? { notes: poNotes.trim() } : {}),
+        }),
+      });
+      setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes('');
+      setShowPlusOneForm(false);
+      await loadMyPlusOnes();
+      setGuests(null);
+    } catch (err: any) {
+      setPoMsg(err.message ?? (zh ? '新增失敗' : 'Failed to add guest'));
+    } finally { setPoLoading(false); }
+  };
+
+  const handleRemovePlusOne = async (id: string) => {
+    try {
+      await apiFetch(`/events/${params.id}/rsvp/plus-ones/${id}`, { method: 'DELETE' });
+      setMyPlusOnes((prev) => prev.filter((p) => p.id !== id));
+      setGuests(null);
+    } catch {}
+  };
   type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
@@ -151,8 +201,8 @@ export default function EventDetailPage() {
 
   // blast state
   const [blastMsg, setBlastMsg] = useState('');
-  const [blastChannels, setBlastChannels] = useState<string[]>(['EMAIL']);
-  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('rsvped');
+  const [blastChannels, setBlastChannels] = useState<string[]>(['IN_APP']);
+  const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('invited');
   const [blastResult, setBlastResult] = useState('');
 
   const toggleBlastChannel = (ch: string) =>
@@ -254,6 +304,9 @@ export default function EventDetailPage() {
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setGoingList(rsvpData.GOING ?? []);
       setLoading(false);
+      if (ev.myRsvp === 'GOING') {
+        apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
+      }
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -278,12 +331,18 @@ export default function EventDetailPage() {
     if (rsvpStatus === status) {
       await apiFetch(`/events/${params.id}/rsvp`, { method: 'DELETE' });
       setRsvpStatus(null);
+      setMyPlusOnes([]);
     } else {
       await apiFetch(`/events/${params.id}/rsvp`, {
         method: 'POST',
         body: JSON.stringify({ status }),
       });
       setRsvpStatus(status);
+      if (status === 'GOING') {
+        apiFetch<PlusOne[]>(`/events/${params.id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
+      } else {
+        setMyPlusOnes([]);
+      }
     }
     // Refresh counts + guest list
     const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
@@ -439,12 +498,6 @@ export default function EventDetailPage() {
           >
             {zh ? '編輯活動' : 'Edit Event'}
           </a>
-          <button
-            onClick={handleExportCsv}
-            className="text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-xl hover:border-indigo-400 hover:text-indigo-600 transition"
-          >
-            {zh ? '匯出 CSV' : 'Export CSV'}
-          </button>
         </div>
       )}
 
@@ -580,6 +633,90 @@ export default function EventDetailPage() {
         )}
       </div>
 
+      {/* Plus-one panel — shown when user is Going */}
+      {rsvpStatus === 'GOING' && user && !isPast && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              {zh ? '帶朋友來？' : 'Bringing anyone?'}
+            </p>
+            <button
+              onClick={() => { setShowPlusOneForm((v) => !v); setPoMsg(''); }}
+              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              {showPlusOneForm ? (zh ? '取消' : 'Cancel') : (zh ? '+ 新增同行者' : '+ Add a guest')}
+            </button>
+          </div>
+
+          {/* Existing plus-ones */}
+          {myPlusOnes.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {myPlusOnes.map((po) => (
+                <li key={po.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-medium">{po.name}</span>
+                    {po.relationship && <span className="text-xs text-gray-400">{po.relationship}</span>}
+                    {(po.email || po.phone) && <span className="text-xs text-gray-400">{po.email ?? po.phone}</span>}
+                    {po.notes && <span className="text-xs text-gray-400 italic">{po.notes}</span>}
+                  </div>
+                  <button
+                    onClick={() => handleRemovePlusOne(po.id)}
+                    className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5"
+                  >
+                    {zh ? '移除' : 'Remove'}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Add form */}
+          {showPlusOneForm && (
+            <div className="flex flex-col gap-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+              <input
+                value={poName}
+                onChange={(e) => setPoName(e.target.value)}
+                placeholder={zh ? '姓名 *' : 'Name *'}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                maxLength={100}
+              />
+              <input
+                value={poContact}
+                onChange={(e) => setPoContact(e.target.value)}
+                placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                maxLength={100}
+              />
+              <input
+                value={poRelationship}
+                onChange={(e) => setPoRelationship(e.target.value)}
+                placeholder={zh ? '關係（例：伴侶、朋友）（選填）' : 'Relationship (e.g. partner, friend) (optional)'}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                maxLength={100}
+              />
+              <textarea
+                value={poNotes}
+                onChange={(e) => setPoNotes(e.target.value)}
+                placeholder={zh ? '備註（選填）' : 'Notes (optional)'}
+                rows={2}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                maxLength={500}
+              />
+              {poMsg && <p className="text-xs text-red-500">{poMsg}</p>}
+              <div className="flex justify-end">
+                <button
+                  onClick={handleAddPlusOne}
+                  disabled={poLoading || !poName.trim()}
+                  className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition disabled:opacity-50"
+                >
+                  {poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增同行者' : 'Add guest')}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Guest list panel — tabs: Invited, Going, Not Going, Unresponded */}
       {showGuests && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -604,6 +741,15 @@ export default function EventDetailPage() {
               </button>
             ))}
             </div>
+            {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
+              <button
+                onClick={handleExportCsv}
+                className="shrink-0 px-3 py-2 text-xs text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                title={zh ? '匯出 CSV' : 'Export CSV'}
+              >
+                {zh ? '匯出' : 'Export'}
+              </button>
+            )}
           </div>
 
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
@@ -647,12 +793,19 @@ export default function EventDetailPage() {
               return rows.length === 0
                 ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{emptyMsg}</p>
                 : rows.map((g, i) => (
-                  <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                  <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${(g as any).plusOneOf ? 'pl-8 bg-gray-50/50 dark:bg-gray-800/30' : ''}`}>
                     <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                       {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
+                        {(g as any).plusOneOf && (
+                          <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded">
+                            {zh ? `同 ${(g as any).plusOneOf} 來` : `+1 of ${(g as any).plusOneOf}`}
+                          </span>
+                        )}
+                      </div>
                       {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
                       {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                     </div>

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { RsvpDto, SharedEventRsvpDto } from '@judien/shared';
+import type { RsvpDto, SharedEventRsvpDto, PlusOneDto } from '@judien/shared';
 import { GroupsService } from '../groups/groups.service';
 import { createHash } from 'crypto';
 
@@ -76,7 +76,10 @@ export class RsvpService {
     const [rsvps, guestRsvps, memberships] = await Promise.all([
       this.prisma.rSVP.findMany({
         where: { eventId },
-        include: { user: { select: { email: true, displayName: true, phoneE164: true } } },
+        include: {
+          user: { select: { email: true, displayName: true, phoneE164: true } },
+          plusOnes: true,
+        },
         orderBy: { updatedAt: 'asc' },
       }),
       this.prisma.guestRSVP.findMany({
@@ -93,7 +96,7 @@ export class RsvpService {
 
     const nicknameByUserId = new Map(memberships.map((m) => [m.userId, m.groupNickname]));
 
-    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[]> = {
+    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest'; plusOneOf?: string }[]> = {
       GOING: [],
       NO: [],
     };
@@ -102,9 +105,10 @@ export class RsvpService {
       const status = r.status as 'GOING' | 'NO';
       if (groups[status]) {
         const nickname = nicknameByUserId.get(r.userId) ?? null;
+        const displayName = nickname ?? (r.user as any).displayName ?? null;
         const entry: typeof groups['GOING'][number] = {
           handle: isCallerAdmin ? (r.user.email ?? '') : this.maskIdentifier(r.user.email ?? ''),
-          displayName: nickname ?? (r.user as any).displayName ?? null,
+          displayName,
           source: 'user',
         };
         if (isCallerAdmin) {
@@ -112,6 +116,23 @@ export class RsvpService {
           if ((r.user as any).phoneE164) entry.phone = (r.user as any).phoneE164;
         }
         groups[status].push(entry);
+
+        // Append plus-ones as separate entries tagged with who brought them
+        if (status === 'GOING' && (r as any).plusOnes?.length) {
+          for (const po of (r as any).plusOnes) {
+            const poEntry: typeof groups['GOING'][number] = {
+              handle: isCallerAdmin ? (po.email ?? po.name) : po.name,
+              displayName: po.name,
+              source: 'guest',
+              plusOneOf: displayName ?? entry.handle,
+            };
+            if (isCallerAdmin) {
+              if (po.email) poEntry.email = po.email;
+              if (po.phone) poEntry.phone = po.phone;
+            }
+            groups['GOING'].push(poEntry);
+          }
+        }
       }
     }
 
@@ -274,6 +295,60 @@ export class RsvpService {
         userAgent: meta.userAgent,
       },
     });
+  }
+
+  async getMyPlusOnes(eventId: string, userId: string) {
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { id: true, status: true },
+    });
+    if (!rsvp || rsvp.status !== 'GOING') return [];
+    return (this.prisma as any).rSVPPlusOne.findMany({
+      where: { rsvpId: rsvp.id },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async addPlusOne(eventId: string, userId: string, dto: PlusOneDto) {
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { id: true, status: true },
+    });
+    if (!rsvp || rsvp.status !== 'GOING') {
+      throw new ForbiddenException('You must be RSVPed as Going to add a guest.');
+    }
+    const existing = await (this.prisma as any).rSVPPlusOne.count({ where: { rsvpId: rsvp.id } });
+    if (existing >= 10) {
+      throw new ForbiddenException('Maximum of 10 guests allowed per RSVP.');
+    }
+    return (this.prisma as any).rSVPPlusOne.create({
+      data: {
+        rsvpId: rsvp.id,
+        eventId,
+        name: dto.name,
+        email: dto.email ?? null,
+        phone: dto.phone ?? null,
+        relationship: dto.relationship ?? null,
+        notes: dto.notes ?? null,
+      },
+    });
+  }
+
+  async removePlusOne(eventId: string, userId: string, plusOneId: string) {
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { id: true },
+    });
+    if (!rsvp) throw new NotFoundException('RSVP not found.');
+    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({
+      where: { id: plusOneId },
+      select: { id: true, rsvpId: true },
+    });
+    if (!plusOne || plusOne.rsvpId !== rsvp.id) {
+      throw new NotFoundException('Guest not found.');
+    }
+    await (this.prisma as any).rSVPPlusOne.delete({ where: { id: plusOneId } });
+    return { removed: true };
   }
 
   private maskIdentifier(value: string) {

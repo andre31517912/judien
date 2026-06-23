@@ -25,10 +25,11 @@ import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, EventInvitee } from '@judien/shared';
 import { Ionicons } from '@expo/vector-icons';
 
-type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
 type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
+type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; notes?: string | null };
 
 const INDIGO = '#4F46E5';
 
@@ -120,11 +121,23 @@ export default function EventDetailScreen() {
   const [directInviteLoading, setDirectInviteLoading] = useState(false);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
 
+  const [myPlusOnes, setMyPlusOnes] = useState<PlusOne[]>([]);
+  const [showPlusOneForm, setShowPlusOneForm] = useState(false);
+  const [poName, setPoName] = useState('');
+  const [poContact, setPoContact] = useState('');
+  const [poRelationship, setPoRelationship] = useState('');
+  const [poNotes, setPoNotes] = useState('');
+  const [poLoading, setPoLoading] = useState(false);
+  const [poMsg, setPoMsg] = useState('');
+
   useEffect(() => {
     apiFetch<EventWithCounts>(`/events/${id}`)
       .then((ev) => {
         setEvent(ev);
         setMyRsvp(ev.myRsvp);
+        if (ev.myRsvp === 'GOING') {
+          apiFetch<PlusOne[]>(`/events/${id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
+        }
         if (ev.groupId) {
           const gid = ev.groupId;
           apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -149,12 +162,18 @@ export default function EventDetailScreen() {
       if (myRsvp === status) {
         await apiFetch(`/events/${id}/rsvp`, { method: 'DELETE' });
         setMyRsvp(null);
+        setMyPlusOnes([]);
       } else {
         await apiFetch(`/events/${id}/rsvp`, {
           method: 'POST',
           body: JSON.stringify({ status, declineReason: reason }),
         });
         setMyRsvp(status);
+        if (status === 'GOING') {
+          apiFetch<PlusOne[]>(`/events/${id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
+        } else {
+          setMyPlusOnes([]);
+        }
       }
       const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
       setEvent(ev);
@@ -174,6 +193,39 @@ export default function EventDetailScreen() {
     setShowNoReason(false);
     await submitRsvp('NO', noReason.trim() || undefined);
     setNoReason('');
+  };
+
+  const handleAddPlusOne = async () => {
+    if (!poName.trim()) return;
+    setPoLoading(true);
+    setPoMsg('');
+    try {
+      const isEmail = poContact.includes('@');
+      await apiFetch(`/events/${id}/rsvp/plus-ones`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: poName.trim(),
+          ...(isEmail ? { email: poContact.trim() } : poContact.trim() ? { phone: poContact.trim() } : {}),
+          ...(poRelationship.trim() ? { relationship: poRelationship.trim() } : {}),
+          ...(poNotes.trim() ? { notes: poNotes.trim() } : {}),
+        }),
+      });
+      setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes('');
+      setShowPlusOneForm(false);
+      const data = await apiFetch<PlusOne[]>(`/events/${id}/rsvp/plus-ones`);
+      setMyPlusOnes(data);
+      setGuests(null);
+    } catch (err: any) {
+      setPoMsg(err.message ?? (zh ? '新增失敗' : 'Failed to add guest'));
+    } finally { setPoLoading(false); }
+  };
+
+  const handleRemovePlusOne = async (plusOneId: string) => {
+    try {
+      await apiFetch(`/events/${id}/rsvp/plus-ones/${plusOneId}`, { method: 'DELETE' });
+      setMyPlusOnes((prev) => prev.filter((p) => p.id !== plusOneId));
+      setGuests(null);
+    } catch {}
   };
 
   const handleCreateShareLink = async () => {
@@ -224,13 +276,36 @@ export default function EventDetailScreen() {
   };
 
   const handleExportCsv = async () => {
-    if (!guests) return;
     const esc = (s: string) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    let data = guests;
+    if (!data) {
+      setGuestsLoading(true);
+      try {
+        const [rsvpData, inviteesData] = await Promise.all([
+          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
+          apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
+        ]);
+        data = {
+          GOING: rsvpData.GOING,
+          NO: rsvpData.NO,
+          INVITED: rsvpData.INVITED
+            ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
+            : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+          PENDING: rsvpData.PENDING,
+        };
+        setGuests(data);
+      } catch {
+        Alert.alert(zh ? '無法載入出席名單' : 'Failed to load guest list');
+        return;
+      } finally {
+        setGuestsLoading(false);
+      }
+    }
     const rows = ['Name,Email,Phone,Status'];
-    for (const g of (guests.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Invited')].join(','));
-    for (const g of (guests.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
-    for (const g of (guests.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
-    for (const g of (guests.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
+    for (const g of (data.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Invited')].join(','));
+    for (const g of (data.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
+    for (const g of (data.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
+    for (const g of (data.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
@@ -392,9 +467,6 @@ export default function EventDetailScreen() {
               <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
                 <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.exportBtn} onPress={handleExportCsv}>
-                <Text style={styles.exportBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -471,6 +543,79 @@ export default function EventDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          {/* Plus-one panel — shown when user is Going */}
+          {myRsvp === 'GOING' && user && !isPast && (
+            <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, marginTop: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{zh ? '帶朋友來？' : 'Bringing anyone?'}</Text>
+                <TouchableOpacity onPress={() => { setShowPlusOneForm((v) => !v); setPoMsg(''); }}>
+                  <Text style={{ fontSize: 13, color: INDIGO }}>{showPlusOneForm ? (zh ? '取消' : 'Cancel') : (zh ? '+ 新增' : '+ Add')}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {myPlusOnes.map((po) => (
+                <View key={po.id} style={{ backgroundColor: colors.card, borderRadius: 8, padding: 10, marginBottom: 6, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
+                    {po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
+                    {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
+                    {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
+                  </View>
+                  <TouchableOpacity onPress={() => handleRemovePlusOne(po.id)} style={{ marginLeft: 8 }}>
+                    <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+
+              {showPlusOneForm && (
+                <View style={{ gap: 8, marginTop: 4 }}>
+                  <TextInput
+                    style={styles.editInput}
+                    placeholder={zh ? '姓名 *' : 'Name *'}
+                    placeholderTextColor={colors.placeholder}
+                    value={poName}
+                    onChangeText={setPoName}
+                    maxLength={100}
+                  />
+                  <TextInput
+                    style={styles.editInput}
+                    placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'}
+                    placeholderTextColor={colors.placeholder}
+                    value={poContact}
+                    onChangeText={setPoContact}
+                    maxLength={100}
+                  />
+                  <TextInput
+                    style={styles.editInput}
+                    placeholder={zh ? '關係（例：伴侶、朋友）（選填）' : 'Relationship (e.g. partner, friend) (optional)'}
+                    placeholderTextColor={colors.placeholder}
+                    value={poRelationship}
+                    onChangeText={setPoRelationship}
+                    maxLength={100}
+                  />
+                  <TextInput
+                    style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]}
+                    placeholder={zh ? '備註（選填）' : 'Notes (optional)'}
+                    placeholderTextColor={colors.placeholder}
+                    value={poNotes}
+                    onChangeText={setPoNotes}
+                    multiline
+                    numberOfLines={3}
+                    maxLength={500}
+                  />
+                  {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
+                  <TouchableOpacity
+                    style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]}
+                    onPress={handleAddPlusOne}
+                    disabled={!poName.trim() || poLoading}
+                  >
+                    <Text style={styles.modalPrimaryBtnText}>{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增同行者' : 'Add guest')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
 
           {/* Share Text form */}
           {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showBlast && (
@@ -767,8 +912,15 @@ export default function EventDetailScreen() {
                   return rows.length === 0
                     ? <Text style={styles.empty}>{emptyMsg}</Text>
                     : rows.map((g, i) => (
-                      <View key={i} style={styles.guestRow}>
-                        <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
+                      <View key={i} style={[styles.guestRow, (g as any).plusOneOf ? { paddingLeft: 12, opacity: 0.85 } : {}]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
+                          {(g as any).plusOneOf && (
+                            <Text style={{ fontSize: 11, color: colors.subtext, backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                              {zh ? `同 ${(g as any).plusOneOf} 來` : `+1 of ${(g as any).plusOneOf}`}
+                            </Text>
+                          )}
+                        </View>
                         {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                         {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                       </View>

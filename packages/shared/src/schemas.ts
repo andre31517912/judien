@@ -113,6 +113,17 @@ export const SetRemindersSchema = z.object({
 });
 export type SetRemindersDto = z.infer<typeof SetRemindersSchema>;
 
+// ─── Plus One ────────────────────────────────────────────────────────────────
+
+export const PlusOneSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email().optional(),
+  phone: z.string().max(30).optional(),
+  relationship: z.string().max(100).optional(),
+  notes: z.string().max(500).optional(),
+});
+export type PlusOneDto = z.infer<typeof PlusOneSchema>;
+
 // ─── Blast ────────────────────────────────────────────────────────────────────
 
 export const BlastSchema = z.object({

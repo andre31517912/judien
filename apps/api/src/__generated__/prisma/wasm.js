@@ -215,6 +215,18 @@ exports.Prisma.RSVPScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.RSVPPlusOneScalarFieldEnum = {
+  id: 'id',
+  rsvpId: 'rsvpId',
+  eventId: 'eventId',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  relationship: 'relationship',
+  notes: 'notes',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.CommentScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
@@ -465,6 +477,7 @@ exports.Prisma.ModelName = {
   EventSeries: 'EventSeries',
   EventInvite: 'EventInvite',
   RSVP: 'RSVP',
+  RSVPPlusOne: 'RSVPPlusOne',
   Comment: 'Comment',
   GroupMessage: 'GroupMessage',
   ReminderRule: 'ReminderRule',

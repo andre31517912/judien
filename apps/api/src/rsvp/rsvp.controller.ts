@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RsvpService } from './rsvp.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { RsvpSchema, SharedEventRsvpSchema, type RsvpDto, type SharedEventRsvpDto } from '@judien/shared';
+import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { Request } from 'express';
 
@@ -80,5 +80,38 @@ export class RsvpController {
     @CurrentUser() user: User,
   ) {
     return this.rsvpService.remove(eventId, user.id);
+  }
+
+  // GET /api/events/:eventId/rsvp/plus-ones — current user's plus-ones for this event
+  @UseGuards(AuthGuard('jwt'))
+  @Get('events/:eventId/rsvp/plus-ones')
+  getMyPlusOnes(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.getMyPlusOnes(eventId, user.id);
+  }
+
+  // POST /api/events/:eventId/rsvp/plus-ones — add a plus-one guest
+  @UseGuards(AuthGuard('jwt'))
+  @Post('events/:eventId/rsvp/plus-ones')
+  addPlusOne(
+    @Param('eventId') eventId: string,
+    @Body(new ZodValidationPipe(PlusOneSchema)) dto: PlusOneDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.addPlusOne(eventId, user.id, dto);
+  }
+
+  // DELETE /api/events/:eventId/rsvp/plus-ones/:id — remove a plus-one guest
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('events/:eventId/rsvp/plus-ones/:id')
+  @HttpCode(HttpStatus.OK)
+  removePlusOne(
+    @Param('eventId') eventId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.removePlusOne(eventId, user.id, id);
   }
 }

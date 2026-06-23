@@ -31,7 +31,15 @@ export class EventsService {
         where: { userId, status: 'ACCEPTED' },
         select: { groupId: true },
       });
-      const groupIds = acceptedMemberships.map((m) => m.groupId);
+      const directGroupIds = acceptedMemberships.map((m) => m.groupId);
+      // Also include events from ancestor groups (parent group events visible to child members)
+      const ancestorIds = new Set<string>();
+      for (const gid of directGroupIds) {
+        for (const aid of await this.groupsService.getAncestorGroupIds(gid)) {
+          ancestorIds.add(aid);
+        }
+      }
+      const groupIds = [...new Set([...directGroupIds, ...ancestorIds])];
       visibilityWhere = {
         OR: [
           { groupId: null },
@@ -237,21 +245,23 @@ export class EventsService {
       },
     });
 
-    // Notify all accepted group members (except the creator) about the new event
+    // Notify all accepted group members + descendant group members (except the creator)
     if (dto.groupId) {
-      const members = await this.prisma.groupMembership.findMany({
+      const directMembers = await this.prisma.groupMembership.findMany({
         where: { groupId: dto.groupId, status: 'ACCEPTED', userId: { not: creator.id } },
         select: { userId: true },
       });
-      if (members.length) {
+      const directIds = new Set(directMembers.map((m) => m.userId));
+      const descendantIds = await this.groupsService.getAllDescendantMemberUserIds(dto.groupId, creator.id);
+      const allUserIds = [...directIds, ...descendantIds.filter((id) => !directIds.has(id))];
+      if (allUserIds.length) {
+        const dateStr = new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' });
         await this.notifications.createMany(
-          members.map(({ userId }) => ({
+          allUserIds.map((userId) => ({
             userId,
             type: 'NEW_EVENT' as const,
             title: `New event: ${event.title}`,
-            body: event.location
-              ? `${new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' })} · ${event.location}`
-              : new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
+            body: event.location ? `${dateStr} · ${event.location}` : dateStr,
             actionUrl: `/events/${event.id}`,
             groupId: dto.groupId,
             eventId: event.id,
@@ -293,13 +303,16 @@ export class EventsService {
       });
 
       if (event.groupId) {
-        const members = await this.prisma.groupMembership.findMany({
+        const directMembers = await this.prisma.groupMembership.findMany({
           where: { groupId: event.groupId, status: 'ACCEPTED', userId: { not: actor.id } },
           select: { userId: true },
         });
-        if (members.length) {
+        const directIds = new Set(directMembers.map((m) => m.userId));
+        const descendantIds = await this.groupsService.getAllDescendantMemberUserIds(event.groupId, actor.id);
+        const allUserIds = [...directIds, ...descendantIds.filter((id) => !directIds.has(id))];
+        if (allUserIds.length) {
           await this.notifications.createMany(
-            members.map(({ userId }) => notif(userId, { groupId: event.groupId! })),
+            allUserIds.map((userId) => notif(userId, { groupId: event.groupId! })),
           );
         }
       } else {
