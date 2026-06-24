@@ -5,6 +5,7 @@ import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import ImageCropModal from '@/components/ImageCropModal';
 
 export default function ProfilePage({ params }: { params: { locale: string } }) {
   const zh = params.locale === 'zh';
@@ -14,6 +15,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -35,9 +37,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhotoUpload = async (file: File) => {
     setPhotoUploading(true);
     try {
       const { url } = await apiUpload(file);
@@ -48,7 +48,6 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
       alert((err as Error)?.message ?? 'Photo upload failed.');
     } finally {
       setPhotoUploading(false);
-      e.target.value = '';
     }
   };
 
@@ -70,6 +69,16 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
 
   return (
     <div className="max-w-lg mx-auto py-6">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={1}
+          shape="round"
+          zh={zh}
+          onConfirm={(file) => { setCropSrc(null); void handlePhotoUpload(file); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       {/* Profile card */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
         {/* Top band */}
@@ -143,7 +152,7 @@ export default function ProfilePage({ params }: { params: { locale: string } }) 
                   </div>
                 </div>
               )}
-              <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
+              <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setCropSrc(URL.createObjectURL(f)); e.target.value = ''; } }} disabled={photoUploading} />
             </div>
           </div>
 
