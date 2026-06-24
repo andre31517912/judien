@@ -26,7 +26,7 @@ import type { EventWithCounts, Comment, EventInvitee, EventSeries } from '@judie
 import { Ionicons } from '@expo/vector-icons';
 
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };
-type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
+type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
 type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; notes?: string | null };
@@ -140,6 +140,7 @@ export default function EventDetailScreen() {
   const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
   const [rgName, setRgName] = useState('');
   const [rgContact, setRgContact] = useState('');
+  const [rgGuestOf, setRgGuestOf] = useState('');
   const [rgRelationship, setRgRelationship] = useState('');
   const [rgNotes, setRgNotes] = useState('');
   const [rgLoading, setRgLoading] = useState(false);
@@ -256,16 +257,18 @@ export default function EventDetailScreen() {
     setRgLoading(true); setRgMsg('');
     try {
       const isEmail = rgContact.includes('@');
+      const relParts = [rgGuestOf.trim() ? (zh ? `同 ${rgGuestOf.trim()} 來` : `Guest of ${rgGuestOf.trim()}`) : '', rgRelationship.trim()].filter(Boolean);
+      const relationship = relParts.join(' · ') || undefined;
       await apiFetch(`/events/${id}/roster-guests`, {
         method: 'POST',
         body: JSON.stringify({
           name: rgName.trim(),
           ...(isEmail ? { email: rgContact.trim() } : rgContact.trim() ? { phone: rgContact.trim() } : {}),
-          ...(rgRelationship.trim() ? { relationship: rgRelationship.trim() } : {}),
+          ...(relationship ? { relationship } : {}),
           ...(rgNotes.trim() ? { notes: rgNotes.trim() } : {}),
         }),
       });
-      setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes('');
+      setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes('');
       setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
       setTimeout(() => setRgMsg(''), 4000);
       loadRosterGuests();
@@ -746,7 +749,7 @@ export default function EventDetailScreen() {
                   <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'search' ? colors.text : colors.subtext }}>{zh ? '搜尋用戶' : 'Search Users'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
+                  onPress={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setRgGuestOf(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
                   style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'roster' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
                 >
                   <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'roster' ? colors.text : colors.subtext }}>{zh ? '新增嘉賓' : 'Add Guests'}</Text>
@@ -809,8 +812,9 @@ export default function EventDetailScreen() {
                     </View>
                   ))}
                   <TextInput style={styles.editInput} placeholder={zh ? '姓名 *' : 'Name *'} placeholderTextColor={colors.placeholder} value={rgName} onChangeText={setRgName} maxLength={100} />
-                  <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email' : 'Phone / Email'} placeholderTextColor={colors.placeholder} value={rgContact} onChangeText={setRgContact} maxLength={100} />
-                  <TextInput style={styles.editInput} placeholder={zh ? '關係（例：朋友、同事）' : 'Relationship (e.g. friend, colleague)'} placeholderTextColor={colors.placeholder} value={rgRelationship} onChangeText={setRgRelationship} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={rgContact} onChangeText={setRgContact} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '同誰來（例：王大明的太太）' : "Attending with / guest of (e.g. John's wife)"} placeholderTextColor={colors.placeholder} value={rgGuestOf} onChangeText={setRgGuestOf} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '關係備註（例：太太、孩子）' : 'Relationship note (e.g. spouse, child)'} placeholderTextColor={colors.placeholder} value={rgRelationship} onChangeText={setRgRelationship} maxLength={100} />
                   <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={rgNotes} onChangeText={setRgNotes} multiline numberOfLines={3} maxLength={500} />
                   {!!rgMsg && <Text style={{ fontSize: 12, color: rgMsg.includes('失敗') || rgMsg.includes('Failed') ? '#EF4444' : '#16A34A' }}>{rgMsg}</Text>}
                   <TouchableOpacity
@@ -1025,6 +1029,7 @@ export default function EventDetailScreen() {
                       : rows.map((g, i) => (
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
+                          {g.relationship ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.relationship}</Text> : null}
                           {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                           {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>

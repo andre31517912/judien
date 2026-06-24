@@ -377,9 +377,9 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
             <input type="checkbox" id="muteInApp" checked={muteInApp} onChange={(e) => setMuteInApp(e.target.checked)} className="w-4 h-4" />
             <label htmlFor="muteInApp" className="text-sm dark:text-gray-300">{zh ? '靜音所有站內通知（通知鈴鐺）' : 'Mute all in-app notifications (bell)'}</label>
           </div>
-          <div className="flex items-center gap-3">
-            <input type="checkbox" id="muteEmail" checked={muteEmail} onChange={(e) => setMuteEmail(e.target.checked)} className="w-4 h-4" />
-            <label htmlFor="muteEmail" className="text-sm dark:text-gray-300">{zh ? '靜音電子郵件通知' : 'Mute email notifications'}</label>
+          <div className="flex items-center gap-3 opacity-40 pointer-events-none select-none" title={zh ? '即將推出' : 'Coming soon'}>
+            <input type="checkbox" id="muteEmail" checked={muteEmail} readOnly className="w-4 h-4 cursor-not-allowed" />
+            <label htmlFor="muteEmail" className="text-sm dark:text-gray-300 cursor-not-allowed">{zh ? '靜音電子郵件通知（即將推出）' : 'Mute email notifications (coming soon)'}</label>
           </div>
         </div>
 

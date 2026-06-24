@@ -127,7 +127,12 @@ export class EventsService {
 
     if (event.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
-      if (!canAccess) throw new ForbiddenException('You do not have access to this event.');
+      if (!canAccess) {
+        const wasInvited = userId ? await this.prisma.notification.findFirst({
+          where: { userId, eventId: id, type: 'EVENT_INVITE' },
+        }) : null;
+        if (!wasInvited) throw new ForbiddenException('You do not have access to this event.');
+      }
     }
 
     const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);

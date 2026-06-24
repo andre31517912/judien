@@ -490,7 +490,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         {/* Banner */}
         {group.photoUrl ? (
           <div className="relative w-full h-32 sm:h-44">
-            <Image src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} fill className="object-cover" />
+            <img src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} className="absolute inset-0 w-full h-full object-cover" />
           </div>
         ) : (
           <div className="w-full h-32 sm:h-44 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">

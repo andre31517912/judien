@@ -801,10 +801,10 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           href={`/${params.locale}/groups/${params.groupId}`}
           className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          {zh ? '返回群組首頁' : 'Return to Group Home'}
+          <span className="hidden sm:inline">{zh ? '返回群組首頁' : 'Return to Group'}</span>
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">

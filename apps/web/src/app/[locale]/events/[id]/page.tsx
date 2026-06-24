@@ -46,7 +46,7 @@ export default function EventDetailPage() {
 
   // guest list
   type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };
-  type InvitedEntry = { name: string; email?: string | null; phone?: string | null };
+  type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
   type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; notes?: string | null };
 
   // plus-ones state
@@ -185,6 +185,7 @@ export default function EventDetailPage() {
   const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
   const [rgName, setRgName] = useState('');
   const [rgContact, setRgContact] = useState('');
+  const [rgGuestOf, setRgGuestOf] = useState('');
   const [rgRelationship, setRgRelationship] = useState('');
   const [rgNotes, setRgNotes] = useState('');
   const [rgLoading, setRgLoading] = useState(false);
@@ -202,16 +203,18 @@ export default function EventDetailPage() {
     setRgLoading(true); setRgMsg('');
     try {
       const isEmail = rgContact.includes('@');
+      const relParts = [rgGuestOf.trim() ? (zh ? `同 ${rgGuestOf.trim()} 來` : `Guest of ${rgGuestOf.trim()}`) : '', rgRelationship.trim()].filter(Boolean);
+      const relationship = relParts.join(' · ') || undefined;
       await apiFetch(`/events/${params.id}/roster-guests`, {
         method: 'POST',
         body: JSON.stringify({
           name: rgName.trim(),
           ...(isEmail ? { email: rgContact.trim() } : rgContact.trim() ? { phone: rgContact.trim() } : {}),
-          ...(rgRelationship.trim() ? { relationship: rgRelationship.trim() } : {}),
+          ...(relationship ? { relationship } : {}),
           ...(rgNotes.trim() ? { notes: rgNotes.trim() } : {}),
         }),
       });
-      setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes('');
+      setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes('');
       setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
       setTimeout(() => setRgMsg(''), 4000);
       loadRosterGuests();
@@ -335,7 +338,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason || showPlusOneModal || showDeleteModal || showGuests;
+  const anyModalOpen = showInviteModal || showNoReason || showPlusOneModal || showDeleteModal;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -849,6 +852,7 @@ export default function EventDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
+                        {g.relationship && <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">{g.relationship}</p>}
                         {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
                         {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                       </div>
@@ -894,7 +898,7 @@ export default function EventDetailPage() {
           {/* Tabs */}
           <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
-              onClick={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
+              onClick={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
               className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'search' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               {zh ? '搜尋用戶' : 'Search Users'}
@@ -970,8 +974,9 @@ export default function EventDetailPage() {
               )}
               {/* Add form */}
               <input value={rgName} onChange={(e) => setRgName(e.target.value)} placeholder={zh ? '姓名 *' : 'Name *'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <input value={rgContact} onChange={(e) => setRgContact(e.target.value)} placeholder={zh ? '電話 / Email' : 'Phone / Email'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <input value={rgRelationship} onChange={(e) => setRgRelationship(e.target.value)} placeholder={zh ? '關係（例：朋友、同事）' : 'Relationship (e.g. friend, colleague)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+              <input value={rgContact} onChange={(e) => setRgContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+              <input value={rgGuestOf} onChange={(e) => setRgGuestOf(e.target.value)} placeholder={zh ? '同誰來（例：王大明的太太）' : 'Attending with / guest of (e.g. John\'s wife)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+              <input value={rgRelationship} onChange={(e) => setRgRelationship(e.target.value)} placeholder={zh ? '關係備註（例：太太、孩子）' : 'Relationship note (e.g. spouse, child)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
               <textarea value={rgNotes} onChange={(e) => setRgNotes(e.target.value)} placeholder={zh ? '備註' : 'Notes'} rows={2} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" maxLength={500} />
               {rgMsg && <p className={`text-sm ${rgMsg.includes('Failed') || rgMsg.includes('失敗') ? 'text-red-500' : 'text-green-600'}`}>{rgMsg}</p>}
               <div className="flex justify-end">

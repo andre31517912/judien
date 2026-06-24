@@ -151,9 +151,9 @@ export default function ProfileSettingsScreen() {
           <Text style={styles.muteLabel}>{zh ? '靜音所有站內通知' : 'Mute in-app notifications'}</Text>
           <Switch value={muteInApp} onValueChange={setMuteInApp} trackColor={{ true: INDIGO }} />
         </View>
-        <View style={[styles.muteRow, { marginTop: 10 }]}>
-          <Text style={styles.muteLabel}>{t('profile.muteEmail')}</Text>
-          <Switch value={muteEmail} onValueChange={setMuteEmail} trackColor={{ true: INDIGO }} />
+        <View style={[styles.muteRow, { marginTop: 10, opacity: 0.4 }]} pointerEvents="none">
+          <Text style={styles.muteLabel}>{zh ? '靜音電子郵件通知（即將推出）' : 'Mute email notifications (coming soon)'}</Text>
+          <Switch value={false} disabled trackColor={{ true: INDIGO }} />
         </View>
       </View>
 

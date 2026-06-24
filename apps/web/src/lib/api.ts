@@ -53,6 +53,7 @@ export function clearTokens() {
  */
 export function resolveImageUrl(url: string | null | undefined): string | null {
   if (!url) return null;
+  if (url.startsWith('data:')) return url;
   const path = url.startsWith('http') ? new URL(url).pathname : url;
   return `${API_ORIGIN}${path}`;
 }

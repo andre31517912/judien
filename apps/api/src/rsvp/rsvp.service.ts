@@ -22,7 +22,10 @@ export class RsvpService {
     if (event.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
       if (!canAccess) {
-        throw new ForbiddenException('You do not have access to RSVP for this event.');
+        const wasInvited = await this.prisma.notification.findFirst({
+          where: { userId, eventId, type: 'EVENT_INVITE' },
+        });
+        if (!wasInvited) throw new ForbiddenException('You do not have access to RSVP for this event.');
       }
     }
 
@@ -40,7 +43,10 @@ export class RsvpService {
     if (event.groupId) {
       const canAccess = await this.groupsService.canAccessGroup(event.groupId, userId);
       if (!canAccess) {
-        throw new ForbiddenException('You do not have access to this event.');
+        const wasInvited = await this.prisma.notification.findFirst({
+          where: { userId, eventId, type: 'EVENT_INVITE' },
+        });
+        if (!wasInvited) throw new ForbiddenException('You do not have access to this event.');
       }
     }
 
@@ -161,6 +167,7 @@ export class RsvpService {
       name: g.name,
       email: isCallerAdmin ? (g.email ?? null) : null,
       ...(isCallerAdmin && g.phone ? { phone: g.phone } : {}),
+      ...(g.relationship ? { relationship: g.relationship } : {}),
     }));
 
     // INVITED bucket: for group events, all group members are considered invited
