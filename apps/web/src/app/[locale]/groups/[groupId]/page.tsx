@@ -10,6 +10,7 @@ import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import type { EventWithCounts, News, PaginatedResponse } from '@judien/shared';
 import type { HierarchyData } from '@/components/GroupHierarchyChart';
 import DateTimeInput from '@/components/DateTimeInput';
+import ImageCropModal from '@/components/ImageCropModal';
 
 const GroupHierarchyChart = dynamic(() => import('@/components/GroupHierarchyChart'), { ssr: false });
 
@@ -88,6 +89,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
+  const [cropModal, setCropModal] = useState<{ src: string; aspect: number; onConfirm: (f: File) => void } | null>(null);
 
   const [memberSearch, setMemberSearch] = useState('');
   const [renamingMemberId, setRenamingMemberId] = useState<string | null>(null);
@@ -455,6 +457,15 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
 
   return (
     <>
+    {cropModal && (
+      <ImageCropModal
+        src={cropModal.src}
+        aspect={cropModal.aspect}
+        zh={zh}
+        onConfirm={cropModal.onConfirm}
+        onCancel={() => setCropModal(null)}
+      />
+    )}
     {showChart && hierarchyData && (
       <GroupHierarchyChart
         data={hierarchyData}
@@ -612,7 +623,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     </button>
                   )}
                   <input ref={newsCoverFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
-                    const f = e.target.files?.[0]; if (!f) return; setNewsCoverFile(f); setNewsCoverPreview(URL.createObjectURL(f));
+                    const f = e.target.files?.[0]; if (!f) return; e.target.value = '';
+                    setCropModal({ src: URL.createObjectURL(f), aspect: 4 / 3, onConfirm: (file) => { setNewsCoverFile(file); setNewsCoverPreview(URL.createObjectURL(file)); setCropModal(null); } });
                   }} />
                 </div>
                 <div className="flex justify-end">
@@ -772,9 +784,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   )}
                   <input ref={coverFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (!f) return;
-                    setCoverFile(f);
-                    setCoverPreview(URL.createObjectURL(f));
+                    if (!f) return; e.target.value = '';
+                    setCropModal({ src: URL.createObjectURL(f), aspect: 16 / 9, onConfirm: (file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropModal(null); } });
                   }} />
                 </div>
                 <div className="flex justify-end">
@@ -897,9 +908,8 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   )}
                   <input ref={coverFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                     const f = e.target.files?.[0];
-                    if (!f) return;
-                    setCoverFile(f);
-                    setCoverPreview(URL.createObjectURL(f));
+                    if (!f) return; e.target.value = '';
+                    setCropModal({ src: URL.createObjectURL(f), aspect: 16 / 9, onConfirm: (file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropModal(null); } });
                   }} />
                 </div>
                 <div className="flex justify-end">

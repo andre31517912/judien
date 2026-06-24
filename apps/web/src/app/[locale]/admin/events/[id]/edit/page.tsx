@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
 import { useAuth } from '@/context/auth.context';
 import ConfirmModal from '@/components/ConfirmModal';
+import ImageCropModal from '@/components/ImageCropModal';
 import type { Event, ReminderRule } from '@judien/shared';
 import DateTimeInput from '@/components/DateTimeInput';
 
@@ -76,12 +77,13 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const coverFileRef = useRef<HTMLInputElement>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setCoverFile(file);
-    setCoverPreview(URL.createObjectURL(file));
+    setCropSrc(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
   useEffect(() => {
@@ -226,6 +228,15 @@ export default function EditEventPage({ params }: { params: { locale: string; id
 
   return (
     <div className="mt-6 pb-20 space-y-6">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={16 / 9}
+          zh={zh}
+          onConfirm={(file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropSrc(null); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       {showDeleteModal && (
         <ConfirmModal
           title={zh ? '刪除活動' : 'Delete Event'}

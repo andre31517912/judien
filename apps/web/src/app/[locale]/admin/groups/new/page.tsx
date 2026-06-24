@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload, resolveImageUrl } from '@/lib/api';
+import ImageCropModal from '@/components/ImageCropModal';
 
 function slugifyPid(input: string) {
   return input
@@ -29,12 +30,13 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    setCropSrc(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
   const handlePhotoAreaClick = () => {
@@ -98,6 +100,15 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={3 / 1}
+          zh={zh}
+          onConfirm={(file) => { setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); setCropSrc(null); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{zh ? '建立群組' : 'Create Group'}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">

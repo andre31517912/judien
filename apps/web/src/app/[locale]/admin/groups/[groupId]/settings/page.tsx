@@ -6,6 +6,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
+import ImageCropModal from '@/components/ImageCropModal';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -86,6 +87,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const importFileRef = useRef<HTMLInputElement>(null);
   const groupPhotoFileRef = useRef<HTMLInputElement>(null);
   const [importLoading, setImportLoading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -176,9 +178,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   const [donationSaving, setDonationSaving] = useState(false);
   const [showDonationModal, setShowDonationModal] = useState(false);
 
-  const handleGroupPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleGroupPhotoUpload = async (file: File) => {
     setGroupPhotoUploading(true);
     setError('');
     try {
@@ -188,7 +188,6 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       setError((err as Error).message ?? 'Photo upload failed.');
     } finally {
       setGroupPhotoUploading(false);
-      if (groupPhotoFileRef.current) groupPhotoFileRef.current.value = '';
     }
   };
 
@@ -795,28 +794,39 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
   }
   return (
     <div className="space-y-6">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={3 / 1}
+          zh={zh}
+          onConfirm={(file) => { setCropSrc(null); void handleGroupPhotoUpload(file); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       {/* Compact header */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-1">
         <Link
           href={`/${params.locale}/groups/${params.groupId}`}
-          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition shrink-0"
+          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition w-fit"
         >
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          <span className="hidden sm:inline">{zh ? '返回群組首頁' : 'Return to Group'}</span>
+          {zh ? '返回群組首頁' : 'Return to Group'}
         </Link>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
-            {groupItem.group.name}
-          </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">{zh ? '群組設定' : 'Group Settings'}</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+              {groupItem.group.name}
+            </h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{zh ? '群組設定' : 'Group Settings'}</p>
+          </div>
+          {joinRequests.length > 0 && (
+            <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
+              {joinRequests.length} {zh ? '待審核' : 'pending'}
+            </span>
+          )}
         </div>
-        {joinRequests.length > 0 && (
-          <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-red-100 dark:bg-red-900/30 px-2.5 py-1 text-xs font-semibold text-red-700 dark:text-red-400">
-            {joinRequests.length} {zh ? '待審核' : 'pending'}
-          </span>
-        )}
       </div>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
@@ -852,7 +862,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                   </div>
                 )}
               </button>
-              <input ref={groupPhotoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleGroupPhotoUpload(e)} />
+              <input ref={groupPhotoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setCropSrc(URL.createObjectURL(f)); e.target.value = ''; } }} />
             </div>
             {/* Group photo modal */}
             {showGroupPhotoModal && editPhotoUrl && (

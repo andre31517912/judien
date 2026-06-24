@@ -7,6 +7,7 @@ import { apiFetch, apiUpload } from '@/lib/api';
 import { useAuth } from '@/context/auth.context';
 import type { Event } from '@judien/shared';
 import DateTimeInput from '@/components/DateTimeInput';
+import ImageCropModal from '@/components/ImageCropModal';
 
 const LocationPicker = dynamic(() => import('@/components/LocationPickerInner'), { ssr: false });
 
@@ -18,6 +19,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
   const fileRef = useRef<HTMLInputElement>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -35,8 +37,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setCoverFile(file);
-    setCoverPreview(URL.createObjectURL(file));
+    setCropSrc(URL.createObjectURL(file));
+    e.target.value = '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +77,14 @@ export default function NewEventPage({ params }: { params: { locale: string } })
 
   return (
     <div className="max-w-xl mx-auto mt-8 px-4">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={16 / 9}
+          onConfirm={(file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropSrc(null); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       <h1 className="text-2xl font-bold mb-6 dark:text-white">Create Event</h1>
       {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

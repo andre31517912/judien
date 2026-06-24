@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/auth.context';
 import { apiFetch, apiUpload } from '@/lib/api';
+import ImageCropModal from '@/components/ImageCropModal';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
@@ -35,6 +36,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   type Invite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string; usedBy: { id: string; displayName: string | null; email: string } | null };
@@ -78,9 +80,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handlePhotoUpload = async (file: File) => {
     setPhotoUploading(true);
     try {
       const { url } = await apiUpload(file);
@@ -91,7 +91,6 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
       setMsg({ text: err.message ?? 'Photo upload failed.', ok: false });
     } finally {
       setPhotoUploading(false);
-      e.target.value = '';
     }
   };
 
@@ -177,6 +176,16 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
 
   return (
     <div className="py-6 px-4">
+      {cropSrc && (
+        <ImageCropModal
+          src={cropSrc}
+          aspect={1}
+          shape="round"
+          zh={zh}
+          onConfirm={(file) => { setCropSrc(null); void handlePhotoUpload(file); }}
+          onCancel={() => setCropSrc(null)}
+        />
+      )}
       {/* Compact page header */}
       <div className="flex items-center gap-3 mb-6">
         <Link
@@ -276,7 +285,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
               </div>
             </div>
           )}
-          <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={handlePhotoUpload} disabled={photoUploading} />
+          <input ref={photoInputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setCropSrc(URL.createObjectURL(f)); e.target.value = ''; } }} disabled={photoUploading} />
         </div>
         <div className="flex flex-col gap-1">
           <p className="text-sm font-semibold text-gray-800 dark:text-white">{(user as any).displayName || (zh ? '未設定姓名' : 'No name set')}</p>
