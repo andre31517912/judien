@@ -626,7 +626,7 @@ export default function EventDetailScreen() {
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
               <TouchableOpacity
                 style={[styles.rsvpBtn, showDirectInvite && styles.rsvpBtnActive]}
-                onPress={() => { setShowDirectInvite((v) => !v); setInviteTab('search'); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); }}
+                onPress={() => { setShowDirectInvite((v) => !v); setInviteTab('search'); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes(''); }}
               >
                 <Text style={[styles.rsvpBtnText, showDirectInvite && styles.rsvpBtnTextActive]}>
                   {zh ? '👥 邀請賓客' : '👥 Invite Guest'}
@@ -743,7 +743,7 @@ export default function EventDetailScreen() {
               {/* Tabs */}
               <View style={{ flexDirection: 'row', backgroundColor: isDark ? '#374151' : '#F3F4F6', borderRadius: 8, padding: 3, marginBottom: 12 }}>
                 <TouchableOpacity
-                  onPress={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
+                  onPress={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
                   style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: 'center', backgroundColor: inviteTab === 'search' ? (isDark ? '#1F2937' : '#FFFFFF') : 'transparent' }}
                 >
                   <Text style={{ fontSize: 13, fontWeight: '600', color: inviteTab === 'search' ? colors.text : colors.subtext }}>{zh ? '搜尋用戶' : 'Search Users'}</Text>
