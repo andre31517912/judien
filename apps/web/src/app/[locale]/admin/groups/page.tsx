@@ -63,7 +63,7 @@ function SortableGroupRow({ item, locale, zh }: { item: GroupListItem; locale: s
         )}
       </div>
       <Link
-        href={`/${locale}/admin/groups/${group.id}`}
+        href={`/${locale}/groups/${group.id}`}
         className="flex-1 flex items-center px-4 py-4 transition hover:bg-gray-50 dark:hover:bg-gray-800/50"
       >
         {/* Text */}

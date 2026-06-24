@@ -22,7 +22,7 @@ import { apiFetch, resolveImageUrl } from '../../../lib/api';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
 import { useTranslation } from 'react-i18next';
-import type { EventWithCounts, Comment, EventInvitee } from '@judien/shared';
+import type { EventWithCounts, Comment, EventInvitee, EventSeries } from '@judien/shared';
 import { Ionicons } from '@expo/vector-icons';
 
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };

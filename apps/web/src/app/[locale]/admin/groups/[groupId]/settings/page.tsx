@@ -966,7 +966,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
               {/* Current parent status */}
               {relationships?.parentGroup ? (
                 <div className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3">
-                  <Link href={`/${params.locale}/admin/groups/${relationships.parentGroup.id}`} className="flex-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
+                  <Link href={`/${params.locale}/groups/${relationships.parentGroup.id}`} className="flex-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline">
                     {relationships.parentGroup.name}
                   </Link>
                   <button
@@ -1092,7 +1092,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 <div className="space-y-2">
                   {relationships.subgroups.map((sg) => (
                     <div key={sg.id} className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-2 text-sm">
-                      <Link href={`/${params.locale}/admin/groups/${sg.id}`} className="flex-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate">{sg.name}</Link>
+                      <Link href={`/${params.locale}/groups/${sg.id}`} className="flex-1 font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate">{sg.name}</Link>
                       <button
                         onClick={async () => {
                           if (!confirm(zh ? `確定要將「${sg.name}」從子群組中移除嗎？` : `Remove "${sg.name}" as a child group?`)) return;

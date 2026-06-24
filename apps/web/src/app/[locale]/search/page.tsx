@@ -209,7 +209,7 @@ function SearchContent({ locale }: { locale: string }) {
               {results.groups.map((g) => (
                 <Row
                   key={g.id}
-                  href={isAdmin ? `/${locale}/admin/groups/${g.id}/settings` : `/${locale}/groups/${g.id}`}
+                  href={`/${locale}/groups/${g.id}`}
                   primary={g.name}
                   secondary={`${g._count.memberships} ${zh ? '位成員' : 'members'}${g.description ? ` · ${g.description}` : ''}`}
                   isAdmin={isAdmin} deletingId={deletingId} id={g.id} zh={zh}

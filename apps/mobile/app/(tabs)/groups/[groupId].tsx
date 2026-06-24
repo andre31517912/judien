@@ -158,13 +158,23 @@ export default function GroupDetailScreen() {
         apiFetch<GroupRelationships>(`/groups/${groupId}/relationships`).catch(() => null),
       ]);
 
-      const current = myGroups.find((item) => item.group.id === groupId) ?? null;
-      setGroupItem(current);
+      let current = myGroups.find((item) => item.group.id === groupId) ?? null;
       setMyGroupIds(myGroups.map((g) => g.group.id));
       setMembers(memberList);
       setNews(groupNews);
       setEvents(groupEvents.data);
       setRelationships(relationshipData);
+
+      // Platform admins who aren't group members still get full admin view.
+      if (!current && user?.role === 'ADMIN') {
+        const groupInfo = await apiFetch<{ id: string; pid: string; name: string; description: string; photoUrl: string | null }>(`/groups/${groupId}/info`);
+        current = {
+          group: groupInfo,
+          membership: { role: 'GROUP_ADMIN', status: 'ACCEPTED', joinedAt: null },
+        };
+      }
+
+      setGroupItem(current);
 
       if (!current) {
         const myRequests = await apiFetch<{ groupId: string; status: string }[]>('/groups/my-join-requests').catch(() => [] as { groupId: string; status: string }[]);
@@ -173,7 +183,7 @@ export default function GroupDetailScreen() {
         setHasPendingJoinRequest(false);
       }
 
-      if (current?.membership.role === 'GROUP_ADMIN') {
+      if (current?.membership.role === 'GROUP_ADMIN' || user?.role === 'ADMIN') {
         const requestsRes = await apiFetch<JoinRequest[]>(`/groups/${groupId}/join-requests`).catch(() => [] as JoinRequest[]);
         setJoinRequests((requestsRes ?? []).filter((req) => req.status === 'PENDING'));
       } else {
@@ -799,13 +809,13 @@ export default function GroupDetailScreen() {
                       <Text style={styles.memberRole}>
                         {m.joinedAt ? `${zh ? '加入於' : 'Joined'} ${new Date(m.joinedAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}` : ''}
                       </Text>
-                      {isGroupAdmin && (m.email || m.phoneE164) ? (
+                      {canManageGroup && (m.email || m.phoneE164) ? (
                         <Text style={styles.memberContact}>{[m.email, m.phoneE164].filter(Boolean).join(' · ')}</Text>
                       ) : null}
                     </>
                   )}
                 </View>
-                {!isEditing && isGroupAdmin && (
+                {!isEditing && canManageGroup && (
                   <View style={styles.memberActions}>
                     <TouchableOpacity
                       style={styles.renameBtn}
