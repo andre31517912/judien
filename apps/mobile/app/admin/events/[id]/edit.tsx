@@ -102,8 +102,8 @@ export default function EditEventScreen() {
         title: ev.title,
         description: ev.description,
         location: ev.location,
-        startAt: ev.startAt ? ev.startAt.replace('Z', '').slice(0, 16) : '',
-        endAt: ev.endAt ? ev.endAt.replace('Z', '').slice(0, 16) : '',
+        startAt: ev.startAt ?? '',
+        endAt: ev.endAt ?? '',
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });

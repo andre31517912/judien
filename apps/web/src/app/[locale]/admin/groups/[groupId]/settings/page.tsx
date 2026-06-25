@@ -632,7 +632,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       const parts = line.split(',').map((p) => p.trim());
       const displayName = parts[0] ?? '';
       const email = parts[1] && parts[1].includes('@') ? parts[1] : undefined;
-      const phone = parts[2] && parts[2].startsWith('+') ? parts[2] : undefined;
+      const phone = parts[2] && parts[2].trim() ? parts[2].trim() : undefined;
       if (!displayName) {
         parseErrors.push(zh ? `第 ${idx + 1} 行：缺少姓名。` : `Line ${idx + 1}: name is required.`);
       } else if (!email && !phone) {

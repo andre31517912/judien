@@ -56,6 +56,8 @@ export const CreateEventSchema = z.object({
   startAt: z.string().datetime().optional().default(new Date().toISOString()),
   endAt: z.string().datetime().nullable().optional(),
   feeAmount: z.number().nonnegative().nullable().optional(),
+  feeCurrency: z.string().max(10).optional(),
+  timezone: z.string().max(50).optional(),
   coverImageUrl: z.string().url().nullable().optional(),
   commentsEnabled: z.boolean().default(true),
   messagingEnabled: z.boolean().default(true),

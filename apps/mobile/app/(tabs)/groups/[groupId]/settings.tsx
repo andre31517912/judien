@@ -491,7 +491,7 @@ export default function GroupSettingsScreen() {
       const parts = line.split(',').map((p) => p.trim());
       const displayName = parts[0] ?? '';
       const email = parts[1] && parts[1].includes('@') ? parts[1] : undefined;
-      const phone = parts[2] && parts[2].startsWith('+') ? parts[2] : undefined;
+      const phone = parts[2] && parts[2].trim() ? parts[2].trim() : undefined;
       if (!displayName) parseErrors.push(zh ? `第 ${idx + 1} 行：缺少姓名。` : `Line ${idx + 1}: name required.`);
       else if (!email && !phone) parseErrors.push(zh ? `第 ${idx + 1} 行（${displayName}）：必須填入電子郵件或手機至少一項。` : `Line ${idx + 1} (${displayName}): email or phone required.`);
       return { displayName, email, phone };

@@ -93,8 +93,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         title: ev.title,
         description: ev.description,
         location: ev.location,
-        startAt: (ev.startAt ?? '').replace('Z', '').slice(0, 16),
-        endAt: (ev.endAt ?? '').replace('Z', '').slice(0, 16),
+        startAt: ev.startAt ?? '',
+        endAt: ev.endAt ?? '',
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });

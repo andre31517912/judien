@@ -23,6 +23,7 @@ import type {
   UpdateGroupNicknameDto,
   UpdateGroupSettingsDto,
 } from '@judien/shared';
+import { normalizePhone } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessagingService } from '../messaging/messaging.service';
@@ -842,9 +843,11 @@ export class GroupsService {
       throw new BadRequestException('At least one of phone or email is required.');
     }
 
+    const phone = dto.phone ? (normalizePhone(dto.phone) ?? dto.phone) : null;
+
     // If a user with this phone/email already exists, just add them
     const orConditions = [
-      ...(dto.phone ? [{ phoneE164: dto.phone }] : []),
+      ...(phone ? [{ phoneE164: phone }] : []),
       ...(dto.email ? [{ email: dto.email }] : []),
     ];
     const existingUser = await this.prisma.user.findFirst({ where: { OR: orConditions } });
@@ -865,7 +868,7 @@ export class GroupsService {
       const u = await tx.user.create({
         data: {
           email: dto.email ?? null,
-          phoneE164: dto.phone ?? null,
+          phoneE164: phone,
           displayName: dto.displayName.trim() || null,
           passwordHash,
           hasPassword: true,
@@ -922,9 +925,11 @@ export class GroupsService {
         const tempPassword = dto.passwordMode === 'shared' ? dto.sharedPassword! : randomBytes(16).toString('hex');
         const passwordHash = await bcrypt.hash(tempPassword, 12);
 
+        const memberPhone = member.phone ? (normalizePhone(member.phone) ?? member.phone) : null;
+
         // Check if user already exists
         const orConditions = [
-          ...(member.phone ? [{ phoneE164: member.phone }] : []),
+          ...(memberPhone ? [{ phoneE164: memberPhone }] : []),
           ...(member.email ? [{ email: member.email }] : []),
         ];
         const existingUser = await this.prisma.user.findFirst({ where: { OR: orConditions } });
@@ -944,7 +949,7 @@ export class GroupsService {
           const u = await tx.user.create({
             data: {
               email: member.email ?? null,
-              phoneE164: member.phone ?? null,
+              phoneE164: memberPhone,
               displayName: member.displayName.trim() || null,
               passwordHash,
               hasPassword: true,
