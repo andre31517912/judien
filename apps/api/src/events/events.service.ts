@@ -260,17 +260,21 @@ export class EventsService {
       const descendantIds = await this.groupsService.getAllDescendantMemberUserIds(dto.groupId, creator.id);
       const allUserIds = [...directIds, ...descendantIds.filter((id) => !directIds.has(id))];
       if (allUserIds.length) {
-        const dateStr = new Date(event.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' });
+        const langMap = await this.buildLangMap(allUserIds);
         await this.notifications.createMany(
-          allUserIds.map((userId) => ({
-            userId,
-            type: 'NEW_EVENT' as const,
-            title: `New event: ${event.title}`,
-            body: event.location ? `${dateStr} · ${event.location}` : dateStr,
-            actionUrl: `/events/${event.id}`,
-            groupId: dto.groupId,
-            eventId: event.id,
-          })),
+          allUserIds.map((userId) => {
+            const zh = langMap.get(userId) ?? false;
+            const ds = new Date(event.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' });
+            return {
+              userId,
+              type: 'NEW_EVENT' as const,
+              title: zh ? `新活動：${event.title}` : `New event: ${event.title}`,
+              body: event.location ? `${ds} · ${event.location}` : ds,
+              actionUrl: `/events/${event.id}`,
+              groupId: dto.groupId,
+              eventId: event.id,
+            };
+          }),
         );
       }
     }
@@ -297,15 +301,6 @@ export class EventsService {
     // Notify all invited people whenever any update is saved
     if (actor) {
       const actorName = (actor as any).displayName ?? 'An organizer';
-      const notif = (userId: string, extraFields?: Record<string, unknown>) => ({
-        userId,
-        type: 'EVENT_UPDATED' as const,
-        title: `${actorName} updated "${updated.title}"`,
-        body: `Event details have been updated. Tap to see what changed.`,
-        actionUrl: `/events/${id}`,
-        eventId: id,
-        ...extraFields,
-      });
 
       if (event.groupId) {
         const directMembers = await this.prisma.groupMembership.findMany({
@@ -316,8 +311,20 @@ export class EventsService {
         const descendantIds = await this.groupsService.getAllDescendantMemberUserIds(event.groupId, actor.id);
         const allUserIds = [...directIds, ...descendantIds.filter((id) => !directIds.has(id))];
         if (allUserIds.length) {
+          const langMap = await this.buildLangMap(allUserIds);
           await this.notifications.createMany(
-            allUserIds.map((userId) => notif(userId, { groupId: event.groupId! })),
+            allUserIds.map((userId) => {
+              const zh = langMap.get(userId) ?? false;
+              return {
+                userId,
+                type: 'EVENT_UPDATED' as const,
+                title: zh ? `${actorName} 更新了「${updated.title}」` : `${actorName} updated "${updated.title}"`,
+                body: zh ? '活動詳情已更新，點擊查看變更。' : 'Event details have been updated. Tap to see what changed.',
+                actionUrl: `/events/${id}`,
+                eventId: id,
+                groupId: event.groupId!,
+              };
+            }),
           );
         }
       } else {
@@ -340,7 +347,20 @@ export class EventsService {
           }
         }
         if (recipientIds.length) {
-          await this.notifications.createMany(recipientIds.map((userId) => notif(userId)));
+          const langMap = await this.buildLangMap(recipientIds);
+          await this.notifications.createMany(
+            recipientIds.map((userId) => {
+              const zh = langMap.get(userId) ?? false;
+              return {
+                userId,
+                type: 'EVENT_UPDATED' as const,
+                title: zh ? `${actorName} 更新了「${updated.title}」` : `${actorName} updated "${updated.title}"`,
+                body: zh ? '活動詳情已更新，點擊查看變更。' : 'Event details have been updated. Tap to see what changed.',
+                actionUrl: `/events/${id}`,
+                eventId: id,
+              };
+            }),
+          );
         }
       }
     }
@@ -372,14 +392,18 @@ export class EventsService {
         .map((r) => r.userId)
         .filter((uid) => uid !== actor?.id);
       if (recipientIds.length) {
+        const langMap = await this.buildLangMap(recipientIds);
         await this.notifications.createMany(
-          recipientIds.map((userId) => ({
-            userId,
-            type: 'EVENT_CANCELLED' as const,
-            title: `Event cancelled: ${event.title}`,
-            body: `This event has been cancelled.`,
-            groupId: event.groupId!,
-          })),
+          recipientIds.map((userId) => {
+            const zh = langMap.get(userId) ?? false;
+            return {
+              userId,
+              type: 'EVENT_CANCELLED' as const,
+              title: zh ? `活動取消：${event.title}` : `Event cancelled: ${event.title}`,
+              body: zh ? '此活動已取消。' : 'This event has been cancelled.',
+              groupId: event.groupId!,
+            };
+          }),
         );
       }
     }
@@ -401,7 +425,7 @@ export class EventsService {
       where: isEmail
         ? { email: normalizedIdentifier.toLowerCase() }
         : { phoneE164: normalizedIdentifier },
-      select: { id: true, displayName: true, email: true, phoneE164: true },
+      select: { id: true, displayName: true, email: true, phoneE164: true, preferredLanguage: true },
     });
     if (!foundUser) throw new NotFoundException('No user found with that email or phone number.');
     if (foundUser.id === actor.id) throw new ForbiddenException('You cannot invite yourself.');
@@ -432,11 +456,12 @@ export class EventsService {
       }
     }
 
+    const inviteZh = foundUser.preferredLanguage === 'zh';
     await this.notifications.createMany([{
       userId: foundUser.id,
       type: 'EVENT_INVITE' as const,
-      title: `You've been invited to ${event.title}`,
-      body: 'You have been personally invited to this event. Tap to view details.',
+      title: inviteZh ? `您已受邀參加 ${event.title}` : `You've been invited to ${event.title}`,
+      body: inviteZh ? '您已被個別邀請參加此活動，點擊查看詳情。' : 'You have been personally invited to this event. Tap to view details.',
       actionUrl: `/events/${eventId}`,
       eventId,
     }]);
@@ -455,17 +480,30 @@ export class EventsService {
       throw new ForbiddenException('Only platform admins can invite members to global events.');
     }
 
-    const inputs = userIds.map((userId) => ({
-      userId,
-      type: 'EVENT_INVITE' as const,
-      title: `You've been invited to ${event.title}`,
-      body: `An admin has invited you to join this event. Tap to view details.`,
-      actionUrl: `/events/${eventId}`,
-      eventId,
-    }));
+    const langMap = await this.buildLangMap(userIds);
+    const inputs = userIds.map((userId) => {
+      const zh = langMap.get(userId) ?? false;
+      return {
+        userId,
+        type: 'EVENT_INVITE' as const,
+        title: zh ? `您已受邀參加 ${event.title}` : `You've been invited to ${event.title}`,
+        body: zh ? '管理員邀請您參加此活動，點擊查看詳情。' : 'An admin has invited you to join this event. Tap to view details.',
+        actionUrl: `/events/${eventId}`,
+        eventId,
+      };
+    });
 
     await this.notifications.createMany(inputs);
     return { invited: userIds.length };
+  }
+
+  private async buildLangMap(userIds: string[]): Promise<Map<string, boolean>> {
+    if (!userIds.length) return new Map();
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, preferredLanguage: true },
+    });
+    return new Map(users.map((u) => [u.id, u.preferredLanguage === 'zh']));
   }
 
   private async ensureExists(id: string) {

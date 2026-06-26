@@ -560,16 +560,20 @@ export class GroupsService {
         select: { userId: true },
       });
       const requesterName = (user as any).displayName || user.email || user.phoneE164 || 'Someone';
+      const adminLangMap = await this.buildLangMap(admins.map((a) => a.userId));
       await this.notifications.createMany(
-        admins.map((a) => ({
-          userId: a.userId,
-          type: 'JOIN_REQUEST_RECEIVED' as const,
-          title: `New join request for ${group.name}`,
-          body: `${requesterName} has requested to join ${group.name}.`,
-          actionUrl: `/admin/groups/${groupId}/settings`,
-          groupId,
-          requestId: req.id,
-        })),
+        admins.map((a) => {
+          const zh = adminLangMap.get(a.userId) ?? false;
+          return {
+            userId: a.userId,
+            type: 'JOIN_REQUEST_RECEIVED' as const,
+            title: zh ? `${group.name} 有新的加入申請` : `New join request for ${group.name}`,
+            body: zh ? `${requesterName} 申請加入 ${group.name}。` : `${requesterName} has requested to join ${group.name}.`,
+            actionUrl: `/admin/groups/${groupId}/settings`,
+            groupId,
+            requestId: req.id,
+          };
+        }),
       );
       return req;
     });
@@ -615,11 +619,12 @@ export class GroupsService {
           reviewedAt: new Date(),
         },
       });
+      const rejectZh = await this.getUserLang(req.requesterUserId);
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_REJECTED',
-        title: `Join request declined`,
-        body: `Your request to join ${groupName} has been declined.`,
+        title: rejectZh ? '加入申請被拒絕' : 'Join request declined',
+        body: rejectZh ? `您申請加入 ${groupName} 已被拒絕。` : `Your request to join ${groupName} has been declined.`,
         groupId: req.groupId,
         requestId,
       });
@@ -653,11 +658,12 @@ export class GroupsService {
 
       return updated;
     }).then(async (updated) => {
+      const approveZh = await this.getUserLang(req.requesterUserId);
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_APPROVED',
-        title: `Join request approved`,
-        body: `Your request to join ${groupName} has been approved. Welcome!`,
+        title: approveZh ? '加入申請已通過' : 'Join request approved',
+        body: approveZh ? `您申請加入 ${groupName} 已通過。歡迎！` : `Your request to join ${groupName} has been approved. Welcome!`,
         groupId: req.groupId,
         requestId,
       });
@@ -690,13 +696,16 @@ export class GroupsService {
     });
 
     const isPromotion = role === 'GROUP_ADMIN';
+    const roleZh = await this.getUserLang(memberUserId);
     await this.notifications.create({
       userId: memberUserId,
       type: 'ROLE_CHANGED' as const,
-      title: isPromotion ? `You are now an admin of ${group.name}` : `Your role changed in ${group.name}`,
-      body: isPromotion
-        ? `You have been promoted to group admin in "${group.name}".`
-        : `Your role has been changed to member in "${group.name}".`,
+      title: roleZh
+        ? (isPromotion ? `您現在是 ${group.name} 的管理員` : `您在 ${group.name} 的角色已更改`)
+        : (isPromotion ? `You are now an admin of ${group.name}` : `Your role changed in ${group.name}`),
+      body: roleZh
+        ? (isPromotion ? `您已在「${group.name}」被升為群組管理員。` : `您在「${group.name}」的角色已更改為成員。`)
+        : (isPromotion ? `You have been promoted to group admin in "${group.name}".` : `Your role has been changed to member in "${group.name}".`),
       groupId,
     });
 
@@ -727,11 +736,12 @@ export class GroupsService {
       },
     });
 
+    const removeZh = await this.getUserLang(memberUserId);
     await this.notifications.create({
       userId: memberUserId,
       type: 'MEMBER_REMOVED' as const,
-      title: `Removed from ${group.name}`,
-      body: `You have been removed from the group "${group.name}".`,
+      title: removeZh ? `已從 ${group.name} 中移除` : `Removed from ${group.name}`,
+      body: removeZh ? `您已從群組「${group.name}」中被移除。` : `You have been removed from the group "${group.name}".`,
       groupId,
     });
 
@@ -796,11 +806,12 @@ export class GroupsService {
       });
     }
 
+    const addZh = targetUser.preferredLanguage === 'zh';
     await this.notifications.create({
       userId: targetUser.id,
       type: 'MEMBER_ADDED' as const,
-      title: `Added to ${group.name}`,
-      body: `You have been added to the group "${group.name}".`,
+      title: addZh ? `已加入 ${group.name}` : `Added to ${group.name}`,
+      body: addZh ? `您已被加入群組「${group.name}」。` : `You have been added to the group "${group.name}".`,
       actionUrl: `/groups/${groupId}`,
       groupId,
     });
@@ -1124,6 +1135,20 @@ export class GroupsService {
     return group;
   }
 
+  private async getUserLang(userId: string): Promise<boolean> {
+    const u = await this.prisma.user.findUnique({ where: { id: userId }, select: { preferredLanguage: true } });
+    return u?.preferredLanguage === 'zh';
+  }
+
+  private async buildLangMap(userIds: string[]): Promise<Map<string, boolean>> {
+    if (!userIds.length) return new Map();
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, preferredLanguage: true },
+    });
+    return new Map(users.map((u) => [u.id, u.preferredLanguage === 'zh']));
+  }
+
   private async notifyAdminsInviteAccepted(groupId: string, newMember: User) {
     const group = await this.prisma.group.findUnique({ where: { id: groupId }, select: { name: true } });
     if (!group) return;
@@ -1133,15 +1158,19 @@ export class GroupsService {
     });
     if (!admins.length) return;
     const memberName = (newMember as any).displayName || newMember.email || 'Someone';
+    const inviteAcceptLangMap = await this.buildLangMap(admins.map((a) => a.userId));
     await this.notifications.createMany(
-      admins.map((a) => ({
-        userId: a.userId,
-        type: 'INVITE_ACCEPTED' as const,
-        title: `${memberName} joined ${group.name}`,
-        body: `${memberName} accepted their invitation and joined the group.`,
-        actionUrl: `/admin/groups/${groupId}/settings`,
-        groupId,
-      })),
+      admins.map((a) => {
+        const zh = inviteAcceptLangMap.get(a.userId) ?? false;
+        return {
+          userId: a.userId,
+          type: 'INVITE_ACCEPTED' as const,
+          title: zh ? `${memberName} 加入了 ${group.name}` : `${memberName} joined ${group.name}`,
+          body: zh ? `${memberName} 接受邀請加入了群組。` : `${memberName} accepted their invitation and joined the group.`,
+          actionUrl: `/admin/groups/${groupId}/settings`,
+          groupId,
+        };
+      }),
     );
   }
 
@@ -1156,12 +1185,13 @@ export class GroupsService {
       take: 5,
     });
     if (!events.length) return;
+    const upcomingZh = await this.getUserLang(userId);
     await this.notifications.createMany(
       events.map((ev) => ({
         userId,
         type: 'NEW_EVENT' as const,
-        title: `Upcoming: ${ev.title}`,
-        body: new Date(ev.startAt).toLocaleDateString('en-US', { dateStyle: 'medium' }),
+        title: upcomingZh ? `即將到來：${ev.title}` : `Upcoming: ${ev.title}`,
+        body: new Date(ev.startAt).toLocaleDateString(upcomingZh ? 'zh-TW' : 'en-US', { dateStyle: 'medium' }),
         actionUrl: `/events/${ev.id}`,
         groupId,
         eventId: ev.id,
@@ -1310,11 +1340,12 @@ export class GroupsService {
     `;
 
     // Notify target group creator for approval.
+    const relReqZh = await this.getUserLang(targetGroup.createdById);
     await this.notifications.create({
       userId: targetGroup.createdById,
       type: 'JOIN_REQUEST_RECEIVED',
-      title: `Group relationship request for ${targetGroup.name}`,
-      body: `${sourceGroup.name} requested to be linked under ${targetGroup.name}.`,
+      title: relReqZh ? `${targetGroup.name} 的群組關係申請` : `Group relationship request for ${targetGroup.name}`,
+      body: relReqZh ? `${sourceGroup.name} 申請成為 ${targetGroup.name} 的子群組。` : `${sourceGroup.name} requested to be linked under ${targetGroup.name}.`,
       actionUrl: `/admin/groups/${targetGroup.id}/settings`,
       groupId: targetGroup.id,
       requestId: created[0].id,
@@ -1468,11 +1499,12 @@ export class GroupsService {
         `;
       });
 
+      const relApproveZh = await this.getUserLang(req.requesterUserId);
       await this.notifications.create({
         userId: req.requesterUserId,
         type: 'JOIN_REQUEST_APPROVED',
-        title: `Group relationship approved`,
-        body: `${sourceGroup.name} is now linked under ${targetGroup.name}.`,
+        title: relApproveZh ? '群組關係已通過' : 'Group relationship approved',
+        body: relApproveZh ? `${sourceGroup.name} 現在已連結在 ${targetGroup.name} 之下。` : `${sourceGroup.name} is now linked under ${targetGroup.name}.`,
         actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
         groupId: sourceGroup.id,
         requestId,
@@ -1490,11 +1522,12 @@ export class GroupsService {
       WHERE id = ${requestId}
     `;
 
+    const relRejectZh = await this.getUserLang(req.requesterUserId);
     await this.notifications.create({
       userId: req.requesterUserId,
       type: 'JOIN_REQUEST_REJECTED',
-      title: `Group relationship rejected`,
-      body: `Your request to link ${sourceGroup.name} under ${targetGroup.name} was rejected.`,
+      title: relRejectZh ? '群組關係申請被拒絕' : 'Group relationship rejected',
+      body: relRejectZh ? `您申請將 ${sourceGroup.name} 連結到 ${targetGroup.name} 的申請被拒絕。` : `Your request to link ${sourceGroup.name} under ${targetGroup.name} was rejected.`,
       actionUrl: `/admin/groups/${sourceGroup.id}/settings`,
       groupId: sourceGroup.id,
       requestId,

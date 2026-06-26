@@ -16,6 +16,14 @@ import type { Event, ReminderRule } from '@judien/shared';
 
 const INDIGO = '#4F46E5';
 
+function toLocalNaive(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 const REMINDER_PRESETS = [
   { label: '1 week before', labelZh: '1 週前', minutes: 10080 },
   { label: '1 day before', labelZh: '1 天前', minutes: 1440 },
@@ -102,8 +110,8 @@ export default function EditEventScreen() {
         title: ev.title,
         description: ev.description,
         location: ev.location,
-        startAt: ev.startAt ?? '',
-        endAt: ev.endAt ?? '',
+        startAt: toLocalNaive(ev.startAt),
+        endAt: toLocalNaive(ev.endAt),
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });

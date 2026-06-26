@@ -25,11 +25,12 @@ import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, EventInvitee, EventSeries } from '@judien/shared';
 import { Ionicons } from '@expo/vector-icons';
 
-type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; plusOneOf?: string };
+type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
-type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[] };
+type ExtraGuest = { name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] };
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
-type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; notes?: string | null };
+type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; connectedInviteeName?: string | null; notes?: string | null };
 
 const INDIGO = '#4F46E5';
 
@@ -103,7 +104,7 @@ export default function EventDetailScreen() {
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [showGuests, setShowGuests] = useState(false);
-  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING'>('GOING');
+  const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING' | 'EXTRA_GUESTS'>('GOING');
   const [guestSearch, setGuestSearch] = useState('');
   const [goingList, setGoingList] = useState<GuestEntry[]>([]);
 
@@ -127,6 +128,8 @@ export default function EventDetailScreen() {
   const [poName, setPoName] = useState('');
   const [poContact, setPoContact] = useState('');
   const [poRelationship, setPoRelationship] = useState('');
+  const [poConnectedTo, setPoConnectedTo] = useState('');
+  const [poConnectedToSuggestions, setPoConnectedToSuggestions] = useState<string[]>([]);
   const [poNotes, setPoNotes] = useState('');
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
@@ -224,10 +227,11 @@ export default function EventDetailScreen() {
           name: poName.trim(),
           ...(isEmail ? { email: poContact.trim() } : poContact.trim() ? { phone: poContact.trim() } : {}),
           ...(poRelationship.trim() ? { relationship: poRelationship.trim() } : {}),
+          ...(poConnectedTo.trim() ? { connectedInviteeName: poConnectedTo.trim() } : {}),
           ...(poNotes.trim() ? { notes: poNotes.trim() } : {}),
         }),
       });
-      setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes('');
+      setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes('');
       setShowPlusOneForm(false);
       const data = await apiFetch<PlusOne[]>(`/events/${id}/rsvp/plus-ones`);
       setMyPlusOnes(data);
@@ -313,7 +317,7 @@ export default function EventDetailScreen() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] }>(`/events/${id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
@@ -323,6 +327,7 @@ export default function EventDetailScreen() {
           ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
           : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
+        EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
       });
       setShowGuests(true);
     } catch {
@@ -339,7 +344,7 @@ export default function EventDetailScreen() {
       setGuestsLoading(true);
       try {
         const [rsvpData, inviteesData] = await Promise.all([
-          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[] }>(`/events/${id}/rsvp/guests`),
+          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] }>(`/events/${id}/rsvp/guests`),
           apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
         ]);
         data = {
@@ -349,6 +354,7 @@ export default function EventDetailScreen() {
             ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
             : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
           PENDING: rsvpData.PENDING,
+          EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
         };
         setGuests(data);
       } catch {
@@ -605,12 +611,12 @@ export default function EventDetailScreen() {
           <View style={styles.rsvpRow}>
             {user && !isPast && rsvpBtn('GOING', t('rsvp.going'))}
             {user && !isPast && rsvpBtn('NO', t('rsvp.notGoing'))}
-            {myRsvp === 'GOING' && user && !isPast && (
+            {user && !isPast && (
               <TouchableOpacity
                 style={[styles.rsvpBtn]}
-                onPress={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes(''); }}
+                onPress={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); loadGuests(); }}
               >
-                <Text style={styles.rsvpBtnText}>{zh ? '帶同行者' : '+ Guest'}</Text>
+                <Text style={styles.rsvpBtnText}>{zh ? '邀請外部賓客' : '+ Invite Guest'}</Text>
               </TouchableOpacity>
             )}
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
@@ -652,7 +658,9 @@ export default function EventDetailScreen() {
                     <View key={po.id} style={{ backgroundColor: isDark ? '#1F2937' : '#F9FAFB', borderRadius: 8, padding: 10, marginBottom: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <View style={{ flex: 1 }}>
                         <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
-                        {po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
+                        {po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship} {zh ? '的' : 'of'} {po.connectedInviteeName}</Text> : null}
+                        {po.connectedInviteeName && !po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{zh ? '來自' : 'guest of'} {po.connectedInviteeName}</Text> : null}
+                        {!po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
                         {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
                         {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
                       </View>
@@ -671,13 +679,47 @@ export default function EventDetailScreen() {
                     </TouchableOpacity>
                   ) : (
                     <View style={{ gap: 8, marginTop: 4 }}>
-                      <TextInput style={styles.editInput} placeholder={zh ? '姓名 *' : 'Name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} autoFocus />
-                      <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email' : 'Phone / Email'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
-                      <TextInput style={styles.editInput} placeholder={zh ? '關係（例：伴侶、朋友）' : 'Relationship (e.g. partner, friend)'} placeholderTextColor={colors.placeholder} value={poRelationship} onChangeText={setPoRelationship} maxLength={100} />
+                      <TextInput style={styles.editInput} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} autoFocus />
+                      <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
+                      <View>
+                        <TextInput
+                          style={styles.editInput}
+                          placeholder={zh ? '連結受邀者（輸入姓名搜尋）' : 'Connected to invited person (type to search)'}
+                          placeholderTextColor={colors.placeholder}
+                          value={poConnectedTo}
+                          onChangeText={(val) => {
+                            setPoConnectedTo(val);
+                            if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
+                            const term = val.toLowerCase();
+                            const allNames = [
+                              ...(guests?.INVITED ?? []).map((i) => i.name),
+                              ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
+                              ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
+                            ].filter(Boolean) as string[];
+                            const unique = [...new Set(allNames)];
+                            setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 5));
+                          }}
+                          maxLength={200}
+                        />
+                        {poConnectedToSuggestions.length > 0 && (
+                          <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginTop: 2, overflow: 'hidden' }}>
+                            {poConnectedToSuggestions.map((name) => (
+                              <TouchableOpacity
+                                key={name}
+                                onPress={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }}
+                                style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}
+                              >
+                                <Text style={{ fontSize: 14, color: colors.text }}>{name}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                      <TextInput style={styles.editInput} placeholder={zh ? '與受邀者的關係（例：太太、朋友）' : 'Their relationship to the invited person (e.g. wife, friend)'} placeholderTextColor={colors.placeholder} value={poRelationship} onChangeText={setPoRelationship} maxLength={100} />
                       <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={poNotes} onChangeText={setPoNotes} multiline numberOfLines={3} maxLength={500} />
                       {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
                       <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
-                        <TouchableOpacity onPress={() => { setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
+                        <TouchableOpacity onPress={() => { setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
                           <Text style={{ fontSize: 14, color: colors.text }}>{zh ? '取消' : 'Cancel'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]} onPress={handleAddPlusOne} disabled={!poName.trim() || poLoading}>
@@ -696,13 +738,17 @@ export default function EventDetailScreen() {
             <View style={[styles.blastForm, { marginTop: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }]}>
               <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
               <View style={styles.blastAudienceRow}>
-                {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email' : '✉️ Email']] as const).map(([ch, label]) => (
+                {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email（停用）' : '✉️ Email (disabled)']] as const).map(([ch, label]) => {
+                const isDisabled = ch === 'EMAIL';
+                return (
                   <TouchableOpacity key={ch}
-                    onPress={() => setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
-                    style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive]}>
+                    disabled={isDisabled}
+                    onPress={() => !isDisabled && setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
+                    style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive, isDisabled && { opacity: 0.35 }]}>
                     <Text style={[styles.audienceBtnText, blastChannels.includes(ch) && styles.audienceBtnTextActive]}>{label}</Text>
                   </TouchableOpacity>
-                ))}
+                );
+              })}
               </View>
               <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
               <View style={styles.blastAudienceRow}>
@@ -1004,10 +1050,11 @@ export default function EventDetailScreen() {
               />
               <View style={styles.guestTabRow}>
                 {([
-                  ['INVITED',  zh ? '已邀請' : 'Invited',    guests?.INVITED.length ?? 0],
-                  ['GOING',    zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? event.rsvpCounts.GOING],
-                  ['NO',       zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? event.rsvpCounts.NO],
+                  ['INVITED',      zh ? '已邀請' : 'Invited',       guests?.INVITED.length ?? 0],
+                  ['GOING',        zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? event.rsvpCounts.GOING],
+                  ['NO',           zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? event.rsvpCounts.NO],
                   ...(guests?.PENDING !== undefined ? [['PENDING', zh ? '未回應' : 'Unresponded', guests.PENDING.length] as [typeof activeGuestTab, string, number]] : []),
+                  ...(guests?.EXTRA_GUESTS !== undefined ? [['EXTRA_GUESTS', zh ? '外部賓客' : 'Extra Guests', guests.EXTRA_GUESTS.length] as [typeof activeGuestTab, string, number]] : []),
                 ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
                   <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
                     style={[styles.guestTab, activeGuestTab === tab && styles.guestTabActive]}>
@@ -1030,8 +1077,26 @@ export default function EventDetailScreen() {
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
                           {g.relationship ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.relationship}</Text> : null}
-                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                          {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                          {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                        </View>
+                      ));
+                  }
+                  if (activeGuestTab === 'EXTRA_GUESTS') {
+                    const rows = (guests?.EXTRA_GUESTS ?? []).filter((g) =>
+                      !term || g.name.toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term) || g.addedByName.toLowerCase().includes(term)
+                    );
+                    return rows.length === 0
+                      ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無外部賓客' : 'No outside guests yet')}</Text>
+                      : rows.map((g, i) => (
+                        <View key={i} style={styles.guestRow}>
+                          <Text style={styles.guestName}>{g.name}</Text>
+                          {g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</Text> : null}
+                          {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</Text> : null}
+                          {!g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
+                          <Text style={styles.guestHandle}>{zh ? '由' : 'added by'} {g.addedByName}</Text>
+                          {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>
                       ));
                   }
@@ -1043,17 +1108,10 @@ export default function EventDetailScreen() {
                   return rows.length === 0
                     ? <Text style={styles.empty}>{emptyMsg}</Text>
                     : rows.map((g, i) => (
-                      <View key={i} style={[styles.guestRow, g.plusOneOf ? { paddingLeft: 12, opacity: 0.85 } : {}]}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                          <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                          {g.plusOneOf && (
-                            <Text numberOfLines={1} style={{ fontSize: 11, color: colors.subtext, backgroundColor: colors.card, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, flexShrink: 1, maxWidth: 140 }}>
-                              {zh ? `同 ${g.plusOneOf} 來` : `+1 of ${g.plusOneOf}`}
-                            </Text>
-                          )}
-                        </View>
-                        {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                        {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                      <View key={i} style={styles.guestRow}>
+                        <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
+                        {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                        {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                       </View>
                     ));
                 })()}

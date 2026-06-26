@@ -122,6 +122,7 @@ export const PlusOneSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().max(30).optional(),
   relationship: z.string().max(100).optional(),
+  connectedInviteeName: z.string().max(200).optional(),
   notes: z.string().max(500).optional(),
 });
 export type PlusOneDto = z.infer<typeof PlusOneSchema>;

@@ -219,10 +219,12 @@ exports.Prisma.RSVPPlusOneScalarFieldEnum = {
   id: 'id',
   rsvpId: 'rsvpId',
   eventId: 'eventId',
+  addedByUserId: 'addedByUserId',
   name: 'name',
   email: 'email',
   phone: 'phone',
   relationship: 'relationship',
+  connectedInviteeName: 'connectedInviteeName',
   notes: 'notes',
   createdAt: 'createdAt'
 };

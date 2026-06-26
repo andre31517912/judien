@@ -100,25 +100,32 @@ export class CommentsService {
         select: { userId: true },
       });
       if (parent && parent.userId !== author.id) {
+        const zh = await this.getUserLang(parent.userId);
         await this.notifications.create({
           userId: parent.userId,
           type: 'COMMENT_ON_EVENT' as const,
-          title: `${authorName} replied to your comment`,
+          title: zh ? `${authorName} 回覆了您的留言` : `${authorName} replied to your comment`,
           body: eventTitle,
           actionUrl: `/events/${event.id}`,
           eventId: event.id,
         });
       }
     } else if (event.createdById !== author.id) {
+      const zh = await this.getUserLang(event.createdById);
       await this.notifications.create({
         userId: event.createdById,
         type: 'COMMENT_ON_EVENT' as const,
-        title: `${authorName} commented on ${eventTitle}`,
+        title: zh ? `${authorName} 在 ${eventTitle} 留言` : `${authorName} commented on ${eventTitle}`,
         body: eventTitle,
         actionUrl: `/events/${event.id}`,
         eventId: event.id,
       });
     }
+  }
+
+  private async getUserLang(userId: string): Promise<boolean> {
+    const u = await this.prisma.user.findUnique({ where: { id: userId }, select: { preferredLanguage: true } });
+    return u?.preferredLanguage === 'zh';
   }
 
   /** Edit own comment only */

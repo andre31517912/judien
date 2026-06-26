@@ -105,15 +105,19 @@ export class NewsService {
 
     if (!recipientIds.length) return;
 
+    const langMap = await this.buildLangMap(recipientIds);
     await this.notificationsService.createMany(
-      recipientIds.map((userId) => ({
-        userId,
-        type: 'NEWS_PUBLISHED' as const,
-        title: news.title || 'New announcement',
-        body: `${authorName} published a new post.`,
-        actionUrl: news.groupId ? `/groups/${news.groupId}/news/${news.id}` : `/news/${news.id}`,
-        groupId: news.groupId ?? undefined,
-      })),
+      recipientIds.map((userId) => {
+        const zh = langMap.get(userId) ?? false;
+        return {
+          userId,
+          type: 'NEWS_PUBLISHED' as const,
+          title: news.title || (zh ? '新公告' : 'New announcement'),
+          body: zh ? `${authorName} 發布了一則新公告。` : `${authorName} published a new post.`,
+          actionUrl: news.groupId ? `/groups/${news.groupId}/news/${news.id}` : `/news/${news.id}`,
+          groupId: news.groupId ?? undefined,
+        };
+      }),
     );
   }
 
@@ -155,6 +159,15 @@ export class NewsService {
     const item = await this.prisma.news.findUnique({ where: { id }, include: this.newsInclude });
     if (!item) throw new NotFoundException('News post not found.');
     return item;
+  }
+
+  private async buildLangMap(userIds: string[]): Promise<Map<string, boolean>> {
+    if (!userIds.length) return new Map();
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, preferredLanguage: true },
+    });
+    return new Map(users.map((u) => [u.id, u.preferredLanguage === 'zh']));
   }
 
   private async findOrThrow(id: string) {

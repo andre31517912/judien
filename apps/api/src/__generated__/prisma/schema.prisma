@@ -129,6 +129,8 @@ model User {
   groupRelationshipRequestsMade     GroupRelationshipRequest[] @relation("GroupRelationshipRequestRequester")
   groupRelationshipRequestsReviewed GroupRelationshipRequest[] @relation("GroupRelationshipRequestReviewer")
 
+  plusOnesAdded RSVPPlusOne[] @relation("PlusOneAddedBy")
+
   @@index([email])
   @@index([role])
 }
@@ -263,21 +265,25 @@ model RSVP {
 }
 
 model RSVPPlusOne {
-  id           String   @id @default(cuid())
-  rsvpId       String?
-  eventId      String
-  name         String
-  email        String?
-  phone        String?
-  relationship String?
-  notes        String?
-  createdAt    DateTime @default(now())
+  id                   String   @id @default(cuid())
+  rsvpId               String?
+  eventId              String
+  addedByUserId        String?
+  name                 String
+  email                String?
+  phone                String?
+  relationship         String?
+  connectedInviteeName String?
+  notes                String?
+  createdAt            DateTime @default(now())
 
-  rsvp  RSVP? @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rsvp        RSVP? @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
+  event       Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  addedByUser User? @relation("PlusOneAddedBy", fields: [addedByUserId], references: [id], onDelete: SetNull)
 
   @@index([rsvpId])
   @@index([eventId])
+  @@index([addedByUserId])
 }
 
 model Comment {

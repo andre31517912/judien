@@ -48,6 +48,15 @@ const REMINDER_PRESETS = [
   { label: '15 min before', minutes: 15 },
 ];
 
+// ── helpers ──────────────────────────────────────────────────────────────────
+function toLocalNaive(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 // ── page ──────────────────────────────────────────────────────────────────────
 
 export default function EditEventPage({ params }: { params: { locale: string; id: string } }) {
@@ -93,8 +102,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         title: ev.title,
         description: ev.description,
         location: ev.location,
-        startAt: ev.startAt ?? '',
-        endAt: ev.endAt ?? '',
+        startAt: toLocalNaive(ev.startAt),
+        endAt: toLocalNaive(ev.endAt),
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });

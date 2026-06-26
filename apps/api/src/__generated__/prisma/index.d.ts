@@ -2721,6 +2721,7 @@ export namespace Prisma {
     notifications: number
     groupRelationshipRequestsMade: number
     groupRelationshipRequestsReviewed: number
+    plusOnesAdded: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2748,6 +2749,7 @@ export namespace Prisma {
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     groupRelationshipRequestsMade?: boolean | UserCountOutputTypeCountGroupRelationshipRequestsMadeArgs
     groupRelationshipRequestsReviewed?: boolean | UserCountOutputTypeCountGroupRelationshipRequestsReviewedArgs
+    plusOnesAdded?: boolean | UserCountOutputTypeCountPlusOnesAddedArgs
   }
 
   // Custom InputTypes
@@ -2927,6 +2929,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountGroupRelationshipRequestsReviewedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: GroupRelationshipRequestWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPlusOnesAddedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RSVPPlusOneWhereInput
   }
 
 
@@ -3526,6 +3535,7 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     groupRelationshipRequestsMade?: boolean | User$groupRelationshipRequestsMadeArgs<ExtArgs>
     groupRelationshipRequestsReviewed?: boolean | User$groupRelationshipRequestsReviewedArgs<ExtArgs>
+    plusOnesAdded?: boolean | User$plusOnesAddedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3594,6 +3604,7 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     groupRelationshipRequestsMade?: boolean | User$groupRelationshipRequestsMadeArgs<ExtArgs>
     groupRelationshipRequestsReviewed?: boolean | User$groupRelationshipRequestsReviewedArgs<ExtArgs>
+    plusOnesAdded?: boolean | User$plusOnesAddedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3625,6 +3636,7 @@ export namespace Prisma {
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       groupRelationshipRequestsMade: Prisma.$GroupRelationshipRequestPayload<ExtArgs>[]
       groupRelationshipRequestsReviewed: Prisma.$GroupRelationshipRequestPayload<ExtArgs>[]
+      plusOnesAdded: Prisma.$RSVPPlusOnePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -4032,6 +4044,7 @@ export namespace Prisma {
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     groupRelationshipRequestsMade<T extends User$groupRelationshipRequestsMadeArgs<ExtArgs> = {}>(args?: Subset<T, User$groupRelationshipRequestsMadeArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupRelationshipRequestPayload<ExtArgs>, T, "findMany"> | Null>
     groupRelationshipRequestsReviewed<T extends User$groupRelationshipRequestsReviewedArgs<ExtArgs> = {}>(args?: Subset<T, User$groupRelationshipRequestsReviewedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroupRelationshipRequestPayload<ExtArgs>, T, "findMany"> | Null>
+    plusOnesAdded<T extends User$plusOnesAddedArgs<ExtArgs> = {}>(args?: Subset<T, User$plusOnesAddedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RSVPPlusOnePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4869,6 +4882,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: GroupRelationshipRequestScalarFieldEnum | GroupRelationshipRequestScalarFieldEnum[]
+  }
+
+  /**
+   * User.plusOnesAdded
+   */
+  export type User$plusOnesAddedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RSVPPlusOne
+     */
+    select?: RSVPPlusOneSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RSVPPlusOneInclude<ExtArgs> | null
+    where?: RSVPPlusOneWhereInput
+    orderBy?: RSVPPlusOneOrderByWithRelationInput | RSVPPlusOneOrderByWithRelationInput[]
+    cursor?: RSVPPlusOneWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RSVPPlusOneScalarFieldEnum | RSVPPlusOneScalarFieldEnum[]
   }
 
   /**
@@ -11179,10 +11212,12 @@ export namespace Prisma {
     id: string | null
     rsvpId: string | null
     eventId: string | null
+    addedByUserId: string | null
     name: string | null
     email: string | null
     phone: string | null
     relationship: string | null
+    connectedInviteeName: string | null
     notes: string | null
     createdAt: Date | null
   }
@@ -11191,10 +11226,12 @@ export namespace Prisma {
     id: string | null
     rsvpId: string | null
     eventId: string | null
+    addedByUserId: string | null
     name: string | null
     email: string | null
     phone: string | null
     relationship: string | null
+    connectedInviteeName: string | null
     notes: string | null
     createdAt: Date | null
   }
@@ -11203,10 +11240,12 @@ export namespace Prisma {
     id: number
     rsvpId: number
     eventId: number
+    addedByUserId: number
     name: number
     email: number
     phone: number
     relationship: number
+    connectedInviteeName: number
     notes: number
     createdAt: number
     _all: number
@@ -11217,10 +11256,12 @@ export namespace Prisma {
     id?: true
     rsvpId?: true
     eventId?: true
+    addedByUserId?: true
     name?: true
     email?: true
     phone?: true
     relationship?: true
+    connectedInviteeName?: true
     notes?: true
     createdAt?: true
   }
@@ -11229,10 +11270,12 @@ export namespace Prisma {
     id?: true
     rsvpId?: true
     eventId?: true
+    addedByUserId?: true
     name?: true
     email?: true
     phone?: true
     relationship?: true
+    connectedInviteeName?: true
     notes?: true
     createdAt?: true
   }
@@ -11241,10 +11284,12 @@ export namespace Prisma {
     id?: true
     rsvpId?: true
     eventId?: true
+    addedByUserId?: true
     name?: true
     email?: true
     phone?: true
     relationship?: true
+    connectedInviteeName?: true
     notes?: true
     createdAt?: true
     _all?: true
@@ -11326,10 +11371,12 @@ export namespace Prisma {
     id: string
     rsvpId: string | null
     eventId: string
+    addedByUserId: string | null
     name: string
     email: string | null
     phone: string | null
     relationship: string | null
+    connectedInviteeName: string | null
     notes: string | null
     createdAt: Date
     _count: RSVPPlusOneCountAggregateOutputType | null
@@ -11355,38 +11402,46 @@ export namespace Prisma {
     id?: boolean
     rsvpId?: boolean
     eventId?: boolean
+    addedByUserId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
     relationship?: boolean
+    connectedInviteeName?: boolean
     notes?: boolean
     createdAt?: boolean
     rsvp?: boolean | RSVPPlusOne$rsvpArgs<ExtArgs>
     event?: boolean | EventDefaultArgs<ExtArgs>
+    addedByUser?: boolean | RSVPPlusOne$addedByUserArgs<ExtArgs>
   }, ExtArgs["result"]["rSVPPlusOne"]>
 
   export type RSVPPlusOneSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     rsvpId?: boolean
     eventId?: boolean
+    addedByUserId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
     relationship?: boolean
+    connectedInviteeName?: boolean
     notes?: boolean
     createdAt?: boolean
     rsvp?: boolean | RSVPPlusOne$rsvpArgs<ExtArgs>
     event?: boolean | EventDefaultArgs<ExtArgs>
+    addedByUser?: boolean | RSVPPlusOne$addedByUserArgs<ExtArgs>
   }, ExtArgs["result"]["rSVPPlusOne"]>
 
   export type RSVPPlusOneSelectScalar = {
     id?: boolean
     rsvpId?: boolean
     eventId?: boolean
+    addedByUserId?: boolean
     name?: boolean
     email?: boolean
     phone?: boolean
     relationship?: boolean
+    connectedInviteeName?: boolean
     notes?: boolean
     createdAt?: boolean
   }
@@ -11394,10 +11449,12 @@ export namespace Prisma {
   export type RSVPPlusOneInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvp?: boolean | RSVPPlusOne$rsvpArgs<ExtArgs>
     event?: boolean | EventDefaultArgs<ExtArgs>
+    addedByUser?: boolean | RSVPPlusOne$addedByUserArgs<ExtArgs>
   }
   export type RSVPPlusOneIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rsvp?: boolean | RSVPPlusOne$rsvpArgs<ExtArgs>
     event?: boolean | EventDefaultArgs<ExtArgs>
+    addedByUser?: boolean | RSVPPlusOne$addedByUserArgs<ExtArgs>
   }
 
   export type $RSVPPlusOnePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -11405,15 +11462,18 @@ export namespace Prisma {
     objects: {
       rsvp: Prisma.$RSVPPayload<ExtArgs> | null
       event: Prisma.$EventPayload<ExtArgs>
+      addedByUser: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       rsvpId: string | null
       eventId: string
+      addedByUserId: string | null
       name: string
       email: string | null
       phone: string | null
       relationship: string | null
+      connectedInviteeName: string | null
       notes: string | null
       createdAt: Date
     }, ExtArgs["result"]["rSVPPlusOne"]>
@@ -11782,6 +11842,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     rsvp<T extends RSVPPlusOne$rsvpArgs<ExtArgs> = {}>(args?: Subset<T, RSVPPlusOne$rsvpArgs<ExtArgs>>): Prisma__RSVPClient<$Result.GetResult<Prisma.$RSVPPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    addedByUser<T extends RSVPPlusOne$addedByUserArgs<ExtArgs> = {}>(args?: Subset<T, RSVPPlusOne$addedByUserArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11814,10 +11875,12 @@ export namespace Prisma {
     readonly id: FieldRef<"RSVPPlusOne", 'String'>
     readonly rsvpId: FieldRef<"RSVPPlusOne", 'String'>
     readonly eventId: FieldRef<"RSVPPlusOne", 'String'>
+    readonly addedByUserId: FieldRef<"RSVPPlusOne", 'String'>
     readonly name: FieldRef<"RSVPPlusOne", 'String'>
     readonly email: FieldRef<"RSVPPlusOne", 'String'>
     readonly phone: FieldRef<"RSVPPlusOne", 'String'>
     readonly relationship: FieldRef<"RSVPPlusOne", 'String'>
+    readonly connectedInviteeName: FieldRef<"RSVPPlusOne", 'String'>
     readonly notes: FieldRef<"RSVPPlusOne", 'String'>
     readonly createdAt: FieldRef<"RSVPPlusOne", 'DateTime'>
   }
@@ -12150,6 +12213,21 @@ export namespace Prisma {
      */
     include?: RSVPInclude<ExtArgs> | null
     where?: RSVPWhereInput
+  }
+
+  /**
+   * RSVPPlusOne.addedByUser
+   */
+  export type RSVPPlusOne$addedByUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -25678,10 +25756,12 @@ export namespace Prisma {
     id: 'id',
     rsvpId: 'rsvpId',
     eventId: 'eventId',
+    addedByUserId: 'addedByUserId',
     name: 'name',
     email: 'email',
     phone: 'phone',
     relationship: 'relationship',
+    connectedInviteeName: 'connectedInviteeName',
     notes: 'notes',
     createdAt: 'createdAt'
   };
@@ -26183,6 +26263,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     groupRelationshipRequestsMade?: GroupRelationshipRequestListRelationFilter
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestListRelationFilter
+    plusOnesAdded?: RSVPPlusOneListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -26227,6 +26308,7 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestOrderByRelationAggregateInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestOrderByRelationAggregateInput
+    plusOnesAdded?: RSVPPlusOneOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -26274,6 +26356,7 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     groupRelationshipRequestsMade?: GroupRelationshipRequestListRelationFilter
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestListRelationFilter
+    plusOnesAdded?: RSVPPlusOneListRelationFilter
   }, "id" | "email" | "phoneE164" | "lineUserId" | "appleUserId">
 
   export type UserOrderByWithAggregationInput = {
@@ -26839,28 +26922,34 @@ export namespace Prisma {
     id?: StringFilter<"RSVPPlusOne"> | string
     rsvpId?: StringNullableFilter<"RSVPPlusOne"> | string | null
     eventId?: StringFilter<"RSVPPlusOne"> | string
+    addedByUserId?: StringNullableFilter<"RSVPPlusOne"> | string | null
     name?: StringFilter<"RSVPPlusOne"> | string
     email?: StringNullableFilter<"RSVPPlusOne"> | string | null
     phone?: StringNullableFilter<"RSVPPlusOne"> | string | null
     relationship?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    connectedInviteeName?: StringNullableFilter<"RSVPPlusOne"> | string | null
     notes?: StringNullableFilter<"RSVPPlusOne"> | string | null
     createdAt?: DateTimeFilter<"RSVPPlusOne"> | Date | string
     rsvp?: XOR<RSVPNullableRelationFilter, RSVPWhereInput> | null
     event?: XOR<EventRelationFilter, EventWhereInput>
+    addedByUser?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }
 
   export type RSVPPlusOneOrderByWithRelationInput = {
     id?: SortOrder
     rsvpId?: SortOrderInput | SortOrder
     eventId?: SortOrder
+    addedByUserId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     relationship?: SortOrderInput | SortOrder
+    connectedInviteeName?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     rsvp?: RSVPOrderByWithRelationInput
     event?: EventOrderByWithRelationInput
+    addedByUser?: UserOrderByWithRelationInput
   }
 
   export type RSVPPlusOneWhereUniqueInput = Prisma.AtLeast<{
@@ -26870,24 +26959,29 @@ export namespace Prisma {
     NOT?: RSVPPlusOneWhereInput | RSVPPlusOneWhereInput[]
     rsvpId?: StringNullableFilter<"RSVPPlusOne"> | string | null
     eventId?: StringFilter<"RSVPPlusOne"> | string
+    addedByUserId?: StringNullableFilter<"RSVPPlusOne"> | string | null
     name?: StringFilter<"RSVPPlusOne"> | string
     email?: StringNullableFilter<"RSVPPlusOne"> | string | null
     phone?: StringNullableFilter<"RSVPPlusOne"> | string | null
     relationship?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    connectedInviteeName?: StringNullableFilter<"RSVPPlusOne"> | string | null
     notes?: StringNullableFilter<"RSVPPlusOne"> | string | null
     createdAt?: DateTimeFilter<"RSVPPlusOne"> | Date | string
     rsvp?: XOR<RSVPNullableRelationFilter, RSVPWhereInput> | null
     event?: XOR<EventRelationFilter, EventWhereInput>
+    addedByUser?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type RSVPPlusOneOrderByWithAggregationInput = {
     id?: SortOrder
     rsvpId?: SortOrderInput | SortOrder
     eventId?: SortOrder
+    addedByUserId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrderInput | SortOrder
     phone?: SortOrderInput | SortOrder
     relationship?: SortOrderInput | SortOrder
+    connectedInviteeName?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: RSVPPlusOneCountOrderByAggregateInput
@@ -26902,10 +26996,12 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"RSVPPlusOne"> | string
     rsvpId?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     eventId?: StringWithAggregatesFilter<"RSVPPlusOne"> | string
+    addedByUserId?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     name?: StringWithAggregatesFilter<"RSVPPlusOne"> | string
     email?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     phone?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     relationship?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
+    connectedInviteeName?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     notes?: StringNullableWithAggregatesFilter<"RSVPPlusOne"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"RSVPPlusOne"> | Date | string
   }
@@ -28012,6 +28108,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -28056,6 +28153,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUpdateInput = {
@@ -28100,6 +28198,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -28144,6 +28243,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -28750,20 +28850,24 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
     rsvp?: RSVPCreateNestedOneWithoutPlusOnesInput
     event: EventCreateNestedOneWithoutRsvpPlusOnesInput
+    addedByUser?: UserCreateNestedOneWithoutPlusOnesAddedInput
   }
 
   export type RSVPPlusOneUncheckedCreateInput = {
     id?: string
     rsvpId?: string | null
     eventId: string
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -28774,20 +28878,24 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvp?: RSVPUpdateOneWithoutPlusOnesNestedInput
     event?: EventUpdateOneRequiredWithoutRsvpPlusOnesNestedInput
+    addedByUser?: UserUpdateOneWithoutPlusOnesAddedNestedInput
   }
 
   export type RSVPPlusOneUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: StringFieldUpdateOperationsInput | string
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28796,10 +28904,12 @@ export namespace Prisma {
     id?: string
     rsvpId?: string | null
     eventId: string
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -28810,6 +28920,7 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28818,10 +28929,12 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
     eventId?: StringFieldUpdateOperationsInput | string
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30065,6 +30178,12 @@ export namespace Prisma {
     none?: GroupRelationshipRequestWhereInput
   }
 
+  export type RSVPPlusOneListRelationFilter = {
+    every?: RSVPPlusOneWhereInput
+    some?: RSVPPlusOneWhereInput
+    none?: RSVPPlusOneWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -30135,6 +30254,10 @@ export namespace Prisma {
   }
 
   export type GroupRelationshipRequestOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RSVPPlusOneOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30320,12 +30443,6 @@ export namespace Prisma {
     none?: GuestRSVPWhereInput
   }
 
-  export type RSVPPlusOneListRelationFilter = {
-    every?: RSVPPlusOneWhereInput
-    some?: RSVPPlusOneWhereInput
-    none?: RSVPPlusOneWhereInput
-  }
-
   export type ReminderRuleListRelationFilter = {
     every?: ReminderRuleWhereInput
     some?: ReminderRuleWhereInput
@@ -30338,10 +30455,6 @@ export namespace Prisma {
   }
 
   export type GuestRSVPOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type RSVPPlusOneOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30670,10 +30783,12 @@ export namespace Prisma {
     id?: SortOrder
     rsvpId?: SortOrder
     eventId?: SortOrder
+    addedByUserId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
     relationship?: SortOrder
+    connectedInviteeName?: SortOrder
     notes?: SortOrder
     createdAt?: SortOrder
   }
@@ -30682,10 +30797,12 @@ export namespace Prisma {
     id?: SortOrder
     rsvpId?: SortOrder
     eventId?: SortOrder
+    addedByUserId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
     relationship?: SortOrder
+    connectedInviteeName?: SortOrder
     notes?: SortOrder
     createdAt?: SortOrder
   }
@@ -30694,10 +30811,12 @@ export namespace Prisma {
     id?: SortOrder
     rsvpId?: SortOrder
     eventId?: SortOrder
+    addedByUserId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     phone?: SortOrder
     relationship?: SortOrder
+    connectedInviteeName?: SortOrder
     notes?: SortOrder
     createdAt?: SortOrder
   }
@@ -31596,6 +31715,13 @@ export namespace Prisma {
     connect?: GroupRelationshipRequestWhereUniqueInput | GroupRelationshipRequestWhereUniqueInput[]
   }
 
+  export type RSVPPlusOneCreateNestedManyWithoutAddedByUserInput = {
+    create?: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput> | RSVPPlusOneCreateWithoutAddedByUserInput[] | RSVPPlusOneUncheckedCreateWithoutAddedByUserInput[]
+    connectOrCreate?: RSVPPlusOneCreateOrConnectWithoutAddedByUserInput | RSVPPlusOneCreateOrConnectWithoutAddedByUserInput[]
+    createMany?: RSVPPlusOneCreateManyAddedByUserInputEnvelope
+    connect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+  }
+
   export type EventUncheckedCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -31762,6 +31888,13 @@ export namespace Prisma {
     connectOrCreate?: GroupRelationshipRequestCreateOrConnectWithoutReviewerInput | GroupRelationshipRequestCreateOrConnectWithoutReviewerInput[]
     createMany?: GroupRelationshipRequestCreateManyReviewerInputEnvelope
     connect?: GroupRelationshipRequestWhereUniqueInput | GroupRelationshipRequestWhereUniqueInput[]
+  }
+
+  export type RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput = {
+    create?: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput> | RSVPPlusOneCreateWithoutAddedByUserInput[] | RSVPPlusOneUncheckedCreateWithoutAddedByUserInput[]
+    connectOrCreate?: RSVPPlusOneCreateOrConnectWithoutAddedByUserInput | RSVPPlusOneCreateOrConnectWithoutAddedByUserInput[]
+    createMany?: RSVPPlusOneCreateManyAddedByUserInputEnvelope
+    connect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -32120,6 +32253,20 @@ export namespace Prisma {
     deleteMany?: GroupRelationshipRequestScalarWhereInput | GroupRelationshipRequestScalarWhereInput[]
   }
 
+  export type RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput = {
+    create?: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput> | RSVPPlusOneCreateWithoutAddedByUserInput[] | RSVPPlusOneUncheckedCreateWithoutAddedByUserInput[]
+    connectOrCreate?: RSVPPlusOneCreateOrConnectWithoutAddedByUserInput | RSVPPlusOneCreateOrConnectWithoutAddedByUserInput[]
+    upsert?: RSVPPlusOneUpsertWithWhereUniqueWithoutAddedByUserInput | RSVPPlusOneUpsertWithWhereUniqueWithoutAddedByUserInput[]
+    createMany?: RSVPPlusOneCreateManyAddedByUserInputEnvelope
+    set?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    disconnect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    delete?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    connect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    update?: RSVPPlusOneUpdateWithWhereUniqueWithoutAddedByUserInput | RSVPPlusOneUpdateWithWhereUniqueWithoutAddedByUserInput[]
+    updateMany?: RSVPPlusOneUpdateManyWithWhereWithoutAddedByUserInput | RSVPPlusOneUpdateManyWithWhereWithoutAddedByUserInput[]
+    deleteMany?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
+  }
+
   export type EventUncheckedUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<EventCreateWithoutCreatedByInput, EventUncheckedCreateWithoutCreatedByInput> | EventCreateWithoutCreatedByInput[] | EventUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: EventCreateOrConnectWithoutCreatedByInput | EventCreateOrConnectWithoutCreatedByInput[]
@@ -32454,6 +32601,20 @@ export namespace Prisma {
     update?: GroupRelationshipRequestUpdateWithWhereUniqueWithoutReviewerInput | GroupRelationshipRequestUpdateWithWhereUniqueWithoutReviewerInput[]
     updateMany?: GroupRelationshipRequestUpdateManyWithWhereWithoutReviewerInput | GroupRelationshipRequestUpdateManyWithWhereWithoutReviewerInput[]
     deleteMany?: GroupRelationshipRequestScalarWhereInput | GroupRelationshipRequestScalarWhereInput[]
+  }
+
+  export type RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput = {
+    create?: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput> | RSVPPlusOneCreateWithoutAddedByUserInput[] | RSVPPlusOneUncheckedCreateWithoutAddedByUserInput[]
+    connectOrCreate?: RSVPPlusOneCreateOrConnectWithoutAddedByUserInput | RSVPPlusOneCreateOrConnectWithoutAddedByUserInput[]
+    upsert?: RSVPPlusOneUpsertWithWhereUniqueWithoutAddedByUserInput | RSVPPlusOneUpsertWithWhereUniqueWithoutAddedByUserInput[]
+    createMany?: RSVPPlusOneCreateManyAddedByUserInputEnvelope
+    set?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    disconnect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    delete?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    connect?: RSVPPlusOneWhereUniqueInput | RSVPPlusOneWhereUniqueInput[]
+    update?: RSVPPlusOneUpdateWithWhereUniqueWithoutAddedByUserInput | RSVPPlusOneUpdateWithWhereUniqueWithoutAddedByUserInput[]
+    updateMany?: RSVPPlusOneUpdateManyWithWhereWithoutAddedByUserInput | RSVPPlusOneUpdateManyWithWhereWithoutAddedByUserInput[]
+    deleteMany?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutEventsInput = {
@@ -33092,6 +33253,12 @@ export namespace Prisma {
     connect?: EventWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutPlusOnesAddedInput = {
+    create?: XOR<UserCreateWithoutPlusOnesAddedInput, UserUncheckedCreateWithoutPlusOnesAddedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPlusOnesAddedInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type RSVPUpdateOneWithoutPlusOnesNestedInput = {
     create?: XOR<RSVPCreateWithoutPlusOnesInput, RSVPUncheckedCreateWithoutPlusOnesInput>
     connectOrCreate?: RSVPCreateOrConnectWithoutPlusOnesInput
@@ -33108,6 +33275,16 @@ export namespace Prisma {
     upsert?: EventUpsertWithoutRsvpPlusOnesInput
     connect?: EventWhereUniqueInput
     update?: XOR<XOR<EventUpdateToOneWithWhereWithoutRsvpPlusOnesInput, EventUpdateWithoutRsvpPlusOnesInput>, EventUncheckedUpdateWithoutRsvpPlusOnesInput>
+  }
+
+  export type UserUpdateOneWithoutPlusOnesAddedNestedInput = {
+    create?: XOR<UserCreateWithoutPlusOnesAddedInput, UserUncheckedCreateWithoutPlusOnesAddedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPlusOnesAddedInput
+    upsert?: UserUpsertWithoutPlusOnesAddedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPlusOnesAddedInput, UserUpdateWithoutPlusOnesAddedInput>, UserUncheckedUpdateWithoutPlusOnesAddedInput>
   }
 
   export type EventCreateNestedOneWithoutCommentsInput = {
@@ -35422,6 +35599,42 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type RSVPPlusOneCreateWithoutAddedByUserInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    relationship?: string | null
+    connectedInviteeName?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    rsvp?: RSVPCreateNestedOneWithoutPlusOnesInput
+    event: EventCreateNestedOneWithoutRsvpPlusOnesInput
+  }
+
+  export type RSVPPlusOneUncheckedCreateWithoutAddedByUserInput = {
+    id?: string
+    rsvpId?: string | null
+    eventId: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    relationship?: string | null
+    connectedInviteeName?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+  }
+
+  export type RSVPPlusOneCreateOrConnectWithoutAddedByUserInput = {
+    where: RSVPPlusOneWhereUniqueInput
+    create: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput>
+  }
+
+  export type RSVPPlusOneCreateManyAddedByUserInputEnvelope = {
+    data: RSVPPlusOneCreateManyAddedByUserInput | RSVPPlusOneCreateManyAddedByUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type EventUpsertWithWhereUniqueWithoutCreatedByInput = {
     where: EventWhereUniqueInput
     update: XOR<EventUpdateWithoutCreatedByInput, EventUncheckedUpdateWithoutCreatedByInput>
@@ -36061,6 +36274,39 @@ export namespace Prisma {
     data: XOR<GroupRelationshipRequestUpdateManyMutationInput, GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerInput>
   }
 
+  export type RSVPPlusOneUpsertWithWhereUniqueWithoutAddedByUserInput = {
+    where: RSVPPlusOneWhereUniqueInput
+    update: XOR<RSVPPlusOneUpdateWithoutAddedByUserInput, RSVPPlusOneUncheckedUpdateWithoutAddedByUserInput>
+    create: XOR<RSVPPlusOneCreateWithoutAddedByUserInput, RSVPPlusOneUncheckedCreateWithoutAddedByUserInput>
+  }
+
+  export type RSVPPlusOneUpdateWithWhereUniqueWithoutAddedByUserInput = {
+    where: RSVPPlusOneWhereUniqueInput
+    data: XOR<RSVPPlusOneUpdateWithoutAddedByUserInput, RSVPPlusOneUncheckedUpdateWithoutAddedByUserInput>
+  }
+
+  export type RSVPPlusOneUpdateManyWithWhereWithoutAddedByUserInput = {
+    where: RSVPPlusOneScalarWhereInput
+    data: XOR<RSVPPlusOneUpdateManyMutationInput, RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserInput>
+  }
+
+  export type RSVPPlusOneScalarWhereInput = {
+    AND?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
+    OR?: RSVPPlusOneScalarWhereInput[]
+    NOT?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
+    id?: StringFilter<"RSVPPlusOne"> | string
+    rsvpId?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    eventId?: StringFilter<"RSVPPlusOne"> | string
+    addedByUserId?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    name?: StringFilter<"RSVPPlusOne"> | string
+    email?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    phone?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    relationship?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    connectedInviteeName?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    notes?: StringNullableFilter<"RSVPPlusOne"> | string | null
+    createdAt?: DateTimeFilter<"RSVPPlusOne"> | Date | string
+  }
+
   export type UserCreateWithoutEventsInput = {
     id?: string
     email?: string | null
@@ -36102,6 +36348,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutEventsInput = {
@@ -36145,6 +36392,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutEventsInput = {
@@ -36294,18 +36542,22 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
     rsvp?: RSVPCreateNestedOneWithoutPlusOnesInput
+    addedByUser?: UserCreateNestedOneWithoutPlusOnesAddedInput
   }
 
   export type RSVPPlusOneUncheckedCreateWithoutEventInput = {
     id?: string
     rsvpId?: string | null
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -36513,6 +36765,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventsInput = {
@@ -36556,6 +36809,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutEventsInput = {
@@ -36706,21 +36960,6 @@ export namespace Prisma {
   export type RSVPPlusOneUpdateManyWithWhereWithoutEventInput = {
     where: RSVPPlusOneScalarWhereInput
     data: XOR<RSVPPlusOneUpdateManyMutationInput, RSVPPlusOneUncheckedUpdateManyWithoutEventInput>
-  }
-
-  export type RSVPPlusOneScalarWhereInput = {
-    AND?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
-    OR?: RSVPPlusOneScalarWhereInput[]
-    NOT?: RSVPPlusOneScalarWhereInput | RSVPPlusOneScalarWhereInput[]
-    id?: StringFilter<"RSVPPlusOne"> | string
-    rsvpId?: StringNullableFilter<"RSVPPlusOne"> | string | null
-    eventId?: StringFilter<"RSVPPlusOne"> | string
-    name?: StringFilter<"RSVPPlusOne"> | string
-    email?: StringNullableFilter<"RSVPPlusOne"> | string | null
-    phone?: StringNullableFilter<"RSVPPlusOne"> | string | null
-    relationship?: StringNullableFilter<"RSVPPlusOne"> | string | null
-    notes?: StringNullableFilter<"RSVPPlusOne"> | string | null
-    createdAt?: DateTimeFilter<"RSVPPlusOne"> | Date | string
   }
 
   export type CommentUpsertWithWhereUniqueWithoutEventInput = {
@@ -36925,6 +37164,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutEventShareLinksInput = {
@@ -36968,6 +37208,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutEventShareLinksInput = {
@@ -37094,6 +37335,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventShareLinksInput = {
@@ -37137,6 +37379,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type EventCreateWithoutGuestRsvpsInput = {
@@ -37308,6 +37551,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutEventSeriesCreatedInput = {
@@ -37351,6 +37595,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutEventSeriesCreatedInput = {
@@ -37529,6 +37774,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventSeriesCreatedInput = {
@@ -37572,6 +37818,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutEventSeriesInput = {
@@ -37751,6 +37998,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesCreatedInput = {
@@ -37794,6 +38042,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesCreatedInput = {
@@ -37842,6 +38091,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutEventInvitesAcceptedInput = {
@@ -37885,6 +38135,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutEventInvitesAcceptedInput = {
@@ -38011,6 +38262,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesCreatedInput = {
@@ -38054,6 +38306,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutEventInvitesAcceptedInput = {
@@ -38108,6 +38361,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutEventInvitesAcceptedInput = {
@@ -38151,6 +38405,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type EventCreateWithoutRsvpsInput = {
@@ -38255,6 +38510,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutRsvpsInput = {
@@ -38298,6 +38554,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutRsvpsInput = {
@@ -38311,18 +38568,22 @@ export namespace Prisma {
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
     event: EventCreateNestedOneWithoutRsvpPlusOnesInput
+    addedByUser?: UserCreateNestedOneWithoutPlusOnesAddedInput
   }
 
   export type RSVPPlusOneUncheckedCreateWithoutRsvpInput = {
     id?: string
     eventId: string
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -38456,6 +38717,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRsvpsInput = {
@@ -38499,6 +38761,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type RSVPPlusOneUpsertWithWhereUniqueWithoutRsvpInput = {
@@ -38601,6 +38864,99 @@ export namespace Prisma {
     create: XOR<EventCreateWithoutRsvpPlusOnesInput, EventUncheckedCreateWithoutRsvpPlusOnesInput>
   }
 
+  export type UserCreateWithoutPlusOnesAddedInput = {
+    id?: string
+    email?: string | null
+    passwordHash: string
+    phoneE164?: string | null
+    displayName?: string | null
+    photoUrl?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteEmail?: boolean
+    muteLinePush?: boolean
+    muteInAppNotifications?: boolean
+    lineUserId?: string | null
+    appleUserId?: string | null
+    isGuest?: boolean
+    hasPassword?: boolean
+    createdAt?: Date | string
+    events?: EventCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageCreateNestedManyWithoutUserInput
+    news?: NewsCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
+    groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+  }
+
+  export type UserUncheckedCreateWithoutPlusOnesAddedInput = {
+    id?: string
+    email?: string | null
+    passwordHash: string
+    phoneE164?: string | null
+    displayName?: string | null
+    photoUrl?: string | null
+    preferredLanguage?: string
+    colorTheme?: string
+    role?: $Enums.Role
+    muteEmail?: boolean
+    muteLinePush?: boolean
+    muteInAppNotifications?: boolean
+    lineUserId?: string | null
+    appleUserId?: string | null
+    isGuest?: boolean
+    hasPassword?: boolean
+    createdAt?: Date | string
+    events?: EventUncheckedCreateNestedManyWithoutCreatedByInput
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutUserInput
+    groupMessages?: GroupMessageUncheckedCreateNestedManyWithoutUserInput
+    news?: NewsUncheckedCreateNestedManyWithoutCreatedByInput
+    createdGroups?: GroupUncheckedCreateNestedManyWithoutCreatedByInput
+    groupMemberships?: GroupMembershipUncheckedCreateNestedManyWithoutUserInput
+    groupMembershipInvites?: GroupMembershipUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesSent?: GroupInviteUncheckedCreateNestedManyWithoutInvitedByPlatformAdminInput
+    groupInvitesReceived?: GroupInviteUncheckedCreateNestedManyWithoutInvitedUserInput
+    groupJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutRequesterInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedCreateNestedManyWithoutReviewedByInput
+    eventInvitesCreated?: EventInviteUncheckedCreateNestedManyWithoutCreatedByInput
+    eventInvitesAccepted?: EventInviteUncheckedCreateNestedManyWithoutAcceptedByInput
+    eventSeriesCreated?: EventSeriesUncheckedCreateNestedManyWithoutCreatedByInput
+    eventShareLinks?: EventShareLinkUncheckedCreateNestedManyWithoutCreatedByInput
+    donationRecordsFor?: DonationRecordUncheckedCreateNestedManyWithoutForUserInput
+    donationRecordsCreated?: DonationRecordUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensCreated?: InviteTokenUncheckedCreateNestedManyWithoutCreatedByInput
+    inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
+    groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+  }
+
+  export type UserCreateOrConnectWithoutPlusOnesAddedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPlusOnesAddedInput, UserUncheckedCreateWithoutPlusOnesAddedInput>
+  }
+
   export type RSVPUpsertWithoutPlusOnesInput = {
     update: XOR<RSVPUpdateWithoutPlusOnesInput, RSVPUncheckedUpdateWithoutPlusOnesInput>
     create: XOR<RSVPCreateWithoutPlusOnesInput, RSVPUncheckedCreateWithoutPlusOnesInput>
@@ -38695,6 +39051,105 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
+  }
+
+  export type UserUpsertWithoutPlusOnesAddedInput = {
+    update: XOR<UserUpdateWithoutPlusOnesAddedInput, UserUncheckedUpdateWithoutPlusOnesAddedInput>
+    create: XOR<UserCreateWithoutPlusOnesAddedInput, UserUncheckedCreateWithoutPlusOnesAddedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPlusOnesAddedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPlusOnesAddedInput, UserUncheckedUpdateWithoutPlusOnesAddedInput>
+  }
+
+  export type UserUpdateWithoutPlusOnesAddedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUpdateManyWithoutUserNestedInput
+    news?: NewsUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
+    groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPlusOnesAddedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    phoneE164?: NullableStringFieldUpdateOperationsInput | string | null
+    displayName?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    preferredLanguage?: StringFieldUpdateOperationsInput | string
+    colorTheme?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    muteEmail?: BoolFieldUpdateOperationsInput | boolean
+    muteLinePush?: BoolFieldUpdateOperationsInput | boolean
+    muteInAppNotifications?: BoolFieldUpdateOperationsInput | boolean
+    lineUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    appleUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isGuest?: BoolFieldUpdateOperationsInput | boolean
+    hasPassword?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    events?: EventUncheckedUpdateManyWithoutCreatedByNestedInput
+    rsvps?: RSVPUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutUserNestedInput
+    groupMessages?: GroupMessageUncheckedUpdateManyWithoutUserNestedInput
+    news?: NewsUncheckedUpdateManyWithoutCreatedByNestedInput
+    createdGroups?: GroupUncheckedUpdateManyWithoutCreatedByNestedInput
+    groupMemberships?: GroupMembershipUncheckedUpdateManyWithoutUserNestedInput
+    groupMembershipInvites?: GroupMembershipUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesSent?: GroupInviteUncheckedUpdateManyWithoutInvitedByPlatformAdminNestedInput
+    groupInvitesReceived?: GroupInviteUncheckedUpdateManyWithoutInvitedUserNestedInput
+    groupJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    reviewedJoinRequests?: GroupJoinRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+    eventInvitesCreated?: EventInviteUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventInvitesAccepted?: EventInviteUncheckedUpdateManyWithoutAcceptedByNestedInput
+    eventSeriesCreated?: EventSeriesUncheckedUpdateManyWithoutCreatedByNestedInput
+    eventShareLinks?: EventShareLinkUncheckedUpdateManyWithoutCreatedByNestedInput
+    donationRecordsFor?: DonationRecordUncheckedUpdateManyWithoutForUserNestedInput
+    donationRecordsCreated?: DonationRecordUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensCreated?: InviteTokenUncheckedUpdateManyWithoutCreatedByNestedInput
+    inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
   }
 
   export type EventCreateWithoutCommentsInput = {
@@ -38799,6 +39254,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -38842,6 +39298,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -39023,6 +39480,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -39066,6 +39524,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type CommentUpsertWithoutRepliesInput = {
@@ -39209,6 +39668,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMessagesInput = {
@@ -39252,6 +39712,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMessagesInput = {
@@ -39370,6 +39831,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMessagesInput = {
@@ -39413,6 +39875,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type EventCreateWithoutReminderRulesInput = {
@@ -39645,6 +40108,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutMessageLogsInput = {
@@ -39688,6 +40152,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutMessageLogsInput = {
@@ -39814,6 +40279,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMessageLogsInput = {
@@ -39857,6 +40323,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupCreateWithoutNewsInput = {
@@ -39953,6 +40420,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutNewsInput = {
@@ -39996,6 +40464,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutNewsInput = {
@@ -40114,6 +40583,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNewsInput = {
@@ -40157,6 +40627,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserCreateWithoutCreatedGroupsInput = {
@@ -40200,6 +40671,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -40243,6 +40715,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -40797,6 +41270,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -40840,6 +41314,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutSubgroupsInput = {
@@ -41134,6 +41609,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipInvitesInput = {
@@ -41177,6 +41653,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipInvitesInput = {
@@ -41278,6 +41755,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -41321,6 +41799,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -41380,6 +41859,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipInvitesInput = {
@@ -41423,6 +41903,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutMembershipsInput = {
@@ -41536,6 +42017,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -41579,6 +42061,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserCreateWithoutGroupInvitesSentInput = {
@@ -41622,6 +42105,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesSentInput = {
@@ -41665,6 +42149,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesSentInput = {
@@ -41713,6 +42198,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupInvitesReceivedInput = {
@@ -41756,6 +42242,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupInvitesReceivedInput = {
@@ -41868,6 +42355,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesSentInput = {
@@ -41911,6 +42399,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutGroupInvitesReceivedInput = {
@@ -41965,6 +42454,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupInvitesReceivedInput = {
@@ -42008,6 +42498,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutInvitesInput = {
@@ -42163,6 +42654,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupJoinRequestsInput = {
@@ -42206,6 +42698,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupJoinRequestsInput = {
@@ -42254,6 +42747,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewedJoinRequestsInput = {
@@ -42297,6 +42791,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewedJoinRequestsInput = {
@@ -42415,6 +42910,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupJoinRequestsInput = {
@@ -42458,6 +42954,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutReviewedJoinRequestsInput = {
@@ -42512,6 +43009,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewedJoinRequestsInput = {
@@ -42555,6 +43053,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupCreateWithoutSentRelationshipRequestsInput = {
@@ -42704,6 +43203,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupRelationshipRequestsMadeInput = {
@@ -42747,6 +43247,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupRelationshipRequestsMadeInput = {
@@ -42795,6 +43296,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutGroupRelationshipRequestsReviewedInput = {
@@ -42838,6 +43340,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutGroupRelationshipRequestsReviewedInput = {
@@ -43015,6 +43518,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupRelationshipRequestsMadeInput = {
@@ -43058,6 +43562,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutGroupRelationshipRequestsReviewedInput = {
@@ -43112,6 +43617,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutGroupRelationshipRequestsReviewedInput = {
@@ -43155,6 +43661,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupCreateWithoutDonationRecordsInput = {
@@ -43251,6 +43758,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsForInput = {
@@ -43294,6 +43802,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsForInput = {
@@ -43342,6 +43851,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutDonationRecordsCreatedInput = {
@@ -43385,6 +43895,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutDonationRecordsCreatedInput = {
@@ -43503,6 +44014,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsForInput = {
@@ -43546,6 +44058,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutDonationRecordsCreatedInput = {
@@ -43600,6 +44113,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDonationRecordsCreatedInput = {
@@ -43643,6 +44157,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserCreateWithoutInviteTokensCreatedInput = {
@@ -43686,6 +44201,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutInviteTokensCreatedInput = {
@@ -43729,6 +44245,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutInviteTokensCreatedInput = {
@@ -43777,6 +44294,7 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutInviteTokensUsedInput = {
@@ -43820,6 +44338,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutInviteTokensUsedInput = {
@@ -43879,6 +44398,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInviteTokensCreatedInput = {
@@ -43922,6 +44442,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUpsertWithoutInviteTokensUsedInput = {
@@ -43976,6 +44497,7 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutInviteTokensUsedInput = {
@@ -44019,6 +44541,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -44062,6 +44585,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenCreateNestedManyWithoutUsedByInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -44105,6 +44629,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedCreateNestedManyWithoutUsedByInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutRequesterInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedCreateNestedManyWithoutReviewerInput
+    plusOnesAdded?: RSVPPlusOneUncheckedCreateNestedManyWithoutAddedByUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -44217,6 +44742,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUpdateManyWithoutUsedByNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -44260,6 +44786,7 @@ export namespace Prisma {
     inviteTokensUsed?: InviteTokenUncheckedUpdateManyWithoutUsedByNestedInput
     groupRelationshipRequestsMade?: GroupRelationshipRequestUncheckedUpdateManyWithoutRequesterNestedInput
     groupRelationshipRequestsReviewed?: GroupRelationshipRequestUncheckedUpdateManyWithoutReviewerNestedInput
+    plusOnesAdded?: RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserNestedInput
   }
 
   export type GroupUpsertWithoutNotificationsInput = {
@@ -44588,6 +45115,19 @@ export namespace Prisma {
     reviewedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type RSVPPlusOneCreateManyAddedByUserInput = {
+    id?: string
+    rsvpId?: string | null
+    eventId: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    relationship?: string | null
+    connectedInviteeName?: string | null
+    notes?: string | null
+    createdAt?: Date | string
   }
 
   export type EventUpdateWithoutCreatedByInput = {
@@ -45443,6 +45983,45 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type RSVPPlusOneUpdateWithoutAddedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rsvp?: RSVPUpdateOneWithoutPlusOnesNestedInput
+    event?: EventUpdateOneRequiredWithoutRsvpPlusOnesNestedInput
+  }
+
+  export type RSVPPlusOneUncheckedUpdateWithoutAddedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RSVPPlusOneUncheckedUpdateManyWithoutAddedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
+    eventId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RSVPCreateManyEventInput = {
     id?: string
     userId: string
@@ -45466,10 +46045,12 @@ export namespace Prisma {
   export type RSVPPlusOneCreateManyEventInput = {
     id?: string
     rsvpId?: string | null
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -45582,18 +46163,22 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvp?: RSVPUpdateOneWithoutPlusOnesNestedInput
+    addedByUser?: UserUpdateOneWithoutPlusOnesAddedNestedInput
   }
 
   export type RSVPPlusOneUncheckedUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45601,10 +46186,12 @@ export namespace Prisma {
   export type RSVPPlusOneUncheckedUpdateManyWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     rsvpId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45830,10 +46417,12 @@ export namespace Prisma {
   export type RSVPPlusOneCreateManyRsvpInput = {
     id?: string
     eventId: string
+    addedByUserId?: string | null
     name: string
     email?: string | null
     phone?: string | null
     relationship?: string | null
+    connectedInviteeName?: string | null
     notes?: string | null
     createdAt?: Date | string
   }
@@ -45844,18 +46433,22 @@ export namespace Prisma {
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     event?: EventUpdateOneRequiredWithoutRsvpPlusOnesNestedInput
+    addedByUser?: UserUpdateOneWithoutPlusOnesAddedNestedInput
   }
 
   export type RSVPPlusOneUncheckedUpdateWithoutRsvpInput = {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45863,10 +46456,12 @@ export namespace Prisma {
   export type RSVPPlusOneUncheckedUpdateManyWithoutRsvpInput = {
     id?: StringFieldUpdateOperationsInput | string
     eventId?: StringFieldUpdateOperationsInput | string
+    addedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
     phone?: NullableStringFieldUpdateOperationsInput | string | null
     relationship?: NullableStringFieldUpdateOperationsInput | string | null
+    connectedInviteeName?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
