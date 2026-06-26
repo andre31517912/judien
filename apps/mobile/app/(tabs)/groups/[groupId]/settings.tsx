@@ -20,7 +20,7 @@ function slugifyPid(input: string) {
   return input.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
-type Tab = 'general' | 'roster' | 'hierarchy';
+type Tab = 'general' | 'roster' | 'hierarchy' | 'donations' | 'report';
 
 export default function GroupSettingsScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -81,6 +81,14 @@ export default function GroupSettingsScreen() {
   const [bulkRole, setBulkRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
   const [bulkSubmitting, setBulkSubmitting] = useState(false);
   const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
+
+  // Search existing user to add
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState<{ id: string; displayName: string | null; email: string | null; phoneE164: string | null }[]>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [memberAddRole, setMemberAddRole] = useState<'GROUP_MEMBER' | 'GROUP_ADMIN'>('GROUP_MEMBER');
+  const [memberAddLoading, setMemberAddLoading] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
 
@@ -526,6 +534,48 @@ export default function GroupSettingsScreen() {
     } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to review request'); }
   };
 
+  const searchExistingUsers = async (q: string) => {
+    if (!q.trim()) { setUserSearchResults([]); return; }
+    setUserSearchLoading(true);
+    try {
+      const res = await apiFetch<{ id: string; displayName: string | null; email: string | null; phoneE164: string | null }[]>(
+        `/groups/${groupId}/members/search-users?q=${encodeURIComponent(q.trim())}`,
+      );
+      setUserSearchResults(Array.isArray(res) ? res : []);
+    } catch { setUserSearchResults([]); }
+    finally { setUserSearchLoading(false); }
+  };
+
+  const addExistingMember = async (userId: string, displayName: string | null) => {
+    setMemberAddLoading(userId);
+    try {
+      await apiFetch(`/groups/${groupId}/members`, {
+        method: 'POST',
+        body: JSON.stringify({ identifier: userId, role: memberAddRole }),
+      });
+      setUserSearchResults((prev) => prev.filter((u) => u.id !== userId));
+      Alert.alert('✓', zh ? `已加入：${displayName ?? userId}` : `Added: ${displayName ?? userId}`);
+      await loadData();
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed to add member.'); }
+    finally { setMemberAddLoading(null); }
+  };
+
+  const exportMembersAsCSV = async () => {
+    if (!groupId) return;
+    setExportLoading(true);
+    try {
+      const mems = await apiFetch<RosterMember[]>(`/groups/${groupId}/members`);
+      const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const header = 'Name,Email,Phone,Role,Joined';
+      const rows = mems.map((m) =>
+        [m.groupNickname ?? m.displayName ?? '', m.email ?? '', m.phoneE164 ?? '', m.role, m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : '']
+          .map(esc).join(',')
+      );
+      await Share.share({ message: [header, ...rows].join('\n'), title: `members-${groupId}.csv` });
+    } catch (err: any) { Alert.alert('Error', err.message ?? 'Export failed.'); }
+    finally { setExportLoading(false); }
+  };
+
   const saveSettings = async () => {
     if (!groupId) return;
     if (!groupName.trim()) { Alert.alert('', zh ? '群組名稱不可為空。' : 'Group name is required.'); return; }
@@ -545,6 +595,8 @@ export default function GroupSettingsScreen() {
     { key: 'general', label: zh ? '設定' : 'Settings' },
     { key: 'roster', label: joinRequests.length > 0 ? `${zh ? '成員' : 'Members'} (${joinRequests.length})` : (zh ? '成員' : 'Members') },
     { key: 'hierarchy', label: incomingRelRequests.length > 0 ? `${zh ? '層級' : 'Hierarchy'} (${incomingRelRequests.length})` : (zh ? '層級' : 'Hierarchy') },
+    { key: 'donations', label: zh ? '捐款' : 'Donations' },
+    { key: 'report', label: zh ? '報告' : 'Report' },
   ];
 
   const headerTitle = groupName ? `${groupName} ${zh ? '設定' : 'Settings'}` : (zh ? '群組設定' : 'Group Settings');
@@ -658,6 +710,58 @@ export default function GroupSettingsScreen() {
               ))}
             </View>
           )}
+
+          {/* Export members */}
+          <TouchableOpacity
+            style={[styles.primaryBtn, { opacity: exportLoading ? 0.5 : 1, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}
+            onPress={exportMembersAsCSV}
+            disabled={exportLoading}
+          >
+            <Text style={styles.primaryBtnText}>{exportLoading ? (zh ? '匯出中…' : 'Exporting…') : (zh ? '匯出成員 CSV' : 'Export Members CSV')}</Text>
+          </TouchableOpacity>
+
+          {/* Search existing user */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{zh ? '搜尋現有用戶並加入' : 'Search & Add Existing User'}</Text>
+            <Text style={styles.muted}>{zh ? '搜尋平台上已有帳號的用戶，直接加入群組。' : 'Find someone already on the platform and add them directly.'}</Text>
+            <TextInput
+              value={userSearchQuery}
+              onChangeText={(v) => { setUserSearchQuery(v); searchExistingUsers(v); }}
+              placeholder={zh ? '姓名、電子郵件或電話…' : 'Name, email, or phone…'}
+              style={styles.input}
+              autoCapitalize="none"
+              placeholderTextColor={colors.placeholder}
+            />
+            {userSearchLoading && <ActivityIndicator size="small" color={INDIGO} style={{ alignSelf: 'flex-start' }} />}
+            {/* Role selector */}
+            {userSearchResults.length > 0 && (
+              <View style={styles.roleRow}>
+                {(['GROUP_MEMBER', 'GROUP_ADMIN'] as const).map((r) => (
+                  <TouchableOpacity key={r} style={[styles.roleBtn, memberAddRole === r && styles.roleBtnActive]} onPress={() => setMemberAddRole(r)}>
+                    <Text style={[styles.roleBtnText, memberAddRole === r && styles.roleBtnTextActive]}>{r === 'GROUP_MEMBER' ? (zh ? '一般成員' : 'Member') : (zh ? '群組管理員' : 'Admin')}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            {userSearchResults.map((u) => (
+              <View key={u.id} style={[styles.reqRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.reqPrimary}>{u.displayName ?? u.email ?? u.id}</Text>
+                  {u.email ? <Text style={styles.reqMeta}>{u.email}</Text> : null}
+                  {u.phoneE164 ? <Text style={styles.reqMeta}>{u.phoneE164}</Text> : null}
+                </View>
+                <TouchableOpacity
+                  style={[styles.approveBtn, { opacity: memberAddLoading === u.id ? 0.5 : 1 }]}
+                  onPress={() => addExistingMember(u.id, u.displayName)}
+                  disabled={memberAddLoading === u.id}
+                >
+                  {memberAddLoading === u.id
+                    ? <ActivityIndicator size="small" color="#fff" />
+                    : <Text style={styles.approveBtnText}>{zh ? '加入' : 'Add'}</Text>}
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
           {/* Single create-and-add */}
           <View style={styles.card}>
@@ -1050,8 +1154,8 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Donations — commented out, work in progress */}
-      {false && tab === ('donations' as Tab) && (
+      {/* Donations */}
+      {tab === 'donations' && (
         <View style={{ gap: 12 }}>
           <View style={styles.card}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1086,8 +1190,8 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      {/* Annual Report — commented out, work in progress */}
-      {false && tab === ('report' as Tab) && (isPlatformAdmin || isGroupAdmin) && (
+      {/* Annual Report */}
+      {tab === 'report' && (isPlatformAdmin || isGroupAdmin) && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{zh ? '年度報告' : 'Annual Report'}</Text>
           <Text style={styles.muted}>{zh ? '下載每位成員的年度出席率與捐款統計。' : 'Download per-member attendance and donation stats for any year.'}</Text>

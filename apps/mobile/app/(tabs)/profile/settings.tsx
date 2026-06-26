@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, Switch, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, KeyboardAvoidingView, Platform, ActivityIndicator, Share, Clipboard } from 'react-native';
 import { useAuth } from '../../../context/auth.context';
 import { useTheme } from '../../../context/theme.context';
 import { apiFetch } from '../../../lib/api';
@@ -29,6 +29,13 @@ export default function ProfileSettingsScreen() {
   const [pendingTheme, setPendingTheme] = useState<'light' | 'dark'>(theme);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  type Invite = { id: string; token: string; role: string; expiresAt: string; usedAt: string | null; createdAt: string };
+  const [allInvites, setAllInvites] = useState<Invite[]>([]);
+  const [adminInviteGenerating, setAdminInviteGenerating] = useState(false);
+  const [userInviteGenerating, setUserInviteGenerating] = useState(false);
+
+  const WEB_BASE = process.env.EXPO_PUBLIC_WEB_URL ?? '';
 
   useFocusEffect(useCallback(() => {
     navigation.getParent()?.setOptions({
@@ -66,8 +73,42 @@ export default function ProfileSettingsScreen() {
       const savedLang = user.preferredLanguage as 'en' | 'zh';
       setLang(savedLang);
       i18n.changeLanguage(savedLang);
+      if (user.role === 'ADMIN') {
+        apiFetch<Invite[]>('/invites').then(setAllInvites).catch(() => {});
+      }
     }
   }, [user]);
+
+  const generateInvite = async (role: 'ADMIN' | 'USER') => {
+    const setGenerating = role === 'ADMIN' ? setAdminInviteGenerating : setUserInviteGenerating;
+    setGenerating(true);
+    try {
+      const inv = await apiFetch<{ token: string }>('/invites', {
+        method: 'POST',
+        body: JSON.stringify({ role, expiresInHours: 168 }),
+      });
+      const link = `${WEB_BASE}/${lang}/signup?invite=${inv.token}`;
+      setAllInvites((prev) => [
+        ...prev,
+        { id: '', token: inv.token, role, expiresAt: new Date(Date.now() + 168 * 3600 * 1000).toISOString(), usedAt: null, createdAt: new Date().toISOString() },
+      ]);
+      await Share.share({ message: link, url: link });
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to generate invite.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const revokeInvite = async (id: string) => {
+    if (!id) return;
+    try {
+      await apiFetch(`/invites/${id}`, { method: 'DELETE' });
+      setAllInvites((prev) => prev.filter((i) => i.id !== id));
+    } catch (err: any) {
+      Alert.alert('Error', err.message ?? 'Failed to revoke invite.');
+    }
+  };
 
   const handleSave = async () => {
     const storedEmail = (user as any)?.email ?? '';
@@ -185,6 +226,89 @@ export default function ProfileSettingsScreen() {
         <Text style={styles.btnText}>{saving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}</Text>
       </TouchableOpacity>
 
+      {/* Admin Invites */}
+      {user.role === 'ADMIN' && (
+        <View style={{ gap: 12, marginTop: 24 }}>
+          {/* Platform Admin invite */}
+          <View style={styles.inviteCard}>
+            <Text style={styles.inviteTitle}>{zh ? '邀請新平台管理員' : 'Invite New Platform Admin'}</Text>
+            <Text style={styles.inviteBody}>
+              {zh ? '產生連結，讓對方以平台管理員身份完成註冊。' : 'Generate a link so someone can sign up as a Platform Admin.'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.inviteBtn, { opacity: adminInviteGenerating ? 0.6 : 1 }]}
+              onPress={() => generateInvite('ADMIN')}
+              disabled={adminInviteGenerating}
+            >
+              <Text style={styles.inviteBtnText}>{adminInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生並分享連結' : 'Generate & Share Link')}</Text>
+            </TouchableOpacity>
+            {allInvites.filter((i) => !i.usedAt && i.role === 'ADMIN' && i.id).length > 0 && (
+              <View style={{ gap: 6, marginTop: 8 }}>
+                <Text style={styles.inviteListLabel}>{zh ? '尚未使用的管理員邀請：' : 'Unused admin invites:'}</Text>
+                {allInvites.filter((i) => !i.usedAt && i.role === 'ADMIN' && i.id).map((inv) => {
+                  const link = `${WEB_BASE}/${lang}/signup?invite=${inv.token}`;
+                  return (
+                    <View key={inv.id} style={styles.inviteRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.inviteToken} numberOfLines={1}>{link}</Text>
+                        <Text style={styles.inviteExpiry}>{zh ? '到期：' : 'Exp: '}{new Date(inv.expiresAt).toLocaleDateString()}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity onPress={() => { Clipboard.setString(link); Alert.alert('✓', zh ? '已複製' : 'Copied'); }}>
+                          <Text style={styles.inviteCopyBtn}>{zh ? '複製' : 'Copy'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => Alert.alert(zh ? '撤銷邀請' : 'Revoke Invite', zh ? '確定要撤銷？' : 'Revoke this invite?', [{ text: zh ? '取消' : 'Cancel', style: 'cancel' }, { text: zh ? '撤銷' : 'Revoke', style: 'destructive', onPress: () => revokeInvite(inv.id) }])}>
+                          <Text style={styles.inviteRevokeBtn}>{zh ? '撤銷' : 'Revoke'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+
+          {/* Normal User invite */}
+          <View style={[styles.inviteCard, styles.inviteCardGreen]}>
+            <Text style={[styles.inviteTitle, { color: isDark ? '#6EE7B7' : '#065F46' }]}>{zh ? '邀請新平台用戶' : 'Invite New Platform User'}</Text>
+            <Text style={styles.inviteBody}>
+              {zh ? '產生連結，讓尚未註冊的人以一般用戶身份加入平台。' : 'Generate a link for someone to sign up as a regular user.'}
+            </Text>
+            <TouchableOpacity
+              style={[styles.inviteBtn, styles.inviteBtnGreen, { opacity: userInviteGenerating ? 0.6 : 1 }]}
+              onPress={() => generateInvite('USER')}
+              disabled={userInviteGenerating}
+            >
+              <Text style={styles.inviteBtnText}>{userInviteGenerating ? (zh ? '產生中…' : 'Generating…') : (zh ? '產生並分享連結' : 'Generate & Share Link')}</Text>
+            </TouchableOpacity>
+            {allInvites.filter((i) => !i.usedAt && i.role === 'USER' && i.id).length > 0 && (
+              <View style={{ gap: 6, marginTop: 8 }}>
+                <Text style={styles.inviteListLabel}>{zh ? '尚未使用的用戶邀請：' : 'Unused user invites:'}</Text>
+                {allInvites.filter((i) => !i.usedAt && i.role === 'USER' && i.id).map((inv) => {
+                  const link = `${WEB_BASE}/${lang}/signup?invite=${inv.token}`;
+                  return (
+                    <View key={inv.id} style={styles.inviteRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.inviteToken} numberOfLines={1}>{link}</Text>
+                        <Text style={styles.inviteExpiry}>{zh ? '到期：' : 'Exp: '}{new Date(inv.expiresAt).toLocaleDateString()}</Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity onPress={() => { Clipboard.setString(link); Alert.alert('✓', zh ? '已複製' : 'Copied'); }}>
+                          <Text style={styles.inviteCopyBtn}>{zh ? '複製' : 'Copy'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => Alert.alert(zh ? '撤銷邀請' : 'Revoke Invite', zh ? '確定要撤銷？' : 'Revoke this invite?', [{ text: zh ? '取消' : 'Cancel', style: 'cancel' }, { text: zh ? '撤銷' : 'Revoke', style: 'destructive', onPress: () => revokeInvite(inv.id) }])}>
+                          <Text style={styles.inviteRevokeBtn}>{zh ? '撤銷' : 'Revoke'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Danger Zone */}
       <View style={styles.dangerZone}>
         <Text style={styles.dangerTitle}>{zh ? '危險區域' : 'Danger Zone'}</Text>
@@ -252,5 +376,18 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     dangerBody: { fontSize: 12, color: isDark ? '#F87171' : '#EF4444', marginBottom: 12, lineHeight: 18 },
     deleteBtn: { borderWidth: 1, borderColor: isDark ? '#7F1D1D' : '#FCA5A5', borderRadius: 8, padding: 12, alignItems: 'center' },
     deleteBtnText: { color: isDark ? '#FCA5A5' : '#DC2626', fontWeight: '600', fontSize: 14 },
+    inviteCard: { borderWidth: 1, borderColor: isDark ? 'rgba(99,102,241,0.4)' : '#C7D2FE', borderRadius: 12, padding: 16, backgroundColor: isDark ? 'rgba(79,70,229,0.1)' : '#EEF2FF', gap: 8 },
+    inviteCardGreen: { borderColor: isDark ? 'rgba(16,185,129,0.4)' : '#A7F3D0', backgroundColor: isDark ? 'rgba(16,185,129,0.1)' : '#ECFDF5' },
+    inviteTitle: { fontSize: 14, fontWeight: '700', color: isDark ? '#818CF8' : '#4338CA' },
+    inviteBody: { fontSize: 12, color: isDark ? '#A5B4FC' : '#4338CA', lineHeight: 18 },
+    inviteBtn: { backgroundColor: '#4F46E5', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
+    inviteBtnGreen: { backgroundColor: '#059669' },
+    inviteBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+    inviteListLabel: { fontSize: 11, fontWeight: '600', color: isDark ? '#818CF8' : '#4338CA' },
+    inviteRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: isDark ? 'rgba(99,102,241,0.3)' : '#C7D2FE', borderRadius: 8, padding: 8, backgroundColor: isDark ? '#1e1b4b' : '#fff' },
+    inviteToken: { fontSize: 10, fontFamily: 'monospace', color: isDark ? '#A5B4FC' : '#3730A3', flex: 1 },
+    inviteExpiry: { fontSize: 10, color: isDark ? '#818CF8' : '#6366F1', marginTop: 2 },
+    inviteCopyBtn: { fontSize: 12, fontWeight: '600', color: '#4F46E5' },
+    inviteRevokeBtn: { fontSize: 12, fontWeight: '600', color: '#EF4444' },
   });
 }
