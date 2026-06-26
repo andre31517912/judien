@@ -14,14 +14,14 @@ export default function LoginScreen() {
   const router = useRouter();
   const { t, i18n } = useTranslation();
   const zh = i18n.language === 'zh';
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identifier, password);
       router.replace('/(tabs)/home');
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Sign in failed.');
@@ -67,12 +67,12 @@ export default function LoginScreen() {
         <Text style={[styles.title, { color: colors.text }]}>{t('auth.login')}</Text>
         <TextInput
           style={[styles.input, { borderColor: colors.border, backgroundColor: colors.input, color: colors.inputText }]}
-          placeholder={t('auth.email')}
+          placeholder={zh ? '電子郵件或手機號碼' : 'Email or phone number'}
           placeholderTextColor={colors.placeholder}
-          value={email}
-          onChangeText={setEmail}
+          value={identifier}
+          onChangeText={setIdentifier}
           autoCapitalize="none"
-          keyboardType="email-address"
+          keyboardType="default"
           textContentType="username"
           autoComplete="username"
           returnKeyType="next"
