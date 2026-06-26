@@ -492,6 +492,62 @@ export class RsvpService {
     return { removed: true };
   }
 
+  async updateTransportation(eventId: string, userId: string, method: string) {
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { id: true, status: true },
+    });
+    if (!rsvp || rsvp.status !== 'GOING') {
+      throw new ForbiddenException('You must be RSVPed as Going to set a transportation method.');
+    }
+    return (this.prisma.rSVP as any).update({
+      where: { id: rsvp.id },
+      data: { transportationMethod: method },
+    });
+  }
+
+  async joinSubEvent(eventId: string, userId: string, subEventId: string) {
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { status: true },
+    });
+    if (!rsvp || rsvp.status !== 'GOING') {
+      throw new ForbiddenException('You must be RSVPed as Going to join a sub-event.');
+    }
+
+    const subEvent = await (this.prisma as any).subEvent.findUnique({
+      where: { id: subEventId },
+      include: { _count: { select: { rsvps: true } } },
+    });
+    if (!subEvent || subEvent.parentEventId !== eventId) {
+      throw new NotFoundException('Sub-event not found.');
+    }
+    if (subEvent.maxCapacity && subEvent._count.rsvps >= subEvent.maxCapacity) {
+      throw new ForbiddenException('This activity is at capacity.');
+    }
+
+    return (this.prisma as any).subEventRSVP.upsert({
+      where: { subEventId_userId: { subEventId, userId } },
+      create: { subEventId, userId },
+      update: {},
+    });
+  }
+
+  async leaveSubEvent(eventId: string, userId: string, subEventId: string) {
+    const subEvent = await (this.prisma as any).subEvent.findUnique({
+      where: { id: subEventId },
+      select: { parentEventId: true },
+    });
+    if (!subEvent || subEvent.parentEventId !== eventId) {
+      throw new NotFoundException('Sub-event not found.');
+    }
+
+    await (this.prisma as any).subEventRSVP.deleteMany({
+      where: { subEventId, userId },
+    });
+    return { left: true };
+  }
+
   private maskIdentifier(value: string) {
     if (!value) return '***';
     if (value.includes('@')) {

@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards, HttpCode, HttpStatus, Req } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Patch, Param, Body, UseGuards, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RsvpService } from './rsvp.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto } from '@judien/shared';
+import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, UpdateTransportationSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto, type UpdateTransportationDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { Request } from 'express';
 
@@ -146,5 +146,39 @@ export class RsvpController {
     @CurrentUser() user: User,
   ) {
     return this.rsvpService.removePlusOne(eventId, user.id, id);
+  }
+
+  // PATCH /api/events/:eventId/rsvp/transportation — save how the user is getting there
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/transportation')
+  updateTransportation(
+    @Param('eventId') eventId: string,
+    @Body(new ZodValidationPipe(UpdateTransportationSchema)) dto: UpdateTransportationDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.updateTransportation(eventId, user.id, dto.method);
+  }
+
+  // POST /api/events/:eventId/sub-events/:subId/join — join a sub-event
+  @UseGuards(AuthGuard('jwt'))
+  @Post('events/:eventId/sub-events/:subId/join')
+  joinSubEvent(
+    @Param('eventId') eventId: string,
+    @Param('subId') subId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.joinSubEvent(eventId, user.id, subId);
+  }
+
+  // DELETE /api/events/:eventId/sub-events/:subId/join — leave a sub-event
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('events/:eventId/sub-events/:subId/join')
+  @HttpCode(HttpStatus.OK)
+  leaveSubEvent(
+    @Param('eventId') eventId: string,
+    @Param('subId') subId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.leaveSubEvent(eventId, user.id, subId);
   }
 }

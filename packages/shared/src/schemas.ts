@@ -46,6 +46,13 @@ export type LoginDto = z.infer<typeof LoginSchema>;
 
 // ─── Event ────────────────────────────────────────────────────────────────────
 
+export const SubEventInputSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).default(''),
+  maxCapacity: z.number().int().positive().optional(),
+});
+export type SubEventInputDto = z.infer<typeof SubEventInputSchema>;
+
 export const CreateEventSchema = z.object({
   groupId: z.string().min(1).optional(),
   seriesId: z.string().min(1).optional(),
@@ -61,11 +68,18 @@ export const CreateEventSchema = z.object({
   coverImageUrl: z.string().url().nullable().optional(),
   commentsEnabled: z.boolean().default(true),
   messagingEnabled: z.boolean().default(true),
+  collectTransportation: z.boolean().default(false),
+  subEvents: z.array(SubEventInputSchema).optional(),
 });
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
 
-export const UpdateEventSchema = CreateEventSchema.partial();
+export const UpdateEventSchema = CreateEventSchema.omit({ subEvents: true }).partial();
 export type UpdateEventDto = z.infer<typeof UpdateEventSchema>;
+
+export const UpdateTransportationSchema = z.object({
+  method: z.string().max(500),
+});
+export type UpdateTransportationDto = z.infer<typeof UpdateTransportationSchema>;
 
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 

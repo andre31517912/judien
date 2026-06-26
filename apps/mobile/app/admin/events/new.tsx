@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ActivityIndicator,
-  StyleSheet, ScrollView, Alert, Image, Platform,
+  StyleSheet, ScrollView, Alert, Image, Platform, Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -62,6 +62,13 @@ export default function NewEventScreen() {
   });
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Transportation + sub-events
+  const [collectTransportation, setCollectTransportation] = useState(false);
+  const [subEventsEnabled, setSubEventsEnabled] = useState(false);
+  const [subEventItems, setSubEventItems] = useState<{ title: string; description: string }[]>([
+    { title: '', description: '' },
+  ]);
 
   // Invite
   const [inviteeIds, setInviteeIds] = useState<string[]>([]);
@@ -132,6 +139,15 @@ export default function NewEventScreen() {
     await doPickImage();
   };
 
+  const addSubEvent = () =>
+    setSubEventItems((prev) => [...prev, { title: '', description: '' }]);
+
+  const removeSubEvent = (i: number) =>
+    setSubEventItems((prev) => prev.filter((_, idx) => idx !== i));
+
+  const setSubField = (i: number, field: 'title' | 'description', val: string) =>
+    setSubEventItems((prev) => prev.map((se, idx) => idx === i ? { ...se, [field]: val } : se));
+
   const toISO = (s: string): string => new Date(s.trim().replace(' ', 'T')).toISOString();
 
   const handleCreate = async () => {
@@ -154,6 +170,10 @@ export default function NewEventScreen() {
         const uploaded = await apiUpload(coverUri);
         coverImageUrl = uploaded.url;
       }
+      const validSubEvents = subEventsEnabled
+        ? subEventItems.filter((se) => se.title.trim())
+        : undefined;
+
       const body: Record<string, unknown> = {
         title: form.title,
         description: form.description,
@@ -162,6 +182,8 @@ export default function NewEventScreen() {
         endAt: form.endAt ? toISO(form.endAt) : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl,
+        collectTransportation,
+        ...(validSubEvents?.length ? { subEvents: validSubEvents } : {}),
         ...(groupId ? { groupId } : {}),
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
@@ -241,6 +263,81 @@ export default function NewEventScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* Transportation toggle */}
+      <View style={styles.toggleRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+            {zh ? '收集交通方式' : 'Collect transportation info'}
+          </Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
+            {zh ? '出席的賓客將被問及交通方式' : 'Going guests will be asked how they're getting there'}
+          </Text>
+        </View>
+        <Switch
+          value={collectTransportation}
+          onValueChange={setCollectTransportation}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      {/* Sub-events toggle */}
+      <View style={styles.toggleRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+            {zh ? '啟用子活動' : 'Enable sub-events / activities'}
+          </Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
+            {zh ? '設定賓客出席後可選擇的活動（如：健行、跑步）' : 'Add activities guests can choose after RSVPing Going'}
+          </Text>
+        </View>
+        <Switch
+          value={subEventsEnabled}
+          onValueChange={setSubEventsEnabled}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      {subEventsEnabled && (
+        <View style={styles.subEventsContainer}>
+          <Text style={{ fontSize: 12, fontWeight: '700', color: INDIGO, marginBottom: 8, letterSpacing: 0.5 }}>
+            {zh ? '活動項目' : 'ACTIVITIES'}
+          </Text>
+          {subEventItems.map((se, i) => (
+            <View key={i} style={styles.subEventItem}>
+              <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                <TextInput
+                  style={[styles.input, { flex: 1 }]}
+                  value={se.title}
+                  onChangeText={(v) => setSubField(i, 'title', v)}
+                  placeholder={zh ? `活動 ${i + 1} 名稱（如：健行）` : `Activity ${i + 1} name (e.g. Hiking)`}
+                  placeholderTextColor={colors.placeholder}
+                  maxLength={200}
+                />
+                {subEventItems.length > 1 && (
+                  <TouchableOpacity onPress={() => removeSubEvent(i)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Ionicons name="close-circle" size={22} color={colors.placeholder} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <TextInput
+                style={[styles.input, { marginTop: 6 }]}
+                value={se.description}
+                onChangeText={(v) => setSubField(i, 'description', v)}
+                placeholder={zh ? '簡短說明（選填）' : 'Short description (optional)'}
+                placeholderTextColor={colors.placeholder}
+                maxLength={500}
+              />
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addSubEventBtn} onPress={addSubEvent} activeOpacity={0.7}>
+            <Ionicons name="add" size={16} color={INDIGO} />
+            <Text style={{ fontSize: 14, color: INDIGO, marginLeft: 4 }}>{zh ? '新增活動' : 'Add activity'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Invite section */}
       <View style={styles.field}>
@@ -326,6 +423,25 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card,
       borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8,
       borderWidth: 1, borderColor: colors.border,
+    },
+    toggleRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 12,
+      borderWidth: 1, borderColor: colors.border, borderRadius: 10,
+      padding: 12, marginBottom: 12, backgroundColor: colors.card,
+    },
+    subEventsContainer: {
+      borderLeftWidth: 2, borderLeftColor: INDIGO + '55',
+      paddingLeft: 12, marginLeft: 4, marginBottom: 12,
+    },
+    subEventItem: {
+      backgroundColor: colors.bg, borderRadius: 8,
+      borderWidth: 1, borderColor: colors.border,
+      padding: 10, marginBottom: 8,
+    },
+    addSubEventBtn: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+      borderWidth: 1, borderColor: INDIGO + '80', borderStyle: 'dashed',
+      borderRadius: 8, paddingVertical: 8, marginTop: 2,
     },
     btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
     btnDisabled: { opacity: 0.6 },

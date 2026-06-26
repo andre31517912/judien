@@ -138,6 +138,12 @@ export default function EventDetailScreen() {
   const [commentError, setCommentError] = useState('');
   const [replyLoading, setReplyLoading] = useState(false);
 
+  // transportation + sub-events
+  const [myTransportation, setMyTransportation] = useState('');
+  const [transportationSaved, setTransportationSaved] = useState(false);
+  const [transportationLoading, setTransportationLoading] = useState(false);
+  const [subEventLoading, setSubEventLoading] = useState<string | null>(null);
+
   // invite tab: 'search' | 'roster'
   const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
   const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
@@ -154,6 +160,7 @@ export default function EventDetailScreen() {
       .then((ev) => {
         setEvent(ev);
         setMyRsvp(ev.myRsvp);
+        if (ev.myTransportation) setMyTransportation(ev.myTransportation);
         if (ev.myRsvp === 'GOING') {
           apiFetch<PlusOne[]>(`/events/${id}/rsvp/plus-ones`).then(setMyPlusOnes).catch(() => {});
         }
@@ -422,6 +429,42 @@ export default function EventDetailScreen() {
     }
   };
 
+  const handleSaveTransportation = async () => {
+    if (transportationLoading) return;
+    setTransportationLoading(true);
+    try {
+      await apiFetch(`/events/${id}/rsvp/transportation`, {
+        method: 'PATCH',
+        body: JSON.stringify({ method: myTransportation.trim() }),
+      });
+      setTransportationSaved(true);
+      setTimeout(() => setTransportationSaved(false), 3000);
+    } catch (err: any) {
+      Alert.alert(zh ? '儲存失敗' : 'Save failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setTransportationLoading(false);
+    }
+  };
+
+  const handleSubEventToggle = async (subId: string, isMine: boolean) => {
+    if (subEventLoading) return;
+    setSubEventLoading(subId);
+    try {
+      if (isMine) {
+        await apiFetch(`/events/${id}/sub-events/${subId}/join`, { method: 'DELETE' });
+      } else {
+        await apiFetch(`/events/${id}/sub-events/${subId}/join`, { method: 'POST' });
+      }
+      const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
+      setEvent(ev);
+      setMyRsvp(ev.myRsvp);
+    } catch (err: any) {
+      Alert.alert(zh ? '更新失敗' : 'Update failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setSubEventLoading(null);
+    }
+  };
+
   const handleComment = async () => {
     if (!commentBody.trim() || commentLoading) return;
     setCommentLoading(true);
@@ -640,6 +683,69 @@ export default function EventDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          {/* Transportation input */}
+          {event.collectTransportation && myRsvp === 'GOING' && (
+            <View style={styles.transportSection}>
+              <Text style={styles.transportTitle}>
+                {zh ? '🚌 您如何前往活動？' : '🚌 How are you getting there?'}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                <TextInput
+                  style={[styles.editInput, { flex: 1, marginBottom: 0 }]}
+                  value={myTransportation}
+                  onChangeText={(v) => { setMyTransportation(v); setTransportationSaved(false); }}
+                  placeholder={zh ? '例：開車、騎車、搭捷運…' : 'e.g. Driving, biking, MRT…'}
+                  placeholderTextColor={colors.placeholder}
+                  maxLength={500}
+                  returnKeyType="done"
+                  onSubmitEditing={handleSaveTransportation}
+                />
+                <TouchableOpacity
+                  style={[styles.rsvpBtn, styles.rsvpBtnActive, { flex: 0, paddingHorizontal: 16 }]}
+                  onPress={handleSaveTransportation}
+                  disabled={transportationLoading || !myTransportation.trim()}
+                >
+                  <Text style={styles.rsvpBtnTextActive}>
+                    {transportationLoading ? '…' : transportationSaved ? (zh ? '已儲存 ✓' : 'Saved ✓') : (zh ? '儲存' : 'Save')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Sub-events activity picker */}
+          {(event.subEvents?.length ?? 0) > 0 && myRsvp === 'GOING' && (
+            <View style={styles.subEventsSection}>
+              <Text style={styles.transportTitle}>
+                {zh ? '🎯 選擇您想參加的活動' : '🎯 Pick your activities'}
+              </Text>
+              {event.subEvents!.map((se) => (
+                <TouchableOpacity
+                  key={se.id}
+                  style={[styles.subEventCard, se.isMine && styles.subEventCardActive]}
+                  onPress={() => handleSubEventToggle(se.id, se.isMine)}
+                  disabled={subEventLoading === se.id}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.subEventTitle, se.isMine && { color: INDIGO }]}>{se.title}</Text>
+                    {se.description ? <Text style={styles.subEventDesc}>{se.description}</Text> : null}
+                  </View>
+                  <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                    <View style={[styles.subEventBadge, se.isMine && styles.subEventBadgeActive]}>
+                      <Text style={[styles.subEventBadgeText, se.isMine && { color: INDIGO }]}>
+                        {subEventLoading === se.id ? '…' : se.isMine ? (zh ? '已加入' : 'Joined') : (zh ? '加入' : 'Join')}
+                      </Text>
+                    </View>
+                    <Text style={styles.subEventCount}>
+                      {se.count} {zh ? '人' : 'going'}{se.maxCapacity ? ` / ${se.maxCapacity}` : ''}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* Plus-one modal */}
           <Modal visible={showPlusOneModal} transparent animationType="slide" onRequestClose={() => setShowPlusOneModal(false)}>
@@ -1227,6 +1333,19 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   commentAction: { fontSize: 12, color: colors.subtext, fontWeight: '500' },
   commentActionDelete: { color: '#EF4444' },
   replyBtn: { fontSize: 13, color: INDIGO, fontWeight: '600' },
+
+  // Transportation + sub-events
+  transportSection: { borderWidth: 1, borderColor: INDIGO + '44', borderRadius: 12, padding: 14, marginBottom: 12, backgroundColor: isDark ? '#1E1B4B22' : '#EEF2FF' },
+  transportTitle: { fontSize: 14, fontWeight: '700', color: colors.text },
+  subEventsSection: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, marginBottom: 12 },
+  subEventCard: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, marginTop: 8, backgroundColor: colors.bg },
+  subEventCardActive: { borderColor: INDIGO, backgroundColor: isDark ? '#1E1B4B33' : '#EEF2FF' },
+  subEventTitle: { fontSize: 14, fontWeight: '600', color: colors.text },
+  subEventDesc: { fontSize: 12, color: colors.subtext, marginTop: 2 },
+  subEventBadge: { backgroundColor: colors.card, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, borderWidth: 1, borderColor: colors.border },
+  subEventBadgeActive: { borderColor: INDIGO, backgroundColor: isDark ? '#3730A355' : '#E0E7FF' },
+  subEventBadgeText: { fontSize: 12, fontWeight: '600', color: colors.subtext },
+  subEventCount: { fontSize: 11, color: colors.placeholder },
 
   // Inline edit
   editBlock: { gap: 10, marginBottom: 8 },

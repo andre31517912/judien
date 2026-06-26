@@ -54,13 +54,26 @@ export interface Event {
   feeCurrency: string;
   commentsEnabled: boolean;
   messagingEnabled: boolean;
+  collectTransportation: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+export interface SubEvent {
+  id: string;
+  title: string;
+  description: string;
+  maxCapacity: number | null;
+  order: number;
+  count: number;
+  isMine: boolean;
+}
+
 export interface EventWithCounts extends Event {
   rsvpCounts: { GOING: number; NO: number };
-  myRsvp: RSVPStatus | null; // populated when authenticated
+  myRsvp: RSVPStatus | null;
+  myTransportation?: string | null;
+  subEvents?: SubEvent[];
   shareToken?: string | null;
   isPast?: boolean;
   createdByName?: string | null;

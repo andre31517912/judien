@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image, Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -87,6 +87,7 @@ export default function EditEventScreen() {
     coverImageUrl: '',
   });
 
+  const [collectTransportation, setCollectTransportation] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
   const [customValue, setCustomValue] = useState('');
@@ -116,6 +117,7 @@ export default function EditEventScreen() {
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
+      setCollectTransportation(!!(ev as any).collectTransportation);
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -235,6 +237,7 @@ export default function EditEventScreen() {
         endAt: form.endAt ? toISO(form.endAt) : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl: form.coverImageUrl || null,
+        collectTransportation,
       };
       await apiFetch(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
       router.replace(`/(tabs)/events/${id}` as any);
@@ -327,6 +330,20 @@ export default function EditEventScreen() {
             </Text>
           )}
         </TouchableOpacity>
+      </View>
+
+      {/* Transportation toggle */}
+      <View style={[styles.field, { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, backgroundColor: colors.card }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{zh ? '收集交通方式' : 'Collect transportation info'}</Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>{zh ? '出席賓客將被問及交通方式' : "Going guests will be asked how they're getting there"}</Text>
+        </View>
+        <Switch
+          value={collectTransportation}
+          onValueChange={setCollectTransportation}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
       </View>
 
       {/* Invite section */}

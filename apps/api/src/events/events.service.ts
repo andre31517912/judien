@@ -138,12 +138,33 @@ export class EventsService {
     const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
 
     let myRsvp: string | null = null;
+    let myTransportation: string | null = null;
     if (userId) {
       const rsvp = await this.prisma.rSVP.findUnique({
         where: { eventId_userId: { eventId: id, userId } },
       });
       myRsvp = rsvp?.status ?? null;
+      myTransportation = (rsvp as any)?.transportationMethod ?? null;
     }
+
+    const rawSubEvents = await (this.prisma as any).subEvent.findMany({
+      where: { parentEventId: id },
+      orderBy: { order: 'asc' },
+      include: {
+        _count: { select: { rsvps: true } },
+        ...(userId ? { rsvps: { where: { userId }, select: { id: true } } } : {}),
+      },
+    });
+
+    const subEvents = rawSubEvents.map((se: any) => ({
+      id: se.id,
+      title: se.title,
+      description: se.description,
+      maxCapacity: se.maxCapacity,
+      order: se.order,
+      count: se._count.rsvps,
+      isMine: userId ? (se.rsvps?.length > 0) : false,
+    }));
 
     return {
       ...event,
@@ -155,6 +176,8 @@ export class EventsService {
       shareToken: event.shareLink?.token ?? null,
       rsvpCounts: counts,
       myRsvp,
+      myTransportation,
+      subEvents,
       createdByName: event.createdBy?.displayName ?? null,
       createdBy: undefined,
       isPast: new Date(event.startAt) < new Date(),
@@ -208,12 +231,23 @@ export class EventsService {
     const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
 
     let myRsvp: string | null = null;
+    let myTransportation: string | null = null;
     if (userId) {
       const rsvp = await this.prisma.rSVP.findUnique({
         where: { eventId_userId: { eventId: event.id, userId } },
       });
       myRsvp = rsvp?.status ?? null;
+      myTransportation = (rsvp as any)?.transportationMethod ?? null;
     }
+
+    const rawSubEvents = await (this.prisma as any).subEvent.findMany({
+      where: { parentEventId: event.id },
+      orderBy: { order: 'asc' },
+      include: {
+        _count: { select: { rsvps: true } },
+        ...(userId ? { rsvps: { where: { userId }, select: { id: true } } } : {}),
+      },
+    });
 
     return {
       ...event,
@@ -225,6 +259,16 @@ export class EventsService {
       shareToken: event.shareLink?.token ?? token,
       rsvpCounts: counts,
       myRsvp,
+      myTransportation,
+      subEvents: rawSubEvents.map((se: any) => ({
+        id: se.id,
+        title: se.title,
+        description: se.description,
+        maxCapacity: se.maxCapacity,
+        order: se.order,
+        count: se._count.rsvps,
+        isMine: userId ? (se.rsvps?.length > 0) : false,
+      })),
       createdByName: event.createdBy?.displayName ?? null,
       createdBy: undefined,
       isPast: new Date(event.startAt) < new Date(),
@@ -240,15 +284,29 @@ export class EventsService {
     }
     // No groupId → personal event; any authenticated user may create one.
 
+    const { subEvents: subEventInputs, ...eventFields } = dto;
+
     const event = await this.prisma.event.create({
       data: {
-        ...dto,
-        endAt: dto.endAt ?? null,
-        feeAmount: dto.feeAmount ?? null,
-        coverImageUrl: dto.coverImageUrl ?? null,
+        ...eventFields,
+        endAt: eventFields.endAt ?? null,
+        feeAmount: eventFields.feeAmount ?? null,
+        coverImageUrl: eventFields.coverImageUrl ?? null,
         createdById: creator.id,
       },
     });
+
+    if (subEventInputs?.length) {
+      await (this.prisma as any).subEvent.createMany({
+        data: subEventInputs.map((se, i) => ({
+          parentEventId: event.id,
+          title: se.title,
+          description: se.description ?? '',
+          maxCapacity: se.maxCapacity ?? null,
+          order: i,
+        })),
+      });
+    }
 
     // Notify all accepted group members + descendant group members (except the creator)
     if (dto.groupId) {

@@ -82,6 +82,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [inviting, setInviting] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
 
+  const [collectTransportation, setCollectTransportation] = useState(false);
+
   // cover image
   const coverFileRef = useRef<HTMLInputElement>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -107,6 +109,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });
+      setCollectTransportation(!!(ev as any).collectTransportation);
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -150,6 +153,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl: form.coverImageUrl || null,
+        collectTransportation,
       };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
       // Redirect back to event detail after saving
@@ -354,6 +358,24 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             </div>
             <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileChange} className="hidden" />
           </Field>
+
+          {/* Transportation checkbox */}
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+            <input
+              type="checkbox"
+              checked={collectTransportation}
+              onChange={(e) => setCollectTransportation(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {zh ? '收集交通方式' : 'Collect transportation info'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {zh ? '出席的賓客將被問及交通方式' : "Going guests will be asked how they're getting to the event."}
+              </p>
+            </div>
+          </label>
         </form>
       </section>
 

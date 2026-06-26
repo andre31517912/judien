@@ -63,6 +63,47 @@ export default function EventDetailPage() {
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
 
+  // transportation + sub-events
+  const [myTransportation, setMyTransportation] = useState<string>('');
+  const [transportationSaved, setTransportationSaved] = useState(false);
+  const [transportationLoading, setTransportationLoading] = useState(false);
+  const [subEventLoading, setSubEventLoading] = useState<string | null>(null);
+
+  const handleSaveTransportation = async () => {
+    if (transportationLoading) return;
+    setTransportationLoading(true);
+    try {
+      await apiFetch(`/events/${params.id}/rsvp/transportation`, {
+        method: 'PATCH',
+        body: JSON.stringify({ method: myTransportation.trim() }),
+      });
+      setTransportationSaved(true);
+      setTimeout(() => setTransportationSaved(false), 3000);
+    } catch (err: any) {
+      alert(err.message ?? 'Failed to save.');
+    } finally {
+      setTransportationLoading(false);
+    }
+  };
+
+  const handleSubEventToggle = async (subId: string, isMine: boolean) => {
+    if (subEventLoading) return;
+    setSubEventLoading(subId);
+    try {
+      if (isMine) {
+        await apiFetch(`/events/${params.id}/sub-events/${subId}/join`, { method: 'DELETE' });
+      } else {
+        await apiFetch(`/events/${params.id}/sub-events/${subId}/join`, { method: 'POST' });
+      }
+      const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
+      setEvent(ev);
+    } catch (err: any) {
+      alert(err.message ?? 'Failed to update.');
+    } finally {
+      setSubEventLoading(null);
+    }
+  };
+
   // loading guards
   const [rsvpLoading, setRsvpLoading] = useState(false);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -375,6 +416,7 @@ export default function EventDetailPage() {
     ]).then(([ev, commentsData, rsvpData]) => {
       setEvent(ev);
       setRsvpStatus(ev.myRsvp);
+      if (ev.myTransportation) setMyTransportation(ev.myTransportation);
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setGoingList(rsvpData.GOING ?? []);
       setLoading(false);
@@ -742,6 +784,69 @@ export default function EventDetailPage() {
               >
                 {zh ? '確認不參加' : 'Confirm'}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Transportation input — shown when host collects it and user is Going */}
+        {event.collectTransportation && rsvpStatus === 'GOING' && (
+          <div className="rounded-xl border border-indigo-100 dark:border-indigo-900 bg-indigo-50 dark:bg-indigo-950/30 p-4 flex flex-col gap-2">
+            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+              {zh ? '🚌 您如何前往活動？' : '🚌 How are you getting there?'}
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={myTransportation}
+                onChange={(e) => { setMyTransportation(e.target.value); setTransportationSaved(false); }}
+                placeholder={zh ? '例：開車、騎車、搭捷運…' : 'e.g. Driving, biking, MRT…'}
+                className="flex-1 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                maxLength={500}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSaveTransportation(); }}
+              />
+              <button
+                onClick={handleSaveTransportation}
+                disabled={transportationLoading || !myTransportation.trim()}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition disabled:opacity-50"
+              >
+                {transportationLoading ? '…' : transportationSaved ? (zh ? '已儲存 ✓' : 'Saved ✓') : (zh ? '儲存' : 'Save')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Sub-events activity picker — shown when user is Going and event has sub-events */}
+        {(event.subEvents?.length ?? 0) > 0 && rsvpStatus === 'GOING' && (
+          <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-3">
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+              {zh ? '🎯 選擇您想參加的活動' : '🎯 Pick your activities'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {event.subEvents!.map((se) => (
+                <button
+                  key={se.id}
+                  onClick={() => handleSubEventToggle(se.id, se.isMine)}
+                  disabled={subEventLoading === se.id}
+                  className={`text-left rounded-xl border p-3 transition disabled:opacity-60 ${
+                    se.isMine
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 dark:border-indigo-600'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className={`text-sm font-medium ${se.isMine ? 'text-indigo-700 dark:text-indigo-300' : 'text-gray-800 dark:text-gray-200'}`}>{se.title}</p>
+                      {se.description && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{se.description}</p>}
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${se.isMine ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'}`}>
+                        {se.isMine ? (zh ? '已加入' : 'Joined') : (zh ? '加入' : 'Join')}
+                      </span>
+                      <span className="text-xs text-gray-400">{se.count} {zh ? '人' : 'going'}{se.maxCapacity ? ` / ${se.maxCapacity}` : ''}</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         )}

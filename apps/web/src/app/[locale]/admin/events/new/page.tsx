@@ -30,6 +30,13 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     feeAmount: '',
   });
 
+  // Transportation + sub-events flags
+  const [collectTransportation, setCollectTransportation] = useState(false);
+  const [subEventsEnabled, setSubEventsEnabled] = useState(false);
+  const [subEventItems, setSubEventItems] = useState<{ title: string; description: string }[]>([
+    { title: '', description: '' },
+  ]);
+
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm({ ...form, [k]: e.target.value });
@@ -41,6 +48,15 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     e.target.value = '';
   };
 
+  const addSubEvent = () =>
+    setSubEventItems((prev) => [...prev, { title: '', description: '' }]);
+
+  const removeSubEvent = (i: number) =>
+    setSubEventItems((prev) => prev.filter((_, idx) => idx !== i));
+
+  const setSubEventField = (i: number, field: 'title' | 'description', val: string) =>
+    setSubEventItems((prev) => prev.map((se, idx) => idx === i ? { ...se, [field]: val } : se));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -51,6 +67,10 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         const uploaded = await apiUpload(coverFile);
         coverImageUrl = uploaded.url;
       }
+      const validSubEvents = subEventsEnabled
+        ? subEventItems.filter((se) => se.title.trim())
+        : undefined;
+
       const body: Record<string, unknown> = {
         title: form.title,
         description: form.description,
@@ -59,6 +79,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl,
+        collectTransportation,
+        ...(validSubEvents?.length ? { subEvents: validSubEvents } : {}),
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
       router.push(`/${params.locale}/events/${ev.id}`);
@@ -147,6 +169,80 @@ export default function NewEventPage({ params }: { params: { locale: string } })
           </div>
           <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
         </Field>
+
+        {/* Transportation checkbox */}
+        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+          <input
+            type="checkbox"
+            checked={collectTransportation}
+            onChange={(e) => setCollectTransportation(e.target.checked)}
+            className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Collect transportation info</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Guests who RSVP Going will be asked how they&apos;re getting to the event.
+            </p>
+          </div>
+        </label>
+
+        {/* Sub-events toggle */}
+        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+          <input
+            type="checkbox"
+            checked={subEventsEnabled}
+            onChange={(e) => setSubEventsEnabled(e.target.checked)}
+            className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+          />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Enable sub-events / activities</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Add activity options guests can choose from after RSVPing Going (e.g. hiking, beach, running).
+            </p>
+          </div>
+        </label>
+
+        {subEventsEnabled && (
+          <div className="flex flex-col gap-3 pl-2 border-l-2 border-indigo-200 dark:border-indigo-800 ml-2">
+            <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wide">Activities</p>
+            {subEventItems.map((se, i) => (
+              <div key={i} className="flex flex-col gap-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2">
+                  <input
+                    value={se.title}
+                    onChange={(e) => setSubEventField(i, 'title', e.target.value)}
+                    placeholder={`Activity ${i + 1} name (e.g. Hiking)`}
+                    className={inp + ' flex-1'}
+                    maxLength={200}
+                  />
+                  {subEventItems.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSubEvent(i)}
+                      className="text-gray-400 hover:text-red-500 transition text-lg leading-none shrink-0"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <input
+                  value={se.description}
+                  onChange={(e) => setSubEventField(i, 'description', e.target.value)}
+                  placeholder="Short description (optional)"
+                  className={inp}
+                  maxLength={500}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addSubEvent}
+              className="text-sm text-indigo-600 dark:text-indigo-400 border border-dashed border-indigo-300 dark:border-indigo-700 rounded-lg py-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition"
+            >
+              + Add activity
+            </button>
+          </div>
+        )}
 
         <button type="submit"
           disabled={submitting}
