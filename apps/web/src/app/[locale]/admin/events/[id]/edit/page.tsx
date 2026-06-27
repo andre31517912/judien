@@ -233,7 +233,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   if (!event) return <p className="text-gray-400 mt-8">Loading…</p>;
   if (!accessChecked && user?.role !== 'ADMIN') return <p className="text-gray-400 mt-8">Loading…</p>;
 
-  if (user?.role !== 'ADMIN' && !isGroupAdmin) return (
+  if (user?.role !== 'ADMIN' && !isGroupAdmin && event.createdById !== user?.id) return (
     <div className="text-center py-16">
       <p className="text-red-500 font-medium">Admin access required.</p>
     </div>

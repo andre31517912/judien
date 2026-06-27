@@ -87,6 +87,7 @@ export default function EditEventScreen() {
     coverImageUrl: '',
   });
 
+  const [eventCreatorId, setEventCreatorId] = useState<string | null>(null);
   const [collectTransportation, setCollectTransportation] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
@@ -117,6 +118,7 @@ export default function EditEventScreen() {
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
+      setEventCreatorId(ev.createdById);
       setCollectTransportation(!!ev.collectTransportation);
       if (ev.groupId) {
         const gid = ev.groupId;
@@ -279,7 +281,7 @@ export default function EditEventScreen() {
         <View style={styles.center}>
           <ActivityIndicator color={INDIGO} />
         </View>
-      ) : user?.role !== 'ADMIN' && !isGroupAdmin ? (
+      ) : user?.role !== 'ADMIN' && !isGroupAdmin && eventCreatorId !== user?.id ? (
         <View style={[styles.center, { padding: 24 }]}>
           <Text style={{ color: '#EF4444', fontSize: 15, textAlign: 'center', fontWeight: '600' }}>
             {zh ? '需要管理員權限。' : 'Admin access required.'}
