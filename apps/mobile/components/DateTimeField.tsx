@@ -135,6 +135,7 @@ export default function DateTimeField({
                 value={draftDay}
                 mode="date"
                 display="inline"
+                minimumDate={new Date(0)}
                 onChange={(_, date) => { if (date) setDraftDay(date); }}
                 accentColor="#4F46E5"
                 themeVariant={isDark ? 'dark' : 'light'}
