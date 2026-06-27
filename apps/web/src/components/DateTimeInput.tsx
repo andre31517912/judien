@@ -82,6 +82,8 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const hourInputRef = useRef<HTMLInputElement>(null);
+  const minuteInputRef = useRef<HTMLInputElement>(null);
 
   // Sync internal state when the value prop changes externally
   useEffect(() => {
@@ -96,6 +98,27 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
       setSelDay(null); setSelKey(null);
     }
   }, [value]);
+
+  // Non-passive wheel listeners so we can scroll hour/minute inputs without scrolling the page
+  useEffect(() => {
+    if (!open) return;
+    const hourEl = hourInputRef.current;
+    const minEl = minuteInputRef.current;
+    const onHourWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setHour12(h => { const n = h + (e.deltaY < 0 ? 1 : -1); return n > 12 ? 1 : n < 1 ? 12 : n; });
+    };
+    const onMinWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      setMinute(m => ((m + (e.deltaY < 0 ? 5 : -5) + 60) % 60));
+    };
+    hourEl?.addEventListener('wheel', onHourWheel, { passive: false });
+    minEl?.addEventListener('wheel', onMinWheel, { passive: false });
+    return () => {
+      hourEl?.removeEventListener('wheel', onHourWheel);
+      minEl?.removeEventListener('wheel', onMinWheel);
+    };
+  }, [open]);
 
   // Close on outside click — check both trigger and portal popover
   useEffect(() => {
@@ -126,10 +149,10 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       // Flip above if not enough room below
-      const fitsBelow = rect.bottom + 6 + CALENDAR_H <= window.innerHeight;
+      const fitsBelow = rect.bottom + 1 + CALENDAR_H <= window.innerHeight;
       const top = fitsBelow
-        ? rect.bottom + 6
-        : Math.max(8, rect.top - CALENDAR_H - 6);
+        ? rect.bottom + 1
+        : Math.max(8, rect.top - CALENDAR_H - 1);
       // Keep within horizontal viewport bounds
       const left = Math.max(8, Math.min(rect.left, window.innerWidth - CALENDAR_W - 8));
       setPopoverPos({ top, left });
@@ -217,6 +240,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
         <IconClock />
         <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 border border-gray-200 dark:border-gray-700">
           <input
+            ref={hourInputRef}
             type="number" min={1} max={12}
             value={hour12}
             onChange={e => {
@@ -228,6 +252,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
           />
           <span className="text-gray-400 font-semibold text-sm">:</span>
           <input
+            ref={minuteInputRef}
             type="number" min={0} max={59}
             value={pad(minute)}
             onChange={e => {

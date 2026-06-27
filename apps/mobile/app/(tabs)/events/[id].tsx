@@ -403,7 +403,7 @@ export default function EventDetailScreen() {
       });
       setBlastResult(`✓ Sent to ${res.sent} people`);
       setBlastMsg('');
-      setTimeout(() => setBlastResult(''), 5000);
+      setTimeout(() => { setBlastResult(''); setShowBlast(false); }, 1500);
     } catch (err: any) {
       setBlastResult('Failed to send. Please try again.');
     } finally {
@@ -666,18 +666,18 @@ export default function EventDetailScreen() {
             {user && (
               <TouchableOpacity
                 style={[styles.rsvpBtn]}
-                onPress={() => { setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
+                onPress={() => { const isMgr = isAdmin || isGroupAdmin || event.createdById === user?.id; setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
               >
                 <Text style={styles.rsvpBtnText}>{zh ? '邀請賓客' : 'Invite Guest'}</Text>
               </TouchableOpacity>
             )}
             {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
               <TouchableOpacity
-                style={[styles.rsvpBtn, showBlast && styles.rsvpBtnActive]}
-                onPress={() => setShowBlast(!showBlast)}
+                style={styles.rsvpBtn}
+                onPress={() => setShowBlast(true)}
               >
-                <Text style={[styles.rsvpBtnText, showBlast && styles.rsvpBtnTextActive]}>
-                  {zh ? '📣 發訊息' : '📣 Send Message'}
+                <Text style={styles.rsvpBtnText}>
+                  {zh ? '📣 群發訊息' : '📣 Text Blast'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -824,8 +824,8 @@ export default function EventDetailScreen() {
                         <View key={po.id} style={{ backgroundColor: isDark ? '#1F2937' : '#F9FAFB', borderRadius: 8, padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <View style={{ flex: 1 }}>
                             <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
-                            {po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship} {zh ? '的' : 'of'} {po.connectedInviteeName}</Text> : null}
-                            {po.connectedInviteeName && !po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{zh ? '來自' : 'guest of'} {po.connectedInviteeName}</Text> : null}
+                            {po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.connectedInviteeName}{zh ? '的' : "'s "}{po.relationship}</Text> : null}
+                            {po.connectedInviteeName && !po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
                             {!po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
                             {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
                             {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
@@ -838,41 +838,49 @@ export default function EventDetailScreen() {
                       {/* Add form */}
                       <TextInput style={styles.editInput} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} />
                       <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
-                      <View>
-                        <TextInput
-                          style={styles.editInput}
-                          placeholder={zh ? '連結受邀者（輸入姓名搜尋）' : 'Connected to invited person (type to search)'}
-                          placeholderTextColor={colors.placeholder}
-                          value={poConnectedTo}
-                          onChangeText={(val) => {
-                            setPoConnectedTo(val);
-                            if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
-                            const term = val.toLowerCase();
-                            const allNames = [
-                              ...(guests?.INVITED ?? []).map((i) => i.name),
-                              ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
-                              ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
-                            ].filter(Boolean) as string[];
-                            const unique = [...new Set(allNames)];
-                            setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 5));
-                          }}
-                          maxLength={200}
-                        />
-                        {poConnectedToSuggestions.length > 0 && (
-                          <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginTop: 2, overflow: 'hidden' }}>
-                            {poConnectedToSuggestions.map((name) => (
-                              <TouchableOpacity key={name} onPress={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }} style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-                                <Text style={{ fontSize: 14, color: colors.text }}>{name}</Text>
-                              </TouchableOpacity>
-                            ))}
-                          </View>
-                        )}
-                      </View>
-                      <TextInput style={styles.editInput} placeholder={zh ? '與受邀者的關係（例：太太、朋友）' : 'Relationship to invited person (e.g. wife, friend)'} placeholderTextColor={colors.placeholder} value={poRelationship} onChangeText={setPoRelationship} maxLength={100} />
+                      {(isAdmin || isGroupAdmin || event.createdById === user?.id) ? (
+                        <View>
+                          <TextInput
+                            style={styles.editInput}
+                            placeholder={zh ? '邀請人姓名（搜尋已邀請名單）' : "Inviter's name (search invited list)"}
+                            placeholderTextColor={colors.placeholder}
+                            value={poConnectedTo}
+                            onChangeText={(val) => {
+                              setPoConnectedTo(val);
+                              if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
+                              const term = val.toLowerCase();
+                              const allNames = [
+                                ...(guests?.INVITED ?? []).map((i) => i.name),
+                                ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
+                                ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
+                              ].filter(Boolean) as string[];
+                              const unique = [...new Set(allNames)];
+                              setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 5));
+                            }}
+                            maxLength={200}
+                          />
+                          {poConnectedToSuggestions.length > 0 && (
+                            <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 8, marginTop: 2, overflow: 'hidden' }}>
+                              {poConnectedToSuggestions.map((name) => (
+                                <TouchableOpacity key={name} onPress={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }} style={{ paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                                  <Text style={{ fontSize: 14, color: colors.text }}>{name}</Text>
+                                </TouchableOpacity>
+                              ))}
+                            </View>
+                          )}
+                        </View>
+                      ) : (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: colors.border, borderRadius: 8, backgroundColor: colors.card, gap: 6 }}>
+                          <Text style={{ fontSize: 13, color: colors.subtext }}>{zh ? '邀請人：' : 'Inviter:'}</Text>
+                          <Text style={{ fontSize: 14, color: colors.text, fontWeight: '600', flex: 1 }}>{user?.displayName ?? ''}</Text>
+                          <Text style={{ fontSize: 12, color: '#6366F1' }}>{zh ? '（您）' : 'You'}</Text>
+                        </View>
+                      )}
+                      <TextInput style={styles.editInput} placeholder={zh ? '與邀請人的關係（例：太太、朋友）' : "Guest's relationship to inviter (e.g. wife, friend)"} placeholderTextColor={colors.placeholder} value={poRelationship} onChangeText={setPoRelationship} maxLength={100} />
                       <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={poNotes} onChangeText={setPoNotes} multiline numberOfLines={3} maxLength={500} />
                       {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
                       <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
-                        <TouchableOpacity onPress={() => { setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
+                        <TouchableOpacity onPress={() => { const isMgr = isAdmin || isGroupAdmin || event.createdById === user?.id; setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
                           <Text style={{ fontSize: 14, color: colors.text }}>{zh ? '清除' : 'Clear'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]} onPress={handleAddPlusOne} disabled={!poName.trim() || poLoading}>
@@ -886,65 +894,17 @@ export default function EventDetailScreen() {
             </KeyboardAvoidingView>
           </Modal>
 
-          {/* Share Text form */}
-          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && showBlast && (
-            <View style={[styles.blastForm, { marginTop: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14 }]}>
-              <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
-              <View style={styles.blastAudienceRow}>
-                {([['IN_APP', zh ? '🔔 站內通知' : '🔔 In-App'], ['EMAIL', zh ? '✉️ Email（停用）' : '✉️ Email (disabled)']] as const).map(([ch, label]) => {
-                const isDisabled = ch === 'EMAIL';
-                return (
-                  <TouchableOpacity key={ch}
-                    disabled={isDisabled}
-                    onPress={() => !isDisabled && setBlastChannels((prev) => prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch])}
-                    style={[styles.audienceBtn, blastChannels.includes(ch) && styles.audienceBtnActive, isDisabled && { opacity: 0.35 }]}>
-                    <Text style={[styles.audienceBtnText, blastChannels.includes(ch) && styles.audienceBtnTextActive]}>{label}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-              </View>
-              <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
-              <View style={styles.blastAudienceRow}>
-                {(['invited', 'rsvped'] as const).map((a) => (
-                  <TouchableOpacity key={a} onPress={() => setBlastAudience(a)}
-                    style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive]}>
-                    <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
-                      {a === 'invited' ? (zh ? '已邀請' : 'Invited') : (zh ? '已回覆' : 'RSVP')}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TextInput
-                style={styles.blastInput}
-                placeholder="Enter message…"
-                placeholderTextColor={colors.placeholder}
-                value={blastMsg}
-                onChangeText={setBlastMsg}
-                multiline
-                numberOfLines={3}
-              />
-              <TouchableOpacity
-                style={[styles.blastSendBtn, (blastSending || !blastMsg.trim() || blastChannels.length === 0) && { opacity: 0.5 }]}
-                onPress={handleBlastSend}
-                disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
-              >
-                <Text style={styles.blastSendBtnText}>{blastSending ? 'Sending…' : 'Send Now'}</Text>
-              </TouchableOpacity>
-              {!!blastResult && (
-                <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444' }]}>{blastResult}</Text>
-              )}
-            </View>
-          )}
 
 
           {/* Feed section */}
           <Text style={styles.sectionTitle}>{zh ? '動態' : 'Feed'}</Text>
+          {comments.length === 0 && goingList.length === 0 && <Text style={styles.empty}>{zh ? '還沒有動態' : 'No feeds yet'}</Text>}
+          <ScrollView style={{ maxHeight: 400 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
           {goingList.map((g, i) => (
             <View key={`going-${i}`} style={styles.feedGoingItem}>
               <Text style={styles.feedGoingText}>✓ {g.displayName ?? g.handle} {zh ? '要參加' : 'is going'}</Text>
             </View>
           ))}
-          {comments.length === 0 && goingList.length === 0 && <Text style={styles.empty}>{zh ? '還沒有動態' : 'No feeds yet'}</Text>}
           {comments.map((c) => {
             const isOwn = user?.id === c.userId;
             const canDelete = isOwn || isAdmin;
@@ -1052,9 +1012,66 @@ export default function EventDetailScreen() {
               </View>
             );
           })}
+          </ScrollView>
         </View>
 
         {/* Modals */}
+        <Modal visible={showBlast} transparent animationType="slide" onRequestClose={() => setShowBlast(false)}>
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowBlast(false)}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <TouchableOpacity activeOpacity={1} style={[styles.modalContent, { paddingBottom: 32 }]}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <Text style={styles.modalTitle}>{zh ? '📣 群發訊息' : '📣 Text Blast'}</Text>
+                  <TouchableOpacity onPress={() => setShowBlast(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Text style={{ fontSize: 20, color: colors.placeholder }}>×</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.blastLabel}>{zh ? '發送方式' : 'Send via'}</Text>
+                <View style={styles.blastAudienceRow}>
+                  <TouchableOpacity
+                    onPress={() => setBlastChannels((prev) => prev.includes('IN_APP') ? prev.filter((c) => c !== 'IN_APP') : [...prev, 'IN_APP'])}
+                    style={[styles.audienceBtn, blastChannels.includes('IN_APP') && styles.audienceBtnActive, { flex: 1 }]}
+                  >
+                    <Text style={[styles.audienceBtnText, blastChannels.includes('IN_APP') && styles.audienceBtnTextActive]}>🔔 {zh ? '站內通知' : 'In-App'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity disabled style={[styles.audienceBtn, { flex: 1, opacity: 0.35 }]}>
+                    <Text style={styles.audienceBtnText}>✉️ {zh ? 'Email' : 'Email'}</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.blastLabel}>{zh ? '發送對象' : 'Send to'}</Text>
+                <View style={styles.blastAudienceRow}>
+                  {(['invited', 'rsvped'] as const).map((a) => (
+                    <TouchableOpacity key={a} onPress={() => setBlastAudience(a)} style={[styles.audienceBtn, blastAudience === a && styles.audienceBtnActive, { flex: 1 }]}>
+                      <Text style={[styles.audienceBtnText, blastAudience === a && styles.audienceBtnTextActive]}>
+                        {a === 'invited' ? (zh ? '全部受邀' : 'All Invited') : (zh ? '已回覆' : 'RSVPed Only')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  style={[styles.blastInput, { marginTop: 12 }]}
+                  placeholder={zh ? '輸入訊息…' : 'Write your message…'}
+                  placeholderTextColor={colors.placeholder}
+                  value={blastMsg}
+                  onChangeText={setBlastMsg}
+                  multiline
+                  numberOfLines={4}
+                />
+                <TouchableOpacity
+                  style={[styles.blastSendBtn, { marginTop: 12 }, (blastSending || !blastMsg.trim() || blastChannels.length === 0) && { opacity: 0.5 }]}
+                  onPress={handleBlastSend}
+                  disabled={blastSending || !blastMsg.trim() || blastChannels.length === 0}
+                >
+                  <Text style={styles.blastSendBtnText}>{blastSending ? (zh ? '發送中…' : 'Sending…') : (zh ? '立即發送' : 'Send Now')}</Text>
+                </TouchableOpacity>
+                {!!blastResult && (
+                  <Text style={[styles.blastResult, { color: blastResult.startsWith('✓') ? '#16A34A' : '#EF4444', marginTop: 8 }]}>{blastResult}</Text>
+                )}
+              </TouchableOpacity>
+            </KeyboardAvoidingView>
+          </TouchableOpacity>
+        </Modal>
+
         <Modal visible={showInviteModal} transparent animationType="fade" onRequestClose={() => setShowInviteModal(false)}>
           <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowInviteModal(false)}>
             <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
@@ -1159,8 +1176,8 @@ export default function EventDetailScreen() {
                           <View key={i} style={[styles.guestRow, { flexDirection: 'row', alignItems: 'flex-start' }]}>
                             <View style={{ flex: 1 }}>
                               <Text style={styles.guestName}>{g.name}</Text>
-                              {g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</Text> : null}
-                              {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</Text> : null}
+                              {g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的' : "'s "}{g.relationship}</Text> : null}
+                              {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
                               {!g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
                               <Text style={styles.guestHandle}>{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</Text>
                               {isEventAdminExtra && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}

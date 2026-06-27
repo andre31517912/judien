@@ -318,6 +318,7 @@ export default function EventDetailPage() {
   };
 
   // blast state
+  const [showBlastModal, setShowBlastModal] = useState(false);
   const [blastMsg, setBlastMsg] = useState('');
   const [blastChannels, setBlastChannels] = useState<string[]>(['IN_APP']);
   const [blastAudience, setBlastAudience] = useState<'rsvped' | 'invited'>('invited');
@@ -335,7 +336,7 @@ export default function EventDetailPage() {
       });
       setBlastResult('✓ Message sent');
       setBlastMsg('');
-      setTimeout(() => setBlastResult(''), 5000);
+      setTimeout(() => { setBlastResult(''); setShowBlastModal(false); }, 1200);
     } catch (err: unknown) {
       setBlastResult('Failed to send. Please try again.');
     }
@@ -392,7 +393,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason || showInviteGuestModal || showDeleteModal;
+  const anyModalOpen = showInviteModal || showNoReason || showInviteGuestModal || showDeleteModal || showBlastModal;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -747,10 +748,18 @@ export default function EventDetailPage() {
           </button>
           {user && (
             <button
-              onClick={() => { setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
+              onClick={() => { setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isEventAdmin ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
               className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
             >
               {zh ? '邀請賓客' : 'Invite Guest'}
+            </button>
+          )}
+          {isEventAdmin && (
+            <button
+              onClick={() => setShowBlastModal(true)}
+              className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
+            >
+              {zh ? '📣 群發訊息' : '📣 Text Blast'}
             </button>
           )}
           {!isPast && (
@@ -937,8 +946,8 @@ export default function EventDetailPage() {
                         <li key={po.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
                           <div className="flex flex-col gap-0.5">
                             <span className="font-medium">{po.name}</span>
-                            {po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship} {zh ? '的' : 'of'} {po.connectedInviteeName}</span>}
-                            {po.connectedInviteeName && !po.relationship && <span className="text-xs text-gray-400">{zh ? '來自' : 'guest of'} {po.connectedInviteeName}</span>}
+                            {po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.connectedInviteeName}{zh ? '的' : "'s "}{po.relationship}</span>}
+                            {po.connectedInviteeName && !po.relationship && <span className="text-xs text-gray-400">{po.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</span>}
                             {!po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship}</span>}
                             {(po.email || po.phone) && <span className="text-xs text-gray-400">{po.email ?? po.phone}</span>}
                             {po.notes && <span className="text-xs text-gray-400 italic">{po.notes}</span>}
@@ -951,41 +960,49 @@ export default function EventDetailPage() {
                   {/* Add form */}
                   <input value={poName} onChange={(e) => setPoName(e.target.value)} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
                   <input value={poContact} onChange={(e) => setPoContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-                  <div className="relative">
-                    <input
-                      value={poConnectedTo}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setPoConnectedTo(val);
-                        if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
-                        const term = val.toLowerCase();
-                        const allNames = [
-                          ...(guests?.INVITED ?? []).map((i) => i.name),
-                          ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
-                          ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
-                        ].filter(Boolean) as string[];
-                        const unique = [...new Set(allNames)];
-                        setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 6));
-                      }}
-                      placeholder={zh ? '連結受邀者（輸入姓名搜尋）' : 'Connected to invited person (type to search)'}
-                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      maxLength={200}
-                    />
-                    {poConnectedToSuggestions.length > 0 && (
-                      <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                        {poConnectedToSuggestions.map((name) => (
-                          <li key={name}>
-                            <button type="button" onClick={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }} className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">{name}</button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <input value={poRelationship} onChange={(e) => setPoRelationship(e.target.value)} placeholder={zh ? '與受邀者的關係（例：太太、朋友）' : 'Relationship to invited person (e.g. wife, friend)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+                  {isEventAdmin ? (
+                    <div className="relative">
+                      <input
+                        value={poConnectedTo}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPoConnectedTo(val);
+                          if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
+                          const term = val.toLowerCase();
+                          const allNames = [
+                            ...(guests?.INVITED ?? []).map((i) => i.name),
+                            ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
+                            ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
+                          ].filter(Boolean) as string[];
+                          const unique = [...new Set(allNames)];
+                          setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 6));
+                        }}
+                        placeholder={zh ? '邀請人姓名（搜尋已邀請名單）' : "Inviter's name (search invited list)"}
+                        className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        maxLength={200}
+                      />
+                      {poConnectedToSuggestions.length > 0 && (
+                        <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                          {poConnectedToSuggestions.map((name) => (
+                            <li key={name}>
+                              <button type="button" onClick={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }} className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">{name}</button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm">
+                      <span className="text-gray-500 dark:text-gray-400 shrink-0">{zh ? '邀請人：' : 'Inviter:'}</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{user?.displayName ?? ''}</span>
+                      <span className="ml-auto text-xs text-indigo-500 dark:text-indigo-400 shrink-0">{zh ? '（您）' : 'You'}</span>
+                    </div>
+                  )}
+                  <input value={poRelationship} onChange={(e) => setPoRelationship(e.target.value)} placeholder={zh ? '與邀請人的關係（例：太太、朋友）' : "Guest's relationship to inviter (e.g. wife, friend)"} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
                   <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={zh ? '備註' : 'Notes'} rows={2} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" maxLength={500} />
                   {poMsg && <p className="text-xs text-red-500">{poMsg}</p>}
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => { setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); setPoMsg(''); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">{zh ? '清除' : 'Clear'}</button>
+                    <button onClick={() => { setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isEventAdmin ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setPoMsg(''); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">{zh ? '清除' : 'Clear'}</button>
                     <button onClick={handleAddPlusOne} disabled={poLoading || !poName.trim()} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition disabled:opacity-50">{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增賓客' : 'Add Guest')}</button>
                   </div>
                 </div>
@@ -1082,10 +1099,10 @@ export default function EventDetailPage() {
                         <div className="min-w-0 flex-1">
                           <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
                           {g.connectedInviteeName && g.relationship && (
-                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</p>
+                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{g.connectedInviteeName}{zh ? '的' : "'s "}{g.relationship}</p>
                           )}
                           {g.connectedInviteeName && !g.relationship && (
-                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</p>
+                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</p>
                           )}
                           {!g.connectedInviteeName && g.relationship && (
                             <p className="text-xs text-gray-400 truncate">{g.relationship}</p>
@@ -1183,72 +1200,6 @@ export default function EventDetailPage() {
       )}
 
 
-      {/* Send Message Blast (admin or event creator) */}
-      {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
-        <section className="border border-dashed border-indigo-200 dark:border-gray-700 rounded-xl p-5 bg-indigo-50/40 dark:bg-gray-900/50">
-          <h2 className="text-lg font-semibold mb-1 dark:text-white">{zh ? '群組訊息' : 'Text Blast'}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Send a message to attendees right now.</p>
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Message</label>
-              <textarea
-                value={blastMsg}
-                onChange={(e) => setBlastMsg(e.target.value)}
-                rows={3}
-                maxLength={2000}
-                placeholder="Write your message…"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Send via</p>
-              <div className="flex gap-3 flex-wrap">
-                {([
-                  ['EMAIL', '✉️ Email'],
-                  ['IN_APP', '🔔 In-App'],
-                ] as const).map(([ch, label]) => (
-                  <label key={ch} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition text-gray-900 dark:text-gray-100 ${
-                    blastChannels.includes(ch) ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-                  }`}>
-                    <input type="checkbox" className="sr-only" checked={blastChannels.includes(ch)} onChange={() => toggleBlastChannel(ch)} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Send to</p>
-              <div className="flex gap-3 flex-wrap">
-                {([
-                  ['rsvped', 'RSVPed Only'],
-                  ['invited', 'All Invited'],
-                ] as [typeof blastAudience, string][]).map(([val, label]) => (
-                  <label key={val} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm font-medium transition text-gray-900 dark:text-gray-100 ${
-                    blastAudience === val ? 'border-indigo-500 bg-indigo-50 dark:bg-gray-700 dark:border-gray-500' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-                  }`}>
-                    <input type="radio" name="blastAudience" className="sr-only" checked={blastAudience === val} onChange={() => setBlastAudience(val)} />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleBlast}
-                disabled={!blastMsg.trim() || blastChannels.length === 0}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-              >
-                Send Now
-              </button>
-              {blastResult && (
-                <p className={`text-sm ${blastResult.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
-                  {blastResult}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Feed */}
       <section>
@@ -1281,8 +1232,9 @@ export default function EventDetailPage() {
           </form>
         )}
 
+        <div className="max-h-[320px] overflow-y-auto flex flex-col gap-3 pr-1">
         {goingList.length > 0 && (
-          <div className="flex flex-col gap-2 mb-3">
+          <div className="flex flex-col gap-2">
             {goingList.map((g, i) => (
               <div key={i} className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                 ✓ {g.displayName ?? g.handle} {zh ? '要參加' : 'is going'}
@@ -1428,7 +1380,95 @@ export default function EventDetailPage() {
             );
           })}
         </div>
+        </div>
       </section>
+
+      {/* Text Blast Modal */}
+      {showBlastModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowBlastModal(false)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl max-w-md w-full p-6 flex flex-col gap-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">{zh ? '📣 群發訊息' : '📣 Text Blast'}</h3>
+              <button onClick={() => setShowBlastModal(false)} aria-label="Close" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
+            </div>
+
+            {/* Channel row: In-App left, Email right (disabled) */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{zh ? '發送方式' : 'Send via'}</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => toggleBlastChannel('IN_APP')}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
+                    blastChannels.includes('IN_APP')
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  🔔 {zh ? '站內通知' : 'In-App'}
+                </button>
+                <button
+                  type="button"
+                  disabled
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-600 cursor-not-allowed opacity-50"
+                >
+                  ✉️ {zh ? 'Email（停用）' : 'Email'}
+                </button>
+              </div>
+            </div>
+
+            {/* Audience row: All Invited left, RSVPed right */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{zh ? '發送對象' : 'Send to'}</p>
+              <div className="flex gap-2">
+                {(['invited', 'rsvped'] as const).map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setBlastAudience(val)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition ${
+                      blastAudience === val
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300'
+                    }`}
+                  >
+                    {val === 'invited' ? (zh ? '全部受邀' : 'All Invited') : (zh ? '已回覆' : 'RSVPed Only')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Message */}
+            <div>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{zh ? '訊息內容' : 'Message'}</p>
+              <textarea
+                value={blastMsg}
+                onChange={(e) => setBlastMsg(e.target.value)}
+                rows={4}
+                maxLength={2000}
+                placeholder={zh ? '輸入訊息…' : 'Write your message…'}
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBlast}
+                disabled={!blastMsg.trim() || blastChannels.length === 0}
+                className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition"
+              >
+                {zh ? '立即發送' : 'Send Now'}
+              </button>
+              {blastResult && (
+                <p className={`text-sm shrink-0 ${blastResult.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
+                  {blastResult}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Invite Modal */}
       {showInviteModal && (
