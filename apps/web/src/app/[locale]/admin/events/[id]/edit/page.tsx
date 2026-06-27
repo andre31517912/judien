@@ -265,15 +265,17 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         />
       )}
 
-      {/* ── Top toolbar: ← Back | Save Changes | Delete Event ─────────────── */}
+      {/* ── Back link — own row above the action buttons ────────────────── */}
+      <Link
+        href={`/${params.locale}/events/${params.id}`}
+        className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition w-fit"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+        {zh ? '返回活動' : 'Back to Event'}
+      </Link>
+
+      {/* ── Action toolbar: Save Changes | Delete Event ──────────────────── */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 py-2 border-b border-dashed border-gray-200 dark:border-gray-700">
-        <Link
-          href={`/${params.locale}/events/${params.id}`}
-          className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition mr-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-          {zh ? '返回' : 'Back'}
-        </Link>
         <button
           type="button"
           onClick={doUpdate}
@@ -379,78 +381,6 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         </form>
       </section>
 
-      {/* ── Invite Group Members ────────────────────────────────────────────── */}
-      {groupMembers.length > 0 && (
-        <section>
-          <h2 className="text-xl font-semibold mb-1 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {zh ? '選擇要邀請到此活動的成員，系統將傳送通知給他們。' : 'Select members to invite to this event. They will receive an in-app, email, or LINE notification.'}
-          </p>
-
-          {inviteSent && (
-            <p className="text-green-600 text-sm mb-3">✓ {zh ? '邀請已送出！' : 'Invitations sent!'}</p>
-          )}
-
-          <div className="flex gap-2 mb-3">
-            <button
-              type="button"
-              onClick={selectAllMembers}
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-            >
-              {zh ? '全選' : 'Select all'}
-            </button>
-            <span className="text-gray-300 dark:text-gray-600">|</span>
-            <button
-              type="button"
-              onClick={clearMemberSelection}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:underline"
-            >
-              {zh ? '取消全選' : 'Clear'}
-            </button>
-            <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-              {selectedMemberIds.size} {zh ? '已選' : 'selected'}
-            </span>
-          </div>
-
-          <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
-            {groupMembers.map((m) => (
-              <label
-                key={m.userId}
-                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedMemberIds.has(m.userId)}
-                  onChange={() => toggleMember(m.userId)}
-                  className="w-4 h-4 text-indigo-600 rounded"
-                />
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200 flex-1">
-                  {m.displayName ?? '(no name)'}
-                </span>
-                {m.role === 'GROUP_ADMIN' && (
-                  <span className="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded px-1.5 py-0.5">
-                    Admin
-                  </span>
-                )}
-                {m.email && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[160px]">{m.email}</span>
-                )}
-              </label>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSendInvites}
-            disabled={inviting || selectedMemberIds.size === 0}
-            className="mt-3 bg-indigo-600 text-white text-sm px-4 py-2 rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            {inviting
-              ? (zh ? '傳送中…' : 'Sending…')
-              : (zh ? `傳送邀請 (${selectedMemberIds.size})` : `Send Invites (${selectedMemberIds.size})`)}
-          </button>
-        </section>
-      )}
 
       {/* ── Automatic reminders ─────────────────────────────────────────────── */}
       <section>

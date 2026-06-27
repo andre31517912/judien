@@ -39,8 +39,6 @@ function minutesToLabel(m: number) {
   return `${m} min before`;
 }
 
-type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
-
 const FInput = React.memo(function FInput({
   label, value, onChangeText, keyboard, multi,
 }: { label: string; value: string; onChangeText: (v: string) => void; keyboard?: any; multi?: boolean }) {
@@ -95,13 +93,6 @@ export default function EditEventScreen() {
   const [customUnit, setCustomUnit] = useState<'hours' | 'days'>('hours');
   const [savingReminders, setSavingReminders] = useState(false);
 
-  // Invite
-  const [inviteeIds, setInviteeIds] = useState<string[]>([]);
-  const [inviteeList, setInviteeList] = useState<UserResult[]>([]);
-  const [userQuery, setUserQuery] = useState('');
-  const [userResults, setUserResults] = useState<UserResult[]>([]);
-  const [userSearching, setUserSearching] = useState(false);
-  const [inviting, setInviting] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -137,48 +128,6 @@ export default function EditEventScreen() {
   }, [id]);
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
-
-  const searchUsers = async (q: string) => {
-    setUserQuery(q);
-    if (!q.trim()) { setUserResults([]); return; }
-    setUserSearching(true);
-    try {
-      const res = await apiFetch<UserResult[]>(`/users/search?q=${encodeURIComponent(q)}`);
-      setUserResults(Array.isArray(res) ? res : []);
-    } catch { setUserResults([]); }
-    finally { setUserSearching(false); }
-  };
-
-  const addInvitee = (u: UserResult) => {
-    if (inviteeIds.includes(u.id)) return;
-    setInviteeIds((prev) => [...prev, u.id]);
-    setInviteeList((prev) => [...prev, u]);
-    setUserResults([]);
-    setUserQuery('');
-  };
-
-  const removeInvitee = (userId: string) => {
-    setInviteeIds((prev) => prev.filter((x) => x !== userId));
-    setInviteeList((prev) => prev.filter((u) => u.id !== userId));
-  };
-
-  const handleSendInvites = async () => {
-    if (!inviteeIds.length) return;
-    setInviting(true);
-    try {
-      await apiFetch(`/events/${id}/invite-members`, {
-        method: 'POST',
-        body: JSON.stringify({ userIds: inviteeIds }),
-      });
-      Alert.alert('✓', zh ? `已送出 ${inviteeIds.length} 份邀請。` : `${inviteeIds.length} invitation(s) sent.`);
-      setInviteeIds([]);
-      setInviteeList([]);
-    } catch (err: any) {
-      Alert.alert('Error', err.message ?? 'Failed to send invitations.');
-    } finally {
-      setInviting(false);
-    }
-  };
 
   const doPickCover = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -346,56 +295,6 @@ export default function EditEventScreen() {
           trackColor={{ false: colors.border, true: INDIGO }}
           thumbColor="#fff"
         />
-      </View>
-
-      {/* Invite section */}
-      <View style={styles.field}>
-        <Text style={styles.label}>{zh ? '邀請用戶' : 'Invite People'}</Text>
-        <TextInput
-          style={styles.input}
-          value={userQuery}
-          onChangeText={searchUsers}
-          placeholder={zh ? '搜尋姓名、Email 或電話…' : 'Search name, email or phone…'}
-          placeholderTextColor={colors.placeholder}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        {userSearching && <ActivityIndicator size="small" color={INDIGO} style={{ marginTop: 6, alignSelf: 'flex-start' }} />}
-        {userResults.filter((u) => !inviteeIds.includes(u.id)).map((u) => (
-          <View key={u.id} style={styles.userResultRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.userResultName}>{u.displayName ?? '—'}</Text>
-              {u.email ? <Text style={styles.userResultMeta}>{u.email}</Text> : null}
-            </View>
-            <TouchableOpacity style={styles.addUserBtn} onPress={() => addInvitee(u)}>
-              <Text style={styles.addUserBtnText}>{zh ? '新增' : 'Add'}</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-        {inviteeList.length > 0 && (
-          <View style={{ marginTop: 8, gap: 6 }}>
-            <Text style={{ fontSize: 12, color: colors.subtext }}>
-              {zh ? `已選 ${inviteeList.length} 人` : `${inviteeList.length} person(s) selected`}
-            </Text>
-            {inviteeList.map((u) => (
-              <View key={u.id} style={styles.inviteeRow}>
-                <Text style={{ flex: 1, fontSize: 14, color: colors.text }}>{u.displayName ?? u.email ?? '—'}</Text>
-                <TouchableOpacity onPress={() => removeInvitee(u.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Ionicons name="close-circle" size={20} color={colors.placeholder} />
-                </TouchableOpacity>
-              </View>
-            ))}
-            <TouchableOpacity
-              style={[styles.saveBtn, { opacity: inviting ? 0.6 : 1 }]}
-              onPress={handleSendInvites}
-              disabled={inviting}
-            >
-              <Text style={styles.saveBtnText}>
-                {inviting ? (zh ? '送出中…' : 'Sending…') : (zh ? `送出 ${inviteeList.length} 份邀請` : `Send ${inviteeList.length} Invitation(s)`)}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </View>
 
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>

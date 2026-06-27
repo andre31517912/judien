@@ -47,13 +47,14 @@ export default function EventDetailPage() {
   // guest list
   type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
   type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
-  type ExtraGuest = { name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
+  type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
   type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; connectedInviteeName?: string | null; notes?: string | null };
 
-  // plus-ones state
+  // unified invite modal state
+  const [showInviteGuestModal, setShowInviteGuestModal] = useState(false);
+  const [inviteModalTab, setInviteModalTab] = useState<'search' | 'outside'>('search');
+  // my outside guests (plus-ones I added)
   const [myPlusOnes, setMyPlusOnes] = useState<PlusOne[]>([]);
-  const [showPlusOneModal, setShowPlusOneModal] = useState(false);
-  const [showPlusOneForm, setShowPlusOneForm] = useState(false);
   const [poName, setPoName] = useState('');
   const [poContact, setPoContact] = useState('');
   const [poRelationship, setPoRelationship] = useState('');
@@ -62,6 +63,8 @@ export default function EventDetailPage() {
   const [poNotes, setPoNotes] = useState('');
   const [poLoading, setPoLoading] = useState(false);
   const [poMsg, setPoMsg] = useState('');
+  // delete state
+  const [deletingGuest, setDeletingGuest] = useState<string | null>(null);
 
   // transportation + sub-events
   const [myTransportation, setMyTransportation] = useState<string>('');
@@ -164,7 +167,6 @@ export default function EventDetailPage() {
         }),
       });
       setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes('');
-      setShowPlusOneForm(false);
       await loadMyPlusOnes();
       setGuests(null);
     } catch (err: any) {
@@ -179,6 +181,34 @@ export default function EventDetailPage() {
       setGuests(null);
     } catch {
       setPoMsg(zh ? '移除失敗，請再試。' : 'Failed to remove. Please try again.');
+    }
+  };
+
+  const handleDeleteGuestRsvp = async (targetUserId: string) => {
+    if (deletingGuest) return;
+    setDeletingGuest(targetUserId);
+    try {
+      await apiFetch(`/events/${params.id}/rsvp/${targetUserId}`, { method: 'DELETE' });
+      setGuests(null);
+      loadGuests();
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '移除失敗，請再試。' : 'Failed to remove guest. Please try again.'));
+    } finally {
+      setDeletingGuest(null);
+    }
+  };
+
+  const handleDeleteExtraGuest = async (id: string) => {
+    if (deletingGuest) return;
+    setDeletingGuest(id);
+    try {
+      await apiFetch(`/events/${params.id}/rsvp/plus-ones/${id}`, { method: 'DELETE' });
+      setGuests(null);
+      loadGuests();
+    } catch (err: any) {
+      alert(err.message ?? (zh ? '移除失敗，請再試。' : 'Failed to remove guest. Please try again.'));
+    } finally {
+      setDeletingGuest(null);
     }
   };
   type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] };
@@ -255,58 +285,6 @@ export default function EventDetailPage() {
   const [directInviteSearchLoading, setDirectInviteSearchLoading] = useState(false);
   const [directInviteLoading, setDirectInviteLoading] = useState<string | null>(null);
   const [directInviteMsg, setDirectInviteMsg] = useState('');
-  // invite section tab: 'search' | 'roster'
-  const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
-  // roster guest add form
-  const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
-  const [rgName, setRgName] = useState('');
-  const [rgContact, setRgContact] = useState('');
-  const [rgGuestOf, setRgGuestOf] = useState('');
-  const [rgRelationship, setRgRelationship] = useState('');
-  const [rgNotes, setRgNotes] = useState('');
-  const [rgLoading, setRgLoading] = useState(false);
-  const [rgMsg, setRgMsg] = useState('');
-
-  const loadRosterGuests = async () => {
-    try {
-      const data = await apiFetch<PlusOne[]>(`/events/${params.id}/roster-guests`);
-      setRosterGuests(Array.isArray(data) ? data : []);
-    } catch { setRosterGuests([]); }
-  };
-
-  const handleAddRosterGuest = async () => {
-    if (!rgName.trim()) return;
-    setRgLoading(true); setRgMsg('');
-    try {
-      const isEmail = rgContact.includes('@');
-      const relParts = [rgGuestOf.trim() ? (zh ? `同 ${rgGuestOf.trim()} 來` : `Guest of ${rgGuestOf.trim()}`) : '', rgRelationship.trim()].filter(Boolean);
-      const relationship = relParts.join(' · ') || undefined;
-      await apiFetch(`/events/${params.id}/roster-guests`, {
-        method: 'POST',
-        body: JSON.stringify({
-          name: rgName.trim(),
-          ...(isEmail ? { email: rgContact.trim() } : rgContact.trim() ? { phone: rgContact.trim() } : {}),
-          ...(relationship ? { relationship } : {}),
-          ...(rgNotes.trim() ? { notes: rgNotes.trim() } : {}),
-        }),
-      });
-      setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes('');
-      setRgMsg(zh ? '已新增至名單。' : 'Added to roster.');
-      setTimeout(() => setRgMsg(''), 4000);
-      loadRosterGuests();
-    } catch { setRgMsg(zh ? '新增失敗，請再試。' : 'Failed to add. Please try again.'); }
-    finally { setRgLoading(false); }
-  };
-
-  const handleRemoveRosterGuest = async (id: string) => {
-    try {
-      await apiFetch(`/events/${params.id}/roster-guests/${id}`, { method: 'DELETE' });
-      setRosterGuests((prev) => prev.filter((g) => g.id !== id));
-    } catch {
-      setRgMsg(zh ? '移除失敗，請再試。' : 'Failed to remove. Please try again.');
-    }
-  };
-
   const searchInviteUsers = async (q: string) => {
     setDirectInviteQuery(q);
     setDirectInviteMsg('');
@@ -414,7 +392,7 @@ export default function EventDetailPage() {
     }
   }, [event?.seriesId]);
 
-  const anyModalOpen = showInviteModal || showNoReason || showPlusOneModal || showDeleteModal;
+  const anyModalOpen = showInviteModal || showNoReason || showInviteGuestModal || showDeleteModal;
   useEffect(() => {
     if (anyModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -423,7 +401,7 @@ export default function EventDetailPage() {
           setShowInviteModal(false);
           setShowNoReason(false);
           setShowGuests(false);
-          setShowPlusOneModal(false);
+          setShowInviteGuestModal(false);
           setShowDeleteModal(false);
         }
       };
@@ -767,12 +745,12 @@ export default function EventDetailPage() {
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
-          {user && !isPast && (
+          {user && (
             <button
-              onClick={() => { setShowPlusOneModal(true); setShowPlusOneForm(false); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); loadGuests(); }}
+              onClick={() => { setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
               className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
             >
-              {zh ? '邀請外部賓客' : '+ Invite Guest'}
+              {zh ? '邀請賓客' : 'Invite Guest'}
             </button>
           )}
           {!isPast && (
@@ -883,90 +861,136 @@ export default function EventDetailPage() {
         )}
       </div>
 
-      {/* Plus-one modal */}
-      {showPlusOneModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowPlusOneModal(false)}>
-          <div className="w-full sm:max-w-md bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl p-6 flex flex-col gap-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white">{zh ? '同行者' : 'Your Guests'}</h3>
-              <button onClick={() => setShowPlusOneModal(false)} aria-label={zh ? '關閉' : 'Close'} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
+      {/* Unified Invite Guest modal */}
+      {showInviteGuestModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowInviteGuestModal(false)}>
+          <div className="w-full sm:max-w-lg bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl flex flex-col max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h3>
+              <button onClick={() => setShowInviteGuestModal(false)} aria-label="Close" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">&times;</button>
             </div>
 
-            {myPlusOnes.length > 0 && (
-              <ul className="flex flex-col gap-2">
-                {myPlusOnes.map((po) => (
-                  <li key={po.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="font-medium">{po.name}</span>
-                      {po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship} {zh ? '的' : 'of'} {po.connectedInviteeName}</span>}
-                      {po.connectedInviteeName && !po.relationship && <span className="text-xs text-gray-400">{zh ? '來自' : 'guest of'} {po.connectedInviteeName}</span>}
-                      {!po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship}</span>}
-                      {(po.email || po.phone) && <span className="text-xs text-gray-400">{po.email ?? po.phone}</span>}
-                      {po.notes && <span className="text-xs text-gray-400 italic">{po.notes}</span>}
-                    </div>
-                    <button onClick={() => handleRemovePlusOne(po.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5">{zh ? '移除' : 'Remove'}</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {!showPlusOneForm ? (
+            {/* Tabs */}
+            <div className="flex gap-1 mx-6 mt-4 mb-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 shrink-0">
               <button
-                onClick={() => { setShowPlusOneForm(true); setPoMsg(''); }}
-                className="w-full rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 py-2.5 text-sm text-gray-400 dark:text-gray-500 hover:border-indigo-400 hover:text-indigo-500 transition"
+                onClick={() => setInviteModalTab('search')}
+                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteModalTab === 'search' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
-                {zh ? '+ 新增外部賓客' : '+ Add outside guest'}
+                {zh ? '搜尋用戶' : 'Search Users'}
               </button>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <input value={poName} onChange={(e) => setPoName(e.target.value)} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} autoFocus />
-                <input value={poContact} onChange={(e) => setPoContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-                {/* Connected-to autocomplete */}
-                <div className="relative">
+              <button
+                onClick={() => setInviteModalTab('outside')}
+                className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteModalTab === 'outside' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+              >
+                {zh ? '新增外部賓客' : 'Add Outside Guest'}
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-6 pb-6">
+              {inviteModalTab === 'search' ? (
+                <div className="flex flex-col gap-3 pt-2">
                   <input
-                    value={poConnectedTo}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setPoConnectedTo(val);
-                      if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
-                      const term = val.toLowerCase();
-                      const allNames = [
-                        ...(guests?.INVITED ?? []).map((i) => i.name),
-                        ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
-                        ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
-                      ].filter(Boolean) as string[];
-                      const unique = [...new Set(allNames)];
-                      setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 6));
-                    }}
-                    placeholder={zh ? '連結受邀者（輸入姓名搜尋）' : 'Connected to invited person (type to search)'}
-                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    maxLength={200}
+                    type="text"
+                    value={directInviteQuery}
+                    onChange={(e) => searchInviteUsers(e.target.value)}
+                    placeholder={zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    autoFocus
                   />
-                  {poConnectedToSuggestions.length > 0 && (
-                    <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
-                      {poConnectedToSuggestions.map((name) => (
-                        <li key={name}>
-                          <button
-                            type="button"
-                            onClick={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }}
-                            className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition"
-                          >
-                            {name}
-                          </button>
+                  {directInviteSearchLoading && <p className="text-sm text-gray-400">{zh ? '搜尋中…' : 'Searching…'}</p>}
+                  {directInviteSearchResults.length > 0 && (
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                      {directInviteSearchResults.map((u) => (
+                        <button
+                          key={u.id}
+                          onClick={() => handleInviteUser(u)}
+                          disabled={!!directInviteLoading}
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 disabled:opacity-50 transition"
+                        >
+                          <div>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{u.displayName ?? u.handle}</p>
+                            {(u.email || u.phoneE164) && (
+                              <p className="text-xs text-gray-400 dark:text-gray-500">{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</p>
+                            )}
+                          </div>
+                          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 ml-3 shrink-0">
+                            {directInviteLoading === u.id ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {directInviteMsg && (
+                    <p className={`text-sm ${directInviteMsg.startsWith('Invited') || directInviteMsg.startsWith('已邀請') ? 'text-green-600' : 'text-red-500'}`}>
+                      {directInviteMsg}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 pt-2">
+                  {/* My outside guests I've added */}
+                  {myPlusOnes.length > 0 && (
+                    <ul className="flex flex-col gap-2 mb-1">
+                      {myPlusOnes.map((po) => (
+                        <li key={po.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-medium">{po.name}</span>
+                            {po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship} {zh ? '的' : 'of'} {po.connectedInviteeName}</span>}
+                            {po.connectedInviteeName && !po.relationship && <span className="text-xs text-gray-400">{zh ? '來自' : 'guest of'} {po.connectedInviteeName}</span>}
+                            {!po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship}</span>}
+                            {(po.email || po.phone) && <span className="text-xs text-gray-400">{po.email ?? po.phone}</span>}
+                            {po.notes && <span className="text-xs text-gray-400 italic">{po.notes}</span>}
+                          </div>
+                          <button onClick={() => handleRemovePlusOne(po.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5">{zh ? '移除' : 'Remove'}</button>
                         </li>
                       ))}
                     </ul>
                   )}
+                  {/* Add form */}
+                  <input value={poName} onChange={(e) => setPoName(e.target.value)} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+                  <input value={poContact} onChange={(e) => setPoContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+                  <div className="relative">
+                    <input
+                      value={poConnectedTo}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPoConnectedTo(val);
+                        if (!val.trim()) { setPoConnectedToSuggestions([]); return; }
+                        const term = val.toLowerCase();
+                        const allNames = [
+                          ...(guests?.INVITED ?? []).map((i) => i.name),
+                          ...(guests?.GOING ?? []).map((g) => g.displayName ?? g.handle),
+                          ...(guests?.PENDING ?? []).map((g) => g.displayName ?? g.handle),
+                        ].filter(Boolean) as string[];
+                        const unique = [...new Set(allNames)];
+                        setPoConnectedToSuggestions(unique.filter((n) => n.toLowerCase().includes(term)).slice(0, 6));
+                      }}
+                      placeholder={zh ? '連結受邀者（輸入姓名搜尋）' : 'Connected to invited person (type to search)'}
+                      className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      maxLength={200}
+                    />
+                    {poConnectedToSuggestions.length > 0 && (
+                      <ul className="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+                        {poConnectedToSuggestions.map((name) => (
+                          <li key={name}>
+                            <button type="button" onClick={() => { setPoConnectedTo(name); setPoConnectedToSuggestions([]); }} className="w-full text-left px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">{name}</button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <input value={poRelationship} onChange={(e) => setPoRelationship(e.target.value)} placeholder={zh ? '與受邀者的關係（例：太太、朋友）' : 'Relationship to invited person (e.g. wife, friend)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
+                  <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={zh ? '備註' : 'Notes'} rows={2} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" maxLength={500} />
+                  {poMsg && <p className="text-xs text-red-500">{poMsg}</p>}
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => { setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(''); setPoConnectedToSuggestions([]); setPoNotes(''); setPoMsg(''); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">{zh ? '清除' : 'Clear'}</button>
+                    <button onClick={handleAddPlusOne} disabled={poLoading || !poName.trim()} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition disabled:opacity-50">{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增賓客' : 'Add Guest')}</button>
+                  </div>
                 </div>
-                <input value={poRelationship} onChange={(e) => setPoRelationship(e.target.value)} placeholder={zh ? '與受邀者的關係（例：太太、朋友）' : 'Their relationship to the invited person (e.g. wife, friend)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-                <textarea value={poNotes} onChange={(e) => setPoNotes(e.target.value)} placeholder={zh ? '備註' : 'Notes'} rows={2} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" maxLength={500} />
-                {poMsg && <p className="text-xs text-red-500">{poMsg}</p>}
-                <div className="flex gap-2 justify-end">
-                  <button onClick={() => { setShowPlusOneForm(false); setPoMsg(''); }} className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition">{zh ? '取消' : 'Cancel'}</button>
-                  <button onClick={handleAddPlusOne} disabled={poLoading || !poName.trim()} className="rounded-xl bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 transition disabled:opacity-50">{poLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增' : 'Add')}</button>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -1047,28 +1071,42 @@ export default function EventDetailPage() {
                 );
                 return rows.length === 0
                   ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有外部賓客。' : 'No outside guests yet.')}</p>
-                  : rows.map((g, i) => (
-                    <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                      <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-bold text-purple-500 shrink-0">
-                        {(g.name || '?').charAt(0).toUpperCase()}
+                  : rows.map((g, i) => {
+                    const canDeleteExtra = isEventAdmin || (g.addedByUserId != null && g.addedByUserId === user?.id);
+                    const isDeletingExtra = g.id ? deletingGuest === g.id : false;
+                    return (
+                      <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                        <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-bold text-purple-500 shrink-0">
+                          {(g.name || '?').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
+                          {g.connectedInviteeName && g.relationship && (
+                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</p>
+                          )}
+                          {g.connectedInviteeName && !g.relationship && (
+                            <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</p>
+                          )}
+                          {!g.connectedInviteeName && g.relationship && (
+                            <p className="text-xs text-gray-400 truncate">{g.relationship}</p>
+                          )}
+                          <p className="text-xs text-gray-400 truncate">{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</p>
+                          {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                          {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
+                        </div>
+                        {canDeleteExtra && g.id && (
+                          <button
+                            onClick={() => handleDeleteExtraGuest(g.id!)}
+                            disabled={isDeletingExtra}
+                            className="shrink-0 text-xs text-red-400 hover:text-red-600 disabled:opacity-50 transition"
+                            title={zh ? '移除賓客' : 'Remove guest'}
+                          >
+                            {isDeletingExtra ? '…' : '✕'}
+                          </button>
+                        )}
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
-                        {g.connectedInviteeName && g.relationship && (
-                          <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</p>
-                        )}
-                        {g.connectedInviteeName && !g.relationship && (
-                          <p className="text-xs text-purple-500 dark:text-purple-400 truncate">{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</p>
-                        )}
-                        {!g.connectedInviteeName && g.relationship && (
-                          <p className="text-xs text-gray-400 truncate">{g.relationship}</p>
-                        )}
-                        <p className="text-xs text-gray-400 truncate">{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</p>
-                        {isGroupAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
-                        {isGroupAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
-                      </div>
-                    </div>
-                  ));
+                    );
+                  });
               }
               const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
               const rows = tabData.filter((g) =>
@@ -1097,6 +1135,7 @@ export default function EventDetailPage() {
                     : rows.map((g, i) => {
                       const key = g.userId ?? g.guestRsvpId ?? String(i);
                       const busy = checkingIn.has(key);
+                      const isDeleting = g.userId ? deletingGuest === g.userId : false;
                       return (
                         <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition ${g.checkedIn ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'}`}>
@@ -1122,6 +1161,16 @@ export default function EventDetailPage() {
                               {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ Checked in') : (zh ? '報到' : 'Check in')}
                             </button>
                           )}
+                          {isEventAdmin && g.userId && g.userId !== user?.id && (
+                            <button
+                              onClick={() => handleDeleteGuestRsvp(g.userId!)}
+                              disabled={isDeleting}
+                              className="shrink-0 text-xs text-red-400 hover:text-red-600 disabled:opacity-50 transition ml-1"
+                              title={zh ? '移除賓客' : 'Remove guest'}
+                            >
+                              {isDeleting ? '…' : '✕'}
+                            </button>
+                          )}
                         </div>
                       );
                     })
@@ -1133,104 +1182,6 @@ export default function EventDetailPage() {
         </div>
       )}
 
-      {/* Invite Guest by search or add to roster (event creator/admin) */}
-      {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (
-        <section className="border border-dashed border-green-200 dark:border-green-900/40 rounded-xl p-5 bg-green-50/40 dark:bg-gray-900/50">
-          <h2 className="text-base font-semibold mb-3 dark:text-white">{zh ? '邀請賓客' : 'Invite Guest'}</h2>
-
-          {/* Tabs */}
-          <div className="flex gap-1 mb-4 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-            <button
-              onClick={() => { setInviteTab('search'); setRgName(''); setRgContact(''); setRgGuestOf(''); setRgRelationship(''); setRgNotes(''); setRgMsg(''); }}
-              className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'search' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
-            >
-              {zh ? '搜尋用戶' : 'Search Users'}
-            </button>
-            <button
-              onClick={() => { setInviteTab('roster'); loadRosterGuests(); setRgMsg(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); }}
-              className={`flex-1 rounded-md py-1.5 text-sm font-medium transition ${inviteTab === 'roster' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
-            >
-              {zh ? '新增嘉賓' : 'Add Guests'}
-            </button>
-          </div>
-
-          {inviteTab === 'search' ? (
-            <>
-              <input
-                type="text"
-                value={directInviteQuery}
-                onChange={(e) => searchInviteUsers(e.target.value)}
-                placeholder={zh ? '搜尋用戶（姓名、Email 或電話）' : 'Search by name, email, or phone'}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2"
-              />
-              {directInviteSearchLoading && (
-                <p className="text-sm text-gray-400 mb-2">{zh ? '搜尋中…' : 'Searching…'}</p>
-              )}
-              {directInviteSearchResults.length > 0 && (
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-2">
-                  {directInviteSearchResults.map((u) => (
-                    <button
-                      key={u.id}
-                      onClick={() => handleInviteUser(u)}
-                      disabled={!!directInviteLoading}
-                      className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 disabled:opacity-50 transition"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{u.displayName ?? u.handle}</p>
-                        {(u.email || u.phoneE164) && (
-                          <p className="text-xs text-gray-400 dark:text-gray-500">{[u.email, u.phoneE164].filter(Boolean).join(' · ')}</p>
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 ml-3 shrink-0">
-                        {directInviteLoading === u.id ? (zh ? '邀請中…' : 'Inviting…') : (zh ? '邀請' : 'Invite')}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {directInviteMsg && (
-                <p className={`text-sm ${directInviteMsg.startsWith('Invited') || directInviteMsg.startsWith('已邀請') ? 'text-green-600' : 'text-red-500'}`}>
-                  {directInviteMsg}
-                </p>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {/* Existing roster guests */}
-              {rosterGuests.length === 0 && (
-                <p className="text-sm text-gray-400 dark:text-gray-500">{zh ? '尚未新增任何嘉賓。' : 'No guests added yet.'}</p>
-              )}
-              {rosterGuests.length > 0 && (
-                <ul className="flex flex-col gap-2">
-                  {rosterGuests.map((g) => (
-                    <li key={g.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-100 dark:border-gray-700">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-medium">{g.name}</span>
-                        {g.relationship && <span className="text-xs text-gray-400">{g.relationship}</span>}
-                        {(g.email || g.phone) && <span className="text-xs text-gray-400">{g.email ?? g.phone}</span>}
-                        {g.notes && <span className="text-xs text-gray-400 italic">{g.notes}</span>}
-                      </div>
-                      <button onClick={() => handleRemoveRosterGuest(g.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5">{zh ? '移除' : 'Remove'}</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {/* Add form */}
-              <input value={rgName} onChange={(e) => setRgName(e.target.value)} placeholder={zh ? '姓名 *' : 'Name *'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <input value={rgContact} onChange={(e) => setRgContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <input value={rgGuestOf} onChange={(e) => setRgGuestOf(e.target.value)} placeholder={zh ? '同誰來（例：王大明的太太）' : 'Attending with / guest of (e.g. John\'s wife)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <input value={rgRelationship} onChange={(e) => setRgRelationship(e.target.value)} placeholder={zh ? '關係備註（例：太太、孩子）' : 'Relationship note (e.g. spouse, child)'} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
-              <textarea value={rgNotes} onChange={(e) => setRgNotes(e.target.value)} placeholder={zh ? '備註' : 'Notes'} rows={2} className="w-full rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" maxLength={500} />
-              {rgMsg && <p className={`text-sm ${rgMsg.includes('Failed') || rgMsg.includes('失敗') ? 'text-red-500' : 'text-green-600'}`}>{rgMsg}</p>}
-              <div className="flex justify-end">
-                <button onClick={handleAddRosterGuest} disabled={rgLoading || !rgName.trim()} className="rounded-xl bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700 transition disabled:opacity-50">
-                  {rgLoading ? (zh ? '新增中…' : 'Adding…') : (zh ? '新增至名單' : 'Add to Roster')}
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Send Message Blast (admin or event creator) */}
       {(user?.role === 'ADMIN' || event.createdById === user?.id || isGroupAdmin) && (

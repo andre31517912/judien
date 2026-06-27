@@ -82,6 +82,18 @@ export class RsvpController {
     return this.rsvpService.remove(eventId, user.id);
   }
 
+  // DELETE /api/events/:eventId/rsvp/:targetUserId — event creator/admin removes any user's RSVP
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('events/:eventId/rsvp/:targetUserId')
+  @HttpCode(HttpStatus.OK)
+  removeGuestRsvp(
+    @Param('eventId') eventId: string,
+    @Param('targetUserId') targetUserId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.removeGuestRsvp(eventId, user.id, targetUserId);
+  }
+
   // GET /api/events/:eventId/roster-guests — creator/admin: view manually added roster guests
   @UseGuards(AuthGuard('jwt'))
   @Get('events/:eventId/roster-guests')

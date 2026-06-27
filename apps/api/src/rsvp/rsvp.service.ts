@@ -108,7 +108,7 @@ export class RsvpService {
     };
 
     // Collect extra guests (plus-ones from any RSVP) separately
-    const extraGuests: { name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string }[] = [];
+    const extraGuests: { id: string; addedByUserId: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string }[] = [];
 
     for (const r of rsvps) {
       const status = r.status as 'GOING' | 'NO';
@@ -132,6 +132,8 @@ export class RsvpService {
         if ((r as any).plusOnes?.length) {
           for (const po of (r as any).plusOnes) {
             const extra: typeof extraGuests[number] = {
+              id: po.id,
+              addedByUserId: r.userId,
               name: po.name,
               addedByName: displayName ?? entry.handle,
               ...(po.relationship ? { relationship: po.relationship } : {}),
@@ -156,6 +158,8 @@ export class RsvpService {
     for (const po of directPlusOnes) {
       const adderName = po.addedByUser?.displayName ?? po.addedByUser?.email ?? 'Unknown';
       const extra: typeof extraGuests[number] = {
+        id: po.id,
+        addedByUserId: po.addedByUserId,
         name: po.name,
         addedByName: adderName,
         ...(po.relationship ? { relationship: po.relationship } : {}),
@@ -385,6 +389,16 @@ export class RsvpService {
         notes: dto.notes ?? null,
       },
     });
+  }
+
+  async removeGuestRsvp(eventId: string, callerId: string, targetUserId: string) {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event not found.');
+    const caller = await this.prisma.user.findUnique({ where: { id: callerId }, select: { role: true } });
+    const isAdmin = caller?.role === 'ADMIN' || event.createdById === callerId;
+    if (!isAdmin) throw new ForbiddenException('Only event creator or admin can remove guests.');
+    await this.prisma.rSVP.deleteMany({ where: { eventId, userId: targetUserId } });
+    return { removed: true };
   }
 
   async removeRosterGuest(eventId: string, userId: string, guestId: string) {
