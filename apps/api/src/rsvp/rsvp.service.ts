@@ -102,7 +102,7 @@ export class RsvpService {
 
     const nicknameByUserId = new Map(memberships.map((m) => [m.userId, m.groupNickname]));
 
-    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[]> = {
+    const groups: Record<'GOING' | 'NO', { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest'; checkedIn: boolean; userId?: string; guestRsvpId?: string }[]> = {
       GOING: [],
       NO: [],
     };
@@ -119,10 +119,12 @@ export class RsvpService {
           handle: isCallerAdmin ? (r.user.email ?? '') : this.maskIdentifier(r.user.email ?? ''),
           displayName,
           source: 'user',
+          checkedIn: (r as any).checkedIn ?? false,
         };
         if (isCallerAdmin) {
           if (r.user.email) entry.email = r.user.email;
           if ((r.user as any).phoneE164) entry.phone = (r.user as any).phoneE164;
+          entry.userId = r.userId;
         }
         groups[status].push(entry);
 
@@ -173,7 +175,9 @@ export class RsvpService {
           handle: isCallerAdmin ? r.guestEmail : this.maskIdentifier(r.guestEmail),
           displayName: r.guestName,
           source: 'guest',
+          checkedIn: (r as any).checkedIn ?? false,
         };
+        if (isCallerAdmin) entry.guestRsvpId = r.id;
         if (isCallerAdmin) {
           entry.email = r.guestEmail;
           entry.phone = r.guestPhone;
@@ -546,6 +550,46 @@ export class RsvpService {
       where: { subEventId, userId },
     });
     return { left: true };
+  }
+
+  private async assertEventAdmin(eventId: string, callerUserId: string): Promise<void> {
+    const event = await this.prisma.event.findUnique({ where: { id: eventId }, select: { createdById: true, groupId: true } });
+    if (!event) throw new NotFoundException('Event not found.');
+    const caller = await this.prisma.user.findUnique({ where: { id: callerUserId }, select: { role: true } });
+    let isAdmin = caller?.role === 'ADMIN' || event.createdById === callerUserId;
+    if (!isAdmin && event.groupId) {
+      const membership = await (this.prisma.groupMembership as any).findUnique({
+        where: { groupId_userId: { groupId: event.groupId, userId: callerUserId } },
+        select: { role: true, status: true },
+      });
+      isAdmin = membership?.status === 'ACCEPTED' && membership?.role === 'GROUP_ADMIN';
+    }
+    if (!isAdmin) throw new ForbiddenException('Only event admins can perform this action.');
+  }
+
+  async checkIn(eventId: string, callerUserId: string, targetUserId: string, checkedIn: boolean) {
+    await this.assertEventAdmin(eventId, callerUserId);
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId: targetUserId } },
+      select: { id: true, status: true },
+    });
+    if (!rsvp) throw new NotFoundException('RSVP not found.');
+    return (this.prisma.rSVP as any).update({
+      where: { id: rsvp.id },
+      data: { checkedIn, checkedInAt: checkedIn ? new Date() : null },
+      select: { id: true, checkedIn: true, checkedInAt: true },
+    });
+  }
+
+  async checkInGuest(eventId: string, callerUserId: string, guestRsvpId: string, checkedIn: boolean) {
+    await this.assertEventAdmin(eventId, callerUserId);
+    const guestRsvp = await this.prisma.guestRSVP.findFirst({ where: { id: guestRsvpId, eventId } });
+    if (!guestRsvp) throw new NotFoundException('Guest RSVP not found.');
+    return (this.prisma.guestRSVP as any).update({
+      where: { id: guestRsvpId },
+      data: { checkedIn, checkedInAt: checkedIn ? new Date() : null },
+      select: { id: true, checkedIn: true, checkedInAt: true },
+    });
   }
 
   private maskIdentifier(value: string) {

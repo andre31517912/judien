@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 import type { EventWithCounts, Comment, EventInvitee, EventSeries } from '@judien/shared';
 import { Ionicons } from '@expo/vector-icons';
 
-type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type ExtraGuest = { name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
 type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] };
@@ -144,6 +144,9 @@ export default function EventDetailScreen() {
   const [transportationLoading, setTransportationLoading] = useState(false);
   const [subEventLoading, setSubEventLoading] = useState<string | null>(null);
 
+  // check-in
+  const [checkingIn, setCheckingIn] = useState<Set<string>>(new Set());
+
   // invite tab: 'search' | 'roster'
   const [inviteTab, setInviteTab] = useState<'search' | 'roster'>('search');
   const [rosterGuests, setRosterGuests] = useState<PlusOne[]>([]);
@@ -204,6 +207,7 @@ export default function EventDetailScreen() {
       const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
       setEvent(ev);
       setMyRsvp(ev.myRsvp);
+      setMyTransportation(ev.myTransportation ?? '');
       setGuests(null);
     } catch (err: any) {
       Alert.alert('Error', err.message ?? 'Failed to update RSVP.');
@@ -465,6 +469,33 @@ export default function EventDetailScreen() {
     }
   };
 
+  const handleCheckIn = async (entry: GuestEntry, checkedIn: boolean) => {
+    const key = entry.userId ?? entry.guestRsvpId ?? '';
+    if (!key || checkingIn.has(key)) return;
+    setCheckingIn((prev) => new Set(prev).add(key));
+    try {
+      const url = entry.source === 'guest'
+        ? `/events/${id}/guest-rsvp/${entry.guestRsvpId}/checkin`
+        : `/events/${id}/rsvp/${entry.userId}/checkin`;
+      await apiFetch(url, { method: 'PATCH', body: JSON.stringify({ checkedIn }) });
+      setGuests((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          GOING: prev.GOING.map((g) =>
+            (g.userId === entry.userId && entry.userId) || (g.guestRsvpId === entry.guestRsvpId && entry.guestRsvpId)
+              ? { ...g, checkedIn }
+              : g,
+          ),
+        };
+      });
+    } catch (err: any) {
+      Alert.alert(zh ? '報到失敗' : 'Check-in failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setCheckingIn((prev) => { const s = new Set(prev); s.delete(key); return s; });
+    }
+  };
+
   const handleComment = async () => {
     if (!commentBody.trim() || commentLoading) return;
     setCommentLoading(true);
@@ -692,7 +723,7 @@ export default function EventDetailScreen() {
               </Text>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
                 <TextInput
-                  style={[styles.editInput, { flex: 1, marginBottom: 0 }]}
+                  style={[styles.editInput, { flex: 1, marginBottom: 0, minHeight: 44, height: 44, textAlignVertical: 'center' }]}
                   value={myTransportation}
                   onChangeText={(v) => { setMyTransportation(v); setTransportationSaved(false); }}
                   placeholder={zh ? '例：開車、騎車、搭捷運…' : 'e.g. Driving, biking, MRT…'}
@@ -1177,14 +1208,15 @@ export default function EventDetailScreen() {
                     const rows = (guests?.INVITED ?? []).filter((g) =>
                       !term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
                     );
+                    const isEventAdminInvited = isAdmin || isGroupAdmin || event?.createdById === user?.id;
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無受邀者' : 'No invitees yet')}</Text>
                       : rows.map((g, i) => (
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
                           {g.relationship ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.relationship}</Text> : null}
-                          {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                          {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                          {isEventAdminInvited && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {isEventAdminInvited && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>
                       ));
                   }
@@ -1192,6 +1224,7 @@ export default function EventDetailScreen() {
                     const rows = (guests?.EXTRA_GUESTS ?? []).filter((g) =>
                       !term || g.name.toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term) || g.addedByName.toLowerCase().includes(term)
                     );
+                    const isEventAdminExtra = isAdmin || isGroupAdmin || event?.createdById === user?.id;
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無外部賓客' : 'No outside guests yet')}</Text>
                       : rows.map((g, i) => (
@@ -1201,8 +1234,8 @@ export default function EventDetailScreen() {
                           {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</Text> : null}
                           {!g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
                           <Text style={styles.guestHandle}>{zh ? '由' : 'added by'} {g.addedByName}</Text>
-                          {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                          {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                          {isEventAdminExtra && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                          {isEventAdminExtra && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>
                       ));
                   }
@@ -1211,15 +1244,54 @@ export default function EventDetailScreen() {
                     !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
                   );
                   const emptyMsg = term ? (zh ? '找不到符合結果' : 'No matches') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應' : 'Everyone has responded') : (zh ? '暫無名單' : 'No one yet');
-                  return rows.length === 0
-                    ? <Text style={styles.empty}>{emptyMsg}</Text>
-                    : rows.map((g, i) => (
-                      <View key={i} style={styles.guestRow}>
-                        <Text style={styles.guestName}>{g.displayName || g.handle}</Text>
-                        {isGroupAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
-                        {isGroupAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
-                      </View>
-                    ));
+                  const isEventAdmin = isAdmin || isGroupAdmin || event?.createdById === user?.id;
+                  const showCheckIn = isEventAdmin && activeGuestTab === 'GOING';
+                  const checkedInCount = showCheckIn ? (guests?.GOING ?? []).filter((g) => g.checkedIn).length : 0;
+                  return (
+                    <>
+                      {showCheckIn && (guests?.GOING ?? []).length > 0 && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#10B981' }}>
+                          <View style={{ flex: 1, height: 4, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden' }}>
+                            <View style={{ height: 4, borderRadius: 4, backgroundColor: '#10B981', width: `${guests!.GOING.length > 0 ? (checkedInCount / guests!.GOING.length) * 100 : 0}%` }} />
+                          </View>
+                          <Text style={{ fontSize: 11, color: '#6B7280' }}>{checkedInCount} / {guests?.GOING.length ?? 0} {zh ? '已報到' : 'checked in'}</Text>
+                        </View>
+                      )}
+                      {rows.length === 0
+                        ? <Text style={styles.empty}>{emptyMsg}</Text>
+                        : rows.map((g, i) => {
+                          const key = g.userId ?? g.guestRsvpId ?? String(i);
+                          const busy = checkingIn.has(key);
+                          return (
+                            <View key={i} style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                              <View style={{ flex: 1 }}>
+                                <Text style={[styles.guestName, g.checkedIn && { color: '#059669' }]}>{g.displayName || g.handle}</Text>
+                                {isEventAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
+                                {isEventAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                              </View>
+                              {showCheckIn && (g.userId ?? g.guestRsvpId) && (
+                                <TouchableOpacity
+                                  onPress={() => handleCheckIn(g, !g.checkedIn)}
+                                  disabled={busy}
+                                  style={{
+                                    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+                                    borderColor: g.checkedIn ? '#10B981' : '#D1D5DB',
+                                    backgroundColor: g.checkedIn ? '#ECFDF5' : 'transparent',
+                                    opacity: busy ? 0.5 : 1,
+                                    marginLeft: 8,
+                                  }}
+                                >
+                                  <Text style={{ fontSize: 12, fontWeight: '600', color: g.checkedIn ? '#059669' : '#6B7280' }}>
+                                    {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ In') : (zh ? '報到' : 'Check in')}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                            </View>
+                          );
+                        })
+                      }
+                    </>
+                  );
                 })()}
               </ScrollView>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>

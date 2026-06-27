@@ -81,6 +81,11 @@ export const UpdateTransportationSchema = z.object({
 });
 export type UpdateTransportationDto = z.infer<typeof UpdateTransportationSchema>;
 
+export const CheckInSchema = z.object({
+  checkedIn: z.boolean(),
+});
+export type CheckInDto = z.infer<typeof CheckInSchema>;
+
 // ─── RSVP ─────────────────────────────────────────────────────────────────────
 
 export const RsvpSchema = z.object({

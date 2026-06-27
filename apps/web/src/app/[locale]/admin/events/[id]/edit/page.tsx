@@ -109,7 +109,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
         coverImageUrl: ev.coverImageUrl ?? '',
       });
-      setCollectTransportation(!!(ev as any).collectTransportation);
+      setCollectTransportation(!!ev.collectTransportation);
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')

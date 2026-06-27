@@ -204,6 +204,8 @@ model GuestRSVP {
   guestPhone   String
   identityHash String
   status       RSVPStatus
+  checkedIn    Boolean    @default(false)
+  checkedInAt  DateTime?
   ipAddress    String?
   userAgent    String?
   updatedAt    DateTime   @updatedAt
@@ -257,6 +259,8 @@ model RSVP {
   status               RSVPStatus
   declineReason        String?
   transportationMethod String?
+  checkedIn            Boolean   @default(false)
+  checkedInAt          DateTime?
   updatedAt            DateTime   @updatedAt
 
   event    Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)

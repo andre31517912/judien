@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RsvpService } from './rsvp.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, UpdateTransportationSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto, type UpdateTransportationDto } from '@judien/shared';
+import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, UpdateTransportationSchema, CheckInSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto, type UpdateTransportationDto, type CheckInDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { Request } from 'express';
 
@@ -180,5 +180,29 @@ export class RsvpController {
     @CurrentUser() user: User,
   ) {
     return this.rsvpService.leaveSubEvent(eventId, user.id, subId);
+  }
+
+  // PATCH /api/events/:eventId/rsvp/:userId/checkin — check in a registered guest
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/:userId/checkin')
+  checkIn(
+    @Param('eventId') eventId: string,
+    @Param('userId') userId: string,
+    @Body(new ZodValidationPipe(CheckInSchema)) dto: CheckInDto,
+    @CurrentUser() caller: User,
+  ) {
+    return this.rsvpService.checkIn(eventId, caller.id, userId, dto.checkedIn);
+  }
+
+  // PATCH /api/events/:eventId/guest-rsvp/:guestId/checkin — check in an anonymous guest
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/guest-rsvp/:guestId/checkin')
+  checkInGuest(
+    @Param('eventId') eventId: string,
+    @Param('guestId') guestId: string,
+    @Body(new ZodValidationPipe(CheckInSchema)) dto: CheckInDto,
+    @CurrentUser() caller: User,
+  ) {
+    return this.rsvpService.checkInGuest(eventId, caller.id, guestId, dto.checkedIn);
   }
 }

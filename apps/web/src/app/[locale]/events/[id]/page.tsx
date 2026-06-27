@@ -45,7 +45,7 @@ export default function EventDetailPage() {
   const [isGroupAdmin, setIsGroupAdmin] = useState(false);
 
   // guest list
-  type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string };
+  type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
   type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
   type ExtraGuest = { name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
   type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; connectedInviteeName?: string | null; notes?: string | null };
@@ -83,6 +83,35 @@ export default function EventDetailPage() {
       alert(err.message ?? 'Failed to save.');
     } finally {
       setTransportationLoading(false);
+    }
+  };
+
+  const [checkingIn, setCheckingIn] = useState<Set<string>>(new Set());
+
+  const handleCheckIn = async (entry: GuestEntry, checkedIn: boolean) => {
+    const key = entry.userId ?? entry.guestRsvpId ?? '';
+    if (!key || checkingIn.has(key)) return;
+    setCheckingIn((prev) => new Set(prev).add(key));
+    try {
+      const url = entry.source === 'guest'
+        ? `/events/${params.id}/guest-rsvp/${entry.guestRsvpId}/checkin`
+        : `/events/${params.id}/rsvp/${entry.userId}/checkin`;
+      await apiFetch(url, { method: 'PATCH', body: JSON.stringify({ checkedIn }) });
+      setGuests((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          GOING: prev.GOING.map((g) =>
+            (g.userId === entry.userId && entry.userId) || (g.guestRsvpId === entry.guestRsvpId && entry.guestRsvpId)
+              ? { ...g, checkedIn }
+              : g,
+          ),
+        };
+      });
+    } catch (err: any) {
+      alert(err.message ?? 'Check-in failed.');
+    } finally {
+      setCheckingIn((prev) => { const s = new Set(prev); s.delete(key); return s; });
     }
   };
 
@@ -463,6 +492,7 @@ export default function EventDetailPage() {
       }
       const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
       setEvent(ev);
+      setMyTransportation(ev.myTransportation ?? '');
       setGuests(null);
     } catch (err: any) {
       alert(err.message ?? (zh ? 'RSVP 更新失敗，請再試。' : 'Failed to update RSVP. Please try again.'));
@@ -485,6 +515,7 @@ export default function EventDetailPage() {
       setMyPlusOnes([]);
       const ev = await apiFetch<EventWithCounts>(`/events/${params.id}`);
       setEvent(ev);
+      setMyTransportation(ev.myTransportation ?? '');
       setGuests(null);
     } catch (err: any) {
       alert(err.message ?? (zh ? 'RSVP 更新失敗，請再試。' : 'Failed to update RSVP. Please try again.'));
@@ -1044,20 +1075,59 @@ export default function EventDetailPage() {
                 !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
               );
               const emptyMsg = term ? (zh ? '找不到符合結果。' : 'No matches.') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應。' : 'Everyone has responded.') : (zh ? '目前沒有人。' : 'Nobody yet.');
-              return rows.length === 0
-                ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{emptyMsg}</p>
-                : rows.map((g, i) => (
-                  <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                    <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
-                      {(g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
+              const showCheckIn = isEventAdmin && activeGuestTab === 'GOING';
+              const checkedInCount = showCheckIn ? (guests?.GOING ?? []).filter((g) => g.checkedIn).length : 0;
+              return (
+                <>
+                  {showCheckIn && (guests?.GOING ?? []).length > 0 && (
+                    <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center gap-3">
+                      <div className="flex-1 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-emerald-500 transition-all"
+                          style={{ width: `${(guests!.GOING.length > 0 ? checkedInCount / guests!.GOING.length : 0) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                        {checkedInCount} / {guests?.GOING.length ?? 0} {zh ? '已報到' : 'checked in'}
+                      </span>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm text-gray-800 dark:text-gray-200">{g.displayName ?? g.handle}</p>
-                      {isGroupAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
-                      {isGroupAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
-                    </div>
-                  </div>
-                ));
+                  )}
+                  {rows.length === 0
+                    ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{emptyMsg}</p>
+                    : rows.map((g, i) => {
+                      const key = g.userId ?? g.guestRsvpId ?? String(i);
+                      const busy = checkingIn.has(key);
+                      return (
+                        <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition ${g.checkedIn ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'}`}>
+                            {g.checkedIn ? '✓' : (g.displayName ?? g.handle ?? '?').charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={`text-sm truncate ${g.checkedIn ? 'text-emerald-700 dark:text-emerald-400 font-medium' : 'text-gray-800 dark:text-gray-200'}`}>
+                              {g.displayName ?? g.handle}
+                            </p>
+                            {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
+                            {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
+                          </div>
+                          {showCheckIn && (g.userId ?? g.guestRsvpId) && (
+                            <button
+                              onClick={() => handleCheckIn(g, !g.checkedIn)}
+                              disabled={busy}
+                              className={`shrink-0 text-xs px-2.5 py-1 rounded-lg border font-medium transition disabled:opacity-50 ${
+                                g.checkedIn
+                                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
+                                  : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-400 hover:text-emerald-600'
+                              }`}
+                            >
+                              {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ Checked in') : (zh ? '報到' : 'Check in')}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })
+                  }
+                </>
+              );
             })()}
           </div>
         </div>

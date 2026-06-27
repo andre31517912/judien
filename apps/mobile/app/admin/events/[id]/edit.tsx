@@ -117,7 +117,7 @@ export default function EditEventScreen() {
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
-      setCollectTransportation(!!(ev as any).collectTransportation);
+      setCollectTransportation(!!ev.collectTransportation);
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')

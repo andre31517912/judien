@@ -271,7 +271,7 @@ export default function NewEventScreen() {
             {zh ? '收集交通方式' : 'Collect transportation info'}
           </Text>
           <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
-            {zh ? '出席的賓客將被問及交通方式' : 'Going guests will be asked how they're getting there'}
+            {zh ? '出席的賓客將被問及交通方式' : "Going guests will be asked how they're getting there"}
           </Text>
         </View>
         <Switch
