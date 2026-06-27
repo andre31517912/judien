@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
+
+const CALENDAR_W = 288;
+const CALENDAR_H = 420; // conservative estimate for flip detection
 
 function buildCalendar(year: number, month: number): (number | null)[] {
   const firstDay = new Date(year, month, 1).getDay();
@@ -74,7 +78,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
   const [hour12, setHour12] = useState(() => to12(parsed?.hour ?? 9).h12);
   const [ampm, setAmpm] = useState<'AM' | 'PM'>(() => to12(parsed?.hour ?? 9).ampm);
   const [minute, setMinute] = useState(parsed?.minute ?? 0);
-  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0, width: 0 });
+  const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
 
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -93,7 +97,7 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
     }
   }, [value]);
 
-  // Close on outside click — check both trigger and floating popover
+  // Close on outside click — check both trigger and portal popover
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -118,10 +122,17 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
       setSelDay(null); setSelKey(null);
       setHour12(9); setAmpm('AM'); setMinute(0);
     }
-    // Anchor popover to trigger using fixed viewport coordinates
+
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      setPopoverPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+      // Flip above if not enough room below
+      const fitsBelow = rect.bottom + 6 + CALENDAR_H <= window.innerHeight;
+      const top = fitsBelow
+        ? rect.bottom + 6
+        : Math.max(8, rect.top - CALENDAR_H - 6);
+      // Keep within horizontal viewport bounds
+      const left = Math.max(8, Math.min(rect.left, window.innerWidth - CALENDAR_W - 8));
+      setPopoverPos({ top, left });
     }
     setOpen(true);
   };
@@ -142,6 +153,125 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
   };
 
   const cells = buildCalendar(viewYear, viewMonth);
+
+  const popover = (
+    <div
+      ref={popoverRef}
+      style={{ position: 'fixed', top: popoverPos.top, left: popoverPos.left, zIndex: 9999, width: CALENDAR_W }}
+      className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4"
+    >
+      {/* Month nav */}
+      <div className="flex items-center justify-between mb-3">
+        <button type="button" onClick={prevMonth}
+          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition text-lg font-light">
+          ‹
+        </button>
+        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+          {MONTHS[viewMonth]} {viewYear}
+        </span>
+        <button type="button" onClick={nextMonth}
+          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition text-lg font-light">
+          ›
+        </button>
+      </div>
+
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 mb-1">
+        {WEEKDAYS.map(d => (
+          <div key={d} className="text-center text-[11px] text-gray-400 dark:text-gray-500 font-medium py-1">{d}</div>
+        ))}
+      </div>
+
+      {/* Day grid — all dates selectable */}
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {cells.map((day, i) => {
+          if (day === null) return <div key={i} />;
+          const key = `${viewYear}-${viewMonth}-${day}`;
+          const isToday = key === todayKey;
+          const isSel = key === selKey;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => { setSelDay({ year: viewYear, month: viewMonth, day }); setSelKey(key); }}
+              className={[
+                'w-full aspect-square flex items-center justify-center rounded-full text-[13px] transition',
+                isSel
+                  ? 'bg-indigo-600 text-white font-semibold'
+                  : isToday
+                    ? 'ring-1 ring-indigo-400 text-indigo-600 dark:text-indigo-400 font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-950'
+                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+              ].join(' ')}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 dark:border-gray-800 my-3" />
+
+      {/* Time picker — 12h */}
+      <div className="flex items-center gap-2">
+        <IconClock />
+        <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 border border-gray-200 dark:border-gray-700">
+          <input
+            type="number" min={1} max={12}
+            value={hour12}
+            onChange={e => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v)) setHour12(Math.min(12, Math.max(1, v)));
+            }}
+            onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
+            className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="text-gray-400 font-semibold text-sm">:</span>
+          <input
+            type="number" min={0} max={59}
+            value={pad(minute)}
+            onChange={e => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v)) setMinute(Math.min(59, Math.max(0, v)));
+            }}
+            onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
+            className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        {/* AM / PM toggle */}
+        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold">
+          {(['AM', 'PM'] as const).map(p => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setAmpm(p)}
+              className={`px-2.5 py-1.5 transition ${ampm === p ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+        {clearable && value && (
+          <button type="button" onClick={() => { onChange(''); setOpen(false); }}
+            className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition mr-auto">
+            Clear
+          </button>
+        )}
+        <button type="button" onClick={() => setOpen(false)}
+          className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition ml-auto">
+          Cancel
+        </button>
+        <button type="button" onClick={confirm} disabled={!selDay}
+          className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition font-medium">
+          Confirm
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className={className}>
@@ -170,125 +300,8 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
         )}
       </button>
 
-      {/* Popover — fixed so it escapes any overflow:hidden ancestor */}
-      {open && (
-        <div
-          ref={popoverRef}
-          style={{ position: 'fixed', top: popoverPos.top, left: popoverPos.left, zIndex: 9999 }}
-          className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 p-4 w-[280px]"
-        >
-          {/* Month nav */}
-          <div className="flex items-center justify-between mb-3">
-            <button type="button" onClick={prevMonth}
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition text-lg font-light">
-              ‹
-            </button>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {MONTHS[viewMonth]} {viewYear}
-            </span>
-            <button type="button" onClick={nextMonth}
-              className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition text-lg font-light">
-              ›
-            </button>
-          </div>
-
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 mb-1">
-            {WEEKDAYS.map(d => (
-              <div key={d} className="text-center text-[11px] text-gray-400 dark:text-gray-500 font-medium py-1">{d}</div>
-            ))}
-          </div>
-
-          {/* Day grid — all dates selectable (past events need past dates) */}
-          <div className="grid grid-cols-7 gap-y-0.5">
-            {cells.map((day, i) => {
-              if (day === null) return <div key={i} />;
-              const key = `${viewYear}-${viewMonth}-${day}`;
-              const isToday = key === todayKey;
-              const isSel = key === selKey;
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => { setSelDay({ year: viewYear, month: viewMonth, day }); setSelKey(key); }}
-                  className={[
-                    'w-full aspect-square flex items-center justify-center rounded-full text-[13px] transition',
-                    isSel
-                      ? 'bg-indigo-600 text-white font-semibold'
-                      : isToday
-                        ? 'ring-1 ring-indigo-400 text-indigo-600 dark:text-indigo-400 font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-950'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
-                  ].join(' ')}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-100 dark:border-gray-800 my-3" />
-
-          {/* Time picker — 12h */}
-          <div className="flex items-center gap-2">
-            <IconClock />
-            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-lg px-2 py-1.5 border border-gray-200 dark:border-gray-700">
-              <input
-                type="number" min={1} max={12}
-                value={hour12}
-                onChange={e => {
-                  const v = parseInt(e.target.value, 10);
-                  if (!isNaN(v)) setHour12(Math.min(12, Math.max(1, v)));
-                }}
-                onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
-                className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <span className="text-gray-400 font-semibold text-sm">:</span>
-              <input
-                type="number" min={0} max={59}
-                value={pad(minute)}
-                onChange={e => {
-                  const v = parseInt(e.target.value, 10);
-                  if (!isNaN(v)) setMinute(Math.min(59, Math.max(0, v)));
-                }}
-                onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
-                className="w-7 text-center text-sm font-mono bg-transparent text-gray-900 dark:text-white outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-            </div>
-            {/* AM / PM toggle */}
-            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold">
-              {(['AM', 'PM'] as const).map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setAmpm(p)}
-                  className={`px-2.5 py-1.5 transition ${ampm === p ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-            {clearable && value && (
-              <button type="button" onClick={() => { onChange(''); setOpen(false); }}
-                className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition mr-auto">
-                Clear
-              </button>
-            )}
-            <button type="button" onClick={() => setOpen(false)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition ml-auto">
-              Cancel
-            </button>
-            <button type="button" onClick={confirm} disabled={!selDay}
-              className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition font-medium">
-              Confirm
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Popover rendered via portal — escapes all ancestor overflow/transform/stacking constraints */}
+      {open && createPortal(popover, document.body)}
     </div>
   );
 }
