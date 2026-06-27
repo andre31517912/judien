@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../context/theme.context';
 
 type Props = {
@@ -34,16 +34,12 @@ export default function DateTimeField({
   const { colors, isDark } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date'); // Android only
-  // Separate drafts so date and time pickers don't fight each other on re-render
-  const [draftDay, setDraftDay] = useState<Date>(new Date());
-  const [draftTime, setDraftTime] = useState<Date>(new Date());
+  const [draft, setDraft] = useState<Date>(new Date());
 
   const parsedValue = useMemo(() => parseLocalDateTime(value), [value]);
 
   const openPicker = () => {
-    const base = parsedValue ?? new Date();
-    setDraftDay(new Date(base));
-    setDraftTime(new Date(base));
+    setDraft(parsedValue ?? new Date());
     setPickerMode('date');
     setPickerVisible(true);
   };
@@ -51,22 +47,21 @@ export default function DateTimeField({
   const dismiss = () => setPickerVisible(false);
 
   const confirm = () => {
-    const combined = new Date(draftDay);
-    combined.setHours(draftTime.getHours(), draftTime.getMinutes(), 0, 0);
-    onChange(formatLocalDateTimeValue(combined));
+    onChange(formatLocalDateTimeValue(draft));
     setPickerVisible(false);
   };
 
-  // Android: two sequential native dialogs
+  // Android: two sequential native dialogs (date then time)
   const handleAndroidChange = (event: DateTimePickerEvent, selected?: Date) => {
     if (event.type === 'dismissed') { setPickerVisible(false); setPickerMode('date'); return; }
     if (!selected) return;
     if (pickerMode === 'date') {
-      setDraftDay(selected);
+      setDraft(selected);
       setPickerMode('time');
       return;
     }
-    const combined = new Date(draftDay);
+    // time step: merge selected time into the date we already have
+    const combined = new Date(draft);
     combined.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
     onChange(formatLocalDateTimeValue(combined));
     setPickerVisible(false);
@@ -100,17 +95,21 @@ export default function DateTimeField({
       {pickerVisible && Platform.OS === 'android' ? (
         <DateTimePicker
           key={pickerMode}
-          value={pickerMode === 'date' ? draftDay : draftTime}
+          value={draft}
           mode={pickerMode}
           display="default"
+          minimumDate={new Date(0)}
           onChange={handleAndroidChange}
         />
       ) : null}
 
-      {/* ── iOS: bottom-sheet Modal — calendar + time spinner together ── */}
+      {/* ── iOS: bottom-sheet modal with a single datetime spinner ──
+          Using display="spinner" with mode="datetime" avoids the ScrollView
+          touch-conflict that made the inline calendar unresponsive. The wheel
+          picker handles its own scroll gestures without fighting a parent ScrollView. */}
       {Platform.OS === 'ios' ? (
         <Modal visible={pickerVisible} transparent animationType="slide" onRequestClose={dismiss}>
-          {/* Backdrop tap to dismiss */}
+          {/* Backdrop — tap to dismiss */}
           <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} activeOpacity={1} onPress={dismiss} />
 
           <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 40 }}>
@@ -129,33 +128,17 @@ export default function DateTimeField({
               </TouchableOpacity>
             </View>
 
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-              {/* Calendar — date only, clean with no time wheel */}
-              <DateTimePicker
-                value={draftDay}
-                mode="date"
-                display="inline"
-                minimumDate={new Date(0)}
-                onChange={(_, date) => { if (date) setDraftDay(date); }}
-                accentColor="#4F46E5"
-                themeVariant={isDark ? 'dark' : 'light'}
-                style={{ alignSelf: 'center', backgroundColor: colors.card }}
-              />
-
-              {/* Divider */}
-              <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 20 }} />
-
-              {/* Time spinner — clean wheel, no gray calendar overlap */}
-              <DateTimePicker
-                value={draftTime}
-                mode="time"
-                display="spinner"
-                onChange={(_, date) => { if (date) setDraftTime(date); }}
-                accentColor="#4F46E5"
-                themeVariant={isDark ? 'dark' : 'light'}
-                style={{ height: 140, backgroundColor: colors.card }}
-              />
-            </ScrollView>
+            {/* Single combined date+time spinner — no ScrollView needed, no touch conflict */}
+            <DateTimePicker
+              value={draft}
+              mode="datetime"
+              display="spinner"
+              minimumDate={new Date(0)}
+              onChange={(_, date) => { if (date) setDraft(date); }}
+              accentColor="#4F46E5"
+              themeVariant={isDark ? 'dark' : 'light'}
+              style={{ height: 200, backgroundColor: colors.card }}
+            />
           </View>
         </Modal>
       ) : null}
