@@ -1063,7 +1063,7 @@ export default function EventDetailPage() {
                         {!g.connectedInviteeName && g.relationship && (
                           <p className="text-xs text-gray-400 truncate">{g.relationship}</p>
                         )}
-                        <p className="text-xs text-gray-400 truncate">{zh ? '由' : 'added by'} {g.addedByName}</p>
+                        <p className="text-xs text-gray-400 truncate">{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</p>
                         {isGroupAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
                         {isGroupAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                       </div>

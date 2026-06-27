@@ -1233,7 +1233,7 @@ export default function EventDetailScreen() {
                           {g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.relationship} {zh ? '的' : 'of'} {g.connectedInviteeName}</Text> : null}
                           {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{zh ? '來自' : 'guest of'} {g.connectedInviteeName}</Text> : null}
                           {!g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
-                          <Text style={styles.guestHandle}>{zh ? '由' : 'added by'} {g.addedByName}</Text>
+                          <Text style={styles.guestHandle}>{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</Text>
                           {isEventAdminExtra && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                           {isEventAdminExtra && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                         </View>
