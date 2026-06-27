@@ -60,7 +60,6 @@ export default function DateTimeField({
       setPickerMode('time');
       return;
     }
-    // time step: merge selected time into the date we already have
     const combined = new Date(draft);
     combined.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
     onChange(formatLocalDateTimeValue(combined));
@@ -103,16 +102,22 @@ export default function DateTimeField({
         />
       ) : null}
 
-      {/* ── iOS: bottom-sheet modal with a single datetime spinner ──
-          Using display="spinner" with mode="datetime" avoids the ScrollView
-          touch-conflict that made the inline calendar unresponsive. The wheel
-          picker handles its own scroll gestures without fighting a parent ScrollView. */}
+      {/* ── iOS: inline calendar + spinner time — NO ScrollView to avoid touch conflict ── */}
       {Platform.OS === 'ios' ? (
         <Modal visible={pickerVisible} transparent animationType="slide" onRequestClose={dismiss}>
-          {/* Backdrop — tap to dismiss */}
-          <TouchableOpacity style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} activeOpacity={1} onPress={dismiss} />
+          {/* Backdrop */}
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
+            activeOpacity={1}
+            onPress={dismiss}
+          />
 
-          <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 40 }}>
+          <View style={{
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingBottom: 36,
+          }}>
             {/* Header */}
             <View style={{
               flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -128,16 +133,41 @@ export default function DateTimeField({
               </TouchableOpacity>
             </View>
 
-            {/* Single combined date+time spinner — no ScrollView needed, no touch conflict */}
+            {/* Inline calendar — NOT inside a ScrollView, so pan gestures work correctly */}
             <DateTimePicker
               value={draft}
-              mode="datetime"
-              display="spinner"
+              mode="date"
+              display="inline"
               minimumDate={new Date(0)}
-              onChange={(_, date) => { if (date) setDraft(date); }}
+              onChange={(_, date) => {
+                if (!date) return;
+                // Preserve the time portion from the current draft
+                const updated = new Date(draft);
+                updated.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                setDraft(updated);
+              }}
               accentColor="#4F46E5"
               themeVariant={isDark ? 'dark' : 'light'}
-              style={{ height: 200, backgroundColor: colors.card }}
+            />
+
+            {/* Divider */}
+            <View style={{ height: 1, backgroundColor: colors.border, marginHorizontal: 16, marginBottom: 4 }} />
+
+            {/* Time spinner — preserve the date portion from the current draft */}
+            <DateTimePicker
+              value={draft}
+              mode="time"
+              display="spinner"
+              minimumDate={new Date(0)}
+              onChange={(_, time) => {
+                if (!time) return;
+                const updated = new Date(draft);
+                updated.setHours(time.getHours(), time.getMinutes(), 0, 0);
+                setDraft(updated);
+              }}
+              accentColor="#4F46E5"
+              themeVariant={isDark ? 'dark' : 'light'}
+              style={{ height: 110, backgroundColor: colors.card }}
             />
           </View>
         </Modal>
