@@ -60,6 +60,7 @@ export const CreateEventSchema = z.object({
   title: z.string().max(200).default(''),
   description: z.string().max(10000).default(''),
   location: z.string().max(500).default(''),
+  mapAddress: z.string().max(1000).nullable().optional(),
   startAt: z.string().datetime().optional().default(new Date().toISOString()),
   endAt: z.string().datetime().nullable().optional(),
   feeAmount: z.number().nonnegative().nullable().optional(),

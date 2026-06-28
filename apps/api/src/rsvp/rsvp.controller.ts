@@ -94,6 +94,17 @@ export class RsvpController {
     return this.rsvpService.removeGuestRsvp(eventId, user.id, targetUserId);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/:targetUserId')
+  setRegisteredGuestRsvp(
+    @Param('eventId') eventId: string,
+    @Param('targetUserId') targetUserId: string,
+    @Body(new ZodValidationPipe(RsvpSchema)) dto: RsvpDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.setRegisteredGuestRsvp(eventId, user.id, targetUserId, dto);
+  }
+
   // GET /api/events/:eventId/roster-guests — creator/admin: view manually added roster guests
   @UseGuards(AuthGuard('jwt'))
   @Get('events/:eventId/roster-guests')
@@ -160,6 +171,17 @@ export class RsvpController {
     return this.rsvpService.removePlusOne(eventId, user.id, id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/plus-ones/:id/status')
+  setPlusOneStatus(
+    @Param('eventId') eventId: string,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(RsvpSchema)) dto: RsvpDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.setPlusOneStatus(eventId, user.id, id, dto.status);
+  }
+
   // PATCH /api/events/:eventId/rsvp/transportation — save how the user is getting there
   @UseGuards(AuthGuard('jwt'))
   @Patch('events/:eventId/rsvp/transportation')
@@ -216,5 +238,38 @@ export class RsvpController {
     @CurrentUser() caller: User,
   ) {
     return this.rsvpService.checkInGuest(eventId, caller.id, guestId, dto.checkedIn);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/guest-rsvp/:guestId')
+  setAnonymousGuestRsvp(
+    @Param('eventId') eventId: string,
+    @Param('guestId') guestId: string,
+    @Body(new ZodValidationPipe(RsvpSchema)) dto: RsvpDto,
+    @CurrentUser() caller: User,
+  ) {
+    return this.rsvpService.setAnonymousGuestRsvp(eventId, caller.id, guestId, dto.status);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('events/:eventId/guest-rsvp/:guestId')
+  @HttpCode(HttpStatus.OK)
+  removeAnonymousGuestRsvp(
+    @Param('eventId') eventId: string,
+    @Param('guestId') guestId: string,
+    @CurrentUser() caller: User,
+  ) {
+    return this.rsvpService.removeAnonymousGuestRsvp(eventId, caller.id, guestId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/plus-ones/:id/checkin')
+  checkInPlusOne(
+    @Param('eventId') eventId: string,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(CheckInSchema)) dto: CheckInDto,
+    @CurrentUser() caller: User,
+  ) {
+    return this.rsvpService.checkInPlusOne(eventId, caller.id, id, dto.checkedIn);
   }
 }

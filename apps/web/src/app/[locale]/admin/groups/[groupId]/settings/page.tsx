@@ -157,6 +157,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
     title: '',
     description: '',
     location: '',
+    mapAddress: '',
     startAt: '',
     endAt: '',
     timezone: 'Asia/Taipei',
@@ -756,6 +757,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           title: eventForm.title,
           description: eventForm.description,
           location: eventForm.location,
+          mapAddress: eventForm.mapAddress || null,
           startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
           endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
           timezone: eventForm.timezone,
@@ -764,7 +766,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
           coverImageUrl,
         }),
       });
-      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
+      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', timezone: 'Asia/Taipei', feeAmount: '', feeCurrency: 'TWD' });
       setCoverFile(null);
       setCoverPreview(null);
       setSuccess(zh ? '群組活動已建立。' : 'Group event created.');

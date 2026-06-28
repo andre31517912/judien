@@ -152,6 +152,7 @@ exports.Prisma.EventScalarFieldEnum = {
   title: 'title',
   description: 'description',
   location: 'location',
+  mapAddress: 'mapAddress',
   startAt: 'startAt',
   endAt: 'endAt',
   timezone: 'timezone',
@@ -159,6 +160,7 @@ exports.Prisma.EventScalarFieldEnum = {
   feeCurrency: 'feeCurrency',
   commentsEnabled: 'commentsEnabled',
   messagingEnabled: 'messagingEnabled',
+  collectTransportation: 'collectTransportation',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -179,6 +181,8 @@ exports.Prisma.GuestRSVPScalarFieldEnum = {
   guestPhone: 'guestPhone',
   identityHash: 'identityHash',
   status: 'status',
+  checkedIn: 'checkedIn',
+  checkedInAt: 'checkedInAt',
   ipAddress: 'ipAddress',
   userAgent: 'userAgent',
   updatedAt: 'updatedAt'
@@ -212,6 +216,9 @@ exports.Prisma.RSVPScalarFieldEnum = {
   userId: 'userId',
   status: 'status',
   declineReason: 'declineReason',
+  transportationMethod: 'transportationMethod',
+  checkedIn: 'checkedIn',
+  checkedInAt: 'checkedInAt',
   updatedAt: 'updatedAt'
 };
 
@@ -226,6 +233,9 @@ exports.Prisma.RSVPPlusOneScalarFieldEnum = {
   relationship: 'relationship',
   connectedInviteeName: 'connectedInviteeName',
   notes: 'notes',
+  status: 'status',
+  checkedIn: 'checkedIn',
+  checkedInAt: 'checkedInAt',
   createdAt: 'createdAt'
 };
 
@@ -367,6 +377,23 @@ exports.Prisma.InviteTokenScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SubEventScalarFieldEnum = {
+  id: 'id',
+  parentEventId: 'parentEventId',
+  title: 'title',
+  description: 'description',
+  maxCapacity: 'maxCapacity',
+  order: 'order',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SubEventRSVPScalarFieldEnum = {
+  id: 'id',
+  subEventId: 'subEventId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -492,6 +519,8 @@ exports.Prisma.ModelName = {
   GroupRelationshipRequest: 'GroupRelationshipRequest',
   DonationRecord: 'DonationRecord',
   InviteToken: 'InviteToken',
+  SubEvent: 'SubEvent',
+  SubEventRSVP: 'SubEventRSVP',
   Notification: 'Notification'
 };
 

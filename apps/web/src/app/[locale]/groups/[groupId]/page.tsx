@@ -81,6 +81,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     title: '',
     description: '',
     location: '',
+    mapAddress: '',
     startAt: '',
     endAt: '',
     feeAmount: '',
@@ -255,6 +256,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           title: eventForm.title,
           description: eventForm.description,
           location: eventForm.location,
+          mapAddress: eventForm.mapAddress || null,
           startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
           endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
           feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
@@ -265,6 +267,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         title: '',
         description: '',
         location: '',
+        mapAddress: '',
         startAt: '',
         endAt: '',
         feeAmount: '',
@@ -726,11 +729,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                   placeholder={zh ? '活動名稱' : 'Event title'}
                 />
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                <LocationPicker
                   value={eventForm.location}
-                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  onChange={(location) => setEventForm({ ...eventForm, location })}
+                  onConfirm={(selection) => setEventForm((prev) => ({ ...prev, mapAddress: selection?.label ?? '' }))}
                   placeholder={zh ? '地點（選填）' : 'Location (optional)'}
+                  showMapPreview={false}
                 />
                 <div>
                   <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>
@@ -850,11 +854,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
                   placeholder={zh ? '活動名稱' : 'Event title'}
                 />
-                <input
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                <LocationPicker
                   value={eventForm.location}
-                  onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  onChange={(location) => setEventForm({ ...eventForm, location })}
+                  onConfirm={(selection) => setEventForm((prev) => ({ ...prev, mapAddress: selection?.label ?? '' }))}
                   placeholder={zh ? '地點（選填）' : 'Location (optional)'}
+                  showMapPreview={false}
                 />
                 <div>
                   <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '費用（選填）' : 'Fee (optional)'}</label>

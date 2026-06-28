@@ -28,7 +28,24 @@ import { Ionicons } from '@expo/vector-icons';
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
 type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
-type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] };
+type RosterEntry = {
+  kind: 'user' | 'guest' | 'plusOne' | 'invited';
+  inviteId?: string;
+  userId?: string;
+  guestRsvpId?: string;
+  plusOneId?: string;
+  addedByUserId?: string | null;
+  name: string;
+  handle?: string;
+  email?: string;
+  phone?: string;
+  relationship?: string;
+  connectedInviteeName?: string;
+  addedByName?: string;
+  status: 'INVITED' | 'PENDING' | 'GOING' | 'NO';
+  checkedIn?: boolean;
+};
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[] };
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
 type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; connectedInviteeName?: string | null; notes?: string | null };
 
@@ -278,6 +295,73 @@ export default function EventDetailScreen() {
     }
   };
 
+  const getRosterKey = (entry: RosterEntry) => entry.userId ?? entry.guestRsvpId ?? entry.plusOneId ?? entry.inviteId ?? `${entry.kind}:${entry.name}:${entry.email ?? ''}`;
+
+  const refreshGuests = async () => {
+    const [rsvpData, inviteesData] = await Promise.all([
+      apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER?: RosterEntry[] }>(`/events/${id}/rsvp/guests`),
+      apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
+    ]);
+    setGuests({
+      GOING: rsvpData.GOING,
+      NO: rsvpData.NO,
+      INVITED: rsvpData.INVITED
+        ? rsvpData.INVITED.map((i) => ({ name: i.name, email: i.email ?? undefined, phone: i.phone ?? undefined }))
+        : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
+      PENDING: rsvpData.PENDING,
+      EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
+      ROSTER: rsvpData.ROSTER ?? [],
+    });
+  };
+
+  const handleRosterStatus = async (entry: RosterEntry, status: 'GOING' | 'NO') => {
+    const key = getRosterKey(entry);
+    if (deletingGuest) return;
+    setDeletingGuest(key);
+    try {
+      if (entry.kind === 'plusOne' && entry.plusOneId) {
+        await apiFetch(`/events/${id}/rsvp/plus-ones/${entry.plusOneId}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      } else if (entry.kind === 'guest' && entry.guestRsvpId) {
+        await apiFetch(`/events/${id}/guest-rsvp/${entry.guestRsvpId}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      } else if (entry.inviteId) {
+        await apiFetch(`/event-invites/${entry.inviteId}/rsvp`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      } else if (entry.userId) {
+        await apiFetch(`/events/${id}/rsvp/${entry.userId}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      }
+      await refreshGuests();
+      const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
+      setEvent(ev);
+    } catch (err: any) {
+      Alert.alert(zh ? '更新失敗' : 'Update failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setDeletingGuest(null);
+    }
+  };
+
+  const handleDeleteRosterEntry = async (entry: RosterEntry) => {
+    const key = getRosterKey(entry);
+    if (deletingGuest) return;
+    setDeletingGuest(key);
+    try {
+      if (entry.kind === 'plusOne' && entry.plusOneId) {
+        await apiFetch(`/events/${id}/rsvp/plus-ones/${entry.plusOneId}`, { method: 'DELETE' });
+      } else if (entry.kind === 'guest' && entry.guestRsvpId) {
+        await apiFetch(`/events/${id}/guest-rsvp/${entry.guestRsvpId}`, { method: 'DELETE' });
+      } else if (entry.inviteId) {
+        await apiFetch(`/event-invites/${entry.inviteId}`, { method: 'DELETE' });
+      } else if (entry.userId) {
+        await apiFetch(`/events/${id}/rsvp/${entry.userId}`, { method: 'DELETE' });
+      }
+      await refreshGuests();
+      const ev = await apiFetch<EventWithCounts>(`/events/${id}`);
+      setEvent(ev);
+    } catch (err: any) {
+      Alert.alert(zh ? '移除失敗' : 'Remove failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
+    } finally {
+      setDeletingGuest(null);
+    }
+  };
+
   const handleCreateShareLink = async () => {
     if (!user) { Alert.alert(zh ? '請登入' : 'Login required'); return; }
     setInviteLoading(true);
@@ -306,7 +390,7 @@ export default function EventDetailScreen() {
     setGuestsLoading(true);
     try {
       const [rsvpData, inviteesData] = await Promise.all([
-        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] }>(`/events/${id}/rsvp/guests`),
+        apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER?: RosterEntry[] }>(`/events/${id}/rsvp/guests`),
         apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
       ]);
       setGuests({
@@ -317,6 +401,7 @@ export default function EventDetailScreen() {
           : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
         PENDING: rsvpData.PENDING,
         EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
+        ROSTER: rsvpData.ROSTER ?? [],
       });
       setShowGuests(true);
     } catch {
@@ -333,7 +418,7 @@ export default function EventDetailScreen() {
       setGuestsLoading(true);
       try {
         const [rsvpData, inviteesData] = await Promise.all([
-          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[] }>(`/events/${id}/rsvp/guests`),
+          apiFetch<{ GOING: GuestEntry[]; NO: GuestEntry[]; INVITED?: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER?: RosterEntry[] }>(`/events/${id}/rsvp/guests`),
           apiFetch<EventInvitee[]>(`/event-invites/event/${id}/invitees`).catch(() => [] as EventInvitee[]),
         ]);
         data = {
@@ -344,6 +429,7 @@ export default function EventDetailScreen() {
             : inviteesData.map((i) => ({ name: i.guestName ?? i.displayName ?? '', email: i.email ?? undefined })),
           PENDING: rsvpData.PENDING,
           EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
+          ROSTER: rsvpData.ROSTER ?? [],
         };
         setGuests(data);
       } catch {
@@ -354,10 +440,7 @@ export default function EventDetailScreen() {
       }
     }
     const rows = ['Name,Email,Phone,Status'];
-    for (const g of (data.INVITED ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Invited')].join(','));
-    for (const g of (data.GOING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Going')].join(','));
-    for (const g of (data.NO ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Not Going')].join(','));
-    for (const g of (data.PENDING ?? [])) rows.push([esc(g.displayName ?? g.handle ?? ''), esc(g.email ?? ''), esc(g.phone ?? ''), esc('Unresponded')].join(','));
+    for (const g of (data.ROSTER ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc(g.status), esc(g.connectedInviteeName ?? ''), esc(g.relationship ?? ''), esc(g.checkedIn ? 'Checked in' : '')].join(','));
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
@@ -447,24 +530,22 @@ export default function EventDetailScreen() {
     }
   };
 
-  const handleCheckIn = async (entry: GuestEntry, checkedIn: boolean) => {
-    const key = entry.userId ?? entry.guestRsvpId ?? '';
+  const handleCheckIn = async (entry: RosterEntry, checkedIn: boolean) => {
+    const key = entry.userId ?? entry.guestRsvpId ?? entry.plusOneId ?? '';
     if (!key || checkingIn.has(key)) return;
     setCheckingIn((prev) => new Set(prev).add(key));
     try {
-      const url = entry.source === 'guest'
+      const url = entry.kind === 'guest'
         ? `/events/${id}/guest-rsvp/${entry.guestRsvpId}/checkin`
+        : entry.kind === 'plusOne'
+          ? `/events/${id}/rsvp/plus-ones/${entry.plusOneId}/checkin`
         : `/events/${id}/rsvp/${entry.userId}/checkin`;
       await apiFetch(url, { method: 'PATCH', body: JSON.stringify({ checkedIn }) });
       setGuests((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
-          GOING: prev.GOING.map((g) =>
-            (g.userId === entry.userId && entry.userId) || (g.guestRsvpId === entry.guestRsvpId && entry.guestRsvpId)
-              ? { ...g, checkedIn }
-              : g,
-          ),
+          ROSTER: prev.ROSTER.map((g) => getRosterKey(g) === getRosterKey(entry) ? { ...g, checkedIn } : g),
         };
       });
     } catch (err: any) {
@@ -603,7 +684,7 @@ export default function EventDetailScreen() {
         )}
         <View style={styles.body}>
 
-          {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
+          {(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin)) && (
             <View style={styles.adminBar}>
               <TouchableOpacity style={styles.editBtn} onPress={() => router.push(`/admin/events/${id}/edit`)}>
                 <Text style={styles.editBtnText}>{t('events.editEvent')}</Text>
@@ -634,14 +715,18 @@ export default function EventDetailScreen() {
             )}
             <Text style={styles.meta}>📅 {dateStr}{event.timezone ? ` (${event.timezone})` : ''}</Text>
             {location ? (
-              <TouchableOpacity onPress={() => {
-                const q = encodeURIComponent(location);
-                Linking.openURL(
-                  Platform.OS === 'ios' ? `maps://q=${q}` : `geo:0,0?q=${q}`
-                ).catch(() => Linking.openURL(`https://maps.google.com/?q=${q}`));
-              }}>
+              event.mapAddress ? (
+                <TouchableOpacity onPress={() => {
+                  const q = encodeURIComponent(event.mapAddress!);
+                  Linking.openURL(
+                    Platform.OS === 'ios' ? `maps://q=${q}` : `geo:0,0?q=${q}`
+                  ).catch(() => Linking.openURL(`https://maps.google.com/?q=${q}`));
+                }}>
+                  <Text style={styles.meta}>📍 {location}</Text>
+                </TouchableOpacity>
+              ) : (
                 <Text style={styles.meta}>📍 {location}</Text>
-              </TouchableOpacity>
+              )
             ) : null}
             <Text style={styles.meta}>💰 {fee}</Text>
           </View>
@@ -672,12 +757,12 @@ export default function EventDetailScreen() {
             {user && (
               <TouchableOpacity
                 style={[styles.rsvpBtn]}
-                onPress={() => { const isMgr = isAdmin || isGroupAdmin || event.createdById === user?.id; setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
+                onPress={() => { const isMgr = isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin); setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
               >
                 <Text style={styles.rsvpBtnText}>{zh ? '邀請賓客' : 'Invite Guest'}</Text>
               </TouchableOpacity>
             )}
-            {(isAdmin || isGroupAdmin || event.createdById === user?.id) && (
+            {(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin)) && (
               <TouchableOpacity
                 style={styles.rsvpBtn}
                 onPress={() => setShowBlast(true)}
@@ -844,7 +929,7 @@ export default function EventDetailScreen() {
                       {/* Add form */}
                       <TextInput style={styles.editInput} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} />
                       <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
-                      {(isAdmin || isGroupAdmin || event.createdById === user?.id) ? (
+                      {(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin)) ? (
                         <View>
                           <TextInput
                             style={styles.editInput}
@@ -886,7 +971,7 @@ export default function EventDetailScreen() {
                       <TextInput style={[styles.editInput, { minHeight: 60, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={poNotes} onChangeText={setPoNotes} multiline numberOfLines={3} maxLength={500} />
                       {poMsg ? <Text style={{ fontSize: 12, color: '#EF4444' }}>{poMsg}</Text> : null}
                       <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
-                        <TouchableOpacity onPress={() => { const isMgr = isAdmin || isGroupAdmin || event.createdById === user?.id; setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
+                        <TouchableOpacity onPress={() => { const isMgr = isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isMgr ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); }} style={{ paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 10 }}>
                           <Text style={{ fontSize: 14, color: colors.text }}>{zh ? '清除' : 'Clear'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={[styles.modalPrimaryBtn, (!poName.trim() || poLoading) && { opacity: 0.5 }]} onPress={handleAddPlusOne} disabled={!poName.trim() || poLoading}>
@@ -1135,11 +1220,10 @@ export default function EventDetailScreen() {
               />
               <View style={styles.guestTabRow}>
                 {([
-                  ['INVITED',      zh ? '已邀請' : 'Invited',       guests?.INVITED.length ?? 0],
-                  ['GOING',        zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.GOING.length ?? event.rsvpCounts.GOING],
-                  ['NO',           zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.NO.length ?? event.rsvpCounts.NO],
-                  ...(guests?.PENDING !== undefined ? [['PENDING', zh ? '未回應' : 'Unresponded', guests.PENDING.length] as [typeof activeGuestTab, string, number]] : []),
-                  ...(guests?.EXTRA_GUESTS !== undefined ? [['EXTRA_GUESTS', zh ? '外部賓客' : 'Extra Guests', guests.EXTRA_GUESTS.length] as [typeof activeGuestTab, string, number]] : []),
+                  ['INVITED',      zh ? '已邀請' : 'Invited',       guests?.ROSTER.filter((g) => g.status === 'INVITED').length ?? 0],
+                  ['GOING',        zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.ROSTER.filter((g) => g.status === 'GOING').length ?? event.rsvpCounts.GOING],
+                  ['NO',           zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.ROSTER.filter((g) => g.status === 'NO').length ?? event.rsvpCounts.NO],
+                  ['PENDING', zh ? '未回應' : 'Unresponded', guests?.ROSTER.filter((g) => g.status === 'PENDING').length ?? 0],
                 ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
                   <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
                     style={[styles.guestTab, activeGuestTab === tab && styles.guestTabActive]}>
@@ -1153,18 +1237,27 @@ export default function EventDetailScreen() {
                 {(() => {
                   const term = guestSearch.trim().toLowerCase();
                   if (activeGuestTab === 'INVITED') {
-                    const rows = (guests?.INVITED ?? []).filter((g) =>
-                      !term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
+                    const rows = (guests?.ROSTER ?? []).filter((g) =>
+                      g.status === 'INVITED' &&
+                      (!term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term))
                     );
-                    const isEventAdminInvited = isAdmin || isGroupAdmin || event?.createdById === user?.id;
+                    const isEventAdminInvited = isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin);
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無受邀者' : 'No invitees yet')}</Text>
                       : rows.map((g, i) => (
                         <View key={i} style={styles.guestRow}>
                           <Text style={styles.guestName}>{g.name}</Text>
+                          {g.connectedInviteeName ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
                           {g.relationship ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.relationship}</Text> : null}
                           {isEventAdminInvited && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                           {isEventAdminInvited && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                          {isEventAdminInvited && (g.kind !== 'invited' || g.inviteId) ? (
+                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+                              <TouchableOpacity onPress={() => handleRosterStatus(g, 'GOING')}><Text style={{ fontSize: 12, color: '#059669', fontWeight: '600' }}>{zh ? '參加' : 'Going'}</Text></TouchableOpacity>
+                              <TouchableOpacity onPress={() => handleRosterStatus(g, 'NO')}><Text style={{ fontSize: 12, color: '#EF4444', fontWeight: '600' }}>{zh ? '不參加' : 'Not Going'}</Text></TouchableOpacity>
+                              <TouchableOpacity onPress={() => handleDeleteRosterEntry(g)}><Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text></TouchableOpacity>
+                            </View>
+                          ) : null}
                         </View>
                       ));
                   }
@@ -1172,7 +1265,7 @@ export default function EventDetailScreen() {
                     const rows = (guests?.EXTRA_GUESTS ?? []).filter((g) =>
                       !term || g.name.toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term) || g.addedByName.toLowerCase().includes(term)
                     );
-                    const isEventAdminExtra = isAdmin || isGroupAdmin || event?.createdById === user?.id;
+                    const isEventAdminExtra = isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin);
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無外部賓客' : 'No outside guests yet')}</Text>
                       : rows.map((g, i) => {
@@ -1198,38 +1291,40 @@ export default function EventDetailScreen() {
                         );
                       });
                   }
-                  const tabData = activeGuestTab === 'PENDING' ? (guests?.PENDING ?? []) : (guests?.[activeGuestTab as 'GOING' | 'NO'] ?? []);
+                  const tabData = (guests?.ROSTER ?? []).filter((g) => g.status === activeGuestTab);
                   const rows = tabData.filter((g) =>
-                    !term || (g.displayName ?? '').toLowerCase().includes(term) || g.handle.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term)
+                    !term || g.name.toLowerCase().includes(term) || (g.handle ?? '').toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term)
                   );
                   const emptyMsg = term ? (zh ? '找不到符合結果' : 'No matches') : activeGuestTab === 'PENDING' ? (zh ? '所有受邀者皆已回應' : 'Everyone has responded') : (zh ? '暫無名單' : 'No one yet');
-                  const isEventAdmin = isAdmin || isGroupAdmin || event?.createdById === user?.id;
+                  const isEventAdmin = isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin);
                   const showCheckIn = isEventAdmin && activeGuestTab === 'GOING';
-                  const checkedInCount = showCheckIn ? (guests?.GOING ?? []).filter((g) => g.checkedIn).length : 0;
+                  const checkedInCount = showCheckIn ? rows.filter((g) => g.checkedIn).length : 0;
                   return (
                     <>
-                      {showCheckIn && (guests?.GOING ?? []).length > 0 && (
+                      {showCheckIn && rows.length > 0 && (
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#10B981' }}>
                           <View style={{ flex: 1, height: 4, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden' }}>
-                            <View style={{ height: 4, borderRadius: 4, backgroundColor: '#10B981', width: `${guests!.GOING.length > 0 ? (checkedInCount / guests!.GOING.length) * 100 : 0}%` }} />
+                            <View style={{ height: 4, borderRadius: 4, backgroundColor: '#10B981', width: `${rows.length > 0 ? (checkedInCount / rows.length) * 100 : 0}%` }} />
                           </View>
-                          <Text style={{ fontSize: 11, color: '#6B7280' }}>{checkedInCount} / {guests?.GOING.length ?? 0} {zh ? '已報到' : 'checked in'}</Text>
+                          <Text style={{ fontSize: 11, color: '#6B7280' }}>{checkedInCount} / {rows.length} {zh ? '已報到' : 'checked in'}</Text>
                         </View>
                       )}
                       {rows.length === 0
                         ? <Text style={styles.empty}>{emptyMsg}</Text>
                         : rows.map((g, i) => {
-                          const key = g.userId ?? g.guestRsvpId ?? String(i);
+                          const key = getRosterKey(g);
                           const busy = checkingIn.has(key);
-                          const isDeleting = g.userId ? deletingGuest === g.userId : false;
+                          const isDeleting = deletingGuest === key;
                           return (
                             <View key={i} style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
                               <View style={{ flex: 1 }}>
-                                <Text style={[styles.guestName, g.checkedIn && { color: '#059669' }]}>{g.displayName || g.handle}</Text>
+                                <Text style={[styles.guestName, g.checkedIn && { color: '#059669' }]}>{g.name || g.handle}</Text>
+                                {g.connectedInviteeName ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
+                                {g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
                                 {isEventAdmin && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                                 {isEventAdmin && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                               </View>
-                              {showCheckIn && (g.userId ?? g.guestRsvpId) && (
+                              {showCheckIn && (g.userId ?? g.guestRsvpId ?? g.plusOneId) && (
                                 <TouchableOpacity
                                   onPress={() => handleCheckIn(g, !g.checkedIn)}
                                   disabled={busy}
@@ -1246,10 +1341,14 @@ export default function EventDetailScreen() {
                                   </Text>
                                 </TouchableOpacity>
                               )}
-                              {isEventAdmin && g.userId && g.userId !== user?.id && (
-                                <TouchableOpacity onPress={() => handleDeleteGuestRsvp(g.userId!)} disabled={isDeleting} style={{ marginLeft: 8, opacity: isDeleting ? 0.5 : 1 }}>
-                                  <Text style={{ fontSize: 13, color: '#EF4444' }}>{isDeleting ? '…' : '✕'}</Text>
-                                </TouchableOpacity>
+                              {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && g.userId !== user?.id && (
+                                <View style={{ flexDirection: 'row', gap: 8, marginLeft: 8, opacity: isDeleting ? 0.5 : 1 }}>
+                                  {activeGuestTab !== 'GOING' && <TouchableOpacity onPress={() => handleRosterStatus(g, 'GOING')} disabled={isDeleting}><Text style={{ fontSize: 12, color: '#059669', fontWeight: '600' }}>{zh ? '參加' : 'Going'}</Text></TouchableOpacity>}
+                                  {activeGuestTab !== 'NO' && <TouchableOpacity onPress={() => handleRosterStatus(g, 'NO')} disabled={isDeleting}><Text style={{ fontSize: 12, color: '#EF4444', fontWeight: '600' }}>{zh ? '不參加' : 'Not Going'}</Text></TouchableOpacity>}
+                                  <TouchableOpacity onPress={() => handleDeleteRosterEntry(g)} disabled={isDeleting}>
+                                    <Text style={{ fontSize: 13, color: '#EF4444' }}>{isDeleting ? '…' : '×'}</Text>
+                                  </TouchableOpacity>
+                                </View>
                               )}
                             </View>
                           );
@@ -1260,7 +1359,7 @@ export default function EventDetailScreen() {
                 })()}
               </ScrollView>
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                {(isAdmin || isGroupAdmin || event?.createdById === user?.id) && (
+                {(isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin)) && (
                   <TouchableOpacity style={[styles.modalPrimaryBtn, { flex: 1 }]} onPress={handleExportCsv}>
                     <Text style={styles.modalPrimaryBtnText}>{zh ? '匯出 CSV' : 'Export CSV'}</Text>
                   </TouchableOpacity>

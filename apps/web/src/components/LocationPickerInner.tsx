@@ -239,11 +239,12 @@ function DraggableMarker({
 interface Props {
   value: string;
   onChange: (value: string) => void;
+  onConfirm?: (selection: GeocodeResult | null) => void;
   placeholder?: string;
   showMapPreview?: boolean;
 }
 
-export default function LocationPickerInner({ value, onChange, placeholder, showMapPreview = true }: Props) {
+export default function LocationPickerInner({ value, onChange, onConfirm, placeholder, showMapPreview = true }: Props) {
   const [pos, setPos] = useState<[number, number] | null>(null);
   const [searching, setSearching] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -278,6 +279,7 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
 
   const handleSelect = (result: GeocodeResult) => {
     onChange(result.label);
+    onConfirm?.(result);
     lastSelectedLabelRef.current = result.label;
     setPos([result.lat, result.lng]);
     setSuggestions([]);
@@ -290,6 +292,7 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
     const label = await reverseGeocode(lat, lng);
     lastSelectedLabelRef.current = label;
     onChange(label);
+    onConfirm?.({ lat, lng, label });
     setSuggestions([]);
     setShowSuggestions(false);
   };
@@ -303,8 +306,13 @@ export default function LocationPickerInner({ value, onChange, placeholder, show
           onChange={(e) => {
             const next = e.target.value;
             onChange(next);
+            if (next !== lastSelectedLabelRef.current) {
+              onConfirm?.(null);
+              if (showMapPreview) setPos(null);
+            }
             if (!next.trim()) {
               lastSelectedLabelRef.current = null;
+              onConfirm?.(null);
               if (showMapPreview) setPos(null);
             }
             setNotFound(false);

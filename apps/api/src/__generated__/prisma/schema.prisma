@@ -129,7 +129,8 @@ model User {
   groupRelationshipRequestsMade     GroupRelationshipRequest[] @relation("GroupRelationshipRequestRequester")
   groupRelationshipRequestsReviewed GroupRelationshipRequest[] @relation("GroupRelationshipRequestReviewer")
 
-  plusOnesAdded RSVPPlusOne[] @relation("PlusOneAddedBy")
+  plusOnesAdded RSVPPlusOne[]  @relation("PlusOneAddedBy")
+  subEventRsvps SubEventRSVP[]
 
   @@index([email])
   @@index([role])
@@ -148,8 +149,9 @@ model Event {
   coverImageUrl String?
 
   title       String
-  description String @default("")
-  location    String @default("")
+  description String  @default("")
+  location    String  @default("")
+  mapAddress  String?
 
   startAt  DateTime
   endAt    DateTime?
@@ -158,8 +160,9 @@ model Event {
   feeAmount   Decimal? @db.Decimal(10, 2)
   feeCurrency String   @default("TWD")
 
-  commentsEnabled  Boolean @default(true)
-  messagingEnabled Boolean @default(true)
+  commentsEnabled       Boolean @default(true)
+  messagingEnabled      Boolean @default(true)
+  collectTransportation Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -172,6 +175,7 @@ model Event {
   messageLogs   MessageLog[]
   invites       EventInvite[]
   shareLink     EventShareLink?
+  subEvents     SubEvent[]
 
   @@index([startAt])
   @@index([createdById])
@@ -201,6 +205,8 @@ model GuestRSVP {
   guestPhone   String
   identityHash String
   status       RSVPStatus
+  checkedIn    Boolean    @default(false)
+  checkedInAt  DateTime?
   ipAddress    String?
   userAgent    String?
   updatedAt    DateTime   @updatedAt
@@ -248,12 +254,15 @@ model EventInvite {
 }
 
 model RSVP {
-  id            String     @id @default(cuid())
-  eventId       String
-  userId        String
-  status        RSVPStatus
-  declineReason String?
-  updatedAt     DateTime   @updatedAt
+  id                   String     @id @default(cuid())
+  eventId              String
+  userId               String
+  status               RSVPStatus
+  declineReason        String?
+  transportationMethod String?
+  checkedIn            Boolean    @default(false)
+  checkedInAt          DateTime?
+  updatedAt            DateTime   @updatedAt
 
   event    Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -265,7 +274,7 @@ model RSVP {
 }
 
 model RSVPPlusOne {
-  id                   String   @id @default(cuid())
+  id                   String      @id @default(cuid())
   rsvpId               String?
   eventId              String
   addedByUserId        String?
@@ -275,7 +284,10 @@ model RSVPPlusOne {
   relationship         String?
   connectedInviteeName String?
   notes                String?
-  createdAt            DateTime @default(now())
+  status               RSVPStatus?
+  checkedIn            Boolean     @default(false)
+  checkedInAt          DateTime?
+  createdAt            DateTime    @default(now())
 
   rsvp        RSVP? @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
   event       Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -520,6 +532,35 @@ model InviteToken {
 
   @@index([token])
   @@index([createdById])
+}
+
+model SubEvent {
+  id            String   @id @default(cuid())
+  parentEventId String
+  title         String
+  description   String   @default("")
+  maxCapacity   Int?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  parentEvent Event          @relation(fields: [parentEventId], references: [id], onDelete: Cascade)
+  rsvps       SubEventRSVP[]
+
+  @@index([parentEventId])
+}
+
+model SubEventRSVP {
+  id         String   @id @default(cuid())
+  subEventId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  subEvent SubEvent @relation(fields: [subEventId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([subEventId, userId])
+  @@index([subEventId])
+  @@index([userId])
 }
 
 model Notification {

@@ -25,6 +25,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
     title: '',
     description: '',
     location: '',
+    mapAddress: '',
     startAt: '',
     endAt: '',
     feeAmount: '',
@@ -75,6 +76,7 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         title: form.title,
         description: form.description,
         location: form.location,
+        mapAddress: form.mapAddress || null,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
@@ -118,6 +120,10 @@ export default function NewEventPage({ params }: { params: { locale: string } })
           <LocationPicker
             value={form.location}
             onChange={(v) => setForm((f) => ({ ...f, location: v }))}
+            onConfirm={(selection) => setForm((f) => ({
+              ...f,
+              mapAddress: selection?.label ?? '',
+            }))}
             showMapPreview={false}
           />
         </Field>

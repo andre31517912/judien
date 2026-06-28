@@ -61,6 +61,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
   const [eventMsg, setEventMsg] = useState('');
   const [eventForm, setEventForm] = useState({
     title: '', description: '', location: '',
+    mapAddress: '',
     startAt: '', endAt: '',
     feeAmount: '',
   });
@@ -148,13 +149,14 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         title: eventForm.title,
         description: eventForm.description,
         location: eventForm.location,
+        mapAddress: eventForm.mapAddress || null,
         startAt: eventForm.startAt ? new Date(eventForm.startAt).toISOString() : undefined,
         endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
         feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
         coverImageUrl,
       };
       await apiFetch<EventWithCounts>('/events', { method: 'POST', body: JSON.stringify(body) });
-      setEventForm({ title: '', description: '', location: '', startAt: '', endAt: '', feeAmount: '' });
+      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', feeAmount: '' });
       setCoverFile(null);
       setCoverPreview(null);
       setCreatingEvent(false);
@@ -425,6 +427,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
             <LocationPicker
               value={eventForm.location}
               onChange={(v) => setEventForm((prev) => ({ ...prev, location: v }))}
+              onConfirm={(selection) => setEventForm((prev) => ({ ...prev, mapAddress: selection?.label ?? '' }))}
               showMapPreview={false}
             />
           </div>

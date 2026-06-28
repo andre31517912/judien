@@ -15,6 +15,22 @@ import DateTimeField from '../../../../components/DateTimeField';
 import type { Event, ReminderRule } from '@judien/shared';
 
 const INDIGO = '#4F46E5';
+type LocationSuggestion = { label: string };
+
+async function searchMapAddresses(query: string): Promise<LocationSuggestion[]> {
+  if (!query.trim()) return [];
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
+      headers: { 'User-Agent': 'JudienApp/1.0' },
+    });
+    const data = await res.json();
+    return Array.isArray(data)
+      ? data.map((item) => ({ label: item.display_name })).filter((item) => item.label)
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 function toLocalNaive(iso: string | null | undefined): string {
   if (!iso) return '';
@@ -79,6 +95,7 @@ export default function EditEventScreen() {
     title: '',
     description: '',
     location: '',
+    mapAddress: '',
     startAt: '',
     endAt: '',
     feeAmount: '',
@@ -92,6 +109,8 @@ export default function EditEventScreen() {
   const [customValue, setCustomValue] = useState('');
   const [customUnit, setCustomUnit] = useState<'hours' | 'days'>('hours');
   const [savingReminders, setSavingReminders] = useState(false);
+  const [locationSearching, setLocationSearching] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
 
 
   useEffect(() => {
@@ -103,6 +122,7 @@ export default function EditEventScreen() {
         title: ev.title,
         description: ev.description,
         location: ev.location,
+        mapAddress: ev.mapAddress ?? '',
         startAt: toLocalNaive(ev.startAt),
         endAt: toLocalNaive(ev.endAt),
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
@@ -128,6 +148,16 @@ export default function EditEventScreen() {
   }, [id]);
 
   const set = (k: keyof typeof form) => (val: string) => setForm((f) => ({ ...f, [k]: val }));
+
+  const searchLocation = async () => {
+    if (!form.location.trim()) return;
+    setLocationSearching(true);
+    try {
+      setLocationSuggestions(await searchMapAddresses(form.location));
+    } finally {
+      setLocationSearching(false);
+    }
+  };
 
   const doPickCover = async () => {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -184,6 +214,7 @@ export default function EditEventScreen() {
         title: form.title,
         description: form.description,
         location: form.location,
+        mapAddress: form.mapAddress || null,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
@@ -241,7 +272,32 @@ export default function EditEventScreen() {
       <Text style={styles.pageTitle}>{t('events.editEvent')}</Text>
 
       <FInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} />
-      <FInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} />
+      <FInput
+        label={zh ? '地點' : 'Location'}
+        value={form.location}
+        onChangeText={(value) => {
+          setForm((prev) => ({ ...prev, location: value, mapAddress: '' }));
+          setLocationSuggestions([]);
+        }}
+      />
+      <View style={{ marginTop: -10, marginBottom: 16, gap: 8 }}>
+        <TouchableOpacity onPress={searchLocation} disabled={locationSearching || !form.location.trim()} style={[styles.secondaryBtn, { opacity: locationSearching || !form.location.trim() ? 0.5 : 1 }]}>
+          <Text style={styles.secondaryBtnText}>{locationSearching ? (zh ? '搜尋中...' : 'Searching...') : (zh ? '尋找地圖地址' : 'Find map address')}</Text>
+        </TouchableOpacity>
+        {!!form.mapAddress && <Text style={{ fontSize: 12, color: '#059669' }}>{zh ? '已確認地圖地址：' : 'Map address confirmed: '}{form.mapAddress}</Text>}
+        {locationSuggestions.map((item) => (
+          <TouchableOpacity
+            key={item.label}
+            onPress={() => {
+              setForm((prev) => ({ ...prev, location: item.label, mapAddress: item.label }));
+              setLocationSuggestions([]);
+            }}
+            style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10, backgroundColor: colors.card }}
+          >
+            <Text style={{ color: colors.text, fontSize: 13 }}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       <FInput label={zh ? '費用（選填）' : 'Fee (optional)'} value={form.feeAmount} onChangeText={set('feeAmount')} keyboard="numeric" />
       <FInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')} multi />
 
@@ -450,6 +506,8 @@ const makeStyles = (colors: any) => StyleSheet.create({
   },
   saveBtn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 10 },
   saveBtnText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+  secondaryBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, alignItems: 'center', backgroundColor: colors.card },
+  secondaryBtnText: { color: colors.text, fontWeight: '600', fontSize: 13 },
   deleteBtn: { borderWidth: 1.5, borderColor: '#EF4444', borderRadius: 10, padding: 16, alignItems: 'center', marginBottom: 20 },
   deleteBtnText: { color: '#EF4444', fontWeight: '600', fontSize: 16 },
   section: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border, paddingTop: 20, marginTop: 4, gap: 12 },

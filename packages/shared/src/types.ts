@@ -47,6 +47,7 @@ export interface Event {
   title: string;
   description: string;
   location: string;
+  mapAddress: string | null;
   startAt: string;
   endAt: string | null;
   timezone: string;

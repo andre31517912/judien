@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Delete,
+  Patch,
   Param,
   Body,
   UseGuards,
@@ -14,8 +15,10 @@ import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import {
   CreateEventInviteSchema,
   AcceptEventInviteSchema,
+  RsvpSchema,
   type CreateEventInviteDto,
   type AcceptEventInviteDto,
+  type RsvpDto,
 } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 
@@ -84,5 +87,16 @@ export class EventInvitesController {
     @CurrentUser() user: User,
   ) {
     return this.eventInvitesService.revokeInvite(inviteId, user);
+  }
+
+  // PATCH /api/event-invites/:inviteId/rsvp - creator/group admin/platform admin answers for an invitee
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':inviteId/rsvp')
+  async setInviteRsvp(
+    @Param('inviteId') inviteId: string,
+    @Body(new ZodValidationPipe(RsvpSchema)) dto: RsvpDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.eventInvitesService.setInviteRsvp(inviteId, user, dto.status);
   }
 }

@@ -77,6 +77,7 @@ export class EventsService {
         include: {
           rsvps: { select: { status: true } },
           guestRsvps: { select: { status: true } },
+          rsvpPlusOnes: { where: { status: { not: null } }, select: { status: true } },
           group: { select: { name: true } },
           shareLink: { select: { token: true } },
         },
@@ -94,13 +95,14 @@ export class EventsService {
     const myRsvpMap = new Map(myRsvps.map((r) => [r.eventId, r.status]));
 
     const data = events.map((event) => {
-      const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
+      const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps, event.rsvpPlusOnes);
       return {
         ...event,
         groupName: event.group?.name ?? null,
         group: undefined,
         rsvps: undefined,
         guestRsvps: undefined,
+        rsvpPlusOnes: undefined,
         shareLink: undefined,
         shareToken: event.shareLink?.token ?? null,
         rsvpCounts: counts,
@@ -118,6 +120,7 @@ export class EventsService {
       include: {
         rsvps: { select: { status: true } },
         guestRsvps: { select: { status: true } },
+        rsvpPlusOnes: { where: { status: { not: null } }, select: { status: true } },
         createdBy: { select: { email: true, displayName: true } },
         group: { select: { name: true } },
         shareLink: { select: { token: true } },
@@ -135,7 +138,7 @@ export class EventsService {
       }
     }
 
-    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
+    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps, event.rsvpPlusOnes);
 
     let myRsvp: string | null = null;
     let myTransportation: string | null = null;
@@ -172,6 +175,7 @@ export class EventsService {
       group: undefined,
       rsvps: undefined,
       guestRsvps: undefined,
+      rsvpPlusOnes: undefined,
       shareLink: undefined,
       shareToken: event.shareLink?.token ?? null,
       rsvpCounts: counts,
@@ -218,6 +222,7 @@ export class EventsService {
           include: {
             rsvps: { select: { status: true } },
             guestRsvps: { select: { status: true } },
+            rsvpPlusOnes: { where: { status: { not: null } }, select: { status: true } },
             createdBy: { select: { email: true, displayName: true } },
             group: { select: { name: true } },
             shareLink: { select: { token: true } },
@@ -228,7 +233,7 @@ export class EventsService {
     if (!link) throw new NotFoundException('Share link not found.');
 
     const event = link.event;
-    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps);
+    const counts = this.mergeRsvpCounts(event.rsvps, event.guestRsvps, event.rsvpPlusOnes);
 
     let myRsvp: string | null = null;
     let myTransportation: string | null = null;
@@ -255,6 +260,7 @@ export class EventsService {
       group: undefined,
       rsvps: undefined,
       guestRsvps: undefined,
+      rsvpPlusOnes: undefined,
       shareLink: undefined,
       shareToken: event.shareLink?.token ?? token,
       rsvpCounts: counts,
@@ -285,10 +291,12 @@ export class EventsService {
     // No groupId → personal event; any authenticated user may create one.
 
     const { subEvents: subEventInputs, ...eventFields } = dto;
+    const mapFields = this.normalizeMapAddress(eventFields.mapAddress);
 
     const event = await this.prisma.event.create({
       data: {
         ...eventFields,
+        ...mapFields,
         endAt: eventFields.endAt ?? null,
         feeAmount: eventFields.feeAmount ?? null,
         coverImageUrl: eventFields.coverImageUrl ?? null,
@@ -349,12 +357,19 @@ export class EventsService {
         if (!canManage) {
           throw new ForbiddenException('You do not have permission to update this event.');
         }
-      } else if (actor.role !== 'ADMIN') {
-        throw new ForbiddenException('Only platform admins can update global events.');
+      } else if (actor.role !== 'ADMIN' && event.createdById !== actor.id) {
+        throw new ForbiddenException('Only the event creator or platform admin can update this event.');
       }
     }
 
-    const updated = await this.prisma.event.update({ where: { id }, data: dto });
+    const mapFields = this.normalizeMapAddress(dto.mapAddress);
+    const updated = await this.prisma.event.update({
+      where: { id },
+      data: {
+        ...dto,
+        ...mapFields,
+      },
+    });
 
     // Notify all invited people whenever any update is saved
     if (actor) {
@@ -424,6 +439,10 @@ export class EventsService {
     }
 
     return updated;
+  }
+
+  private normalizeMapAddress(mapAddress: string | null | undefined) {
+    return { mapAddress: mapAddress?.trim() || null };
   }
 
   async remove(id: string, actor?: User) {
@@ -573,10 +592,14 @@ export class EventsService {
   private mergeRsvpCounts(
     rsvps: Array<{ status: 'GOING' | 'NO' }>,
     guestRsvps: Array<{ status: 'GOING' | 'NO' }>,
+    plusOnes: Array<{ status: 'GOING' | 'NO' | null }> = [],
   ) {
     const counts = { GOING: 0, NO: 0 };
     for (const r of rsvps) counts[r.status]++;
     for (const r of guestRsvps) counts[r.status]++;
+    for (const r of plusOnes) {
+      if (r.status === 'GOING' || r.status === 'NO') counts[r.status]++;
+    }
     return counts;
   }
 }

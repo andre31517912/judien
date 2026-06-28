@@ -104,6 +104,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         title: ev.title,
         description: ev.description,
         location: ev.location,
+        mapAddress: ev.mapAddress ?? '',
         startAt: toLocalNaive(ev.startAt),
         endAt: toLocalNaive(ev.endAt),
         feeAmount: ev.feeAmount != null ? String(ev.feeAmount) : '',
@@ -149,6 +150,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         title: form.title,
         description: form.description,
         location: form.location,
+        mapAddress: form.mapAddress || null,
         startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined,
         endAt: form.endAt ? new Date(form.endAt).toISOString() : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
@@ -308,6 +310,10 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             <LocationPicker
               value={form.location ?? ''}
               onChange={(v) => setForm((f) => ({ ...f, location: v }))}
+              onConfirm={(selection) => setForm((f) => ({
+                ...f,
+                mapAddress: selection?.label ?? '',
+              }))}
             />
           </Field>
           <Field label="Fee (optional)">

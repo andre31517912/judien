@@ -17,6 +17,22 @@ import DateTimeField from '../../../components/DateTimeField';
 const INDIGO = '#4F46E5';
 
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
+type LocationSuggestion = { label: string };
+
+async function searchMapAddresses(query: string): Promise<LocationSuggestion[]> {
+  if (!query.trim()) return [];
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`, {
+      headers: { 'User-Agent': 'JudienApp/1.0' },
+    });
+    const data = await res.json();
+    return Array.isArray(data)
+      ? data.map((item) => ({ label: item.display_name })).filter((item) => item.label)
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 const FieldInput = React.memo(function FieldInput({
   label, value, onChangeText, placeholder, multiline, keyboardType,
@@ -56,12 +72,15 @@ export default function NewEventScreen() {
     title: '',
     description: '',
     location: '',
+    mapAddress: '',
     startAt: '',
     endAt: '',
     feeAmount: '',
   });
   const [coverUri, setCoverUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [locationSearching, setLocationSearching] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
 
   // Transportation + sub-events
   const [collectTransportation, setCollectTransportation] = useState(false);
@@ -79,6 +98,16 @@ export default function NewEventScreen() {
 
   const set = (k: keyof typeof form) => (val: string) =>
     setForm((prev) => ({ ...prev, [k]: val }));
+
+  const searchLocation = async () => {
+    if (!form.location.trim()) return;
+    setLocationSearching(true);
+    try {
+      setLocationSuggestions(await searchMapAddresses(form.location));
+    } finally {
+      setLocationSearching(false);
+    }
+  };
 
   const searchUsers = async (q: string) => {
     setUserQuery(q);
@@ -178,6 +207,7 @@ export default function NewEventScreen() {
         title: form.title,
         description: form.description,
         location: form.location,
+        mapAddress: form.mapAddress || null,
         startAt: form.startAt ? toISO(form.startAt) : undefined,
         endAt: form.endAt ? toISO(form.endAt) : null,
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
@@ -224,7 +254,33 @@ export default function NewEventScreen() {
       </Text>
 
       <FieldInput label={zh ? '標題' : 'Title'} value={form.title} onChangeText={set('title')} placeholder={zh ? '活動名稱' : 'Event name'} />
-      <FieldInput label={zh ? '地點' : 'Location'} value={form.location} onChangeText={set('location')} placeholder="e.g. Taipei, Da'an Park" />
+      <FieldInput
+        label={zh ? '地點' : 'Location'}
+        value={form.location}
+        onChangeText={(value) => {
+          setForm((prev) => ({ ...prev, location: value, mapAddress: '' }));
+          setLocationSuggestions([]);
+        }}
+        placeholder="e.g. Taipei, Da'an Park"
+      />
+      <View style={{ marginTop: -8, marginBottom: 14, gap: 8 }}>
+        <TouchableOpacity onPress={searchLocation} disabled={locationSearching || !form.location.trim()} style={[styles.secondaryBtn, { opacity: locationSearching || !form.location.trim() ? 0.5 : 1 }]}>
+          <Text style={styles.secondaryBtnText}>{locationSearching ? (zh ? '搜尋中...' : 'Searching...') : (zh ? '尋找地圖地址' : 'Find map address')}</Text>
+        </TouchableOpacity>
+        {!!form.mapAddress && <Text style={{ fontSize: 12, color: '#059669' }}>{zh ? '已確認地圖地址：' : 'Map address confirmed: '}{form.mapAddress}</Text>}
+        {locationSuggestions.map((item) => (
+          <TouchableOpacity
+            key={item.label}
+            onPress={() => {
+              setForm((prev) => ({ ...prev, location: item.label, mapAddress: item.label }));
+              setLocationSuggestions([]);
+            }}
+            style={{ borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 10, backgroundColor: colors.card }}
+          >
+            <Text style={{ color: colors.text, fontSize: 13 }}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
       <FieldInput label={zh ? '費用（選填）' : 'Fee (optional)'} value={form.feeAmount} onChangeText={set('feeAmount')} placeholder="0" keyboardType="numeric" />
       <FieldInput label={zh ? '說明' : 'Description'} value={form.description} onChangeText={set('description')}
         placeholder={zh ? '活動說明' : "What's this event about?"} multiline />
@@ -443,6 +499,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
       borderWidth: 1, borderColor: INDIGO + '80', borderStyle: 'dashed',
       borderRadius: 8, paddingVertical: 8, marginTop: 2,
     },
+    secondaryBtn: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, alignItems: 'center', backgroundColor: colors.card },
+    secondaryBtnText: { color: colors.text, fontWeight: '600', fontSize: 13 },
     btn: { backgroundColor: INDIGO, borderRadius: 10, padding: 16, alignItems: 'center', marginTop: 8, marginBottom: 24 },
     btnDisabled: { opacity: 0.6 },
     btnText: { color: '#fff', fontWeight: '600', fontSize: 16 },

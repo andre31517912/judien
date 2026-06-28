@@ -151,6 +151,7 @@ model Event {
   title         String
   description   String   @default("")
   location      String   @default("")
+  mapAddress    String?
 
   startAt       DateTime
   endAt         DateTime?
@@ -283,6 +284,9 @@ model RSVPPlusOne {
   relationship         String?
   connectedInviteeName String?
   notes                String?
+  status               RSVPStatus?
+  checkedIn            Boolean  @default(false)
+  checkedInAt          DateTime?
   createdAt            DateTime @default(now())
 
   rsvp        RSVP?  @relation(fields: [rsvpId], references: [id], onDelete: Cascade)

@@ -108,7 +108,18 @@ export class RsvpService {
     };
 
     // Collect extra guests (plus-ones from any RSVP) separately
-    const extraGuests: { id: string; addedByUserId: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string }[] = [];
+    const extraGuests: {
+      id: string;
+      addedByUserId: string | null;
+      name: string;
+      email?: string;
+      phone?: string;
+      relationship?: string;
+      connectedInviteeName?: string;
+      addedByName: string;
+      status?: 'GOING' | 'NO' | null;
+      checkedIn?: boolean;
+    }[] = [];
 
     for (const r of rsvps) {
       const status = r.status as 'GOING' | 'NO';
@@ -138,6 +149,8 @@ export class RsvpService {
               addedByName: displayName ?? entry.handle,
               ...(po.relationship ? { relationship: po.relationship } : {}),
               ...(po.connectedInviteeName ? { connectedInviteeName: po.connectedInviteeName } : {}),
+              status: po.status ?? null,
+              checkedIn: po.checkedIn ?? false,
             };
             if (isCallerAdmin) {
               if (po.email) extra.email = po.email;
@@ -164,6 +177,8 @@ export class RsvpService {
         addedByName: adderName,
         ...(po.relationship ? { relationship: po.relationship } : {}),
         ...(po.connectedInviteeName ? { connectedInviteeName: po.connectedInviteeName } : {}),
+        status: po.status ?? null,
+        checkedIn: po.checkedIn ?? false,
       };
       if (isCallerAdmin) {
         if (po.email) extra.email = po.email;
@@ -195,12 +210,15 @@ export class RsvpService {
       where: { eventId, rsvpId: null },
       orderBy: { createdAt: 'asc' },
     });
-    const rosterEntries = rosterGuests.map((g: any) => ({
-      name: g.name,
-      email: isCallerAdmin ? (g.email ?? null) : null,
-      ...(isCallerAdmin && g.phone ? { phone: g.phone } : {}),
-      ...(g.relationship ? { relationship: g.relationship } : {}),
-    }));
+    const rosterEntries = rosterGuests
+      .filter((g: any) => !g.status && !g.addedByUserId)
+      .map((g: any) => ({
+        plusOneId: g.id,
+        name: g.name,
+        email: isCallerAdmin ? (g.email ?? null) : null,
+        ...(isCallerAdmin && g.phone ? { phone: g.phone } : {}),
+        ...(g.relationship ? { relationship: g.relationship } : {}),
+      }));
 
     // INVITED bucket: for group events, all group members are considered invited
     let invited: { name: string; email: string | null; phone?: string | null }[] | undefined;
@@ -216,7 +234,7 @@ export class RsvpService {
     }
 
     // PENDING bucket: members/invitees who haven't replied
-    let pending: { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest' }[] | undefined;
+    let pending: { handle: string; displayName: string | null; email?: string; phone?: string; source: 'user' | 'guest'; userId?: string; inviteId?: string }[] | undefined;
     if (event.groupId && userId) {
       const rsvpUserIds = new Set(rsvps.map((r) => r.userId));
       pending = memberships
@@ -225,6 +243,7 @@ export class RsvpService {
           handle: isCallerAdmin ? (m.user.email ?? '') : this.maskIdentifier(m.user.email ?? ''),
           displayName: m.groupNickname ?? m.user.displayName ?? null,
           source: 'user' as const,
+          userId: m.userId,
           ...(isCallerAdmin && m.user.email ? { email: m.user.email } : {}),
           ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
         }));
@@ -233,10 +252,12 @@ export class RsvpService {
         where: { eventId },
         include: { acceptedBy: { select: { id: true, displayName: true, email: true, phoneE164: true } } },
       });
+      const activeInvites = invites.filter((inv) => inv.acceptedByUserId || inv.expiresAt > new Date());
 
       // INVITED bucket for normal events: show direct invites + creator-added roster guests
-      const directInvites = invites.filter((inv) => inv.guestEmail && !inv.acceptedByUserId);
+      const directInvites = activeInvites.filter((inv) => inv.guestEmail && !inv.acceptedByUserId);
       const invitedFromInvites = directInvites.map((inv) => ({
+        inviteId: inv.id,
         name: inv.guestName ?? inv.guestEmail ?? '',
         email: isCallerAdmin ? (inv.guestEmail ?? null) : null,
         ...(isCallerAdmin && inv.guestPhone ? { phone: inv.guestPhone } : {}),
@@ -253,12 +274,14 @@ export class RsvpService {
       const guestRsvpEmails = new Set(guestRsvps.map((r) => r.guestEmail.toLowerCase()));
 
       pending = [];
-      for (const inv of invites) {
+      for (const inv of activeInvites) {
         if (inv.acceptedByUserId && !rsvpUserIds.has(inv.acceptedByUserId)) {
           const entry: typeof pending[number] = {
             handle: isCallerAdmin ? (inv.acceptedBy?.email ?? '') : this.maskIdentifier(inv.acceptedBy?.email ?? ''),
             displayName: inv.acceptedBy?.displayName ?? null,
             source: 'user' as const,
+            userId: inv.acceptedByUserId,
+            inviteId: inv.id,
           };
           if (isCallerAdmin && inv.acceptedBy?.email) entry.email = inv.acceptedBy.email;
           if (isCallerAdmin && (inv.acceptedBy as any)?.phoneE164) entry.phone = (inv.acceptedBy as any).phoneE164;
@@ -270,6 +293,7 @@ export class RsvpService {
               handle: isCallerAdmin ? inv.guestEmail : this.maskIdentifier(inv.guestEmail),
               displayName: inv.guestName ?? null,
               source: 'guest' as const,
+              inviteId: inv.id,
             };
             if (isCallerAdmin) {
               entry.email = inv.guestEmail;
@@ -281,11 +305,72 @@ export class RsvpService {
       }
     }
 
+    const roster = [
+      ...(invited ?? []).map((g: any) => ({
+        kind: g.plusOneId ? 'plusOne' as const : 'invited' as const,
+        inviteId: g.inviteId,
+        plusOneId: g.plusOneId,
+        name: g.name,
+        email: g.email ?? undefined,
+        phone: g.phone ?? undefined,
+        relationship: g.relationship ?? undefined,
+        status: 'INVITED' as const,
+        checkedIn: false,
+      })),
+      ...(pending ?? []).map((g: any) => ({
+        kind: g.source === 'guest' ? 'guest' as const : 'user' as const,
+        inviteId: g.inviteId,
+        userId: g.userId,
+        name: g.displayName ?? g.handle,
+        handle: g.handle,
+        email: g.email,
+        phone: g.phone,
+        status: 'PENDING' as const,
+        checkedIn: false,
+      })),
+      ...groups.GOING.map((g: any) => ({
+        kind: g.source === 'guest' ? 'guest' as const : 'user' as const,
+        userId: g.userId,
+        guestRsvpId: g.guestRsvpId,
+        name: g.displayName ?? g.handle,
+        handle: g.handle,
+        email: g.email,
+        phone: g.phone,
+        status: 'GOING' as const,
+        checkedIn: g.checkedIn,
+      })),
+      ...groups.NO.map((g: any) => ({
+        kind: g.source === 'guest' ? 'guest' as const : 'user' as const,
+        userId: g.userId,
+        guestRsvpId: g.guestRsvpId,
+        name: g.displayName ?? g.handle,
+        handle: g.handle,
+        email: g.email,
+        phone: g.phone,
+        status: 'NO' as const,
+        checkedIn: false,
+      })),
+      ...extraGuests.map((g: any) => ({
+        kind: 'plusOne' as const,
+        plusOneId: g.id,
+        addedByUserId: g.addedByUserId,
+        name: g.name,
+        email: g.email,
+        phone: g.phone,
+        relationship: g.relationship,
+        connectedInviteeName: g.connectedInviteeName,
+        addedByName: g.addedByName,
+        status: g.status ?? 'INVITED',
+        checkedIn: g.checkedIn ?? false,
+      })),
+    ];
+
     return {
       ...groups,
       ...(invited !== undefined ? { INVITED: invited } : {}),
       ...(pending !== undefined ? { PENDING: pending } : {}),
       EXTRA_GUESTS: extraGuests,
+      ROSTER: roster,
     };
   }
 
@@ -357,7 +442,8 @@ export class RsvpService {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-    if (user?.role === 'ADMIN' || event.createdById === userId) return event;
+    if (user?.role === 'ADMIN') return event;
+    if (event.createdById === userId) return event;
     if (event.groupId) {
       const m = await (this.prisma.groupMembership as any).findUnique({
         where: { groupId_userId: { groupId: event.groupId, userId } },
@@ -386,19 +472,34 @@ export class RsvpService {
         email: dto.email ?? null,
         phone: dto.phone ?? null,
         relationship: dto.relationship ?? null,
+        connectedInviteeName: dto.connectedInviteeName ?? null,
         notes: dto.notes ?? null,
       },
     });
   }
 
   async removeGuestRsvp(eventId: string, callerId: string, targetUserId: string) {
-    const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-    if (!event) throw new NotFoundException('Event not found.');
-    const caller = await this.prisma.user.findUnique({ where: { id: callerId }, select: { role: true } });
-    const isAdmin = caller?.role === 'ADMIN' || event.createdById === callerId;
-    if (!isAdmin) throw new ForbiddenException('Only event creator or admin can remove guests.');
+    await this.canManageEvent(eventId, callerId);
     await this.prisma.rSVP.deleteMany({ where: { eventId, userId: targetUserId } });
     return { removed: true };
+  }
+
+  async setRegisteredGuestRsvp(eventId: string, callerId: string, targetUserId: string, dto: RsvpDto) {
+    await this.canManageEvent(eventId, callerId);
+    return (this.prisma.rSVP as any).upsert({
+      where: { eventId_userId: { eventId, userId: targetUserId } },
+      create: {
+        eventId,
+        userId: targetUserId,
+        status: dto.status,
+        declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null,
+      },
+      update: {
+        status: dto.status,
+        declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null,
+        ...(dto.status === 'NO' ? { checkedIn: false, checkedInAt: null } : {}),
+      },
+    });
   }
 
   async removeRosterGuest(eventId: string, userId: string, guestId: string) {
@@ -429,9 +530,26 @@ export class RsvpService {
   async addPlusOne(eventId: string, userId: string, dto: PlusOneDto) {
     const event = await this.prisma.event.findUnique({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event not found.');
+    const canManage = await this.canManageEventOrNull(event, userId);
 
-    if (new Date(event.startAt) < new Date()) {
+    if (!canManage && new Date(event.startAt) < new Date()) {
       throw new ForbiddenException('Cannot add a guest to a past event.');
+    }
+
+    if (canManage) {
+      return (this.prisma as any).rSVPPlusOne.create({
+        data: {
+          rsvpId: null,
+          addedByUserId: null,
+          eventId,
+          name: dto.name,
+          email: dto.email ?? null,
+          phone: dto.phone ?? null,
+          relationship: dto.relationship ?? null,
+          connectedInviteeName: dto.connectedInviteeName ?? null,
+          notes: dto.notes ?? null,
+        },
+      });
     }
 
     // Check user has access to this event
@@ -479,6 +597,7 @@ export class RsvpService {
         relationship: dto.relationship ?? null,
         connectedInviteeName: dto.connectedInviteeName ?? null,
         notes: dto.notes ?? null,
+        status: useRsvp ? 'GOING' : null,
       },
     });
   }
@@ -499,15 +618,26 @@ export class RsvpService {
     });
     const isOwner = (rsvp && plusOne.rsvpId === rsvp.id) || plusOne.addedByUserId === userId;
     if (!isOwner) {
-      // Also allow event admin
-      const event = await this.prisma.event.findUnique({ where: { id: eventId } });
-      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-      const isAdmin = user?.role === 'ADMIN' || event?.createdById === userId;
-      if (!isAdmin) throw new ForbiddenException('You cannot remove this guest.');
+      await this.canManageEvent(eventId, userId);
     }
 
     await (this.prisma as any).rSVPPlusOne.delete({ where: { id: plusOneId } });
     return { removed: true };
+  }
+
+  async setPlusOneStatus(eventId: string, userId: string, plusOneId: string, status: 'GOING' | 'NO') {
+    await this.canManageEvent(eventId, userId);
+    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({ where: { id: plusOneId } });
+    if (!plusOne || plusOne.eventId !== eventId) {
+      throw new NotFoundException('Guest not found.');
+    }
+    return (this.prisma as any).rSVPPlusOne.update({
+      where: { id: plusOneId },
+      data: {
+        status,
+        ...(status === 'NO' ? { checkedIn: false, checkedInAt: null } : {}),
+      },
+    });
   }
 
   async updateTransportation(eventId: string, userId: string, method: string) {
@@ -581,6 +711,18 @@ export class RsvpService {
     if (!isAdmin) throw new ForbiddenException('Only event admins can perform this action.');
   }
 
+  private async canManageEventOrNull(event: { createdById: string; groupId: string | null }, userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+    if (user?.role === 'ADMIN') return true;
+    if (event.createdById === userId) return true;
+    if (!event.groupId) return false;
+    const membership = await (this.prisma.groupMembership as any).findUnique({
+      where: { groupId_userId: { groupId: event.groupId, userId } },
+      select: { role: true, status: true },
+    });
+    return membership?.status === 'ACCEPTED' && membership?.role === 'GROUP_ADMIN';
+  }
+
   async checkIn(eventId: string, callerUserId: string, targetUserId: string, checkedIn: boolean) {
     await this.assertEventAdmin(eventId, callerUserId);
     const rsvp = await this.prisma.rSVP.findUnique({
@@ -601,6 +743,39 @@ export class RsvpService {
     if (!guestRsvp) throw new NotFoundException('Guest RSVP not found.');
     return (this.prisma.guestRSVP as any).update({
       where: { id: guestRsvpId },
+      data: { checkedIn, checkedInAt: checkedIn ? new Date() : null },
+      select: { id: true, checkedIn: true, checkedInAt: true },
+    });
+  }
+
+  async setAnonymousGuestRsvp(eventId: string, callerUserId: string, guestRsvpId: string, status: 'GOING' | 'NO') {
+    await this.assertEventAdmin(eventId, callerUserId);
+    const guestRsvp = await this.prisma.guestRSVP.findFirst({ where: { id: guestRsvpId, eventId } });
+    if (!guestRsvp) throw new NotFoundException('Guest RSVP not found.');
+    return (this.prisma.guestRSVP as any).update({
+      where: { id: guestRsvpId },
+      data: {
+        status,
+        ...(status === 'NO' ? { checkedIn: false, checkedInAt: null } : {}),
+      },
+    });
+  }
+
+  async removeAnonymousGuestRsvp(eventId: string, callerUserId: string, guestRsvpId: string) {
+    await this.assertEventAdmin(eventId, callerUserId);
+    const guestRsvp = await this.prisma.guestRSVP.findFirst({ where: { id: guestRsvpId, eventId }, select: { id: true } });
+    if (!guestRsvp) throw new NotFoundException('Guest RSVP not found.');
+    await this.prisma.guestRSVP.delete({ where: { id: guestRsvpId } });
+    return { removed: true };
+  }
+
+  async checkInPlusOne(eventId: string, callerUserId: string, plusOneId: string, checkedIn: boolean) {
+    await this.assertEventAdmin(eventId, callerUserId);
+    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({ where: { id: plusOneId } });
+    if (!plusOne || plusOne.eventId !== eventId) throw new NotFoundException('Guest not found.');
+    if (plusOne.status !== 'GOING') throw new ForbiddenException('Only guests marked as Going can be checked in.');
+    return (this.prisma as any).rSVPPlusOne.update({
+      where: { id: plusOneId },
       data: { checkedIn, checkedInAt: checkedIn ? new Date() : null },
       select: { id: true, checkedIn: true, checkedInAt: true },
     });
