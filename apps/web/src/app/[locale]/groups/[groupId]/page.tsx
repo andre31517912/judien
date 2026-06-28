@@ -487,7 +487,7 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       />
     )}
     <div className="-mx-4 sm:-mx-6 lg:-mx-8">
-      <div className="px-4 pt-4 sm:px-6 lg:px-8">
+      <div className="pt-4">
         <Link
           href={`/${params.locale}/groups`}
           className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition w-fit mb-2"

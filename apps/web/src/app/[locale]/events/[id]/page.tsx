@@ -1209,7 +1209,7 @@ export default function EventDetailPage() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-3">{zh ? '還沒有動態。' : 'No feeds yet.'}</p>
         )}
 
-        <div className="max-h-[320px] overflow-y-auto flex flex-col gap-3 pr-1">
+        <div className="max-h-[228px] overflow-y-auto flex flex-col gap-3 pr-1">
         {goingList.length > 0 && (
           <div className="flex flex-col gap-2">
             {goingList.map((g, i) => (

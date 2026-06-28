@@ -905,7 +905,7 @@ export default function EventDetailScreen() {
           {/* Feed section */}
           <Text style={styles.sectionTitle}>{zh ? '動態' : 'Feed'}</Text>
           {comments.length === 0 && goingList.length === 0 && <Text style={styles.empty}>{zh ? '還沒有動態' : 'No feeds yet'}</Text>}
-          <ScrollView style={{ maxHeight: 400 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
+          <ScrollView style={{ maxHeight: 286 }} nestedScrollEnabled showsVerticalScrollIndicator={false}>
           {goingList.map((g, i) => (
             <View key={`going-${i}`} style={styles.feedGoingItem}>
               <Text style={styles.feedGoingText}>✓ {g.displayName ?? g.handle} {zh ? '要參加' : 'is going'}</Text>
