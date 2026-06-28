@@ -124,9 +124,6 @@ export default function DateTimeField({
               paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12,
               borderBottomWidth: 1, borderBottomColor: colors.border,
             }}>
-              <TouchableOpacity onPress={dismiss} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Text style={{ fontSize: 15, fontWeight: '600', color: colors.subtext ?? colors.placeholder }}>Cancel</Text>
-              </TouchableOpacity>
               <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>Select Date & Time</Text>
               <TouchableOpacity onPress={confirm} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                 <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Confirm</Text>

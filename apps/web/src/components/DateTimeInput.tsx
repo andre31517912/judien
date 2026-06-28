@@ -281,22 +281,8 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
-        {clearable && value && (
-          <button type="button" onClick={() => { onChange(''); setOpen(false); }}
-            className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition mr-auto">
-            Clear
-          </button>
-        )}
-        <button type="button" onClick={() => setOpen(false)}
-          className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition ml-auto">
-          Cancel
-        </button>
         <button type="button" onClick={confirm} disabled={!selDay}
-          className="text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition font-medium">
+          className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition font-medium">
           Confirm
         </button>
       </div>

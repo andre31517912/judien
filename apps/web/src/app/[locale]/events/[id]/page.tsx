@@ -693,16 +693,16 @@ export default function EventDetailPage() {
       )}
 
       <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
-        {event.groupName && (
+        {event.groupName && event.groupId && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦團體' : 'Hosted by'}</span>
-            <span className="text-indigo-600 dark:text-indigo-400 font-medium">{event.groupName}</span>
+            <Link href={`/${locale}/groups/${event.groupId}`} className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">{event.groupName}</Link>
           </div>
         )}
         {event.createdByName && (
           <div className="flex gap-2">
             <span className="w-24 shrink-0 font-medium text-gray-400 dark:text-gray-500">{zh ? '主辦人' : 'Host'}</span>
-            <span>{event.createdByName}</span>
+            <Link href={`/${locale}/profile/${event.createdById}`} className="hover:underline">{event.createdByName}</Link>
           </div>
         )}
         <div className="flex gap-2">
@@ -759,7 +759,7 @@ export default function EventDetailPage() {
               onClick={() => setShowBlastModal(true)}
               className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
             >
-              {zh ? '📣 群發訊息' : '📣 Text Blast'}
+              {zh ? '群發訊息' : 'Text Blast'}
             </button>
           )}
           {!isPast && (
@@ -1209,29 +1209,6 @@ export default function EventDetailPage() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mb-3">{zh ? '還沒有動態。' : 'No feeds yet.'}</p>
         )}
 
-        {user && (
-          <form onSubmit={handleComment} className="flex flex-col gap-2 mb-4">
-            <div className="flex gap-2">
-              <input
-                value={commentBody}
-                onChange={(e) => setCommentBody(e.target.value)}
-                placeholder={zh ? '寫下留言…' : 'Write a comment…'}
-                maxLength={1000}
-                disabled={commentLoading}
-                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-60"
-              />
-              <button
-                type="submit"
-                disabled={commentLoading || !commentBody.trim()}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-              >
-                {commentLoading ? '…' : (zh ? '送出' : 'Post')}
-              </button>
-            </div>
-            {commentError && <p className="text-xs text-red-500">{commentError}</p>}
-          </form>
-        )}
-
         <div className="max-h-[320px] overflow-y-auto flex flex-col gap-3 pr-1">
         {goingList.length > 0 && (
           <div className="flex flex-col gap-2">
@@ -1381,6 +1358,29 @@ export default function EventDetailPage() {
           })}
         </div>
         </div>
+
+        {user && (
+          <form onSubmit={handleComment} className="flex flex-col gap-2 mt-4">
+            <div className="flex gap-2">
+              <input
+                value={commentBody}
+                onChange={(e) => setCommentBody(e.target.value)}
+                placeholder={zh ? '寫下留言…' : 'Write a comment…'}
+                maxLength={1000}
+                disabled={commentLoading}
+                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white dark:bg-gray-800 text-gray-900 dark:text-white disabled:opacity-60"
+              />
+              <button
+                type="submit"
+                disabled={commentLoading || !commentBody.trim()}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {commentLoading ? '…' : (zh ? '送出' : 'Post')}
+              </button>
+            </div>
+            {commentError && <p className="text-xs text-red-500">{commentError}</p>}
+          </form>
+        )}
       </section>
 
       {/* Text Blast Modal */}

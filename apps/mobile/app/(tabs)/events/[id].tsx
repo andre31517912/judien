@@ -620,11 +620,17 @@ export default function EventDetailScreen() {
           )}
 
           <Text style={styles.title}>{title}</Text>
-          {event.groupName && <Text style={styles.groupBadge}>{event.groupName}</Text>}
+          {event.groupName && event.groupId && (
+            <TouchableOpacity onPress={() => router.push(`/(tabs)/groups/${event.groupId}` as any)}>
+              <Text style={styles.groupBadge}>{event.groupName}</Text>
+            </TouchableOpacity>
+          )}
 
           <View style={styles.metaBlock}>
             {event.createdByName && (
-              <Text style={styles.meta}>👤 {event.createdByName}</Text>
+              <TouchableOpacity onPress={() => router.push(`/(tabs)/profile/${event.createdById}` as any)}>
+                <Text style={styles.meta}>👤 {event.createdByName}</Text>
+              </TouchableOpacity>
             )}
             <Text style={styles.meta}>📅 {dateStr}{event.timezone ? ` (${event.timezone})` : ''}</Text>
             {location ? (
@@ -677,7 +683,7 @@ export default function EventDetailScreen() {
                 onPress={() => setShowBlast(true)}
               >
                 <Text style={styles.rsvpBtnText}>
-                  {zh ? '📣 群發訊息' : '📣 Text Blast'}
+                  {zh ? '群發訊息' : 'Text Blast'}
                 </Text>
               </TouchableOpacity>
             )}
