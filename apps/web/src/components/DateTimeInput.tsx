@@ -148,13 +148,18 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
 
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      // Flip above if not enough room below
-      const fitsBelow = rect.bottom + 1 + CALENDAR_H <= window.innerHeight;
-      const top = fitsBelow
-        ? rect.bottom + 1
-        : Math.max(8, rect.top - CALENDAR_H - 1);
-      // Keep within horizontal viewport bounds
-      const left = Math.max(8, Math.min(rect.left, window.innerWidth - CALENDAR_W - 8));
+      // getBoundingClientRect() returns visual-pixel coords; position:fixed uses
+      // CSS-pixel coords (pre-zoom). With html { zoom: N }, divide by N to convert.
+      const zoomStr = getComputedStyle(document.documentElement).zoom;
+      const zoom = (zoomStr && zoomStr !== 'normal') ? parseFloat(zoomStr) || 1 : 1;
+
+      const rb = rect.bottom / zoom;
+      const rt = rect.top / zoom;
+      const rl = rect.left / zoom;
+
+      const fitsBelow = rb + CALENDAR_H <= window.innerHeight;
+      const top = fitsBelow ? rb : Math.max(8, rt - CALENDAR_H);
+      const left = Math.max(8, Math.min(rl, window.innerWidth - CALENDAR_W - 8));
       setPopoverPos({ top, left });
     }
     setOpen(true);
