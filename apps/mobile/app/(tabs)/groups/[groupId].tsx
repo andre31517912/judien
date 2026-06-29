@@ -861,7 +861,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
-    photoBanner: { width: '100%', aspectRatio: 3 },
+    photoBanner: { width: '100%', aspectRatio: 4 / 3 },
     photoBannerPlaceholder: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoBannerIcon: { fontSize: 40, opacity: 0.5 },
 

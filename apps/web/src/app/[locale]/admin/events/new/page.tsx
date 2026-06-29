@@ -148,8 +148,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         {/* Cover image upload */}
         <Field label="Cover Photo (optional)">
           <div
-            onClick={() => fileRef.current?.click()}
-          className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
+            onClick={() => { if (coverPreview) setCropSrc(coverPreview); else fileRef.current?.click(); }}
+            className="relative w-full h-44 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer overflow-hidden flex items-center justify-center transition"
           >
             {coverPreview ? (
               // eslint-disable-next-line @next/next/no-img-element

@@ -54,6 +54,12 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
     photoFileRef.current?.click();
   };
 
+  const handleRepositionPhoto = () => {
+    if (!photoPreview) return;
+    setShowPhotoModal(false);
+    setCropSrc(photoPreview);
+  };
+
   const suggestedPid = useMemo(() => slugifyPid(name), [name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,7 +109,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
       {cropSrc && (
         <ImageCropModal
           src={cropSrc}
-          aspect={3 / 1}
+          aspect={16 / 9}
           zh={zh}
           onConfirm={(file) => { setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); setCropSrc(null); }}
           onCancel={() => setCropSrc(null)}
@@ -141,7 +147,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片（選填）' : 'Group Photo (optional)'}</label>
           <div
             onClick={handlePhotoAreaClick}
-            className="relative w-full aspect-[3/1] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer overflow-hidden flex items-center justify-center transition"
+            className="relative w-full aspect-[16/9] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer overflow-hidden flex items-center justify-center transition"
           >
             {photoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -164,6 +170,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
                   <button type="button" className="w-full py-3.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition" onClick={handleRemovePhoto}>{zh ? '移除照片' : 'Remove Photo'}</button>
                   <button type="button" className="w-full py-3.5 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition" onClick={handleReplacePhoto}>{zh ? '更換照片' : 'Replace Photo'}</button>
+                  <button type="button" className="w-full py-3.5 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition" onClick={handleRepositionPhoto}>{zh ? '重新裁切位置' : 'Reposition Photo'}</button>
                   <button type="button" className="w-full py-3.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition" onClick={() => setShowPhotoModal(false)}>{zh ? '取消' : 'Cancel'}</button>
                 </div>
               </div>

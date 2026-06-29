@@ -503,11 +503,11 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Banner */}
         {group.photoUrl ? (
-          <div className="relative w-full aspect-[3/1]">
+          <div className="relative w-full aspect-[16/9]">
             <img src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} className="absolute inset-0 w-full h-full object-cover" />
           </div>
         ) : (
-          <div className="w-full aspect-[3/1] bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">
+          <div className="w-full aspect-[16/9] bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">
             <svg className="w-12 h-12 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
@@ -613,10 +613,16 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
                   {newsCoverPreview ? (
-                    <div className="relative w-full h-28 rounded-lg overflow-hidden">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setCropModal({ src: newsCoverPreview, aspect: 4 / 3, onConfirm: (file) => { setNewsCoverFile(file); setNewsCoverPreview(URL.createObjectURL(file)); setCropModal(null); } })}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCropModal({ src: newsCoverPreview, aspect: 4 / 3, onConfirm: (file) => { setNewsCoverFile(file); setNewsCoverPreview(URL.createObjectURL(file)); setCropModal(null); } }); }}
+                      className="relative block w-full h-28 rounded-lg overflow-hidden"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={newsCoverPreview} alt="preview" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => { setNewsCoverFile(null); setNewsCoverPreview(null); if (newsCoverFileRef.current) newsCoverFileRef.current.value = ''; }}
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setNewsCoverFile(null); setNewsCoverPreview(null); if (newsCoverFileRef.current) newsCoverFileRef.current.value = ''; }}
                         className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
                     </div>
                   ) : (
@@ -769,12 +775,18 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                 <div>
                   <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
                   {coverPreview ? (
-                    <div className="relative w-full h-28 rounded-lg overflow-hidden">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setCropModal({ src: coverPreview, aspect: 16 / 9, onConfirm: (file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropModal(null); } })}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setCropModal({ src: coverPreview, aspect: 16 / 9, onConfirm: (file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); setCropModal(null); } }); }}
+                      className="relative block w-full h-28 rounded-lg overflow-hidden"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={coverPreview} alt="cover" className="w-full h-full object-cover" />
                       <button
                         type="button"
-                        onClick={() => { setCoverFile(null); setCoverPreview(null); if (coverFileRef.current) coverFileRef.current.value = ''; }}
+                        onClick={(e) => { e.stopPropagation(); setCoverFile(null); setCoverPreview(null); if (coverFileRef.current) coverFileRef.current.value = ''; }}
                         className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-black/70"
                       >✕</button>
                     </div>

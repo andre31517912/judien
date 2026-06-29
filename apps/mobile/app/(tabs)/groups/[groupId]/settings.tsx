@@ -422,7 +422,7 @@ export default function GroupSettingsScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [3, 1],
+      aspect: [4, 3],
       quality: 0.7,
     });
     if (result.canceled) return;
@@ -445,7 +445,7 @@ export default function GroupSettingsScreen() {
         undefined,
         [
           { text: zh ? '移除照片' : 'Remove Photo', style: 'destructive', onPress: () => setPhotoUrl(null) },
-          { text: zh ? '更換照片' : 'Replace Photo', onPress: doPickGroupPhoto },
+          { text: zh ? '更換 / 重新裁切照片' : 'Replace / Reposition Photo', onPress: doPickGroupPhoto },
           { text: zh ? '取消' : 'Cancel', style: 'cancel' },
         ],
       );
@@ -1315,7 +1315,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../../context/theme.
     fieldLabel: { fontSize: 13, fontWeight: '500', color: colors.subtext },
     input: { borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 10, fontSize: 14, backgroundColor: colors.input, color: colors.inputText },
     textArea: { minHeight: 80, textAlignVertical: 'top' },
-    groupPhotoArea: { width: '100%', aspectRatio: 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
+    groupPhotoArea: { width: '100%', aspectRatio: 4 / 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
     groupPhotoInner: { alignItems: 'center', gap: 8 },
     groupPhotoLabel: { fontSize: 13, color: colors.placeholder },
     roleRow: { flexDirection: 'row', gap: 8 },

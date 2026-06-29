@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@types/react':
-        specifier: ^18.3.3
-        version: 18.3.11
       concurrently:
         specifier: ^9.1.2
         version: 9.2.1
@@ -147,6 +144,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo/vector-icons':
+        specifier: 15.1.1
+        version: 15.1.1(expo-font@14.0.12(expo@54.0.35(@babel/core@7.29.0)(@expo/metro-runtime@6.1.2)(expo-router@6.0.24)(graphql@15.8.0)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@expo/metro-runtime':
         specifier: ~6.1.2
         version: 6.1.2(expo@54.0.35)(react-dom@18.3.1(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)

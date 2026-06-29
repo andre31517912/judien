@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, Image, ActivityIndicator, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../../context/auth.context';
@@ -35,6 +35,7 @@ export default function ProfileScreen() {
 
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [showPhotoPreview, setShowPhotoPreview] = useState(false);
 
   useEffect(() => {
     if (user) setPhotoUrl((user as any).photoUrl ?? null);
@@ -66,7 +67,7 @@ export default function ProfileScreen() {
               setPhotoUrl(null);
             } catch (err: any) { Alert.alert('Error', err.message ?? 'Failed.'); }
           }},
-          { text: zh ? '更換照片' : 'Replace Photo', onPress: doPickFromLibrary },
+          { text: zh ? '更換 / 重新裁切照片' : 'Replace / Reposition Photo', onPress: doPickFromLibrary },
           { text: zh ? '取消' : 'Cancel', style: 'cancel' },
         ]
       );
@@ -100,19 +101,29 @@ export default function ProfileScreen() {
         <View style={styles.cardBody}>
           {/* Avatar overlapping the band */}
           <View style={styles.photoWrapper}>
-            {photoUrl ? (
-              <Image source={{ uri: photoUrl }} style={styles.photoAvatar} />
-            ) : (
-              <View style={styles.photoPlaceholder}>
-                <Ionicons name="person" size={40} color={colors.placeholder} />
-              </View>
-            )}
+            <TouchableOpacity
+              activeOpacity={photoUrl ? 0.8 : 1}
+              onPress={() => { if (photoUrl) setShowPhotoPreview(true); }}
+            >
+              {photoUrl ? (
+                <Image source={{ uri: photoUrl }} style={styles.photoAvatar} />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Ionicons name="person" size={40} color={colors.placeholder} />
+                </View>
+              )}
+            </TouchableOpacity>
             <TouchableOpacity onPress={handlePickPhoto} disabled={photoUploading} style={styles.cameraBtn} activeOpacity={0.75}>
               {photoUploading
                 ? <ActivityIndicator size="small" color="#fff" />
                 : <Ionicons name="camera" size={14} color="#fff" />}
             </TouchableOpacity>
           </View>
+          <Modal visible={showPhotoPreview && !!photoUrl} transparent animationType="fade" onRequestClose={() => setShowPhotoPreview(false)}>
+            <TouchableOpacity style={styles.photoPreviewBackdrop} activeOpacity={1} onPress={() => setShowPhotoPreview(false)}>
+              {photoUrl ? <Image source={{ uri: photoUrl }} style={styles.photoPreviewLarge} /> : null}
+            </TouchableOpacity>
+          </Modal>
 
           {photoUploading && <Text style={styles.uploadingText}>{zh ? '上傳中…' : 'Uploading…'}</Text>}
 
@@ -186,6 +197,8 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     photoAvatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 4, borderColor: colors.card },
     photoPlaceholder: { width: 80, height: 80, borderRadius: 40, backgroundColor: colors.border, alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: colors.card },
     cameraBtn: { position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: INDIGO, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 },
+    photoPreviewBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center' },
+    photoPreviewLarge: { width: 260, height: 260, borderRadius: 130, borderWidth: 4, borderColor: '#fff' },
     uploadingText: { fontSize: 12, color: colors.placeholder, marginBottom: 8 },
 
     // Name row

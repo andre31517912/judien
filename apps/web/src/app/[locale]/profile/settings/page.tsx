@@ -36,6 +36,7 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
@@ -221,18 +222,26 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
       {/* Profile Photo */}
       <div className="flex items-end gap-4 mb-6">
         <div className="relative group">
-          {photoUrl ? (
-            <img src={photoUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
-              <svg className="w-14 h-14 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-              </svg>
-            </div>
-          )}
           <button
             type="button"
-            onClick={() => {
+            onClick={() => { if (photoUrl) setShowPhotoPreview(true); else photoInputRef.current?.click(); }}
+            className="block rounded-full"
+            aria-label={zh ? '查看大頭貼' : 'View profile photo'}
+          >
+            {photoUrl ? (
+              <img src={photoUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700" />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700">
+                <svg className="w-14 h-14 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              </div>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
               if (!photoUrl) {
                 photoInputRef.current?.click();
               } else {
@@ -276,12 +285,29 @@ export default function ProfileSettingsPage({ params }: { params: { locale: stri
                   </button>
                   <button
                     type="button"
+                    onClick={() => { setShowPhotoMenu(false); setCropSrc(photoUrl); }}
+                    className="block w-full py-3.5 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+                  >
+                    {zh ? '重新裁切位置' : 'Reposition Photo'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setShowPhotoMenu(false)}
                     className="block w-full py-3.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                   >
                     {zh ? '取消' : 'Cancel'}
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+          {showPhotoPreview && photoUrl && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+              onClick={() => setShowPhotoPreview(false)}
+            >
+              <div className="rounded-full bg-white/10 p-2" onClick={(e) => e.stopPropagation()}>
+                <img src={photoUrl} alt="Profile preview" className="h-72 w-72 max-h-[80vw] max-w-[80vw] rounded-full object-cover border-4 border-white shadow-2xl" />
               </div>
             </div>
           )}

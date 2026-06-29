@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
-import { apiFetch } from '../../../../lib/api';
+import { apiFetch } from '../../../lib/api';
 import type { News } from '@judien/shared';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../../../context/theme.context';
+import { useTheme } from '../../../context/theme.context';
 
 const INDIGO = '#4F46E5';
 

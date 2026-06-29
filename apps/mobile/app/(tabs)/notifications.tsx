@@ -50,13 +50,14 @@ function resolveRoute(actionUrl: string | null): string | null {
 
 const DELETE_BTN_WIDTH = 72;
 
-function SwipeableNotification({ n, onDelete, onPress, styles, colors, zh }: {
+function SwipeableNotification({ n, onDelete, onPress, styles, colors, zh, isDark }: {
   n: AppNotification;
   onDelete: (id: string) => void;
   onPress: (n: AppNotification) => void;
   styles: ReturnType<typeof makeStyles>;
   colors: ReturnType<typeof import('../../context/theme.context').useTheme>['colors'];
   zh: boolean;
+  isDark: boolean;
 }) {
   const translateX = useRef(new Animated.Value(0)).current;
   const isOpen = useRef(false);
@@ -220,6 +221,7 @@ export default function NotificationsTab() {
             styles={styles}
             colors={colors}
             zh={zh}
+            isDark={isDark}
           />
         )}
       />

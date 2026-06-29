@@ -333,7 +333,20 @@ export default function EditEventPage({ params }: { params: { locale: string; id
           <Field label="Cover Photo">
             {/* Show current cover with remove button */}
             {(form.coverImageUrl || coverPreview) && (
-              <div className="relative mb-2 group">
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  const src = coverPreview ?? resolveImageUrl(form.coverImageUrl);
+                  if (src) setCropSrc(src);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                  const src = coverPreview ?? resolveImageUrl(form.coverImageUrl);
+                  if (src) setCropSrc(src);
+                }}
+                className="relative mb-2 block w-full group"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={coverPreview ?? resolveImageUrl(form.coverImageUrl) ?? ''}
@@ -342,7 +355,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setCoverFile(null);
                     setCoverPreview(null);
                     setForm((f) => ({ ...f, coverImageUrl: '' }));
@@ -354,16 +368,18 @@ export default function EditEventPage({ params }: { params: { locale: string; id
                 </button>
               </div>
             )}
-            <div
-              onClick={() => coverFileRef.current?.click()}
-              className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 text-sm transition"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              {coverPreview ? 'Replace photo' : (form.coverImageUrl ? 'Replace photo' : 'Upload cover photo')}
-            </div>
+            {!(form.coverImageUrl || coverPreview) && (
+              <div
+                onClick={() => coverFileRef.current?.click()}
+                className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 text-sm transition"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Upload cover photo
+              </div>
+            )}
             <input ref={coverFileRef} type="file" accept="image/*" onChange={handleCoverFileChange} className="hidden" />
           </Field>
 
