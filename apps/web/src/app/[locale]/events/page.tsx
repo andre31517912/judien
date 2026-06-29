@@ -358,26 +358,27 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
                 const grad = POST_GRADIENTS[hash % POST_GRADIENTS.length];
                 const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
                 return (
-                  <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
-                    <Link href={`/${params.locale}/news/${item.id}`} className="absolute inset-0 z-0 block">
-                      {item.coverImageUrl && (
-                        <Image src={resolveImageUrl(item.coverImageUrl)!} alt={item.title} fill className="object-cover" />
-                      )}
-                      <div className="absolute inset-0 bg-black/15" />
-                      <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
-                        <div className={`flex-1 overflow-hidden ${(item.group || canEdit) ? 'mt-7' : ''}`}>
-                          <h2 className="font-extrabold text-white text-base line-clamp-3 leading-snug">{item.title}</h2>
-                          <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{item.body}</p>
+                  <div key={item.id} className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900">
+                    <Link href={`/${params.locale}/news/${item.id}`} className="block">
+                      <div className={`relative aspect-[4/3] bg-gradient-to-br ${grad}`}>
+                        {item.coverImageUrl && (
+                          <Image src={resolveImageUrl(item.coverImageUrl)!} alt={item.title} fill className="object-cover" />
+                        )}
+                      </div>
+                      <div className="min-h-[112px] p-3.5 flex flex-col justify-between">
+                        <div className="overflow-hidden">
+                          <h2 className="font-extrabold text-gray-900 dark:text-white text-base line-clamp-2 leading-snug">{item.title}</h2>
+                          <p className="text-gray-500 dark:text-gray-400 text-xs mt-1.5 line-clamp-3 leading-relaxed">{item.body}</p>
                         </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                          <div className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-[9px] font-bold shrink-0">
                             {initial}
                           </div>
                           <div className="min-w-0">
                             {item.createdBy?.displayName && (
-                              <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>
+                              <p className="text-[11px] font-medium text-gray-700 dark:text-gray-200 truncate leading-none">{item.createdBy.displayName}</p>
                             )}
-                            <p className="text-[10px] text-white/60">
+                            <p className="text-[10px] text-gray-400">
                               {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}
                             </p>
                           </div>
@@ -568,14 +569,13 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
   return (
     <Link
       href={`/${locale}/events/${event.id}`}
-      className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1"
+      className="group relative block overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900"
     >
-      {coverUrl ? (
-        <Image src={coverUrl} alt={title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-      ) : (
-        <div className="absolute inset-0 bg-indigo-600" />
-      )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+      <div className="relative aspect-[16/9] bg-indigo-600">
+        {coverUrl ? (
+          <Image src={coverUrl} alt={title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+        ) : null}
+      </div>
       <div className="absolute top-2.5 right-2.5">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>
           {fee}
@@ -588,12 +588,12 @@ function EventCard({ event, locale }: { event: EventWithCounts; locale: string }
           </span>
         </div>
       )}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
-        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{title}</h2>
-        {location && <p className="text-xs text-white/70 mt-0.5 truncate">{location}</p>}
+      <div className="min-h-[92px] p-3">
+        <p className="mb-0.5 text-[11px] font-semibold uppercase text-indigo-500">{dayStr} · {timeStr}</p>
+        <h2 className="line-clamp-2 text-sm font-bold leading-snug text-gray-900 dark:text-white">{title}</h2>
+        {location && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{location}</p>}
         {event.rsvpCounts.GOING > 0 && (
-          <p className="text-xs text-white/50 mt-0.5">{event.rsvpCounts.GOING} {zh ? '人參加' : 'going'}</p>
+          <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{event.rsvpCounts.GOING} {zh ? '人參加' : 'going'}</p>
         )}
       </div>
     </Link>

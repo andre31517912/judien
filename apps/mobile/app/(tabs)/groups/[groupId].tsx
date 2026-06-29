@@ -509,17 +509,21 @@ export default function GroupDetailScreen() {
                 const [c1] = gradColors[hash % gradColors.length];
                 const tileSize = (Dimensions.get('window').width - 48) / 2;
                 return (
-                  <TouchableOpacity key={item.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/news/${item.id}` as any)} activeOpacity={0.9} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: c1 }}>
-                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.15)' }} />
-                    <View style={{ flex: 1, padding: 12, justifyContent: 'space-between' }}>
-                      <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 18 }} numberOfLines={4}>
+                  <TouchableOpacity key={item.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/news/${item.id}` as any)} activeOpacity={0.9} style={{ width: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}>
+                    <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: c1 }}>
+                      {item.coverImageUrl ? (
+                        <Image source={{ uri: item.coverImageUrl.startsWith('http') ? item.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${item.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                      ) : null}
+                    </View>
+                    <View style={{ minHeight: tileSize * 0.62, padding: 12, justifyContent: 'space-between' }}>
+                      <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', lineHeight: 18 }} numberOfLines={3}>
                         {item.title}
                       </Text>
                       <View>
-                        <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }} numberOfLines={2}>
+                        <Text style={{ color: colors.subtext, fontSize: 11 }} numberOfLines={2}>
                           {item.body}
                         </Text>
-                        <Text style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, marginTop: 4 }}>
+                        <Text style={{ color: colors.placeholder, fontSize: 10, marginTop: 4 }}>
                           {item.createdBy?.displayName ?? ''}{item.createdBy?.displayName ? ' · ' : ''}
                           {new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US')}
                         </Text>
@@ -550,24 +554,26 @@ export default function GroupDetailScreen() {
                 const isFree = !ev.feeAmount;
                 const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : (zh ? '免費' : 'Free');
                 return (
-                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5' }} activeOpacity={0.85}>
-                    {ev.coverImageUrl ? (
-                      <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                    ) : null}
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }} activeOpacity={0.85}>
+                    <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: '#4F46E5' }}>
+                      {ev.coverImageUrl ? (
+                        <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                      ) : null}
+                    </View>
                     <View style={{ position: 'absolute', top: 8, right: 8 }}>
                       <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
                         <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
                       </View>
                     </View>
-                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
-                      <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
-                        <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
-                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
+                    <View style={{ minHeight: tileSize * 0.62, padding: 10, justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={{ color: INDIGO, fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                        <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
                         {ev.location ? (
-                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
+                          <Text style={{ color: colors.subtext, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
                         ) : null}
-                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
                       </View>
+                      <Text style={{ color: colors.placeholder, fontSize: 10, marginTop: 4 }}>✓ {ev.rsvpCounts.GOING}</Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -596,24 +602,26 @@ export default function GroupDetailScreen() {
                 const isFree = !ev.feeAmount;
                 const fee = ev.feeAmount ? `${ev.feeCurrency} ${ev.feeAmount}` : (zh ? '免費' : 'Free');
                 return (
-                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5', opacity: 0.75 }} activeOpacity={0.85}>
-                    {ev.coverImageUrl ? (
-                      <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                    ) : null}
+                  <TouchableOpacity key={ev.id} onPress={() => router.push(`/(tabs)/groups/${groupId}/events/${ev.id}` as any)} style={{ width: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, opacity: 0.75 }} activeOpacity={0.85}>
+                    <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: '#4F46E5' }}>
+                      {ev.coverImageUrl ? (
+                        <Image source={{ uri: ev.coverImageUrl.startsWith('http') ? ev.coverImageUrl : `${process.env.EXPO_PUBLIC_API_URL ?? ''}${ev.coverImageUrl}` }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                      ) : null}
+                    </View>
                     <View style={{ position: 'absolute', top: 8, right: 8 }}>
                       <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
                         <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
                       </View>
                     </View>
-                    <View style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'flex-end', padding: 10 }}>
-                      <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
-                        <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
-                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
+                    <View style={{ minHeight: tileSize * 0.62, padding: 10, justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={{ color: INDIGO, fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                        <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{ev.title}</Text>
                         {ev.location ? (
-                          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
+                          <Text style={{ color: colors.subtext, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{ev.location}</Text>
                         ) : null}
-                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {ev.rsvpCounts.GOING}</Text>
                       </View>
+                      <Text style={{ color: colors.placeholder, fontSize: 10, marginTop: 4 }}>✓ {ev.rsvpCounts.GOING}</Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -853,7 +861,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     screen: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 16, backgroundColor: colors.bg },
 
-    photoBanner: { width: '100%', height: 130 },
+    photoBanner: { width: '100%', aspectRatio: 3 },
     photoBannerPlaceholder: { backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
     photoBannerIcon: { fontSize: 40, opacity: 0.5 },
 

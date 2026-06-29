@@ -648,9 +648,34 @@ export default function EventDetailScreen() {
   const title = event.title;
   const desc = event.description;
   const location = event.location;
+  const mapQuery = event.mapAddress || location;
   const fee = event.feeAmount ? `${event.feeCurrency} ${event.feeAmount}` : t('events.free');
   const dateStr = new Date(event.startAt).toLocaleString(zh ? 'zh-TW' : 'en-US');
   const isPast = new Date(event.startAt) < new Date();
+
+  const openMap = (provider: 'native' | 'google') => {
+    if (!mapQuery) return;
+    const q = encodeURIComponent(mapQuery);
+    const url = provider === 'google'
+      ? `https://www.google.com/maps/search/?api=1&query=${q}`
+      : Platform.OS === 'ios'
+        ? `maps://?q=${q}`
+        : `geo:0,0?q=${q}`;
+    Linking.openURL(url).catch(() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`));
+  };
+
+  const handleOpenMap = () => {
+    if (!mapQuery) return;
+    Alert.alert(
+      zh ? '開啟地圖' : 'Open map',
+      mapQuery,
+      [
+        { text: Platform.OS === 'ios' ? 'Apple Maps' : (zh ? '裝置地圖' : 'Device maps'), onPress: () => openMap('native') },
+        { text: 'Google Maps', onPress: () => openMap('google') },
+        { text: zh ? '取消' : 'Cancel', style: 'cancel' },
+      ],
+    );
+  };
 
   const rsvpBtn = (status: 'GOING' | 'NO', label: string) => (
     <TouchableOpacity
@@ -715,18 +740,9 @@ export default function EventDetailScreen() {
             )}
             <Text style={styles.meta}>📅 {dateStr}{event.timezone ? ` (${event.timezone})` : ''}</Text>
             {location ? (
-              event.mapAddress ? (
-                <TouchableOpacity onPress={() => {
-                  const q = encodeURIComponent(event.mapAddress!);
-                  Linking.openURL(
-                    Platform.OS === 'ios' ? `maps://q=${q}` : `geo:0,0?q=${q}`
-                  ).catch(() => Linking.openURL(`https://maps.google.com/?q=${q}`));
-                }}>
-                  <Text style={styles.meta}>📍 {location}</Text>
-                </TouchableOpacity>
-              ) : (
-                <Text style={styles.meta}>📍 {location}</Text>
-              )
+              <TouchableOpacity onPress={handleOpenMap} activeOpacity={0.7}>
+                <Text style={[styles.meta, styles.mapLink]}>📍 {location}</Text>
+              </TouchableOpacity>
             ) : null}
             <Text style={styles.meta}>💰 {fee}</Text>
           </View>
@@ -1409,8 +1425,8 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   kav: { flex: 1 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   container: { flex: 1, backgroundColor: colors.bg },
-  coverWrapper: { width: '100%', height: 220 },
-  cover: { width: '100%', height: 220 },
+  coverWrapper: { width: '100%', aspectRatio: 4 / 3 },
+  cover: { width: '100%', height: '100%' },
   body: { padding: 16 },
   adminBar: { flexDirection: 'row', gap: 10, marginBottom: 14 },
   editBtn: { backgroundColor: INDIGO, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
@@ -1425,6 +1441,7 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   groupBadge: { fontSize: 12, color: INDIGO, fontWeight: '500', marginBottom: 8 },
   metaBlock: { gap: 5, marginBottom: 12 },
   meta: { fontSize: 14, color: colors.subtext },
+  mapLink: { color: INDIGO, textDecorationLine: 'underline' },
   desc: { fontSize: 15, color: colors.text, marginTop: 4, marginBottom: 12, lineHeight: 22 },
   countsRow: { flexDirection: 'row', gap: 12, marginTop: 12, marginBottom: 4 },
   count: { fontSize: 13, color: colors.subtext },

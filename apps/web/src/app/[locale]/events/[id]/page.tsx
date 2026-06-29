@@ -742,11 +742,11 @@ export default function EventDetailPage() {
       )}
 
       {resolveImageUrl(event.coverImageUrl) ? (
-        <div className="relative w-full h-60 rounded-xl overflow-hidden">
+        <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden">
           <Image src={resolveImageUrl(event.coverImageUrl)!} alt={title} fill className="object-cover" />
         </div>
       ) : (
-        <div className="w-full h-60 rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-3 select-none">
+        <div className="w-full aspect-[16/9] rounded-xl bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 border border-gray-100 dark:border-gray-700 flex flex-col items-center justify-center gap-3 select-none">
           <div className="w-16 h-16 rounded-2xl bg-indigo-100 flex items-center justify-center">
             <svg className="w-8 h-8 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}

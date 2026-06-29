@@ -267,12 +267,14 @@ export default function EventsTab() {
                     <TouchableOpacity
                       key={item.id}
                       onPress={() => router.push(`/events/${item.id}`)}
-                      style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: '#4F46E5', opacity: isPast ? 0.75 : 1 }}
+                      style={{ width: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, opacity: isPast ? 0.75 : 1 }}
                       activeOpacity={0.85}
                     >
-                      {coverUri ? (
-                        <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                      ) : null}
+                      <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: '#4F46E5' }}>
+                        {coverUri ? (
+                          <Image source={{ uri: coverUri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                        ) : null}
+                      </View>
                       <View style={{ position: 'absolute', top: 8, right: 8 }}>
                         <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
                           <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
@@ -283,18 +285,18 @@ export default function EventsTab() {
                           <Text style={{ color: '#A5B4FC', fontSize: 9, fontWeight: '700' }}>📚 {(item as any).partNumber ? `#${(item as any).partNumber}` : ''}</Text>
                         </View>
                       ) : null}
-                      <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', padding: 10 }}>
-                        <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
-                          <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
-                          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{item.title}</Text>
+                      <View style={{ minHeight: tileSize * 0.62, padding: 10, justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ color: INDIGO, fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 2 }}>{dayStr} · {timeStr}</Text>
+                          <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{item.title}</Text>
                           {item.location ? (
-                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.location}</Text>
+                            <Text style={{ color: colors.subtext, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.location}</Text>
                           ) : null}
                           {item.groupName ? (
-                            <Text style={{ color: '#A5B4FC', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.groupName}</Text>
+                            <Text style={{ color: INDIGO, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.groupName}</Text>
                           ) : null}
-                          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {item.rsvpCounts.GOING}</Text>
                         </View>
+                        <Text style={{ color: colors.placeholder, fontSize: 10, marginTop: 4 }}>✓ {item.rsvpCounts.GOING}</Text>
                       </View>
                     </TouchableOpacity>
                   );

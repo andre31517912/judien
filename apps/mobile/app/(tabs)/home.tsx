@@ -242,6 +242,9 @@ export default function HomeTab() {
                   router.push(route as any);
                 }}
               >
+                {item.coverImageUrl ? (
+                  <Image source={{ uri: resolveImageUrl(item.coverImageUrl)! }} style={styles.cardImage} resizeMode="cover" />
+                ) : null}
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
                   {(isAdmin || item.createdById === user?.id) && (
@@ -297,31 +300,33 @@ export default function HomeTab() {
                     <TouchableOpacity
                       key={item.id}
                       onPress={() => router.push(`/events/${item.id}`)}
-                      style={{ width: tileSize, height: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: INDIGO, opacity: isPast ? 0.75 : 1 }}
+                      style={{ width: tileSize, borderRadius: 16, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, opacity: isPast ? 0.75 : 1 }}
                       activeOpacity={0.85}
                     >
-                      {coverUrl ? (
-                        <Image source={{ uri: coverUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
-                      ) : null}
+                      <View style={{ width: '100%', aspectRatio: 4 / 3, backgroundColor: INDIGO }}>
+                        {coverUrl ? (
+                          <Image source={{ uri: coverUrl }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+                        ) : null}
+                      </View>
                       <View style={{ position: 'absolute', top: 8, right: 8 }}>
                         <View style={{ backgroundColor: isFree ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
                           <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>{fee}</Text>
                         </View>
                       </View>
-                      <View style={{ ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', padding: 10 }}>
-                        <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, padding: 8 }}>
-                          <Text style={{ color: '#A5B4FC', fontSize: 10, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>
+                      <View style={{ minHeight: tileSize * 0.62, padding: 10, justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ color: INDIGO, fontSize: 10, fontWeight: '600', textTransform: 'uppercase', marginBottom: 2 }}>
                             {dayStr} · {timeStr}
                           </Text>
-                          <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{item.title}</Text>
+                          <Text style={{ color: colors.text, fontSize: 12, fontWeight: '700', lineHeight: 16 }} numberOfLines={2}>{item.title}</Text>
                           {item.location ? (
-                            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.location}</Text>
+                            <Text style={{ color: colors.subtext, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.location}</Text>
                           ) : null}
                           {item.groupName ? (
-                            <Text style={{ color: '#A5B4FC', fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.groupName}</Text>
+                            <Text style={{ color: INDIGO, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{item.groupName}</Text>
                           ) : null}
-                          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, marginTop: 2 }}>✓ {item.rsvpCounts.GOING}</Text>
                         </View>
+                        <Text style={{ color: colors.placeholder, fontSize: 10, marginTop: 4 }}>✓ {item.rsvpCounts.GOING}</Text>
                       </View>
                     </TouchableOpacity>
                   );
@@ -386,6 +391,7 @@ function makeStyles(colors: ReturnType<typeof import('../../context/theme.contex
     emptyEmoji: { fontSize: 48, marginBottom: 12 },
     emptyText: { color: colors.placeholder, textAlign: 'center', fontSize: 15 },
     card: { backgroundColor: colors.card, borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: colors.border },
+    cardImage: { width: '100%', aspectRatio: 4 / 3, borderRadius: 10, marginBottom: 12 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
     cardTitle: { flex: 1, fontSize: 18, fontWeight: '800', color: colors.text, marginRight: 8 },
     groupBadge: { alignSelf: 'flex-start', backgroundColor: isDark ? 'rgba(79,70,229,0.2)' : '#EEF2FF', borderRadius: 20, paddingHorizontal: 8, paddingVertical: 2, marginBottom: 6 },

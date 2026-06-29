@@ -503,11 +503,11 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
       <div className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         {/* Banner */}
         {group.photoUrl ? (
-          <div className="relative w-full h-32 sm:h-44">
+          <div className="relative w-full aspect-[3/1]">
             <img src={resolveImageUrl(group.photoUrl) ?? ''} alt={group.name} className="absolute inset-0 w-full h-full object-cover" />
           </div>
         ) : (
-          <div className="w-full h-32 sm:h-44 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">
+          <div className="w-full aspect-[3/1] bg-gradient-to-r from-indigo-500/10 to-violet-500/10 dark:from-indigo-900/30 dark:to-violet-900/30 flex items-center justify-center">
             <svg className="w-12 h-12 text-indigo-300 dark:text-indigo-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
             </svg>
@@ -677,22 +677,23 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   const grad = gradients[hash % gradients.length];
                   const initial = (item.createdBy?.displayName?.[0] ?? '?').toUpperCase();
                   return (
-                    <div key={item.id} className={`relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${grad} shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5`}>
-                      <Link href={`/${params.locale}/news/${item.id}`} className="absolute inset-0 z-0 block">
+                    <div key={item.id} className={`relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg dark:border-gray-800 dark:bg-gray-900`}>
+                      <Link href={`/${params.locale}/news/${item.id}`} className="block">
+                        <div className={`relative aspect-[4/3] bg-gradient-to-br ${grad}`}>
                         {item.coverImageUrl && (
                           <Image src={resolveImageUrl(item.coverImageUrl)!} alt={item.title} fill className="object-cover" />
                         )}
-                        <div className="absolute inset-0 bg-black/15" />
-                        <div className="absolute inset-0 p-3.5 flex flex-col justify-between">
-                          <div className={`flex-1 overflow-hidden ${canEdit ? 'mt-7' : ''}`}>
-                            <h2 className="font-bold text-white text-sm line-clamp-3 leading-snug">{item.title}</h2>
-                            <p className="text-white/75 text-xs mt-1.5 line-clamp-4 leading-relaxed">{item.body}</p>
+                        </div>
+                        <div className="min-h-[112px] p-3.5 flex flex-col justify-between">
+                          <div className="overflow-hidden">
+                            <h2 className="font-bold text-gray-900 dark:text-white text-sm line-clamp-2 leading-snug">{item.title}</h2>
+                            <p className="text-gray-500 dark:text-gray-400 text-xs mt-1.5 line-clamp-3 leading-relaxed">{item.body}</p>
                           </div>
                           <div className="flex items-center gap-2 mt-2">
-                            <div className="w-5 h-5 rounded-full bg-white/25 flex items-center justify-center text-white text-[9px] font-bold shrink-0">{initial}</div>
+                            <div className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-[9px] font-bold shrink-0">{initial}</div>
                             <div className="min-w-0">
-                              {item.createdBy?.displayName && <p className="text-[11px] font-medium text-white/90 truncate leading-none">{item.createdBy.displayName}</p>}
-                              <p className="text-[10px] text-white/60">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
+                              {item.createdBy?.displayName && <p className="text-[11px] font-medium text-gray-700 dark:text-gray-200 truncate leading-none">{item.createdBy.displayName}</p>}
+                              <p className="text-[10px] text-gray-400">{new Date(item.createdAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { dateStyle: 'short' })}</p>
                             </div>
                           </div>
                         </div>
@@ -818,21 +819,20 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                   return (
-                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1">
-                      {coverUrl ? (
-                        <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="absolute inset-0 bg-indigo-600" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900">
+                      <div className="relative aspect-[16/9] bg-indigo-600">
+                        {coverUrl ? (
+                          <Image src={coverUrl} alt={ev.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                        ) : null}
+                      </div>
                       <div className="absolute top-2.5 right-2.5">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>{fee}</span>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
-                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
-                        {ev.location && <p className="text-xs text-white/70 mt-0.5 truncate">{ev.location}</p>}
-                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      <div className="min-h-[92px] p-3">
+                        <p className="mb-0.5 text-[11px] font-semibold uppercase text-indigo-500">{dayStr} · {timeStr}</p>
+                        <h2 className="line-clamp-2 text-sm font-bold leading-snug text-gray-900 dark:text-white">{ev.title}</h2>
+                        {ev.location && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{ev.location}</p>}
+                        <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}</p>
                       </div>
                     </Link>
                   );
@@ -945,21 +945,20 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                   const dayStr = new Date(ev.startAt).toLocaleDateString(zh ? 'zh-TW' : 'en-US', { month: 'short', day: 'numeric' });
                   const timeStr = new Date(ev.startAt).toLocaleTimeString(zh ? 'zh-TW' : 'en-US', { hour: 'numeric', minute: '2-digit' });
                   return (
-                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 hover:-translate-y-1 opacity-75 hover:opacity-100">
-                      {coverUrl ? (
-                        <Image src={coverUrl} alt={ev.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                      ) : (
-                        <div className="absolute inset-0 bg-indigo-600" />
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                    <Link key={ev.id} href={`/${params.locale}/events/${ev.id}`} className="group relative block overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm opacity-75 transition-all duration-200 hover:-translate-y-1 hover:opacity-100 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900">
+                      <div className="relative aspect-[16/9] bg-indigo-600">
+                        {coverUrl ? (
+                          <Image src={coverUrl} alt={ev.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                        ) : null}
+                      </div>
                       <div className="absolute top-2.5 right-2.5">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold shadow backdrop-blur-sm ${isFree ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}`}>{fee}</span>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <p className="text-[11px] font-semibold text-indigo-300 uppercase tracking-wide mb-0.5">{dayStr} · {timeStr}</p>
-                        <h2 className="font-bold text-sm text-white line-clamp-2 leading-snug">{ev.title}</h2>
-                        {ev.location && <p className="text-xs text-white/70 mt-0.5 truncate">{ev.location}</p>}
-                        <p className="text-xs text-white/50 mt-0.5">✓ {ev.rsvpCounts.GOING}</p>
+                      <div className="min-h-[92px] p-3">
+                        <p className="mb-0.5 text-[11px] font-semibold uppercase text-indigo-500">{dayStr} · {timeStr}</p>
+                        <h2 className="line-clamp-2 text-sm font-bold leading-snug text-gray-900 dark:text-white">{ev.title}</h2>
+                        {ev.location && <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">{ev.location}</p>}
+                        <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">✓ {ev.rsvpCounts.GOING}</p>
                       </div>
                     </Link>
                   );
