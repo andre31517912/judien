@@ -124,14 +124,32 @@ async function processReminder(job: Job<ReminderJobData>) {
   console.log(`[worker] Reminder job=${job.id} complete. Notified ${users.length} users.`);
 }
 
-const redisConnection: any = process.env.REDIS_URL
-  ? process.env.REDIS_URL
-  : {
-      host: process.env.REDIS_HOST ?? 'localhost',
-      port: Number(process.env.REDIS_PORT ?? 6379),
-      password: process.env.REDIS_PASSWORD ?? undefined,
-      maxRetriesPerRequest: null,
+function buildRedisOptions() {
+  if (process.env.REDIS_URL) {
+    const url = new URL(process.env.REDIS_URL);
+    return {
+      host: url.hostname,
+      port: Number(url.port),
+      username: url.username || undefined,
+      password: url.password || undefined,
+      maxRetriesPerRequest: null as null,
+      ...(process.env.REDIS_URL.startsWith('rediss://') ? { tls: {} } : {}),
     };
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('REDIS_URL is required for the reminder worker in production.');
+  }
+
+  return {
+    host: process.env.REDIS_HOST ?? 'localhost',
+    port: Number(process.env.REDIS_PORT ?? 6379),
+    password: process.env.REDIS_PASSWORD ?? undefined,
+    maxRetriesPerRequest: null as null,
+  };
+}
+
+const redisConnection = buildRedisOptions();
 
 const worker = new Worker<ReminderJobData>(
   REMINDER_QUEUE_NAME,

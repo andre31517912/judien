@@ -19,6 +19,9 @@ function buildRedisOptions() {
       ...(process.env.REDIS_URL.startsWith('rediss://') ? { tls: {} } : {}),
     };
   }
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('REDIS_URL is required in production.');
+  }
   return {
     host: process.env.REDIS_HOST ?? 'localhost',
     port: Number(process.env.REDIS_PORT ?? 6379),
