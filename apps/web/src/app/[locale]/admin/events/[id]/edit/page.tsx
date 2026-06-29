@@ -345,13 +345,13 @@ export default function EditEventPage({ params }: { params: { locale: string; id
                   const src = coverPreview ?? resolveImageUrl(form.coverImageUrl);
                   if (src) setCropSrc(src);
                 }}
-                className="relative mb-2 block w-full group"
+                className="relative mb-2 block w-full aspect-[16/9] group"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={coverPreview ?? resolveImageUrl(form.coverImageUrl) ?? ''}
                   alt="cover"
-                  className="w-full h-40 object-cover rounded-lg"
+                  className="absolute inset-0 w-full h-full object-cover rounded-lg"
                 />
                 <button
                   type="button"
@@ -371,7 +371,7 @@ export default function EditEventPage({ params }: { params: { locale: string; id
             {!(form.coverImageUrl || coverPreview) && (
               <div
                 onClick={() => coverFileRef.current?.click()}
-                className="relative w-full h-16 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 text-sm transition"
+                className="relative w-full aspect-[16/9] rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center justify-center gap-2 text-gray-400 dark:text-gray-500 text-sm transition"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}

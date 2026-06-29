@@ -47,7 +47,7 @@ export default function NewGroupScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      aspect: [4, 1],
       quality: 0.7,
     });
     if (result.canceled) return;
@@ -252,7 +252,7 @@ function makeStyles(colors: ReturnType<typeof import('../../../context/theme.con
     },
     textArea: { minHeight: 96 },
     helperText: { fontSize: 12, color: colors.placeholder },
-    groupPhotoArea: { width: '100%', aspectRatio: 4 / 3, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
+    groupPhotoArea: { width: '100%', aspectRatio: 4 / 1, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, borderRadius: 12, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', backgroundColor: isDark ? '#1f2937' : '#f9fafb' },
     groupPhotoInner: { alignItems: 'center', gap: 8 },
     groupPhotoLabel: { fontSize: 13, color: colors.placeholder },
     privacyCard: { gap: 12, backgroundColor: colors.bg, borderRadius: 12, padding: 12 },

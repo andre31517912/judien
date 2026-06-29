@@ -109,7 +109,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
       {cropSrc && (
         <ImageCropModal
           src={cropSrc}
-          aspect={16 / 9}
+          aspect={4 / 1}
           zh={zh}
           onConfirm={(file) => { setPhotoFile(file); setPhotoPreview(URL.createObjectURL(file)); setCropSrc(null); }}
           onCancel={() => setCropSrc(null)}
@@ -147,7 +147,7 @@ export default function NewGroupPage({ params }: { params: { locale: string } })
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">{zh ? '群組照片（選填）' : 'Group Photo (optional)'}</label>
           <div
             onClick={handlePhotoAreaClick}
-            className="relative w-full aspect-[16/9] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer overflow-hidden flex items-center justify-center transition"
+            className="relative w-full aspect-[4/1] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 cursor-pointer overflow-hidden flex items-center justify-center transition"
           >
             {photoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element

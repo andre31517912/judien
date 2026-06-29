@@ -125,8 +125,13 @@ export default function DateTimeField({
               borderBottomWidth: 1, borderBottomColor: colors.border,
             }}>
               <Text style={{ fontSize: 15, fontWeight: '700', color: colors.text }}>Select Date & Time</Text>
-              <TouchableOpacity onPress={confirm} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#4F46E5' }}>Confirm</Text>
+              <TouchableOpacity
+                onPress={confirm}
+                accessibilityLabel="Confirm date and time"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ fontSize: 18, fontWeight: '700', color: '#fff', lineHeight: 20 }}>✓</Text>
               </TouchableOpacity>
             </View>
 

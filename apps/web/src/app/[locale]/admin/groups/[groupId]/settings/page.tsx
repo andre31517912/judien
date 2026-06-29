@@ -799,7 +799,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
       {cropSrc && (
         <ImageCropModal
           src={cropSrc}
-          aspect={16 / 9}
+          aspect={4 / 1}
           zh={zh}
           onConfirm={(file) => { setCropSrc(null); void handleGroupPhotoUpload(file); }}
           onCancel={() => setCropSrc(null)}
@@ -846,7 +846,7 @@ export default function GroupSettingsPage({ params }: { params: { locale: string
                 type="button"
                 onClick={() => { if (!editPhotoUrl) { groupPhotoFileRef.current?.click(); } else { setShowGroupPhotoModal(true); } }}
                 disabled={groupPhotoUploading}
-                className="relative w-full aspect-[16/9] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition flex items-center justify-center"
+                className="relative w-full aspect-[4/1] rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-50 dark:bg-gray-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition flex items-center justify-center"
               >
                 {editPhotoUrl ? (
                   <img src={editPhotoUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />

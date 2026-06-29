@@ -281,9 +281,15 @@ export default function DateTimeInput({ value, onChange, placeholder = 'Select d
             </button>
           ))}
         </div>
-        <button type="button" onClick={confirm} disabled={!selDay}
-          className="ml-auto text-xs px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 transition font-medium">
-          Confirm
+        <button
+          type="button"
+          onClick={confirm}
+          disabled={!selDay}
+          aria-label="Confirm date and time"
+          title="Confirm"
+          className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-40 transition"
+        >
+          ✓
         </button>
       </div>
     </div>

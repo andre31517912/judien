@@ -1301,19 +1301,28 @@ export default function EventDetailScreen() {
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無受邀者' : 'No invitees yet')}</Text>
                       : rows.map((g, i) => (
-                        <View key={i} style={styles.guestRow}>
+                        <View key={getRosterKey(g)}>
+                          {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
+                            <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
+                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                            </Text>
+                          ) : null}
+                        <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                          <View style={{ flex: 1, minWidth: 0 }}>
                           <Text style={styles.guestName}>{g.name}</Text>
                           {g.connectedInviteeName ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
                           {g.relationship ? <Text style={{ fontSize: 11, color: INDIGO, marginTop: 1 }}>{g.relationship}</Text> : null}
                           {isEventAdminInvited && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                           {isEventAdminInvited && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
+                          </View>
                           {isEventAdminInvited && (g.kind !== 'invited' || g.inviteId) ? (
-                            <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
+                            <View style={{ flexDirection: 'row', gap: 10, marginLeft: 8, flexShrink: 0 }}>
                               <TouchableOpacity onPress={() => handleRosterStatus(g, 'GOING')}><Text style={{ fontSize: 12, color: '#059669', fontWeight: '600' }}>{zh ? '參加' : 'Going'}</Text></TouchableOpacity>
                               <TouchableOpacity onPress={() => handleRosterStatus(g, 'NO')}><Text style={{ fontSize: 12, color: '#EF4444', fontWeight: '600' }}>{zh ? '不參加' : 'Not Going'}</Text></TouchableOpacity>
                               <TouchableOpacity onPress={() => handleDeleteRosterEntry(g)}><Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text></TouchableOpacity>
                             </View>
                           ) : null}
+                        </View>
                         </View>
                       ));
                   }
@@ -1372,7 +1381,13 @@ export default function EventDetailScreen() {
                           const busy = checkingIn.has(key);
                           const isDeleting = deletingGuest === key;
                           return (
-                            <View key={i} style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
+                            <View key={key}>
+                              {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
+                                <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
+                                  {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                                </Text>
+                              ) : null}
+                            <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
                               <View style={{ flex: 1 }}>
                                 <Text style={[styles.guestName, g.checkedIn && { color: '#059669' }]}>{g.name || g.handle}</Text>
                                 {g.connectedInviteeName ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
@@ -1397,8 +1412,8 @@ export default function EventDetailScreen() {
                                   </Text>
                                 </TouchableOpacity>
                               )}
-                              {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && g.userId !== user?.id && (
-                                <View style={{ flexDirection: 'row', gap: 8, marginLeft: 8, opacity: isDeleting ? 0.5 : 1 }}>
+                              {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && (
+                                <View style={{ flexDirection: 'row', gap: 8, marginLeft: 8, opacity: isDeleting ? 0.5 : 1, flexShrink: 0 }}>
                                   {activeGuestTab !== 'GOING' && <TouchableOpacity onPress={() => handleRosterStatus(g, 'GOING')} disabled={isDeleting}><Text style={{ fontSize: 12, color: '#059669', fontWeight: '600' }}>{zh ? '參加' : 'Going'}</Text></TouchableOpacity>}
                                   {activeGuestTab !== 'NO' && <TouchableOpacity onPress={() => handleRosterStatus(g, 'NO')} disabled={isDeleting}><Text style={{ fontSize: 12, color: '#EF4444', fontWeight: '600' }}>{zh ? '不參加' : 'Not Going'}</Text></TouchableOpacity>}
                                   <TouchableOpacity onPress={() => handleDeleteRosterEntry(g)} disabled={isDeleting}>
@@ -1406,6 +1421,7 @@ export default function EventDetailScreen() {
                                   </TouchableOpacity>
                                 </View>
                               )}
+                            </View>
                             </View>
                           );
                         })

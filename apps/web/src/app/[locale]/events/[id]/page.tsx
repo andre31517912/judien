@@ -1188,11 +1188,17 @@ export default function EventDetailPage() {
                 return rows.length === 0
                   ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有受邀者。' : 'No invitees yet.')}</p>
                   : rows.map((g, i) => (
-                    <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                    <div key={getRosterKey(g)}>
+                      {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
+                        <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                        </div>
+                      )}
+                    <div className="flex items-center gap-3 px-4 py-2.5">
                       <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-bold text-indigo-500 shrink-0">
                         {(g.name || '?').charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
                         {g.connectedInviteeName && <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</p>}
                         {g.relationship && <p className="text-xs text-indigo-500 dark:text-indigo-400 truncate">{g.relationship}</p>}
@@ -1200,12 +1206,13 @@ export default function EventDetailPage() {
                         {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                       </div>
                       {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && (
-                        <div className="flex items-center gap-1">
+                        <div className="ml-auto flex shrink-0 items-center gap-1">
                           <button onClick={() => handleRosterStatus(g, 'GOING')} disabled={deletingGuest === getRosterKey(g)} className="text-xs px-2 py-1 rounded-lg border border-emerald-300 text-emerald-600 hover:bg-emerald-50 disabled:opacity-50">{zh ? '參加' : 'Going'}</button>
                           <button onClick={() => handleRosterStatus(g, 'NO')} disabled={deletingGuest === getRosterKey(g)} className="text-xs px-2 py-1 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 disabled:opacity-50">{zh ? '不參加' : 'Not Going'}</button>
                           <button onClick={() => handleDeleteRosterEntry(g)} disabled={deletingGuest === getRosterKey(g)} className="text-xs text-red-400 hover:text-red-600 disabled:opacity-50">×</button>
                         </div>
                       )}
+                    </div>
                     </div>
                   ));
               }
@@ -1281,7 +1288,13 @@ export default function EventDetailPage() {
                       const busy = checkingIn.has(key);
                       const isDeleting = deletingGuest === key;
                       return (
-                        <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                        <div key={key}>
+                          {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
+                            <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                            </div>
+                          )}
+                        <div className="flex items-center gap-3 px-4 py-2.5">
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition ${g.checkedIn ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-500'}`}>
                             {g.checkedIn ? '✓' : (g.name || g.handle || '?').charAt(0).toUpperCase()}
                           </div>
@@ -1307,8 +1320,8 @@ export default function EventDetailPage() {
                               {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ Checked in') : (zh ? '報到' : 'Check in')}
                             </button>
                           )}
-                          {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && g.userId !== user?.id && (
-                            <div className="flex items-center gap-1 ml-1">
+                          {isEventAdmin && (g.kind !== 'invited' || g.inviteId) && (
+                            <div className="ml-auto flex shrink-0 items-center gap-1">
                               {activeGuestTab !== 'GOING' && (
                                 <button onClick={() => handleRosterStatus(g, 'GOING')} disabled={isDeleting} className="shrink-0 text-xs text-emerald-600 hover:text-emerald-700 disabled:opacity-50">
                                   {zh ? '參加' : 'Going'}
@@ -1329,6 +1342,7 @@ export default function EventDetailPage() {
                             </button>
                             </div>
                           )}
+                        </div>
                         </div>
                       );
                     })

@@ -168,7 +168,7 @@ export default function EditEventScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect: [4, 3],
       quality: 0.5,
     });
     if (result.canceled) return;
@@ -325,12 +325,12 @@ export default function EditEventScreen() {
       <View style={styles.field}>
         <Text style={styles.label}>{zh ? '封面圖' : 'Cover Image'}</Text>
         <TouchableOpacity
-          style={[styles.input, { justifyContent: 'center', alignItems: 'center' }]}
+          style={styles.coverPicker}
           onPress={pickCover}
           disabled={coverUploading}
         >
           {form.coverImageUrl && !coverUploading ? (
-            <Image source={{ uri: form.coverImageUrl }} style={{ width: '100%', height: 180, borderRadius: 8 }} resizeMode="cover" />
+            <Image source={{ uri: form.coverImageUrl }} style={styles.coverPreview} resizeMode="cover" />
           ) : (
             <Text style={{ color: INDIGO, fontWeight: '600', fontSize: 14 }}>
               {coverUploading ? (zh ? '上傳中…' : 'Uploading…') : (zh ? '點擊上傳或更換封面圖' : 'Tap to upload cover photo')}
@@ -491,6 +491,18 @@ const makeStyles = (colors: any) => StyleSheet.create({
     color: colors.inputText,
     backgroundColor: colors.input,
   },
+  coverPicker: {
+    width: '100%',
+    aspectRatio: 4 / 3,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: colors.input,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  coverPreview: { width: '100%', height: '100%' },
   userResultRow: {
     flexDirection: 'row', alignItems: 'center', paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border,
