@@ -53,8 +53,11 @@ const INDIGO = '#4F46E5';
 const rosterStatusOrder: Record<RosterEntry['status'], number> = { INVITED: 0, GOING: 1, NO: 2, PENDING: 3 };
 
 const isOutsideRosterGuest = (entry: RosterEntry) => entry.kind === 'plusOne';
-const sortRosterForAttendance = (entries: RosterEntry[]) =>
+const sortRosterForAttendance = (entries: RosterEntry[], separateOutsideGuests: boolean) =>
   [...entries].sort((a, b) => {
+    if (!separateOutsideGuests) {
+      return (a.name || a.handle || '').localeCompare(b.name || b.handle || '');
+    }
     const outsideDiff = Number(isOutsideRosterGuest(a)) - Number(isOutsideRosterGuest(b));
     if (outsideDiff) return outsideDiff;
     const statusDiff = rosterStatusOrder[a.status] - rosterStatusOrder[b.status];
@@ -461,18 +464,23 @@ export default function EventDetailScreen() {
         setGuestsLoading(false);
       }
     }
-    const sortedRoster = sortRosterForAttendance(data.ROSTER ?? []);
-    const memberRows = sortedRoster.filter((g) => !isOutsideRosterGuest(g));
-    const outsideRows = sortedRoster.filter(isOutsideRosterGuest);
-    const rows = [
-      'Group members / invited list',
-      'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
-      ...memberRows.map((g) => csvRosterRow(g, esc)),
-      '',
-      'Outside guests',
-      'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
-      ...outsideRows.map((g) => csvRosterRow(g, esc)),
-    ];
+    const isGroupEvent = Boolean(event?.groupId);
+    const sortedRoster = sortRosterForAttendance(data.ROSTER ?? [], isGroupEvent);
+    const rows = isGroupEvent
+      ? [
+          'Group members / invited list',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...sortedRoster.filter((g) => !isOutsideRosterGuest(g)).map((g) => csvRosterRow(g, esc)),
+          '',
+          'Outside guests',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...sortedRoster.filter(isOutsideRosterGuest).map((g) => csvRosterRow(g, esc)),
+        ]
+      : [
+          'Guest list',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...sortedRoster.map((g) => csvRosterRow(g, esc)),
+        ];
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
   };
 
@@ -1285,7 +1293,7 @@ export default function EventDetailScreen() {
                 {(() => {
                   const term = guestSearch.trim().toLowerCase();
                   if (activeGuestTab === 'INVITED') {
-                    const rows = sortRosterForAttendance(guests?.ROSTER ?? []).filter((g) =>
+                    const rows = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event?.groupId)).filter((g) =>
                       g.status === 'INVITED' &&
                       (!term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term))
                     );
@@ -1339,7 +1347,7 @@ export default function EventDetailScreen() {
                         );
                       });
                   }
-                  const tabData = sortRosterForAttendance(guests?.ROSTER ?? []).filter((g) => g.status === activeGuestTab);
+                  const tabData = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event?.groupId)).filter((g) => g.status === activeGuestTab);
                   const rows = tabData.filter((g) =>
                     !term || g.name.toLowerCase().includes(term) || (g.handle ?? '').toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term)
                   );
