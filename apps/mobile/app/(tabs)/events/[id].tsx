@@ -1304,7 +1304,7 @@ export default function EventDetailScreen() {
                         <View key={getRosterKey(g)}>
                           {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                             <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
-                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </Text>
                           ) : null}
                         <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
@@ -1384,7 +1384,7 @@ export default function EventDetailScreen() {
                             <View key={key}>
                               {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                                 <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
-                                  {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                                  {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                                 </Text>
                               ) : null}
                             <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>

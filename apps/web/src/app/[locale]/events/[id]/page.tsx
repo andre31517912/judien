@@ -1191,7 +1191,7 @@ export default function EventDetailPage() {
                     <div key={getRosterKey(g)}>
                       {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                         <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                          {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                          {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                         </div>
                       )}
                     <div className="flex items-center gap-3 px-4 py-2.5">
@@ -1291,7 +1291,7 @@ export default function EventDetailPage() {
                         <div key={key}>
                           {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                             <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'}
+                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </div>
                           )}
                         <div className="flex items-center gap-3 px-4 py-2.5">
