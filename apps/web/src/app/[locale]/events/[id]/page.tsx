@@ -294,6 +294,26 @@ export default function EventDetailPage() {
   };
 
   const getRosterKey = (entry: RosterEntry) => entry.userId ?? entry.guestRsvpId ?? entry.plusOneId ?? entry.inviteId ?? `${entry.kind}:${entry.name}:${entry.email ?? ''}`;
+  const isOutsideRosterGuest = (entry: RosterEntry) => entry.kind === 'plusOne';
+  const rosterStatusOrder: Record<RosterEntry['status'], number> = { INVITED: 0, GOING: 1, NO: 2, PENDING: 3 };
+  const sortRosterForAttendance = (entries: RosterEntry[]) =>
+    [...entries].sort((a, b) => {
+      const outsideDiff = Number(isOutsideRosterGuest(a)) - Number(isOutsideRosterGuest(b));
+      if (outsideDiff) return outsideDiff;
+      const statusDiff = rosterStatusOrder[a.status] - rosterStatusOrder[b.status];
+      if (statusDiff) return statusDiff;
+      return (a.name || a.handle || '').localeCompare(b.name || b.handle || '');
+    });
+  const csvRosterRow = (entry: RosterEntry, esc: (s: string) => string) =>
+    [
+      esc(entry.name),
+      esc(entry.email ?? ''),
+      esc(entry.phone ?? ''),
+      esc(entry.status),
+      esc(entry.connectedInviteeName ?? ''),
+      esc(entry.relationship ?? ''),
+      esc(entry.checkedIn ? 'Checked in' : ''),
+    ].join(',');
   type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[] };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
@@ -350,8 +370,18 @@ export default function EventDetailPage() {
         setGuestsLoading(false);
       }
     }
-    const rows = ['Name,Email,Phone,Status'];
-    for (const g of (data.ROSTER ?? [])) rows.push([esc(g.name), esc(g.email ?? ''), esc(g.phone ?? ''), esc(g.status), esc(g.connectedInviteeName ?? ''), esc(g.relationship ?? ''), esc(g.checkedIn ? 'Checked in' : '')].join(','));
+    const sortedRoster = sortRosterForAttendance(data.ROSTER ?? []);
+    const memberRows = sortedRoster.filter((g) => !isOutsideRosterGuest(g));
+    const outsideRows = sortedRoster.filter(isOutsideRosterGuest);
+    const rows = [
+      'Group members / invited list',
+      'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+      ...memberRows.map((g) => csvRosterRow(g, esc)),
+      '',
+      'Outside guests',
+      'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+      ...outsideRows.map((g) => csvRosterRow(g, esc)),
+    ];
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1143,7 +1173,7 @@ export default function EventDetailPage() {
             ) : (() => {
               const term = guestSearch.trim().toLowerCase();
               if (activeGuestTab === 'INVITED') {
-                const rows = (guests?.ROSTER ?? []).filter((g) =>
+                const rows = sortRosterForAttendance(guests?.ROSTER ?? []).filter((g) =>
                   g.status === 'INVITED' &&
                   (!term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term))
                 );
@@ -1214,7 +1244,7 @@ export default function EventDetailPage() {
                     );
                   });
               }
-              const tabData = (guests?.ROSTER ?? []).filter((g) => g.status === activeGuestTab);
+              const tabData = sortRosterForAttendance(guests?.ROSTER ?? []).filter((g) => g.status === activeGuestTab);
               const rows = tabData.filter((g) =>
                 !term || g.name.toLowerCase().includes(term) || (g.handle ?? '').toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term)
               );
