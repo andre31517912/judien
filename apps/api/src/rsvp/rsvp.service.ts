@@ -569,20 +569,6 @@ export class RsvpService {
       select: { id: true, status: true },
     });
 
-    // Count guests this user has already added
-    const existing = await (this.prisma as any).rSVPPlusOne.count({
-      where: {
-        eventId,
-        OR: [
-          ...(rsvp ? [{ rsvpId: rsvp.id }] : []),
-          { addedByUserId: userId },
-        ],
-      },
-    });
-    if (existing >= 10) {
-      throw new ForbiddenException('Maximum of 10 guests allowed per user.');
-    }
-
     // Link to RSVP if user is GOING; otherwise track via addedByUserId
     const useRsvp = rsvp?.status === 'GOING';
 
