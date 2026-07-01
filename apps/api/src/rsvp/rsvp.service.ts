@@ -318,7 +318,7 @@ export class RsvpService {
 
     const visibleExtraGuests = separateOutsideGuests
       ? [
-          ...extraGuests.filter((g) => g.status === 'GOING'),
+          ...extraGuests,
           ...rosterEntries.map((g: any) => ({
             id: g.plusOneId,
             addedByUserId: null,
