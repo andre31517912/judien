@@ -84,6 +84,8 @@ export default function NewEventScreen() {
 
   // Transportation + sub-events
   const [collectTransportation, setCollectTransportation] = useState(false);
+  const [organizeGuestBatches, setOrganizeGuestBatches] = useState(false);
+  const [guestListViewMode, setGuestListViewMode] = useState<'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'>('FUSION');
   const [subEventsEnabled, setSubEventsEnabled] = useState(false);
   const [subEventItems, setSubEventItems] = useState<{ title: string; description: string }[]>([
     { title: '', description: '' },
@@ -213,6 +215,8 @@ export default function NewEventScreen() {
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl,
         collectTransportation,
+        organizeGuestBatches,
+        guestListViewMode: groupId ? guestListViewMode : 'FUSION',
         ...(validSubEvents?.length ? { subEvents: validSubEvents } : {}),
         ...(groupId ? { groupId } : {}),
       };
@@ -337,6 +341,43 @@ export default function NewEventScreen() {
           thumbColor="#fff"
         />
       </View>
+
+      {/* Sub-events toggle */}
+      <View style={styles.toggleRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+            {zh ? '啟用賓客分組' : 'Enable guest grouping'}
+          </Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
+            {zh ? '建立後可用自訂文字將賓客分組' : 'After creation, organizers can group guests with custom labels'}
+          </Text>
+        </View>
+        <Switch
+          value={organizeGuestBatches}
+          onValueChange={setOrganizeGuestBatches}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      {!!groupId && (
+        <View style={styles.toggleRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+              {zh ? '外部賓客獨立欄位' : 'Separate outside guest column'}
+            </Text>
+            <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
+              {zh ? '群組成員狀態與外部賓客分開顯示' : 'Keep member RSVP status separate from confirmed outside guests'}
+            </Text>
+          </View>
+          <Switch
+            value={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
+            onValueChange={(value) => setGuestListViewMode(value ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
+            trackColor={{ false: colors.border, true: INDIGO }}
+            thumbColor="#fff"
+          />
+        </View>
+      )}
 
       {/* Sub-events toggle */}
       <View style={styles.toggleRow}>

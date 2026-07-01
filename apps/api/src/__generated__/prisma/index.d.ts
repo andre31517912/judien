@@ -24,6 +24,11 @@ export type User = $Result.DefaultSelection<Prisma.$UserPayload>
  */
 export type Event = $Result.DefaultSelection<Prisma.$EventPayload>
 /**
+ * Model EventGuestBatchAssignment
+ * 
+ */
+export type EventGuestBatchAssignment = $Result.DefaultSelection<Prisma.$EventGuestBatchAssignmentPayload>
+/**
  * Model EventShareLink
  * 
  */
@@ -405,6 +410,16 @@ export class PrismaClient<
     * ```
     */
   get event(): Prisma.EventDelegate<ExtArgs>;
+
+  /**
+   * `prisma.eventGuestBatchAssignment`: Exposes CRUD operations for the **EventGuestBatchAssignment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EventGuestBatchAssignments
+    * const eventGuestBatchAssignments = await prisma.eventGuestBatchAssignment.findMany()
+    * ```
+    */
+  get eventGuestBatchAssignment(): Prisma.EventGuestBatchAssignmentDelegate<ExtArgs>;
 
   /**
    * `prisma.eventShareLink`: Exposes CRUD operations for the **EventShareLink** model.
@@ -1058,6 +1073,7 @@ export namespace Prisma {
   export const ModelName: {
     User: 'User',
     Event: 'Event',
+    EventGuestBatchAssignment: 'EventGuestBatchAssignment',
     EventShareLink: 'EventShareLink',
     GuestRSVP: 'GuestRSVP',
     EventSeries: 'EventSeries',
@@ -1094,7 +1110,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "event" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "rSVPPlusOne" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "groupRelationshipRequest" | "donationRecord" | "inviteToken" | "subEvent" | "subEventRSVP" | "notification"
+      modelProps: "user" | "event" | "eventGuestBatchAssignment" | "eventShareLink" | "guestRSVP" | "eventSeries" | "eventInvite" | "rSVP" | "rSVPPlusOne" | "comment" | "groupMessage" | "reminderRule" | "messageLog" | "news" | "group" | "groupMembership" | "groupInvite" | "groupJoinRequest" | "groupRelationshipRequest" | "donationRecord" | "inviteToken" | "subEvent" | "subEventRSVP" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1235,6 +1251,76 @@ export namespace Prisma {
           count: {
             args: Prisma.EventCountArgs<ExtArgs>
             result: $Utils.Optional<EventCountAggregateOutputType> | number
+          }
+        }
+      }
+      EventGuestBatchAssignment: {
+        payload: Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>
+        fields: Prisma.EventGuestBatchAssignmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EventGuestBatchAssignmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EventGuestBatchAssignmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          findFirst: {
+            args: Prisma.EventGuestBatchAssignmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EventGuestBatchAssignmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          findMany: {
+            args: Prisma.EventGuestBatchAssignmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>[]
+          }
+          create: {
+            args: Prisma.EventGuestBatchAssignmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          createMany: {
+            args: Prisma.EventGuestBatchAssignmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EventGuestBatchAssignmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>[]
+          }
+          delete: {
+            args: Prisma.EventGuestBatchAssignmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          update: {
+            args: Prisma.EventGuestBatchAssignmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.EventGuestBatchAssignmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EventGuestBatchAssignmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.EventGuestBatchAssignmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EventGuestBatchAssignmentPayload>
+          }
+          aggregate: {
+            args: Prisma.EventGuestBatchAssignmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEventGuestBatchAssignment>
+          }
+          groupBy: {
+            args: Prisma.EventGuestBatchAssignmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EventGuestBatchAssignmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EventGuestBatchAssignmentCountArgs<ExtArgs>
+            result: $Utils.Optional<EventGuestBatchAssignmentCountAggregateOutputType> | number
           }
         }
       }
@@ -3133,6 +3219,7 @@ export namespace Prisma {
     messageLogs: number
     invites: number
     subEvents: number
+    guestBatchAssignments: number
   }
 
   export type EventCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3144,6 +3231,7 @@ export namespace Prisma {
     messageLogs?: boolean | EventCountOutputTypeCountMessageLogsArgs
     invites?: boolean | EventCountOutputTypeCountInvitesArgs
     subEvents?: boolean | EventCountOutputTypeCountSubEventsArgs
+    guestBatchAssignments?: boolean | EventCountOutputTypeCountGuestBatchAssignmentsArgs
   }
 
   // Custom InputTypes
@@ -3211,6 +3299,13 @@ export namespace Prisma {
    */
   export type EventCountOutputTypeCountSubEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SubEventWhereInput
+  }
+
+  /**
+   * EventCountOutputType without action
+   */
+  export type EventCountOutputTypeCountGuestBatchAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventGuestBatchAssignmentWhereInput
   }
 
 
@@ -5205,6 +5300,8 @@ export namespace Prisma {
     commentsEnabled: boolean | null
     messagingEnabled: boolean | null
     collectTransportation: boolean | null
+    organizeGuestBatches: boolean | null
+    guestListViewMode: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5228,6 +5325,8 @@ export namespace Prisma {
     commentsEnabled: boolean | null
     messagingEnabled: boolean | null
     collectTransportation: boolean | null
+    organizeGuestBatches: boolean | null
+    guestListViewMode: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5251,6 +5350,8 @@ export namespace Prisma {
     commentsEnabled: number
     messagingEnabled: number
     collectTransportation: number
+    organizeGuestBatches: number
+    guestListViewMode: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5286,6 +5387,8 @@ export namespace Prisma {
     commentsEnabled?: true
     messagingEnabled?: true
     collectTransportation?: true
+    organizeGuestBatches?: true
+    guestListViewMode?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5309,6 +5412,8 @@ export namespace Prisma {
     commentsEnabled?: true
     messagingEnabled?: true
     collectTransportation?: true
+    organizeGuestBatches?: true
+    guestListViewMode?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5332,6 +5437,8 @@ export namespace Prisma {
     commentsEnabled?: true
     messagingEnabled?: true
     collectTransportation?: true
+    organizeGuestBatches?: true
+    guestListViewMode?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5442,6 +5549,8 @@ export namespace Prisma {
     commentsEnabled: boolean
     messagingEnabled: boolean
     collectTransportation: boolean
+    organizeGuestBatches: boolean
+    guestListViewMode: string
     createdAt: Date
     updatedAt: Date
     _count: EventCountAggregateOutputType | null
@@ -5484,6 +5593,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
@@ -5498,6 +5609,7 @@ export namespace Prisma {
     invites?: boolean | Event$invitesArgs<ExtArgs>
     shareLink?: boolean | Event$shareLinkArgs<ExtArgs>
     subEvents?: boolean | Event$subEventsArgs<ExtArgs>
+    guestBatchAssignments?: boolean | Event$guestBatchAssignmentsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["event"]>
 
@@ -5520,6 +5632,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     createdBy?: boolean | UserDefaultArgs<ExtArgs>
@@ -5546,6 +5660,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -5563,6 +5679,7 @@ export namespace Prisma {
     invites?: boolean | Event$invitesArgs<ExtArgs>
     shareLink?: boolean | Event$shareLinkArgs<ExtArgs>
     subEvents?: boolean | Event$subEventsArgs<ExtArgs>
+    guestBatchAssignments?: boolean | Event$guestBatchAssignmentsArgs<ExtArgs>
     _count?: boolean | EventCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5586,6 +5703,7 @@ export namespace Prisma {
       invites: Prisma.$EventInvitePayload<ExtArgs>[]
       shareLink: Prisma.$EventShareLinkPayload<ExtArgs> | null
       subEvents: Prisma.$SubEventPayload<ExtArgs>[]
+      guestBatchAssignments: Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5606,6 +5724,8 @@ export namespace Prisma {
       commentsEnabled: boolean
       messagingEnabled: boolean
       collectTransportation: boolean
+      organizeGuestBatches: boolean
+      guestListViewMode: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["event"]>
@@ -5984,6 +6104,7 @@ export namespace Prisma {
     invites<T extends Event$invitesArgs<ExtArgs> = {}>(args?: Subset<T, Event$invitesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventInvitePayload<ExtArgs>, T, "findMany"> | Null>
     shareLink<T extends Event$shareLinkArgs<ExtArgs> = {}>(args?: Subset<T, Event$shareLinkArgs<ExtArgs>>): Prisma__EventShareLinkClient<$Result.GetResult<Prisma.$EventShareLinkPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     subEvents<T extends Event$subEventsArgs<ExtArgs> = {}>(args?: Subset<T, Event$subEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubEventPayload<ExtArgs>, T, "findMany"> | Null>
+    guestBatchAssignments<T extends Event$guestBatchAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, Event$guestBatchAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6031,6 +6152,8 @@ export namespace Prisma {
     readonly commentsEnabled: FieldRef<"Event", 'Boolean'>
     readonly messagingEnabled: FieldRef<"Event", 'Boolean'>
     readonly collectTransportation: FieldRef<"Event", 'Boolean'>
+    readonly organizeGuestBatches: FieldRef<"Event", 'Boolean'>
+    readonly guestListViewMode: FieldRef<"Event", 'String'>
     readonly createdAt: FieldRef<"Event", 'DateTime'>
     readonly updatedAt: FieldRef<"Event", 'DateTime'>
   }
@@ -6556,6 +6679,26 @@ export namespace Prisma {
   }
 
   /**
+   * Event.guestBatchAssignments
+   */
+  export type Event$guestBatchAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    where?: EventGuestBatchAssignmentWhereInput
+    orderBy?: EventGuestBatchAssignmentOrderByWithRelationInput | EventGuestBatchAssignmentOrderByWithRelationInput[]
+    cursor?: EventGuestBatchAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EventGuestBatchAssignmentScalarFieldEnum | EventGuestBatchAssignmentScalarFieldEnum[]
+  }
+
+  /**
    * Event without action
    */
   export type EventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6567,6 +6710,939 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EventInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model EventGuestBatchAssignment
+   */
+
+  export type AggregateEventGuestBatchAssignment = {
+    _count: EventGuestBatchAssignmentCountAggregateOutputType | null
+    _min: EventGuestBatchAssignmentMinAggregateOutputType | null
+    _max: EventGuestBatchAssignmentMaxAggregateOutputType | null
+  }
+
+  export type EventGuestBatchAssignmentMinAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    entryKey: string | null
+    label: string | null
+    updatedAt: Date | null
+  }
+
+  export type EventGuestBatchAssignmentMaxAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    entryKey: string | null
+    label: string | null
+    updatedAt: Date | null
+  }
+
+  export type EventGuestBatchAssignmentCountAggregateOutputType = {
+    id: number
+    eventId: number
+    entryKey: number
+    label: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type EventGuestBatchAssignmentMinAggregateInputType = {
+    id?: true
+    eventId?: true
+    entryKey?: true
+    label?: true
+    updatedAt?: true
+  }
+
+  export type EventGuestBatchAssignmentMaxAggregateInputType = {
+    id?: true
+    eventId?: true
+    entryKey?: true
+    label?: true
+    updatedAt?: true
+  }
+
+  export type EventGuestBatchAssignmentCountAggregateInputType = {
+    id?: true
+    eventId?: true
+    entryKey?: true
+    label?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type EventGuestBatchAssignmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventGuestBatchAssignment to aggregate.
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventGuestBatchAssignments to fetch.
+     */
+    orderBy?: EventGuestBatchAssignmentOrderByWithRelationInput | EventGuestBatchAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EventGuestBatchAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventGuestBatchAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventGuestBatchAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EventGuestBatchAssignments
+    **/
+    _count?: true | EventGuestBatchAssignmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EventGuestBatchAssignmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EventGuestBatchAssignmentMaxAggregateInputType
+  }
+
+  export type GetEventGuestBatchAssignmentAggregateType<T extends EventGuestBatchAssignmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateEventGuestBatchAssignment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEventGuestBatchAssignment[P]>
+      : GetScalarType<T[P], AggregateEventGuestBatchAssignment[P]>
+  }
+
+
+
+
+  export type EventGuestBatchAssignmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EventGuestBatchAssignmentWhereInput
+    orderBy?: EventGuestBatchAssignmentOrderByWithAggregationInput | EventGuestBatchAssignmentOrderByWithAggregationInput[]
+    by: EventGuestBatchAssignmentScalarFieldEnum[] | EventGuestBatchAssignmentScalarFieldEnum
+    having?: EventGuestBatchAssignmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EventGuestBatchAssignmentCountAggregateInputType | true
+    _min?: EventGuestBatchAssignmentMinAggregateInputType
+    _max?: EventGuestBatchAssignmentMaxAggregateInputType
+  }
+
+  export type EventGuestBatchAssignmentGroupByOutputType = {
+    id: string
+    eventId: string
+    entryKey: string
+    label: string
+    updatedAt: Date
+    _count: EventGuestBatchAssignmentCountAggregateOutputType | null
+    _min: EventGuestBatchAssignmentMinAggregateOutputType | null
+    _max: EventGuestBatchAssignmentMaxAggregateOutputType | null
+  }
+
+  type GetEventGuestBatchAssignmentGroupByPayload<T extends EventGuestBatchAssignmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EventGuestBatchAssignmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EventGuestBatchAssignmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EventGuestBatchAssignmentGroupByOutputType[P]>
+            : GetScalarType<T[P], EventGuestBatchAssignmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EventGuestBatchAssignmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    entryKey?: boolean
+    label?: boolean
+    updatedAt?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventGuestBatchAssignment"]>
+
+  export type EventGuestBatchAssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    entryKey?: boolean
+    label?: boolean
+    updatedAt?: boolean
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["eventGuestBatchAssignment"]>
+
+  export type EventGuestBatchAssignmentSelectScalar = {
+    id?: boolean
+    eventId?: boolean
+    entryKey?: boolean
+    label?: boolean
+    updatedAt?: boolean
+  }
+
+  export type EventGuestBatchAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }
+  export type EventGuestBatchAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    event?: boolean | EventDefaultArgs<ExtArgs>
+  }
+
+  export type $EventGuestBatchAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EventGuestBatchAssignment"
+    objects: {
+      event: Prisma.$EventPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventId: string
+      entryKey: string
+      label: string
+      updatedAt: Date
+    }, ExtArgs["result"]["eventGuestBatchAssignment"]>
+    composites: {}
+  }
+
+  type EventGuestBatchAssignmentGetPayload<S extends boolean | null | undefined | EventGuestBatchAssignmentDefaultArgs> = $Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload, S>
+
+  type EventGuestBatchAssignmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<EventGuestBatchAssignmentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: EventGuestBatchAssignmentCountAggregateInputType | true
+    }
+
+  export interface EventGuestBatchAssignmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EventGuestBatchAssignment'], meta: { name: 'EventGuestBatchAssignment' } }
+    /**
+     * Find zero or one EventGuestBatchAssignment that matches the filter.
+     * @param {EventGuestBatchAssignmentFindUniqueArgs} args - Arguments to find a EventGuestBatchAssignment
+     * @example
+     * // Get one EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EventGuestBatchAssignmentFindUniqueArgs>(args: SelectSubset<T, EventGuestBatchAssignmentFindUniqueArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one EventGuestBatchAssignment that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {EventGuestBatchAssignmentFindUniqueOrThrowArgs} args - Arguments to find a EventGuestBatchAssignment
+     * @example
+     * // Get one EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EventGuestBatchAssignmentFindUniqueOrThrowArgs>(args: SelectSubset<T, EventGuestBatchAssignmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first EventGuestBatchAssignment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentFindFirstArgs} args - Arguments to find a EventGuestBatchAssignment
+     * @example
+     * // Get one EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EventGuestBatchAssignmentFindFirstArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentFindFirstArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first EventGuestBatchAssignment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentFindFirstOrThrowArgs} args - Arguments to find a EventGuestBatchAssignment
+     * @example
+     * // Get one EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EventGuestBatchAssignmentFindFirstOrThrowArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more EventGuestBatchAssignments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EventGuestBatchAssignments
+     * const eventGuestBatchAssignments = await prisma.eventGuestBatchAssignment.findMany()
+     * 
+     * // Get first 10 EventGuestBatchAssignments
+     * const eventGuestBatchAssignments = await prisma.eventGuestBatchAssignment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const eventGuestBatchAssignmentWithIdOnly = await prisma.eventGuestBatchAssignment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EventGuestBatchAssignmentFindManyArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a EventGuestBatchAssignment.
+     * @param {EventGuestBatchAssignmentCreateArgs} args - Arguments to create a EventGuestBatchAssignment.
+     * @example
+     * // Create one EventGuestBatchAssignment
+     * const EventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.create({
+     *   data: {
+     *     // ... data to create a EventGuestBatchAssignment
+     *   }
+     * })
+     * 
+     */
+    create<T extends EventGuestBatchAssignmentCreateArgs>(args: SelectSubset<T, EventGuestBatchAssignmentCreateArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many EventGuestBatchAssignments.
+     * @param {EventGuestBatchAssignmentCreateManyArgs} args - Arguments to create many EventGuestBatchAssignments.
+     * @example
+     * // Create many EventGuestBatchAssignments
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EventGuestBatchAssignmentCreateManyArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many EventGuestBatchAssignments and returns the data saved in the database.
+     * @param {EventGuestBatchAssignmentCreateManyAndReturnArgs} args - Arguments to create many EventGuestBatchAssignments.
+     * @example
+     * // Create many EventGuestBatchAssignments
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many EventGuestBatchAssignments and only return the `id`
+     * const eventGuestBatchAssignmentWithIdOnly = await prisma.eventGuestBatchAssignment.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EventGuestBatchAssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a EventGuestBatchAssignment.
+     * @param {EventGuestBatchAssignmentDeleteArgs} args - Arguments to delete one EventGuestBatchAssignment.
+     * @example
+     * // Delete one EventGuestBatchAssignment
+     * const EventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.delete({
+     *   where: {
+     *     // ... filter to delete one EventGuestBatchAssignment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EventGuestBatchAssignmentDeleteArgs>(args: SelectSubset<T, EventGuestBatchAssignmentDeleteArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one EventGuestBatchAssignment.
+     * @param {EventGuestBatchAssignmentUpdateArgs} args - Arguments to update one EventGuestBatchAssignment.
+     * @example
+     * // Update one EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EventGuestBatchAssignmentUpdateArgs>(args: SelectSubset<T, EventGuestBatchAssignmentUpdateArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more EventGuestBatchAssignments.
+     * @param {EventGuestBatchAssignmentDeleteManyArgs} args - Arguments to filter EventGuestBatchAssignments to delete.
+     * @example
+     * // Delete a few EventGuestBatchAssignments
+     * const { count } = await prisma.eventGuestBatchAssignment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EventGuestBatchAssignmentDeleteManyArgs>(args?: SelectSubset<T, EventGuestBatchAssignmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EventGuestBatchAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EventGuestBatchAssignments
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EventGuestBatchAssignmentUpdateManyArgs>(args: SelectSubset<T, EventGuestBatchAssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one EventGuestBatchAssignment.
+     * @param {EventGuestBatchAssignmentUpsertArgs} args - Arguments to update or create a EventGuestBatchAssignment.
+     * @example
+     * // Update or create a EventGuestBatchAssignment
+     * const eventGuestBatchAssignment = await prisma.eventGuestBatchAssignment.upsert({
+     *   create: {
+     *     // ... data to create a EventGuestBatchAssignment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EventGuestBatchAssignment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EventGuestBatchAssignmentUpsertArgs>(args: SelectSubset<T, EventGuestBatchAssignmentUpsertArgs<ExtArgs>>): Prisma__EventGuestBatchAssignmentClient<$Result.GetResult<Prisma.$EventGuestBatchAssignmentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of EventGuestBatchAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentCountArgs} args - Arguments to filter EventGuestBatchAssignments to count.
+     * @example
+     * // Count the number of EventGuestBatchAssignments
+     * const count = await prisma.eventGuestBatchAssignment.count({
+     *   where: {
+     *     // ... the filter for the EventGuestBatchAssignments we want to count
+     *   }
+     * })
+    **/
+    count<T extends EventGuestBatchAssignmentCountArgs>(
+      args?: Subset<T, EventGuestBatchAssignmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EventGuestBatchAssignmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EventGuestBatchAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EventGuestBatchAssignmentAggregateArgs>(args: Subset<T, EventGuestBatchAssignmentAggregateArgs>): Prisma.PrismaPromise<GetEventGuestBatchAssignmentAggregateType<T>>
+
+    /**
+     * Group by EventGuestBatchAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EventGuestBatchAssignmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EventGuestBatchAssignmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EventGuestBatchAssignmentGroupByArgs['orderBy'] }
+        : { orderBy?: EventGuestBatchAssignmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EventGuestBatchAssignmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEventGuestBatchAssignmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EventGuestBatchAssignment model
+   */
+  readonly fields: EventGuestBatchAssignmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EventGuestBatchAssignment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EventGuestBatchAssignmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    event<T extends EventDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EventDefaultArgs<ExtArgs>>): Prisma__EventClient<$Result.GetResult<Prisma.$EventPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EventGuestBatchAssignment model
+   */ 
+  interface EventGuestBatchAssignmentFieldRefs {
+    readonly id: FieldRef<"EventGuestBatchAssignment", 'String'>
+    readonly eventId: FieldRef<"EventGuestBatchAssignment", 'String'>
+    readonly entryKey: FieldRef<"EventGuestBatchAssignment", 'String'>
+    readonly label: FieldRef<"EventGuestBatchAssignment", 'String'>
+    readonly updatedAt: FieldRef<"EventGuestBatchAssignment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EventGuestBatchAssignment findUnique
+   */
+  export type EventGuestBatchAssignmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which EventGuestBatchAssignment to fetch.
+     */
+    where: EventGuestBatchAssignmentWhereUniqueInput
+  }
+
+  /**
+   * EventGuestBatchAssignment findUniqueOrThrow
+   */
+  export type EventGuestBatchAssignmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which EventGuestBatchAssignment to fetch.
+     */
+    where: EventGuestBatchAssignmentWhereUniqueInput
+  }
+
+  /**
+   * EventGuestBatchAssignment findFirst
+   */
+  export type EventGuestBatchAssignmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which EventGuestBatchAssignment to fetch.
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventGuestBatchAssignments to fetch.
+     */
+    orderBy?: EventGuestBatchAssignmentOrderByWithRelationInput | EventGuestBatchAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventGuestBatchAssignments.
+     */
+    cursor?: EventGuestBatchAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventGuestBatchAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventGuestBatchAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventGuestBatchAssignments.
+     */
+    distinct?: EventGuestBatchAssignmentScalarFieldEnum | EventGuestBatchAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * EventGuestBatchAssignment findFirstOrThrow
+   */
+  export type EventGuestBatchAssignmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which EventGuestBatchAssignment to fetch.
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventGuestBatchAssignments to fetch.
+     */
+    orderBy?: EventGuestBatchAssignmentOrderByWithRelationInput | EventGuestBatchAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EventGuestBatchAssignments.
+     */
+    cursor?: EventGuestBatchAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventGuestBatchAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventGuestBatchAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EventGuestBatchAssignments.
+     */
+    distinct?: EventGuestBatchAssignmentScalarFieldEnum | EventGuestBatchAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * EventGuestBatchAssignment findMany
+   */
+  export type EventGuestBatchAssignmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which EventGuestBatchAssignments to fetch.
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EventGuestBatchAssignments to fetch.
+     */
+    orderBy?: EventGuestBatchAssignmentOrderByWithRelationInput | EventGuestBatchAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EventGuestBatchAssignments.
+     */
+    cursor?: EventGuestBatchAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EventGuestBatchAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EventGuestBatchAssignments.
+     */
+    skip?: number
+    distinct?: EventGuestBatchAssignmentScalarFieldEnum | EventGuestBatchAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * EventGuestBatchAssignment create
+   */
+  export type EventGuestBatchAssignmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EventGuestBatchAssignment.
+     */
+    data: XOR<EventGuestBatchAssignmentCreateInput, EventGuestBatchAssignmentUncheckedCreateInput>
+  }
+
+  /**
+   * EventGuestBatchAssignment createMany
+   */
+  export type EventGuestBatchAssignmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EventGuestBatchAssignments.
+     */
+    data: EventGuestBatchAssignmentCreateManyInput | EventGuestBatchAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EventGuestBatchAssignment createManyAndReturn
+   */
+  export type EventGuestBatchAssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many EventGuestBatchAssignments.
+     */
+    data: EventGuestBatchAssignmentCreateManyInput | EventGuestBatchAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EventGuestBatchAssignment update
+   */
+  export type EventGuestBatchAssignmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EventGuestBatchAssignment.
+     */
+    data: XOR<EventGuestBatchAssignmentUpdateInput, EventGuestBatchAssignmentUncheckedUpdateInput>
+    /**
+     * Choose, which EventGuestBatchAssignment to update.
+     */
+    where: EventGuestBatchAssignmentWhereUniqueInput
+  }
+
+  /**
+   * EventGuestBatchAssignment updateMany
+   */
+  export type EventGuestBatchAssignmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EventGuestBatchAssignments.
+     */
+    data: XOR<EventGuestBatchAssignmentUpdateManyMutationInput, EventGuestBatchAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which EventGuestBatchAssignments to update
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+  }
+
+  /**
+   * EventGuestBatchAssignment upsert
+   */
+  export type EventGuestBatchAssignmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EventGuestBatchAssignment to update in case it exists.
+     */
+    where: EventGuestBatchAssignmentWhereUniqueInput
+    /**
+     * In case the EventGuestBatchAssignment found by the `where` argument doesn't exist, create a new EventGuestBatchAssignment with this data.
+     */
+    create: XOR<EventGuestBatchAssignmentCreateInput, EventGuestBatchAssignmentUncheckedCreateInput>
+    /**
+     * In case the EventGuestBatchAssignment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EventGuestBatchAssignmentUpdateInput, EventGuestBatchAssignmentUncheckedUpdateInput>
+  }
+
+  /**
+   * EventGuestBatchAssignment delete
+   */
+  export type EventGuestBatchAssignmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter which EventGuestBatchAssignment to delete.
+     */
+    where: EventGuestBatchAssignmentWhereUniqueInput
+  }
+
+  /**
+   * EventGuestBatchAssignment deleteMany
+   */
+  export type EventGuestBatchAssignmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EventGuestBatchAssignments to delete
+     */
+    where?: EventGuestBatchAssignmentWhereInput
+  }
+
+  /**
+   * EventGuestBatchAssignment without action
+   */
+  export type EventGuestBatchAssignmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EventGuestBatchAssignment
+     */
+    select?: EventGuestBatchAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EventGuestBatchAssignmentInclude<ExtArgs> | null
   }
 
 
@@ -28017,11 +29093,24 @@ export namespace Prisma {
     commentsEnabled: 'commentsEnabled',
     messagingEnabled: 'messagingEnabled',
     collectTransportation: 'collectTransportation',
+    organizeGuestBatches: 'organizeGuestBatches',
+    guestListViewMode: 'guestListViewMode',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type EventScalarFieldEnum = (typeof EventScalarFieldEnum)[keyof typeof EventScalarFieldEnum]
+
+
+  export const EventGuestBatchAssignmentScalarFieldEnum: {
+    id: 'id',
+    eventId: 'eventId',
+    entryKey: 'entryKey',
+    label: 'label',
+    updatedAt: 'updatedAt'
+  };
+
+  export type EventGuestBatchAssignmentScalarFieldEnum = (typeof EventGuestBatchAssignmentScalarFieldEnum)[keyof typeof EventGuestBatchAssignmentScalarFieldEnum]
 
 
   export const EventShareLinkScalarFieldEnum: {
@@ -28800,6 +29889,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFilter<"Event"> | boolean
     messagingEnabled?: BoolFilter<"Event"> | boolean
     collectTransportation?: BoolFilter<"Event"> | boolean
+    organizeGuestBatches?: BoolFilter<"Event"> | boolean
+    guestListViewMode?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
@@ -28814,6 +29905,7 @@ export namespace Prisma {
     invites?: EventInviteListRelationFilter
     shareLink?: XOR<EventShareLinkNullableRelationFilter, EventShareLinkWhereInput> | null
     subEvents?: SubEventListRelationFilter
+    guestBatchAssignments?: EventGuestBatchAssignmentListRelationFilter
   }
 
   export type EventOrderByWithRelationInput = {
@@ -28835,6 +29927,8 @@ export namespace Prisma {
     commentsEnabled?: SortOrder
     messagingEnabled?: SortOrder
     collectTransportation?: SortOrder
+    organizeGuestBatches?: SortOrder
+    guestListViewMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     createdBy?: UserOrderByWithRelationInput
@@ -28849,6 +29943,7 @@ export namespace Prisma {
     invites?: EventInviteOrderByRelationAggregateInput
     shareLink?: EventShareLinkOrderByWithRelationInput
     subEvents?: SubEventOrderByRelationAggregateInput
+    guestBatchAssignments?: EventGuestBatchAssignmentOrderByRelationAggregateInput
   }
 
   export type EventWhereUniqueInput = Prisma.AtLeast<{
@@ -28873,6 +29968,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFilter<"Event"> | boolean
     messagingEnabled?: BoolFilter<"Event"> | boolean
     collectTransportation?: BoolFilter<"Event"> | boolean
+    organizeGuestBatches?: BoolFilter<"Event"> | boolean
+    guestListViewMode?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
     createdBy?: XOR<UserRelationFilter, UserWhereInput>
@@ -28887,6 +29984,7 @@ export namespace Prisma {
     invites?: EventInviteListRelationFilter
     shareLink?: XOR<EventShareLinkNullableRelationFilter, EventShareLinkWhereInput> | null
     subEvents?: SubEventListRelationFilter
+    guestBatchAssignments?: EventGuestBatchAssignmentListRelationFilter
   }, "id">
 
   export type EventOrderByWithAggregationInput = {
@@ -28908,6 +30006,8 @@ export namespace Prisma {
     commentsEnabled?: SortOrder
     messagingEnabled?: SortOrder
     collectTransportation?: SortOrder
+    organizeGuestBatches?: SortOrder
+    guestListViewMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EventCountOrderByAggregateInput
@@ -28939,8 +30039,66 @@ export namespace Prisma {
     commentsEnabled?: BoolWithAggregatesFilter<"Event"> | boolean
     messagingEnabled?: BoolWithAggregatesFilter<"Event"> | boolean
     collectTransportation?: BoolWithAggregatesFilter<"Event"> | boolean
+    organizeGuestBatches?: BoolWithAggregatesFilter<"Event"> | boolean
+    guestListViewMode?: StringWithAggregatesFilter<"Event"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Event"> | Date | string
+  }
+
+  export type EventGuestBatchAssignmentWhereInput = {
+    AND?: EventGuestBatchAssignmentWhereInput | EventGuestBatchAssignmentWhereInput[]
+    OR?: EventGuestBatchAssignmentWhereInput[]
+    NOT?: EventGuestBatchAssignmentWhereInput | EventGuestBatchAssignmentWhereInput[]
+    id?: StringFilter<"EventGuestBatchAssignment"> | string
+    eventId?: StringFilter<"EventGuestBatchAssignment"> | string
+    entryKey?: StringFilter<"EventGuestBatchAssignment"> | string
+    label?: StringFilter<"EventGuestBatchAssignment"> | string
+    updatedAt?: DateTimeFilter<"EventGuestBatchAssignment"> | Date | string
+    event?: XOR<EventRelationFilter, EventWhereInput>
+  }
+
+  export type EventGuestBatchAssignmentOrderByWithRelationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    entryKey?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+    event?: EventOrderByWithRelationInput
+  }
+
+  export type EventGuestBatchAssignmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    eventId_entryKey?: EventGuestBatchAssignmentEventIdEntryKeyCompoundUniqueInput
+    AND?: EventGuestBatchAssignmentWhereInput | EventGuestBatchAssignmentWhereInput[]
+    OR?: EventGuestBatchAssignmentWhereInput[]
+    NOT?: EventGuestBatchAssignmentWhereInput | EventGuestBatchAssignmentWhereInput[]
+    eventId?: StringFilter<"EventGuestBatchAssignment"> | string
+    entryKey?: StringFilter<"EventGuestBatchAssignment"> | string
+    label?: StringFilter<"EventGuestBatchAssignment"> | string
+    updatedAt?: DateTimeFilter<"EventGuestBatchAssignment"> | Date | string
+    event?: XOR<EventRelationFilter, EventWhereInput>
+  }, "id" | "eventId_entryKey">
+
+  export type EventGuestBatchAssignmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    entryKey?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+    _count?: EventGuestBatchAssignmentCountOrderByAggregateInput
+    _max?: EventGuestBatchAssignmentMaxOrderByAggregateInput
+    _min?: EventGuestBatchAssignmentMinOrderByAggregateInput
+  }
+
+  export type EventGuestBatchAssignmentScalarWhereWithAggregatesInput = {
+    AND?: EventGuestBatchAssignmentScalarWhereWithAggregatesInput | EventGuestBatchAssignmentScalarWhereWithAggregatesInput[]
+    OR?: EventGuestBatchAssignmentScalarWhereWithAggregatesInput[]
+    NOT?: EventGuestBatchAssignmentScalarWhereWithAggregatesInput | EventGuestBatchAssignmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"EventGuestBatchAssignment"> | string
+    eventId?: StringWithAggregatesFilter<"EventGuestBatchAssignment"> | string
+    entryKey?: StringWithAggregatesFilter<"EventGuestBatchAssignment"> | string
+    label?: StringWithAggregatesFilter<"EventGuestBatchAssignment"> | string
+    updatedAt?: DateTimeWithAggregatesFilter<"EventGuestBatchAssignment"> | Date | string
   }
 
   export type EventShareLinkWhereInput = {
@@ -30876,6 +32034,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -30890,6 +32050,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateInput = {
@@ -30911,6 +32072,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -30922,6 +32085,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventUpdateInput = {
@@ -30940,6 +32104,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -30954,6 +32120,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateInput = {
@@ -30975,6 +32142,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -30986,6 +32155,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateManyInput = {
@@ -31007,6 +32177,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31027,6 +32199,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31050,7 +32224,64 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventGuestBatchAssignmentCreateInput = {
+    id?: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+    event: EventCreateNestedOneWithoutGuestBatchAssignmentsInput
+  }
+
+  export type EventGuestBatchAssignmentUncheckedCreateInput = {
+    id?: string
+    eventId: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+  }
+
+  export type EventGuestBatchAssignmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    event?: EventUpdateOneRequiredWithoutGuestBatchAssignmentsNestedInput
+  }
+
+  export type EventGuestBatchAssignmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventGuestBatchAssignmentCreateManyInput = {
+    id?: string
+    eventId: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+  }
+
+  export type EventGuestBatchAssignmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventGuestBatchAssignmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33218,6 +34449,12 @@ export namespace Prisma {
     none?: SubEventWhereInput
   }
 
+  export type EventGuestBatchAssignmentListRelationFilter = {
+    every?: EventGuestBatchAssignmentWhereInput
+    some?: EventGuestBatchAssignmentWhereInput
+    none?: EventGuestBatchAssignmentWhereInput
+  }
+
   export type GuestRSVPOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -33227,6 +34464,10 @@ export namespace Prisma {
   }
 
   export type SubEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EventGuestBatchAssignmentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -33249,6 +34490,8 @@ export namespace Prisma {
     commentsEnabled?: SortOrder
     messagingEnabled?: SortOrder
     collectTransportation?: SortOrder
+    organizeGuestBatches?: SortOrder
+    guestListViewMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33277,6 +34520,8 @@ export namespace Prisma {
     commentsEnabled?: SortOrder
     messagingEnabled?: SortOrder
     collectTransportation?: SortOrder
+    organizeGuestBatches?: SortOrder
+    guestListViewMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33300,6 +34545,8 @@ export namespace Prisma {
     commentsEnabled?: SortOrder
     messagingEnabled?: SortOrder
     collectTransportation?: SortOrder
+    organizeGuestBatches?: SortOrder
+    guestListViewMode?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33358,6 +34605,35 @@ export namespace Prisma {
   export type EventRelationFilter = {
     is?: EventWhereInput
     isNot?: EventWhereInput
+  }
+
+  export type EventGuestBatchAssignmentEventIdEntryKeyCompoundUniqueInput = {
+    eventId: string
+    entryKey: string
+  }
+
+  export type EventGuestBatchAssignmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    entryKey?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EventGuestBatchAssignmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    entryKey?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EventGuestBatchAssignmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    entryKey?: SortOrder
+    label?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EventShareLinkCountOrderByAggregateInput = {
@@ -35625,6 +36901,13 @@ export namespace Prisma {
     connect?: SubEventWhereUniqueInput | SubEventWhereUniqueInput[]
   }
 
+  export type EventGuestBatchAssignmentCreateNestedManyWithoutEventInput = {
+    create?: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput> | EventGuestBatchAssignmentCreateWithoutEventInput[] | EventGuestBatchAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: EventGuestBatchAssignmentCreateOrConnectWithoutEventInput | EventGuestBatchAssignmentCreateOrConnectWithoutEventInput[]
+    createMany?: EventGuestBatchAssignmentCreateManyEventInputEnvelope
+    connect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+  }
+
   export type RSVPUncheckedCreateNestedManyWithoutEventInput = {
     create?: XOR<RSVPCreateWithoutEventInput, RSVPUncheckedCreateWithoutEventInput> | RSVPCreateWithoutEventInput[] | RSVPUncheckedCreateWithoutEventInput[]
     connectOrCreate?: RSVPCreateOrConnectWithoutEventInput | RSVPCreateOrConnectWithoutEventInput[]
@@ -35685,6 +36968,13 @@ export namespace Prisma {
     connectOrCreate?: SubEventCreateOrConnectWithoutParentEventInput | SubEventCreateOrConnectWithoutParentEventInput[]
     createMany?: SubEventCreateManyParentEventInputEnvelope
     connect?: SubEventWhereUniqueInput | SubEventWhereUniqueInput[]
+  }
+
+  export type EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput = {
+    create?: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput> | EventGuestBatchAssignmentCreateWithoutEventInput[] | EventGuestBatchAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: EventGuestBatchAssignmentCreateOrConnectWithoutEventInput | EventGuestBatchAssignmentCreateOrConnectWithoutEventInput[]
+    createMany?: EventGuestBatchAssignmentCreateManyEventInputEnvelope
+    connect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -35857,6 +37147,20 @@ export namespace Prisma {
     deleteMany?: SubEventScalarWhereInput | SubEventScalarWhereInput[]
   }
 
+  export type EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput = {
+    create?: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput> | EventGuestBatchAssignmentCreateWithoutEventInput[] | EventGuestBatchAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: EventGuestBatchAssignmentCreateOrConnectWithoutEventInput | EventGuestBatchAssignmentCreateOrConnectWithoutEventInput[]
+    upsert?: EventGuestBatchAssignmentUpsertWithWhereUniqueWithoutEventInput | EventGuestBatchAssignmentUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: EventGuestBatchAssignmentCreateManyEventInputEnvelope
+    set?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    disconnect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    delete?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    connect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    update?: EventGuestBatchAssignmentUpdateWithWhereUniqueWithoutEventInput | EventGuestBatchAssignmentUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: EventGuestBatchAssignmentUpdateManyWithWhereWithoutEventInput | EventGuestBatchAssignmentUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: EventGuestBatchAssignmentScalarWhereInput | EventGuestBatchAssignmentScalarWhereInput[]
+  }
+
   export type RSVPUncheckedUpdateManyWithoutEventNestedInput = {
     create?: XOR<RSVPCreateWithoutEventInput, RSVPUncheckedCreateWithoutEventInput> | RSVPCreateWithoutEventInput[] | RSVPUncheckedCreateWithoutEventInput[]
     connectOrCreate?: RSVPCreateOrConnectWithoutEventInput | RSVPCreateOrConnectWithoutEventInput[]
@@ -35977,6 +37281,34 @@ export namespace Prisma {
     update?: SubEventUpdateWithWhereUniqueWithoutParentEventInput | SubEventUpdateWithWhereUniqueWithoutParentEventInput[]
     updateMany?: SubEventUpdateManyWithWhereWithoutParentEventInput | SubEventUpdateManyWithWhereWithoutParentEventInput[]
     deleteMany?: SubEventScalarWhereInput | SubEventScalarWhereInput[]
+  }
+
+  export type EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput = {
+    create?: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput> | EventGuestBatchAssignmentCreateWithoutEventInput[] | EventGuestBatchAssignmentUncheckedCreateWithoutEventInput[]
+    connectOrCreate?: EventGuestBatchAssignmentCreateOrConnectWithoutEventInput | EventGuestBatchAssignmentCreateOrConnectWithoutEventInput[]
+    upsert?: EventGuestBatchAssignmentUpsertWithWhereUniqueWithoutEventInput | EventGuestBatchAssignmentUpsertWithWhereUniqueWithoutEventInput[]
+    createMany?: EventGuestBatchAssignmentCreateManyEventInputEnvelope
+    set?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    disconnect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    delete?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    connect?: EventGuestBatchAssignmentWhereUniqueInput | EventGuestBatchAssignmentWhereUniqueInput[]
+    update?: EventGuestBatchAssignmentUpdateWithWhereUniqueWithoutEventInput | EventGuestBatchAssignmentUpdateWithWhereUniqueWithoutEventInput[]
+    updateMany?: EventGuestBatchAssignmentUpdateManyWithWhereWithoutEventInput | EventGuestBatchAssignmentUpdateManyWithWhereWithoutEventInput[]
+    deleteMany?: EventGuestBatchAssignmentScalarWhereInput | EventGuestBatchAssignmentScalarWhereInput[]
+  }
+
+  export type EventCreateNestedOneWithoutGuestBatchAssignmentsInput = {
+    create?: XOR<EventCreateWithoutGuestBatchAssignmentsInput, EventUncheckedCreateWithoutGuestBatchAssignmentsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutGuestBatchAssignmentsInput
+    connect?: EventWhereUniqueInput
+  }
+
+  export type EventUpdateOneRequiredWithoutGuestBatchAssignmentsNestedInput = {
+    create?: XOR<EventCreateWithoutGuestBatchAssignmentsInput, EventUncheckedCreateWithoutGuestBatchAssignmentsInput>
+    connectOrCreate?: EventCreateOrConnectWithoutGuestBatchAssignmentsInput
+    upsert?: EventUpsertWithoutGuestBatchAssignmentsInput
+    connect?: EventWhereUniqueInput
+    update?: XOR<XOR<EventUpdateToOneWithWhereWithoutGuestBatchAssignmentsInput, EventUpdateWithoutGuestBatchAssignmentsInput>, EventUncheckedUpdateWithoutGuestBatchAssignmentsInput>
   }
 
   export type EventCreateNestedOneWithoutShareLinkInput = {
@@ -37866,6 +39198,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     group?: GroupCreateNestedOneWithoutEventsInput
@@ -37879,6 +39213,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutCreatedByInput = {
@@ -37899,6 +39234,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -37910,6 +39247,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutCreatedByInput = {
@@ -38788,6 +40126,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFilter<"Event"> | boolean
     messagingEnabled?: BoolFilter<"Event"> | boolean
     collectTransportation?: BoolFilter<"Event"> | boolean
+    organizeGuestBatches?: BoolFilter<"Event"> | boolean
+    guestListViewMode?: StringFilter<"Event"> | string
     createdAt?: DateTimeFilter<"Event"> | Date | string
     updatedAt?: DateTimeFilter<"Event"> | Date | string
   }
@@ -39910,6 +41250,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type EventGuestBatchAssignmentCreateWithoutEventInput = {
+    id?: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+  }
+
+  export type EventGuestBatchAssignmentUncheckedCreateWithoutEventInput = {
+    id?: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+  }
+
+  export type EventGuestBatchAssignmentCreateOrConnectWithoutEventInput = {
+    where: EventGuestBatchAssignmentWhereUniqueInput
+    create: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput>
+  }
+
+  export type EventGuestBatchAssignmentCreateManyEventInputEnvelope = {
+    data: EventGuestBatchAssignmentCreateManyEventInput | EventGuestBatchAssignmentCreateManyEventInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutEventsInput = {
     update: XOR<UserUpdateWithoutEventsInput, UserUncheckedUpdateWithoutEventsInput>
     create: XOR<UserCreateWithoutEventsInput, UserUncheckedCreateWithoutEventsInput>
@@ -40292,6 +41656,185 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SubEvent"> | Date | string
   }
 
+  export type EventGuestBatchAssignmentUpsertWithWhereUniqueWithoutEventInput = {
+    where: EventGuestBatchAssignmentWhereUniqueInput
+    update: XOR<EventGuestBatchAssignmentUpdateWithoutEventInput, EventGuestBatchAssignmentUncheckedUpdateWithoutEventInput>
+    create: XOR<EventGuestBatchAssignmentCreateWithoutEventInput, EventGuestBatchAssignmentUncheckedCreateWithoutEventInput>
+  }
+
+  export type EventGuestBatchAssignmentUpdateWithWhereUniqueWithoutEventInput = {
+    where: EventGuestBatchAssignmentWhereUniqueInput
+    data: XOR<EventGuestBatchAssignmentUpdateWithoutEventInput, EventGuestBatchAssignmentUncheckedUpdateWithoutEventInput>
+  }
+
+  export type EventGuestBatchAssignmentUpdateManyWithWhereWithoutEventInput = {
+    where: EventGuestBatchAssignmentScalarWhereInput
+    data: XOR<EventGuestBatchAssignmentUpdateManyMutationInput, EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventInput>
+  }
+
+  export type EventGuestBatchAssignmentScalarWhereInput = {
+    AND?: EventGuestBatchAssignmentScalarWhereInput | EventGuestBatchAssignmentScalarWhereInput[]
+    OR?: EventGuestBatchAssignmentScalarWhereInput[]
+    NOT?: EventGuestBatchAssignmentScalarWhereInput | EventGuestBatchAssignmentScalarWhereInput[]
+    id?: StringFilter<"EventGuestBatchAssignment"> | string
+    eventId?: StringFilter<"EventGuestBatchAssignment"> | string
+    entryKey?: StringFilter<"EventGuestBatchAssignment"> | string
+    label?: StringFilter<"EventGuestBatchAssignment"> | string
+    updatedAt?: DateTimeFilter<"EventGuestBatchAssignment"> | Date | string
+  }
+
+  export type EventCreateWithoutGuestBatchAssignmentsInput = {
+    id?: string
+    partNumber?: number | null
+    coverImageUrl?: string | null
+    title: string
+    description?: string
+    location?: string
+    mapAddress?: string | null
+    startAt: Date | string
+    endAt?: Date | string | null
+    timezone?: string
+    feeAmount?: Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
+    collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    createdBy: UserCreateNestedOneWithoutEventsInput
+    group?: GroupCreateNestedOneWithoutEventsInput
+    series?: EventSeriesCreateNestedOneWithoutEventsInput
+    rsvps?: RSVPCreateNestedManyWithoutEventInput
+    guestRsvps?: GuestRSVPCreateNestedManyWithoutEventInput
+    rsvpPlusOnes?: RSVPPlusOneCreateNestedManyWithoutEventInput
+    comments?: CommentCreateNestedManyWithoutEventInput
+    reminderRules?: ReminderRuleCreateNestedManyWithoutEventInput
+    messageLogs?: MessageLogCreateNestedManyWithoutEventInput
+    invites?: EventInviteCreateNestedManyWithoutEventInput
+    shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
+    subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+  }
+
+  export type EventUncheckedCreateWithoutGuestBatchAssignmentsInput = {
+    id?: string
+    createdById: string
+    groupId?: string | null
+    seriesId?: string | null
+    partNumber?: number | null
+    coverImageUrl?: string | null
+    title: string
+    description?: string
+    location?: string
+    mapAddress?: string | null
+    startAt: Date | string
+    endAt?: Date | string | null
+    timezone?: string
+    feeAmount?: Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: string
+    commentsEnabled?: boolean
+    messagingEnabled?: boolean
+    collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
+    guestRsvps?: GuestRSVPUncheckedCreateNestedManyWithoutEventInput
+    rsvpPlusOnes?: RSVPPlusOneUncheckedCreateNestedManyWithoutEventInput
+    comments?: CommentUncheckedCreateNestedManyWithoutEventInput
+    reminderRules?: ReminderRuleUncheckedCreateNestedManyWithoutEventInput
+    messageLogs?: MessageLogUncheckedCreateNestedManyWithoutEventInput
+    invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
+    shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
+    subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+  }
+
+  export type EventCreateOrConnectWithoutGuestBatchAssignmentsInput = {
+    where: EventWhereUniqueInput
+    create: XOR<EventCreateWithoutGuestBatchAssignmentsInput, EventUncheckedCreateWithoutGuestBatchAssignmentsInput>
+  }
+
+  export type EventUpsertWithoutGuestBatchAssignmentsInput = {
+    update: XOR<EventUpdateWithoutGuestBatchAssignmentsInput, EventUncheckedUpdateWithoutGuestBatchAssignmentsInput>
+    create: XOR<EventCreateWithoutGuestBatchAssignmentsInput, EventUncheckedCreateWithoutGuestBatchAssignmentsInput>
+    where?: EventWhereInput
+  }
+
+  export type EventUpdateToOneWithWhereWithoutGuestBatchAssignmentsInput = {
+    where?: EventWhereInput
+    data: XOR<EventUpdateWithoutGuestBatchAssignmentsInput, EventUncheckedUpdateWithoutGuestBatchAssignmentsInput>
+  }
+
+  export type EventUpdateWithoutGuestBatchAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
+    mapAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
+    group?: GroupUpdateOneWithoutEventsNestedInput
+    series?: EventSeriesUpdateOneWithoutEventsNestedInput
+    rsvps?: RSVPUpdateManyWithoutEventNestedInput
+    guestRsvps?: GuestRSVPUpdateManyWithoutEventNestedInput
+    rsvpPlusOnes?: RSVPPlusOneUpdateManyWithoutEventNestedInput
+    comments?: CommentUpdateManyWithoutEventNestedInput
+    reminderRules?: ReminderRuleUpdateManyWithoutEventNestedInput
+    messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
+    invites?: EventInviteUpdateManyWithoutEventNestedInput
+    shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
+    subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+  }
+
+  export type EventUncheckedUpdateWithoutGuestBatchAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdById?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    seriesId?: NullableStringFieldUpdateOperationsInput | string | null
+    partNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    coverImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    location?: StringFieldUpdateOperationsInput | string
+    mapAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    startAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    endAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    timezone?: StringFieldUpdateOperationsInput | string
+    feeAmount?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    feeCurrency?: StringFieldUpdateOperationsInput | string
+    commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
+    messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
+    collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
+    guestRsvps?: GuestRSVPUncheckedUpdateManyWithoutEventNestedInput
+    rsvpPlusOnes?: RSVPPlusOneUncheckedUpdateManyWithoutEventNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutEventNestedInput
+    reminderRules?: ReminderRuleUncheckedUpdateManyWithoutEventNestedInput
+    messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
+    invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
+    shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
+    subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+  }
+
   export type EventCreateWithoutShareLinkInput = {
     id?: string
     partNumber?: number | null
@@ -40308,6 +41851,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -40321,6 +41866,7 @@ export namespace Prisma {
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
     invites?: EventInviteCreateNestedManyWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutShareLinkInput = {
@@ -40342,6 +41888,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -40352,6 +41900,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedCreateNestedManyWithoutEventInput
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutShareLinkInput = {
@@ -40481,6 +42030,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -40494,6 +42045,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutShareLinkInput = {
@@ -40515,6 +42067,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -40525,6 +42079,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutEventShareLinksInput = {
@@ -40644,6 +42199,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -40657,6 +42214,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutGuestRsvpsInput = {
@@ -40678,6 +42236,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -40688,6 +42248,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutGuestRsvpsInput = {
@@ -40722,6 +42283,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -40735,6 +42298,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutGuestRsvpsInput = {
@@ -40756,6 +42320,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -40766,6 +42332,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserCreateWithoutEventSeriesCreatedInput = {
@@ -40932,6 +42499,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -40945,6 +42514,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutSeriesInput = {
@@ -40965,6 +42535,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -40976,6 +42548,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutSeriesInput = {
@@ -41180,6 +42753,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -41193,6 +42768,7 @@ export namespace Prisma {
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutInvitesInput = {
@@ -41214,6 +42790,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -41224,6 +42802,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutInvitesInput = {
@@ -41448,6 +43027,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -41461,6 +43042,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutInvitesInput = {
@@ -41482,6 +43064,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -41492,6 +43076,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutEventInvitesCreatedInput = {
@@ -41712,6 +43297,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -41725,6 +43312,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutRsvpsInput = {
@@ -41746,6 +43334,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     guestRsvps?: GuestRSVPUncheckedCreateNestedManyWithoutEventInput
@@ -41756,6 +43346,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutRsvpsInput = {
@@ -41927,6 +43518,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -41940,6 +43533,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutRsvpsInput = {
@@ -41961,6 +43555,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     guestRsvps?: GuestRSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -41971,6 +43567,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutRsvpsInput = {
@@ -42135,6 +43732,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -42148,6 +43747,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutRsvpPlusOnesInput = {
@@ -42169,6 +43769,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -42179,6 +43781,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutRsvpPlusOnesInput = {
@@ -42343,6 +43946,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -42356,6 +43961,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutRsvpPlusOnesInput = {
@@ -42377,6 +43983,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -42387,6 +43995,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutPlusOnesAddedInput = {
@@ -42506,6 +44115,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -42519,6 +44130,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutCommentsInput = {
@@ -42540,6 +44152,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -42550,6 +44164,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutCommentsInput = {
@@ -42734,6 +44349,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -42747,6 +44364,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutCommentsInput = {
@@ -42768,6 +44386,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -42778,6 +44398,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutCommentsInput = {
@@ -43252,6 +44873,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -43265,6 +44888,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutReminderRulesInput = {
@@ -43286,6 +44910,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -43296,6 +44922,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutReminderRulesInput = {
@@ -43330,6 +44957,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -43343,6 +44972,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutReminderRulesInput = {
@@ -43364,6 +44994,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -43374,6 +45006,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventCreateWithoutMessageLogsInput = {
@@ -43392,6 +45025,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -43405,6 +45040,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutMessageLogsInput = {
@@ -43426,6 +45062,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -43436,6 +45074,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutMessageLogsInput = {
@@ -43565,6 +45204,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -43578,6 +45219,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutMessageLogsInput = {
@@ -43599,6 +45241,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -43609,6 +45253,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type UserUpsertWithoutMessageLogsInput = {
@@ -44372,6 +46017,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -44385,6 +46032,7 @@ export namespace Prisma {
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
     subEvents?: SubEventCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutGroupInput = {
@@ -44405,6 +46053,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -44416,6 +46066,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
     subEvents?: SubEventUncheckedCreateNestedManyWithoutParentEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutGroupInput = {
@@ -48008,6 +49659,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     createdBy: UserCreateNestedOneWithoutEventsInput
@@ -48021,6 +49674,7 @@ export namespace Prisma {
     messageLogs?: MessageLogCreateNestedManyWithoutEventInput
     invites?: EventInviteCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkCreateNestedOneWithoutEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentCreateNestedManyWithoutEventInput
   }
 
   export type EventUncheckedCreateWithoutSubEventsInput = {
@@ -48042,6 +49696,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
     rsvps?: RSVPUncheckedCreateNestedManyWithoutEventInput
@@ -48052,6 +49708,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedCreateNestedManyWithoutEventInput
     invites?: EventInviteUncheckedCreateNestedManyWithoutEventInput
     shareLink?: EventShareLinkUncheckedCreateNestedOneWithoutEventInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedCreateNestedManyWithoutEventInput
   }
 
   export type EventCreateOrConnectWithoutSubEventsInput = {
@@ -48108,6 +49765,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -48121,6 +49780,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUpdateManyWithoutEventNestedInput
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutSubEventsInput = {
@@ -48142,6 +49802,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -48152,6 +49814,7 @@ export namespace Prisma {
     messageLogs?: MessageLogUncheckedUpdateManyWithoutEventNestedInput
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type SubEventRSVPUpsertWithWhereUniqueWithoutSubEventInput = {
@@ -48748,6 +50411,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -49042,6 +50707,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     group?: GroupUpdateOneWithoutEventsNestedInput
@@ -49055,6 +50722,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutCreatedByInput = {
@@ -49075,6 +50743,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -49086,6 +50756,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateManyWithoutCreatedByInput = {
@@ -49106,6 +50777,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50052,6 +51725,13 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type EventGuestBatchAssignmentCreateManyEventInput = {
+    id?: string
+    entryKey: string
+    label?: string
+    updatedAt?: Date | string
+  }
+
   export type RSVPUpdateWithoutEventInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumRSVPStatusFieldUpdateOperationsInput | $Enums.RSVPStatus
@@ -50328,6 +52008,27 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type EventGuestBatchAssignmentUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventGuestBatchAssignmentUncheckedUpdateWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    entryKey?: StringFieldUpdateOperationsInput | string
+    label?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type EventCreateManySeriesInput = {
     id?: string
     createdById: string
@@ -50346,6 +52047,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50366,6 +52069,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -50379,6 +52084,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutSeriesInput = {
@@ -50399,6 +52105,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -50410,6 +52118,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateManyWithoutSeriesInput = {
@@ -50430,6 +52139,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50611,6 +52322,8 @@ export namespace Prisma {
     commentsEnabled?: boolean
     messagingEnabled?: boolean
     collectTransportation?: boolean
+    organizeGuestBatches?: boolean
+    guestListViewMode?: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50889,6 +52602,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdBy?: UserUpdateOneRequiredWithoutEventsNestedInput
@@ -50902,6 +52617,7 @@ export namespace Prisma {
     invites?: EventInviteUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateWithoutGroupInput = {
@@ -50922,6 +52638,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rsvps?: RSVPUncheckedUpdateManyWithoutEventNestedInput
@@ -50933,6 +52651,7 @@ export namespace Prisma {
     invites?: EventInviteUncheckedUpdateManyWithoutEventNestedInput
     shareLink?: EventShareLinkUncheckedUpdateOneWithoutEventNestedInput
     subEvents?: SubEventUncheckedUpdateManyWithoutParentEventNestedInput
+    guestBatchAssignments?: EventGuestBatchAssignmentUncheckedUpdateManyWithoutEventNestedInput
   }
 
   export type EventUncheckedUpdateManyWithoutGroupInput = {
@@ -50953,6 +52672,8 @@ export namespace Prisma {
     commentsEnabled?: BoolFieldUpdateOperationsInput | boolean
     messagingEnabled?: BoolFieldUpdateOperationsInput | boolean
     collectTransportation?: BoolFieldUpdateOperationsInput | boolean
+    organizeGuestBatches?: BoolFieldUpdateOperationsInput | boolean
+    guestListViewMode?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -51213,6 +52934,10 @@ export namespace Prisma {
      * @deprecated Use EventDefaultArgs instead
      */
     export type EventArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use EventGuestBatchAssignmentDefaultArgs instead
+     */
+    export type EventGuestBatchAssignmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = EventGuestBatchAssignmentDefaultArgs<ExtArgs>
     /**
      * @deprecated Use EventShareLinkDefaultArgs instead
      */

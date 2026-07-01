@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { Modal, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/theme.context';
 
 type Props = {
@@ -32,6 +33,7 @@ export default function DateTimeField({
   label, value, onChange, placeholder, locale = 'en-US', clearable = false,
 }: Props) {
   const { colors, isDark } = useTheme();
+  const { bottom: safeBottom } = useSafeAreaInsets();
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerMode, setPickerMode] = useState<'date' | 'time'>('date'); // Android only
   const [draft, setDraft] = useState<Date>(new Date());
@@ -116,7 +118,7 @@ export default function DateTimeField({
             backgroundColor: colors.card,
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            paddingBottom: 36,
+            paddingBottom: Math.max(24, safeBottom + 16),
           }}>
             {/* Header */}
             <View style={{

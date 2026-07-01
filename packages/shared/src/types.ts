@@ -56,6 +56,8 @@ export interface Event {
   commentsEnabled: boolean;
   messagingEnabled: boolean;
   collectTransportation: boolean;
+  organizeGuestBatches: boolean;
+  guestListViewMode: 'FUSION' | 'SEPARATE_OUTSIDE_GUESTS';
   createdAt: string;
   updatedAt: string;
 }

@@ -85,7 +85,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
     startAt: '',
     endAt: '',
     feeAmount: '',
+    collectTransportation: false,
+    organizeGuestBatches: false,
+    guestListViewMode: 'FUSION' as 'FUSION' | 'SEPARATE_OUTSIDE_GUESTS',
   });
+  const [subEventsEnabled, setSubEventsEnabled] = useState(false);
+  const [subEventItems, setSubEventItems] = useState([{ title: '', description: '' }]);
   const [eventLoading, setEventLoading] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -261,6 +266,10 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
           endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
           feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
           coverImageUrl,
+          collectTransportation: eventForm.collectTransportation,
+          organizeGuestBatches: eventForm.organizeGuestBatches,
+          guestListViewMode: eventForm.guestListViewMode,
+          ...(subEventsEnabled ? { subEvents: subEventItems.filter((se) => se.title.trim()) } : {}),
         }),
       });
       setEventForm({
@@ -271,7 +280,12 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
         startAt: '',
         endAt: '',
         feeAmount: '',
+        collectTransportation: false,
+        organizeGuestBatches: false,
+        guestListViewMode: 'FUSION',
       });
+      setSubEventsEnabled(false);
+      setSubEventItems([{ title: '', description: '' }]);
       setCoverFile(null);
       setCoverPreview(null);
       setComposingEvent(false);
@@ -772,6 +786,36 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" checked={eventForm.collectTransportation} onChange={(e) => setEventForm({ ...eventForm, collectTransportation: e.target.checked })} />
+                    <span>{zh ? '收集交通方式' : 'Collect transportation info'}</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" checked={eventForm.organizeGuestBatches} onChange={(e) => setEventForm({ ...eventForm, organizeGuestBatches: e.target.checked })} />
+                    <span>{zh ? '啟用賓客分組' : 'Enable guest grouping'}</span>
+                  </label>
+                </div>
+                <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                  <input type="checkbox" checked={eventForm.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'} onChange={(e) => setEventForm({ ...eventForm, guestListViewMode: e.target.checked ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION' })} />
+                  <span>{zh ? '外部賓客獨立欄位' : 'Separate outside guest column'}</span>
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                  <input type="checkbox" checked={subEventsEnabled} onChange={(e) => setSubEventsEnabled(e.target.checked)} />
+                  <span>{zh ? '加入子活動選項' : 'Add sub-event options'}</span>
+                </label>
+                {subEventsEnabled && (
+                  <div className="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                    {subEventItems.map((se, i) => (
+                      <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
+                        <input className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white" value={se.title} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, title: e.target.value } : item))} placeholder={zh ? '子活動名稱' : 'Sub-event name'} />
+                        <input className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white" value={se.description} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, description: e.target.value } : item))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} />
+                        <button type="button" onClick={() => setSubEventItems((items) => items.filter((_, idx) => idx !== i))} disabled={subEventItems.length === 1} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 disabled:opacity-40">×</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setSubEventItems((items) => [...items, { title: '', description: '' }])} className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{zh ? '新增子活動' : 'Add sub-event'}</button>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
                   {coverPreview ? (
@@ -902,6 +946,36 @@ export default function GroupPage({ params }: { params: { locale: string; groupI
                     <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm({ ...eventForm, endAt: v })} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
                   </div>
                 </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" checked={eventForm.collectTransportation} onChange={(e) => setEventForm({ ...eventForm, collectTransportation: e.target.checked })} />
+                    <span>{zh ? '收集交通方式' : 'Collect transportation info'}</span>
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                    <input type="checkbox" checked={eventForm.organizeGuestBatches} onChange={(e) => setEventForm({ ...eventForm, organizeGuestBatches: e.target.checked })} />
+                    <span>{zh ? '啟用賓客分組' : 'Enable guest grouping'}</span>
+                  </label>
+                </div>
+                <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                  <input type="checkbox" checked={eventForm.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'} onChange={(e) => setEventForm({ ...eventForm, guestListViewMode: e.target.checked ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION' })} />
+                  <span>{zh ? '外部賓客獨立欄位' : 'Separate outside guest column'}</span>
+                </label>
+                <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+                  <input type="checkbox" checked={subEventsEnabled} onChange={(e) => setSubEventsEnabled(e.target.checked)} />
+                  <span>{zh ? '加入子活動選項' : 'Add sub-event options'}</span>
+                </label>
+                {subEventsEnabled && (
+                  <div className="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+                    {subEventItems.map((se, i) => (
+                      <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
+                        <input className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white" value={se.title} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, title: e.target.value } : item))} placeholder={zh ? '子活動名稱' : 'Sub-event name'} />
+                        <input className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white" value={se.description} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, description: e.target.value } : item))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} />
+                        <button type="button" onClick={() => setSubEventItems((items) => items.filter((_, idx) => idx !== i))} disabled={subEventItems.length === 1} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 disabled:opacity-40">×</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setSubEventItems((items) => [...items, { title: '', description: '' }])} className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{zh ? '新增子活動' : 'Add sub-event'}</button>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-xs text-gray-500 dark:text-gray-400">{zh ? '封面圖片（選填）' : 'Cover image (optional)'}</label>
                   {coverPreview ? (

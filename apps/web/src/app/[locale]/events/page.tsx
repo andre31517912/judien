@@ -64,7 +64,11 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
     mapAddress: '',
     startAt: '', endAt: '',
     feeAmount: '',
+    collectTransportation: false,
+    organizeGuestBatches: false,
   });
+  const [subEventsEnabled, setSubEventsEnabled] = useState(false);
+  const [subEventItems, setSubEventItems] = useState([{ title: '', description: '' }]);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
@@ -154,9 +158,14 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         endAt: eventForm.endAt ? new Date(eventForm.endAt).toISOString() : null,
         feeAmount: eventForm.feeAmount ? parseFloat(eventForm.feeAmount) : null,
         coverImageUrl,
+        collectTransportation: eventForm.collectTransportation,
+        organizeGuestBatches: eventForm.organizeGuestBatches,
+        ...(subEventsEnabled ? { subEvents: subEventItems.filter((se) => se.title.trim()) } : {}),
       };
       await apiFetch<EventWithCounts>('/events', { method: 'POST', body: JSON.stringify(body) });
-      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', feeAmount: '' });
+      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', feeAmount: '', collectTransportation: false, organizeGuestBatches: false });
+      setSubEventsEnabled(false);
+      setSubEventItems([{ title: '', description: '' }]);
       setCoverFile(null);
       setCoverPreview(null);
       setCreatingEvent(false);
@@ -450,6 +459,32 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
               <DateTimeInput value={eventForm.endAt} onChange={(v) => setEventForm((f) => ({ ...f, endAt: v }))} placeholder={zh ? '選擇結束時間' : 'Select end'} clearable />
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+              <input type="checkbox" checked={eventForm.collectTransportation} onChange={(e) => setEventForm((f) => ({ ...f, collectTransportation: e.target.checked }))} />
+              <span>{zh ? '收集交通方式' : 'Collect transportation info'}</span>
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+              <input type="checkbox" checked={eventForm.organizeGuestBatches} onChange={(e) => setEventForm((f) => ({ ...f, organizeGuestBatches: e.target.checked }))} />
+              <span>{zh ? '啟用賓客分組' : 'Enable guest grouping'}</span>
+            </label>
+          </div>
+          <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+            <input type="checkbox" checked={subEventsEnabled} onChange={(e) => setSubEventsEnabled(e.target.checked)} />
+            <span>{zh ? '加入子活動選項' : 'Add sub-event options'}</span>
+          </label>
+          {subEventsEnabled && (
+            <div className="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">
+              {subEventItems.map((se, i) => (
+                <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
+                  <input className={inputCls} value={se.title} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, title: e.target.value } : item))} placeholder={zh ? '子活動名稱' : 'Sub-event name'} />
+                  <input className={inputCls} value={se.description} onChange={(e) => setSubEventItems((items) => items.map((item, idx) => idx === i ? { ...item, description: e.target.value } : item))} placeholder={zh ? '描述（選填）' : 'Description (optional)'} />
+                  <button type="button" onClick={() => setSubEventItems((items) => items.filter((_, idx) => idx !== i))} className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-500 disabled:opacity-40" disabled={subEventItems.length === 1}>×</button>
+                </div>
+              ))}
+              <button type="button" onClick={() => setSubEventItems((items) => [...items, { title: '', description: '' }])} className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{zh ? '新增子活動' : 'Add sub-event'}</button>
+            </div>
+          )}
           <div>
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{zh ? '封面照片（選填）' : 'Cover Photo (optional)'}</label>
             <div

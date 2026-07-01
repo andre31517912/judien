@@ -161,7 +161,17 @@ exports.Prisma.EventScalarFieldEnum = {
   commentsEnabled: 'commentsEnabled',
   messagingEnabled: 'messagingEnabled',
   collectTransportation: 'collectTransportation',
+  organizeGuestBatches: 'organizeGuestBatches',
+  guestListViewMode: 'guestListViewMode',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EventGuestBatchAssignmentScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  entryKey: 'entryKey',
+  label: 'label',
   updatedAt: 'updatedAt'
 };
 
@@ -501,6 +511,7 @@ exports.NotificationType = exports.$Enums.NotificationType = {
 exports.Prisma.ModelName = {
   User: 'User',
   Event: 'Event',
+  EventGuestBatchAssignment: 'EventGuestBatchAssignment',
   EventShareLink: 'EventShareLink',
   GuestRSVP: 'GuestRSVP',
   EventSeries: 'EventSeries',

@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RsvpService } from './rsvp.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, UpdateTransportationSchema, CheckInSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto, type UpdateTransportationDto, type CheckInDto } from '@judien/shared';
+import { RsvpSchema, SharedEventRsvpSchema, PlusOneSchema, UpdateTransportationSchema, CheckInSchema, GuestBatchAssignmentSchema, type RsvpDto, type SharedEventRsvpDto, type PlusOneDto, type UpdateTransportationDto, type CheckInDto, type GuestBatchAssignmentDto } from '@judien/shared';
 import type { User } from '../__generated__/prisma';
 import type { Request } from 'express';
 
@@ -169,6 +169,25 @@ export class RsvpController {
     @CurrentUser() user: User,
   ) {
     return this.rsvpService.removePlusOne(eventId, user.id, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('events/:eventId/guest-batches')
+  getGuestBatches(
+    @Param('eventId') eventId: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.getGuestBatches(eventId, user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/guest-batches')
+  setGuestBatch(
+    @Param('eventId') eventId: string,
+    @Body(new ZodValidationPipe(GuestBatchAssignmentSchema)) dto: GuestBatchAssignmentDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.setGuestBatch(eventId, user.id, dto);
   }
 
   @UseGuards(AuthGuard('jwt'))

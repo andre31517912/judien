@@ -45,7 +45,8 @@ type RosterEntry = {
   status: 'INVITED' | 'PENDING' | 'GOING' | 'NO';
   checkedIn?: boolean;
 };
-type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[] };
+type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[]; guestListViewMode?: 'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'; organizeGuestBatches?: boolean };
+type GuestBatch = { id: string; eventId: string; entryKey: string; label: string };
 type UserResult = { id: string; displayName: string | null; email: string | null; phoneE164?: string | null };
 type PlusOne = { id: string; name: string; email?: string | null; phone?: string | null; relationship?: string | null; connectedInviteeName?: string | null; notes?: string | null };
 
@@ -146,6 +147,9 @@ export default function EventDetailScreen() {
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
   const [showGuests, setShowGuests] = useState(false);
+  const [showGuestBatches, setShowGuestBatches] = useState(false);
+  const [guestBatches, setGuestBatches] = useState<Record<string, string>>({});
+  const [guestBatchSaving, setGuestBatchSaving] = useState<string | null>(null);
   const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING' | 'EXTRA_GUESTS'>('GOING');
   const [guestSearch, setGuestSearch] = useState('');
   const [goingList, setGoingList] = useState<GuestEntry[]>([]);
@@ -336,6 +340,8 @@ export default function EventDetailScreen() {
       PENDING: rsvpData.PENDING,
       EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
       ROSTER: rsvpData.ROSTER ?? [],
+      guestListViewMode: (rsvpData as any).guestListViewMode,
+      organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
     });
   };
 
@@ -427,12 +433,50 @@ export default function EventDetailScreen() {
         PENDING: rsvpData.PENDING,
         EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
         ROSTER: rsvpData.ROSTER ?? [],
+        guestListViewMode: (rsvpData as any).guestListViewMode,
+        organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
       });
       setShowGuests(true);
     } catch {
       Alert.alert(zh ? '無法載入出席名單' : 'Failed to load guest list');
     } finally {
       setGuestsLoading(false);
+    }
+  };
+
+  const loadGuestBatches = async () => {
+    if (!event?.organizeGuestBatches || !(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin))) return;
+    try {
+      const rows = await apiFetch<GuestBatch[]>(`/events/${id}/guest-batches`);
+      setGuestBatches(Object.fromEntries(rows.map((row) => [row.entryKey, row.label])));
+    } catch {
+      setGuestBatches({});
+    }
+  };
+
+  const openGuestBatches = async () => {
+    if (!guests) {
+      setGuestsLoading(true);
+      try {
+        await refreshGuests();
+      } finally {
+        setGuestsLoading(false);
+      }
+    }
+    await loadGuestBatches();
+    setShowGuestBatches(true);
+  };
+
+  const saveGuestBatch = async (entryKey: string, label: string) => {
+    setGuestBatchSaving(entryKey);
+    setGuestBatches((prev) => ({ ...prev, [entryKey]: label }));
+    try {
+      await apiFetch(`/events/${id}/guest-batches`, {
+        method: 'PATCH',
+        body: JSON.stringify({ entryKey, label }),
+      });
+    } finally {
+      setGuestBatchSaving(null);
     }
   };
 
@@ -455,6 +499,8 @@ export default function EventDetailScreen() {
           PENDING: rsvpData.PENDING,
           EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
           ROSTER: rsvpData.ROSTER ?? [],
+          guestListViewMode: (rsvpData as any).guestListViewMode,
+          organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
         };
         setGuests(data);
       } catch {
@@ -799,6 +845,11 @@ export default function EventDetailScreen() {
             <TouchableOpacity style={styles.rsvpBtn} onPress={loadGuests} disabled={guestsLoading}>
               <Text style={styles.rsvpBtnText}>{guestsLoading ? (zh ? '載入中…' : 'Loading…') : (zh ? '賓客名單' : 'Guest List')}</Text>
             </TouchableOpacity>
+            {(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin)) && event.organizeGuestBatches && (
+              <TouchableOpacity style={styles.rsvpBtn} onPress={openGuestBatches} disabled={guestsLoading}>
+                <Text style={styles.rsvpBtnText}>{zh ? '賓客分組' : 'Guest Groups'}</Text>
+              </TouchableOpacity>
+            )}
             {!isPast && user && (
               <TouchableOpacity style={styles.rsvpBtn} onPress={handleCreateShareLink} disabled={inviteLoading}>
                 <Text style={styles.rsvpBtnText}>{inviteLoading ? (zh ? '生成中…' : 'Generating…') : (zh ? '🔗 分享' : '🔗 Share')}</Text>
@@ -966,23 +1017,6 @@ export default function EventDetailScreen() {
                     </View>
                   ) : (
                     <View style={{ gap: 8 }}>
-                      {/* My plus-ones */}
-                      {myPlusOnes.map((po) => (
-                        <View key={po.id} style={{ backgroundColor: isDark ? '#1F2937' : '#F9FAFB', borderRadius: 8, padding: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{po.name}</Text>
-                            {po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.connectedInviteeName}{zh ? '的' : "'s "}{po.relationship}</Text> : null}
-                            {po.connectedInviteeName && !po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
-                            {!po.connectedInviteeName && po.relationship ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.relationship}</Text> : null}
-                            {(po.email || po.phone) ? <Text style={{ fontSize: 12, color: colors.subtext }}>{po.email ?? po.phone}</Text> : null}
-                            {po.notes ? <Text style={{ fontSize: 12, color: colors.subtext, fontStyle: 'italic' }}>{po.notes}</Text> : null}
-                          </View>
-                          <TouchableOpacity onPress={() => handleRemovePlusOne(po.id)} style={{ marginLeft: 8 }}>
-                            <Text style={{ fontSize: 12, color: '#EF4444' }}>{zh ? '移除' : 'Remove'}</Text>
-                          </TouchableOpacity>
-                        </View>
-                      ))}
-                      {/* Add form */}
                       <TextInput style={styles.editInput} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} placeholderTextColor={colors.placeholder} value={poName} onChangeText={setPoName} maxLength={100} />
                       <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={poContact} onChangeText={setPoContact} maxLength={100} />
                       {(isAdmin || event.createdById === user?.id || Boolean(event.groupId && isGroupAdmin)) ? (
@@ -1262,6 +1296,43 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         </Modal>
 
+        <Modal visible={showGuestBatches} transparent animationType="slide" onRequestClose={() => setShowGuestBatches(false)}>
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowGuestBatches(false)}>
+            <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{zh ? '賓客分組' : 'Guest Groups'}</Text>
+              <ScrollView style={{ maxHeight: 420 }} keyboardShouldPersistTaps="handled">
+                {guestsLoading ? (
+                  <ActivityIndicator color={INDIGO} style={{ marginVertical: 20 }} />
+                ) : sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).length === 0 ? (
+                  <Text style={styles.empty}>{zh ? '目前沒有賓客。' : 'No guests yet.'}</Text>
+                ) : sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).map((g) => {
+                  const key = getRosterKey(g);
+                  return (
+                    <View key={key} style={styles.batchRow}>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={styles.guestName} numberOfLines={1}>{g.name}</Text>
+                        <Text style={styles.guestHandle} numberOfLines={1}>{g.status}{g.connectedInviteeName ? ` · ${g.connectedInviteeName}` : ''}</Text>
+                      </View>
+                      <TextInput
+                        style={styles.batchInput}
+                        value={guestBatches[key] ?? ''}
+                        onChangeText={(value) => saveGuestBatch(key, value)}
+                        placeholder={zh ? '分組名稱' : 'Group label'}
+                        placeholderTextColor={colors.placeholder}
+                        maxLength={100}
+                      />
+                      {guestBatchSaving === key && <ActivityIndicator size="small" color={INDIGO} />}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+              <TouchableOpacity style={styles.modalSecondaryBtn} onPress={() => setShowGuestBatches(false)}>
+                <Text style={styles.modalSecondaryBtnText}>{zh ? '關閉' : 'Close'}</Text>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
+
         <Modal visible={showGuests} transparent animationType="slide" onRequestClose={() => setShowGuests(false)}>
           <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowGuests(false)}>
             <TouchableOpacity activeOpacity={1} style={[styles.modalContent, { maxHeight: '80%' }]}>
@@ -1304,7 +1375,7 @@ export default function EventDetailScreen() {
                         <View key={getRosterKey(g)}>
                           {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                             <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
-                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
+                              {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </Text>
                           ) : null}
                         <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
@@ -1384,7 +1455,7 @@ export default function EventDetailScreen() {
                             <View key={key}>
                               {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                                 <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
-                                  {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
+                                  {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                                 </Text>
                               ) : null}
                             <View style={[styles.guestRow, { flexDirection: 'row', alignItems: 'center' }]}>
@@ -1555,6 +1626,8 @@ const makeStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   subEventBadgeActive: { borderColor: INDIGO, backgroundColor: isDark ? '#3730A355' : '#E0E7FF' },
   subEventBadgeText: { fontSize: 12, fontWeight: '600', color: colors.subtext },
   subEventCount: { fontSize: 11, color: colors.placeholder },
+  batchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.border },
+  batchInput: { width: 130, borderWidth: 1, borderColor: colors.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: colors.inputText, backgroundColor: colors.input, fontSize: 13 },
 
   // Inline edit
   editBlock: { gap: 10, marginBottom: 8 },

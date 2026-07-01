@@ -70,6 +70,8 @@ export const CreateEventSchema = z.object({
   commentsEnabled: z.boolean().default(true),
   messagingEnabled: z.boolean().default(true),
   collectTransportation: z.boolean().default(false),
+  organizeGuestBatches: z.boolean().default(false),
+  guestListViewMode: z.enum(['FUSION', 'SEPARATE_OUTSIDE_GUESTS']).default('FUSION'),
   subEvents: z.array(SubEventInputSchema).optional(),
 });
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
@@ -81,6 +83,12 @@ export const UpdateTransportationSchema = z.object({
   method: z.string().max(500),
 });
 export type UpdateTransportationDto = z.infer<typeof UpdateTransportationSchema>;
+
+export const GuestBatchAssignmentSchema = z.object({
+  entryKey: z.string().min(1).max(300),
+  label: z.string().max(100),
+});
+export type GuestBatchAssignmentDto = z.infer<typeof GuestBatchAssignmentSchema>;
 
 export const CheckInSchema = z.object({
   checkedIn: z.boolean(),

@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import type { RsvpDto, SharedEventRsvpDto, PlusOneDto } from '@judien/shared';
+import type { RsvpDto, SharedEventRsvpDto, PlusOneDto, GuestBatchAssignmentDto } from '@judien/shared';
 import { GroupsService } from '../groups/groups.service';
 import { createHash } from 'crypto';
 
@@ -29,11 +29,17 @@ export class RsvpService {
       }
     }
 
-    return this.prisma.rSVP.upsert({
+    const saved = await this.prisma.rSVP.upsert({
       where: { eventId_userId: { eventId, userId } },
       create: { eventId, userId, status: dto.status, declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null },
       update: { status: dto.status, declineReason: dto.status === 'NO' ? (dto.declineReason ?? null) : null },
     });
+    if (dto.status === 'NO') {
+      await (this.prisma as any).subEventRSVP.deleteMany({
+        where: { userId, subEvent: { parentEventId: eventId } },
+      });
+    }
+    return saved;
   }
 
   async remove(eventId: string, userId: string) {
@@ -51,6 +57,9 @@ export class RsvpService {
     }
 
     await this.prisma.rSVP.deleteMany({ where: { eventId, userId } });
+    await (this.prisma as any).subEventRSVP.deleteMany({
+      where: { userId, subEvent: { parentEventId: eventId } },
+    });
     return { removed: true };
   }
 
@@ -78,6 +87,8 @@ export class RsvpService {
         isCallerAdmin = adminMembership?.status === 'ACCEPTED' && adminMembership?.role === 'GROUP_ADMIN';
       }
     }
+
+    const separateOutsideGuests = event.groupId && (event as any).guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
 
     const [rsvps, guestRsvps, memberships] = await Promise.all([
       this.prisma.rSVP.findMany({
@@ -229,7 +240,7 @@ export class RsvpService {
           email: isCallerAdmin ? (m.user.email ?? null) : null,
           ...(isCallerAdmin && m.user.phoneE164 ? { phone: m.user.phoneE164 } : {}),
         })),
-        ...rosterEntries,
+        ...(separateOutsideGuests ? [] : rosterEntries),
       ];
     }
 
@@ -305,6 +316,24 @@ export class RsvpService {
       }
     }
 
+    const visibleExtraGuests = separateOutsideGuests
+      ? [
+          ...extraGuests.filter((g) => g.status === 'GOING'),
+          ...rosterEntries.map((g: any) => ({
+            id: g.plusOneId,
+            addedByUserId: null,
+            name: g.name,
+            email: g.email ?? undefined,
+            phone: g.phone ?? undefined,
+            relationship: g.relationship ?? undefined,
+            connectedInviteeName: g.connectedInviteeName ?? undefined,
+            addedByName: 'Organizer',
+            status: 'GOING' as const,
+            checkedIn: false,
+          })),
+        ]
+      : extraGuests;
+
     const roster = [
       ...(invited ?? []).map((g: any) => ({
         kind: g.plusOneId ? 'plusOne' as const : 'invited' as const,
@@ -350,7 +379,7 @@ export class RsvpService {
         status: 'NO' as const,
         checkedIn: false,
       })),
-      ...extraGuests.map((g: any) => ({
+      ...(separateOutsideGuests ? [] : visibleExtraGuests.map((g: any) => ({
         kind: 'plusOne' as const,
         plusOneId: g.id,
         addedByUserId: g.addedByUserId,
@@ -362,15 +391,17 @@ export class RsvpService {
         addedByName: g.addedByName,
         status: g.status ?? 'INVITED',
         checkedIn: g.checkedIn ?? false,
-      })),
+      }))),
     ];
 
     return {
       ...groups,
       ...(invited !== undefined ? { INVITED: invited } : {}),
       ...(pending !== undefined ? { PENDING: pending } : {}),
-      EXTRA_GUESTS: extraGuests,
+      EXTRA_GUESTS: visibleExtraGuests,
       ROSTER: roster,
+      guestListViewMode: (event as any).guestListViewMode ?? 'FUSION',
+      organizeGuestBatches: (event as any).organizeGuestBatches ?? false,
     };
   }
 
@@ -609,6 +640,36 @@ export class RsvpService {
 
     await (this.prisma as any).rSVPPlusOne.delete({ where: { id: plusOneId } });
     return { removed: true };
+  }
+
+  async getGuestBatches(eventId: string, userId: string) {
+    const event = await this.canManageEvent(eventId, userId);
+    if (!(event as any).organizeGuestBatches) {
+      return [];
+    }
+    return (this.prisma as any).eventGuestBatchAssignment.findMany({
+      where: { eventId },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
+  async setGuestBatch(eventId: string, userId: string, dto: GuestBatchAssignmentDto) {
+    const event = await this.canManageEvent(eventId, userId);
+    if (!(event as any).organizeGuestBatches) {
+      throw new ForbiddenException('Guest grouping is not enabled for this event.');
+    }
+    const label = dto.label.trim();
+    if (!label) {
+      await (this.prisma as any).eventGuestBatchAssignment.deleteMany({
+        where: { eventId, entryKey: dto.entryKey },
+      });
+      return { removed: true };
+    }
+    return (this.prisma as any).eventGuestBatchAssignment.upsert({
+      where: { eventId_entryKey: { eventId, entryKey: dto.entryKey } },
+      create: { eventId, entryKey: dto.entryKey, label },
+      update: { label },
+    });
   }
 
   async setPlusOneStatus(eventId: string, userId: string, plusOneId: string, status: 'GOING' | 'NO') {

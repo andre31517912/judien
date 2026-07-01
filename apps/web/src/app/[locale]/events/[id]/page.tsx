@@ -317,9 +317,13 @@ export default function EventDetailPage() {
       esc(entry.relationship ?? ''),
       esc(entry.checkedIn ? 'Checked in' : ''),
     ].join(',');
-  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[] };
+  type Guests = { GOING: GuestEntry[]; NO: GuestEntry[]; INVITED: InvitedEntry[]; PENDING?: GuestEntry[]; EXTRA_GUESTS?: ExtraGuest[]; ROSTER: RosterEntry[]; guestListViewMode?: 'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'; organizeGuestBatches?: boolean };
+  type GuestBatch = { id: string; eventId: string; entryKey: string; label: string };
   const [guests, setGuests] = useState<Guests | null>(null);
   const [guestsLoading, setGuestsLoading] = useState(false);
+  const [showGuestBatches, setShowGuestBatches] = useState(false);
+  const [guestBatches, setGuestBatches] = useState<Record<string, string>>({});
+  const [guestBatchSaving, setGuestBatchSaving] = useState<string | null>(null);
   const [activeGuestTab, setActiveGuestTab] = useState<'INVITED' | 'GOING' | 'NO' | 'PENDING' | 'EXTRA_GUESTS'>('GOING');
   const [showGuests, setShowGuests] = useState(false);
   const [guestSearch, setGuestSearch] = useState('');
@@ -344,6 +348,29 @@ export default function EventDetailPage() {
       });
     } finally {
       setGuestsLoading(false);
+    }
+  };
+
+  const loadGuestBatches = async () => {
+    if (!event?.organizeGuestBatches || !isEventAdmin) return;
+    try {
+      const rows = await apiFetch<GuestBatch[]>(`/events/${params.id}/guest-batches`);
+      setGuestBatches(Object.fromEntries(rows.map((row) => [row.entryKey, row.label])));
+    } catch {
+      setGuestBatches({});
+    }
+  };
+
+  const saveGuestBatch = async (entryKey: string, label: string) => {
+    setGuestBatchSaving(entryKey);
+    setGuestBatches((prev) => ({ ...prev, [entryKey]: label }));
+    try {
+      await apiFetch(`/events/${params.id}/guest-batches`, {
+        method: 'PATCH',
+        body: JSON.stringify({ entryKey, label }),
+      });
+    } finally {
+      setGuestBatchSaving(null);
     }
   };
 
@@ -866,6 +893,14 @@ export default function EventDetailPage() {
           >
             {zh ? '賓客名單' : 'Guest List'}
           </button>
+          {isEventAdmin && event.organizeGuestBatches && (
+            <button
+              onClick={() => { const next = !showGuestBatches; setShowGuestBatches(next); if (next) { loadGuests(); loadGuestBatches(); } }}
+              className="px-4 py-2 rounded-xl text-sm font-medium border bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:border-indigo-400 transition"
+            >
+              {zh ? '賓客分組' : 'Guest Groups'}
+            </button>
+          )}
           {user && (
             <button
               onClick={() => { setShowInviteGuestModal(true); setInviteModalTab('search'); setPoMsg(''); setPoName(''); setPoContact(''); setPoRelationship(''); setPoConnectedTo(isEventAdmin ? '' : (user?.displayName ?? '')); setPoConnectedToSuggestions([]); setPoNotes(''); setDirectInviteQuery(''); setDirectInviteSearchResults([]); setDirectInviteMsg(''); loadGuests(); }}
@@ -990,6 +1025,39 @@ export default function EventDetailPage() {
         )}
       </div>
 
+      {showGuestBatches && isEventAdmin && event.organizeGuestBatches && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">{zh ? '賓客分組' : 'Guest Groups'}</h3>
+          </div>
+          <div className="divide-y divide-gray-50 dark:divide-gray-800 max-h-72 overflow-y-auto">
+            {guestsLoading ? (
+              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
+            ) : sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).length === 0 ? (
+              <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '目前沒有賓客。' : 'No guests yet.'}</p>
+            ) : sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).map((g) => {
+              const key = getRosterKey(g);
+              return (
+                <div key={key} className="grid grid-cols-[1fr_minmax(120px,220px)] gap-3 px-4 py-2.5 items-center">
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-800 dark:text-gray-200 truncate">{g.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{g.status}{g.connectedInviteeName ? ` · ${g.connectedInviteeName}` : ''}</p>
+                  </div>
+                  <input
+                    value={guestBatches[key] ?? ''}
+                    onChange={(e) => saveGuestBatch(key, e.target.value)}
+                    placeholder={zh ? '分組名稱' : 'Group label'}
+                    className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    maxLength={100}
+                  />
+                  {guestBatchSaving === key && <span className="col-span-2 text-[11px] text-indigo-500">{zh ? '儲存中…' : 'Saving…'}</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Unified Invite Guest modal */}
       {showInviteGuestModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowInviteGuestModal(false)}>
@@ -1059,25 +1127,6 @@ export default function EventDetailPage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3 pt-2">
-                  {/* My outside guests I've added */}
-                  {myPlusOnes.length > 0 && (
-                    <ul className="flex flex-col gap-2 mb-1">
-                      {myPlusOnes.map((po) => (
-                        <li key={po.id} className="flex items-start justify-between gap-2 text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-medium">{po.name}</span>
-                            {po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.connectedInviteeName}{zh ? '的' : "'s "}{po.relationship}</span>}
-                            {po.connectedInviteeName && !po.relationship && <span className="text-xs text-gray-400">{po.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</span>}
-                            {!po.connectedInviteeName && po.relationship && <span className="text-xs text-gray-400">{po.relationship}</span>}
-                            {(po.email || po.phone) && <span className="text-xs text-gray-400">{po.email ?? po.phone}</span>}
-                            {po.notes && <span className="text-xs text-gray-400 italic">{po.notes}</span>}
-                          </div>
-                          <button onClick={() => handleRemovePlusOne(po.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0 mt-0.5">{zh ? '移除' : 'Remove'}</button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {/* Add form */}
                   <input value={poName} onChange={(e) => setPoName(e.target.value)} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
                   <input value={poContact} onChange={(e) => setPoContact(e.target.value)} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" maxLength={100} />
                   {isEventAdmin ? (
@@ -1191,7 +1240,7 @@ export default function EventDetailPage() {
                     <div key={getRosterKey(g)}>
                       {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                         <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                          {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
+                          {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                         </div>
                       )}
                     <div className="flex items-center gap-3 px-4 py-2.5">
@@ -1291,7 +1340,7 @@ export default function EventDetailPage() {
                         <div key={key}>
                           {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                             <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                              {isOutsideRosterGuest(g) ? 'Guests' : 'Members'} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
+                              {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </div>
                           )}
                         <div className="flex items-center gap-3 px-4 py-2.5">

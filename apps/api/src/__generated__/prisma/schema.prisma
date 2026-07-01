@@ -163,24 +163,40 @@ model Event {
   commentsEnabled       Boolean @default(true)
   messagingEnabled      Boolean @default(true)
   collectTransportation Boolean @default(false)
+  organizeGuestBatches  Boolean @default(false)
+  guestListViewMode     String  @default("FUSION")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  rsvps         RSVP[]
-  guestRsvps    GuestRSVP[]
-  rsvpPlusOnes  RSVPPlusOne[]
-  comments      Comment[]
-  reminderRules ReminderRule[]
-  messageLogs   MessageLog[]
-  invites       EventInvite[]
-  shareLink     EventShareLink?
-  subEvents     SubEvent[]
+  rsvps                 RSVP[]
+  guestRsvps            GuestRSVP[]
+  rsvpPlusOnes          RSVPPlusOne[]
+  comments              Comment[]
+  reminderRules         ReminderRule[]
+  messageLogs           MessageLog[]
+  invites               EventInvite[]
+  shareLink             EventShareLink?
+  subEvents             SubEvent[]
+  guestBatchAssignments EventGuestBatchAssignment[]
 
   @@index([startAt])
   @@index([createdById])
   @@index([groupId])
   @@index([seriesId])
+}
+
+model EventGuestBatchAssignment {
+  id        String   @id @default(cuid())
+  eventId   String
+  entryKey  String
+  label     String   @default("")
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, entryKey])
+  @@index([eventId])
 }
 
 model EventShareLink {
