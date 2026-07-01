@@ -88,7 +88,7 @@ export class RsvpService {
       }
     }
 
-    const separateOutsideGuests = event.groupId && (event as any).guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
+    const separateOutsideGuests = (event as any).guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
 
     const [rsvps, guestRsvps, memberships] = await Promise.all([
       this.prisma.rSVP.findMany({
@@ -273,7 +273,7 @@ export class RsvpService {
         email: isCallerAdmin ? (inv.guestEmail ?? null) : null,
         ...(isCallerAdmin && inv.guestPhone ? { phone: inv.guestPhone } : {}),
       }));
-      const combined = [...invitedFromInvites, ...rosterEntries];
+      const combined = [...invitedFromInvites, ...(separateOutsideGuests ? [] : rosterEntries)];
       if (combined.length > 0) {
         invited = combined;
       }

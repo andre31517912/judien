@@ -1346,12 +1346,18 @@ export default function EventDetailScreen() {
                 clearButtonMode="while-editing"
               />
               <View style={styles.guestTabRow}>
-                {([
-                  ['INVITED',      zh ? '已邀請' : 'Invited',       guests?.ROSTER.filter((g) => g.status === 'INVITED').length ?? 0],
-                  ['GOING',        zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.ROSTER.filter((g) => g.status === 'GOING').length ?? event.rsvpCounts.GOING],
-                  ['NO',           zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.ROSTER.filter((g) => g.status === 'NO').length ?? event.rsvpCounts.NO],
-                  ['PENDING', zh ? '未回應' : 'Unresponded', guests?.ROSTER.filter((g) => g.status === 'PENDING').length ?? 0],
-                ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
+                {(() => {
+                  const separateGuestMode = event.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
+                  const memberLabel = event.groupId && separateGuestMode ? (zh ? '成員' : 'Members') : (zh ? '已邀請' : 'Invited');
+                  const tabs: [typeof activeGuestTab, string, number][] = [
+                    ['INVITED', memberLabel, guests?.ROSTER.filter((g) => g.status === 'INVITED').length ?? 0],
+                    ['GOING', zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.ROSTER.filter((g) => g.status === 'GOING').length ?? event.rsvpCounts.GOING],
+                    ['NO', zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't" : 'Not Going'), guests?.ROSTER.filter((g) => g.status === 'NO').length ?? event.rsvpCounts.NO],
+                    ['PENDING', zh ? '未回應' : 'Unresponded', guests?.ROSTER.filter((g) => g.status === 'PENDING').length ?? 0],
+                  ];
+                  if (separateGuestMode) tabs.push(['EXTRA_GUESTS', zh ? '賓客' : 'Guests', guests?.EXTRA_GUESTS?.length ?? 0]);
+                  return tabs;
+                })().map(([tab, label, count]) => (
                   <TouchableOpacity key={tab} onPress={() => setActiveGuestTab(tab)}
                     style={[styles.guestTab, activeGuestTab === tab && styles.guestTabActive]}>
                     <Text style={[styles.guestTabText, activeGuestTab === tab && styles.guestTabTextActive]}>
@@ -1369,8 +1375,11 @@ export default function EventDetailScreen() {
                       (!term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term))
                     );
                     const isEventAdminInvited = isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin);
+                    const emptyInvited = event?.groupId && event?.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'
+                      ? (zh ? '暫無成員' : 'No members yet')
+                      : (zh ? '暫無受邀者' : 'No invitees yet');
                     return rows.length === 0
-                      ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無受邀者' : 'No invitees yet')}</Text>
+                      ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : emptyInvited}</Text>
                       : rows.map((g, i) => (
                         <View key={getRosterKey(g)}>
                           {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (

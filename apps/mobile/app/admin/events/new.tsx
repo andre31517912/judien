@@ -216,7 +216,7 @@ export default function NewEventScreen() {
         coverImageUrl,
         collectTransportation,
         organizeGuestBatches,
-        guestListViewMode: groupId ? guestListViewMode : 'FUSION',
+        guestListViewMode,
         ...(validSubEvents?.length ? { subEvents: validSubEvents } : {}),
         ...(groupId ? { groupId } : {}),
       };
@@ -360,24 +360,22 @@ export default function NewEventScreen() {
         />
       </View>
 
-      {!!groupId && (
-        <View style={styles.toggleRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
-              {zh ? '外部賓客獨立欄位' : 'Separate outside guest column'}
-            </Text>
-            <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
-              {zh ? '群組成員狀態與外部賓客分開顯示' : 'Keep member RSVP status separate from confirmed outside guests'}
-            </Text>
-          </View>
-          <Switch
-            value={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
-            onValueChange={(value) => setGuestListViewMode(value ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
-            trackColor={{ false: colors.border, true: INDIGO }}
-            thumbColor="#fff"
-          />
+      <View style={styles.toggleRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>
+            {zh ? '賓客獨立欄位' : 'Separate guest column'}
+          </Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>
+            {zh ? '外部賓客顯示在獨立的賓客分頁，不混入 RSVP 分頁' : 'Keep outside guests in their own Guests tab instead of mixing them into RSVP tabs'}
+          </Text>
         </View>
-      )}
+        <Switch
+          value={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
+          onValueChange={(value) => setGuestListViewMode(value ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
 
       {/* Sub-events toggle */}
       <View style={styles.toggleRow}>

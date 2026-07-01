@@ -104,6 +104,8 @@ export default function EditEventScreen() {
 
   const [eventCreatorId, setEventCreatorId] = useState<string | null>(null);
   const [collectTransportation, setCollectTransportation] = useState(false);
+  const [organizeGuestBatches, setOrganizeGuestBatches] = useState(false);
+  const [guestListViewMode, setGuestListViewMode] = useState<'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'>('FUSION');
   const [coverUploading, setCoverUploading] = useState(false);
   const [reminders, setReminders] = useState<{ offsetMinutes: number; channels: string[]; enabled: boolean }[]>([]);
   const [customValue, setCustomValue] = useState('');
@@ -131,6 +133,8 @@ export default function EditEventScreen() {
       setReminders((rules ?? []).map((r) => ({ offsetMinutes: r.offsetMinutes, channels: r.channels, enabled: r.enabled })));
       setEventCreatorId(ev.createdById);
       setCollectTransportation(!!ev.collectTransportation);
+      setOrganizeGuestBatches(!!ev.organizeGuestBatches);
+      setGuestListViewMode(ev.guestListViewMode ?? 'FUSION');
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -220,6 +224,8 @@ export default function EditEventScreen() {
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl: form.coverImageUrl || null,
         collectTransportation,
+        organizeGuestBatches,
+        guestListViewMode,
       };
       await apiFetch(`/events/${id}`, { method: 'PATCH', body: JSON.stringify(body) });
       router.replace(`/(tabs)/events/${id}` as any);
@@ -348,6 +354,32 @@ export default function EditEventScreen() {
         <Switch
           value={collectTransportation}
           onValueChange={setCollectTransportation}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      <View style={[styles.field, { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, backgroundColor: colors.card }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{zh ? '啟用賓客分組' : 'Enable guest grouping'}</Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>{zh ? '可在活動頁使用自訂文字將賓客分組' : 'Assign guests to custom typed groups from the event page'}</Text>
+        </View>
+        <Switch
+          value={organizeGuestBatches}
+          onValueChange={setOrganizeGuestBatches}
+          trackColor={{ false: colors.border, true: INDIGO }}
+          thumbColor="#fff"
+        />
+      </View>
+
+      <View style={[styles.field, { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: colors.border, borderRadius: 10, padding: 12, backgroundColor: colors.card }]}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text }}>{zh ? '賓客獨立欄位' : 'Separate guest column'}</Text>
+          <Text style={{ fontSize: 12, color: colors.subtext, marginTop: 2 }}>{zh ? '外部賓客顯示在獨立的賓客分頁，不混入 RSVP 分頁' : 'Keep outside guests in their own Guests tab instead of mixing them into RSVP tabs'}</Text>
+        </View>
+        <Switch
+          value={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
+          onValueChange={(value) => setGuestListViewMode(value ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
           trackColor={{ false: colors.border, true: INDIGO }}
           thumbColor="#fff"
         />

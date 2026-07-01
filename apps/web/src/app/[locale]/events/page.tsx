@@ -66,6 +66,7 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
     feeAmount: '',
     collectTransportation: false,
     organizeGuestBatches: false,
+    guestListViewMode: 'FUSION' as 'FUSION' | 'SEPARATE_OUTSIDE_GUESTS',
   });
   const [subEventsEnabled, setSubEventsEnabled] = useState(false);
   const [subEventItems, setSubEventItems] = useState([{ title: '', description: '' }]);
@@ -160,10 +161,11 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
         coverImageUrl,
         collectTransportation: eventForm.collectTransportation,
         organizeGuestBatches: eventForm.organizeGuestBatches,
+        guestListViewMode: eventForm.guestListViewMode,
         ...(subEventsEnabled ? { subEvents: subEventItems.filter((se) => se.title.trim()) } : {}),
       };
       await apiFetch<EventWithCounts>('/events', { method: 'POST', body: JSON.stringify(body) });
-      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', feeAmount: '', collectTransportation: false, organizeGuestBatches: false });
+      setEventForm({ title: '', description: '', location: '', mapAddress: '', startAt: '', endAt: '', feeAmount: '', collectTransportation: false, organizeGuestBatches: false, guestListViewMode: 'FUSION' });
       setSubEventsEnabled(false);
       setSubEventItems([{ title: '', description: '' }]);
       setCoverFile(null);
@@ -472,6 +474,10 @@ export default function EventsPage({ params }: { params: { locale: string } }) {
           <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
             <input type="checkbox" checked={subEventsEnabled} onChange={(e) => setSubEventsEnabled(e.target.checked)} />
             <span>{zh ? '加入子活動選項' : 'Add sub-event options'}</span>
+          </label>
+          <label className="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 p-3 text-sm text-gray-700 dark:text-gray-200">
+            <input type="checkbox" checked={eventForm.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'} onChange={(e) => setEventForm((f) => ({ ...f, guestListViewMode: e.target.checked ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION' }))} />
+            <span>{zh ? '賓客獨立欄位' : 'Separate guest column'}</span>
           </label>
           {subEventsEnabled && (
             <div className="space-y-2 rounded-xl border border-gray-200 dark:border-gray-700 p-3">

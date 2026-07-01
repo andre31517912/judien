@@ -83,6 +83,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
   const [inviteSent, setInviteSent] = useState(false);
 
   const [collectTransportation, setCollectTransportation] = useState(false);
+  const [organizeGuestBatches, setOrganizeGuestBatches] = useState(false);
+  const [guestListViewMode, setGuestListViewMode] = useState<'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'>('FUSION');
 
   // cover image
   const coverFileRef = useRef<HTMLInputElement>(null);
@@ -111,6 +113,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         coverImageUrl: ev.coverImageUrl ?? '',
       });
       setCollectTransportation(!!ev.collectTransportation);
+      setOrganizeGuestBatches(!!ev.organizeGuestBatches);
+      setGuestListViewMode(ev.guestListViewMode ?? 'FUSION');
       if (ev.groupId) {
         const gid = ev.groupId;
         apiFetch<Array<{ group: { id: string }; membership: { role: string; status: string } }>>('/groups/me')
@@ -156,6 +160,8 @@ export default function EditEventPage({ params }: { params: { locale: string; id
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl: form.coverImageUrl || null,
         collectTransportation,
+        organizeGuestBatches,
+        guestListViewMode,
       };
       await apiFetch(`/events/${params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
       // Redirect back to event detail after saving
@@ -397,6 +403,38 @@ export default function EditEventPage({ params }: { params: { locale: string; id
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {zh ? '出席的賓客將被問及交通方式' : "Going guests will be asked how they're getting to the event."}
+              </p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+            <input
+              type="checkbox"
+              checked={organizeGuestBatches}
+              onChange={(e) => setOrganizeGuestBatches(e.target.checked)}
+              className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {zh ? '啟用賓客分組' : 'Enable guest grouping'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {zh ? '可在活動頁使用自訂文字將賓客分組。' : 'Assign guests to custom typed groups from the event page.'}
+              </p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+            <input
+              type="checkbox"
+              checked={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
+              onChange={(e) => setGuestListViewMode(e.target.checked ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
+              className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {zh ? '賓客獨立欄位' : 'Separate guest column'}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {zh ? '外部賓客顯示在獨立的賓客分頁，不混入 RSVP 分頁。' : 'Keep outside guests in their own Guests tab instead of mixing them into RSVP tabs.'}
               </p>
             </div>
           </label>

@@ -1185,12 +1185,18 @@ export default function EventDetailPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
           <div className="flex items-center border-b border-gray-100 dark:border-gray-800">
             <div className="flex flex-1">
-            {([
-              ['INVITED',      zh ? '已邀請' : 'Invited',        guests?.ROSTER.filter((g) => g.status === 'INVITED').length ?? 0],
-              ['GOING',        zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.ROSTER.filter((g) => g.status === 'GOING').length ?? event.rsvpCounts.GOING],
-              ['NO',           zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'), guests?.ROSTER.filter((g) => g.status === 'NO').length ?? event.rsvpCounts.NO],
-              ['PENDING', zh ? '未回應' : 'Unresponded', guests?.ROSTER.filter((g) => g.status === 'PENDING').length ?? 0],
-            ] as [typeof activeGuestTab, string, number][]).map(([tab, label, count]) => (
+            {(() => {
+              const separateGuestMode = event.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
+              const memberLabel = event.groupId && separateGuestMode ? (zh ? '成員' : 'Members') : (zh ? '已邀請' : 'Invited');
+              const tabs: [typeof activeGuestTab, string, number][] = [
+                ['INVITED', memberLabel, guests?.ROSTER.filter((g) => g.status === 'INVITED').length ?? 0],
+                ['GOING', zh ? (isPast ? '出席' : '參加') : (isPast ? 'Attended' : 'Going'), guests?.ROSTER.filter((g) => g.status === 'GOING').length ?? event.rsvpCounts.GOING],
+                ['NO', zh ? (isPast ? '未出席' : '不參加') : (isPast ? "Didn't Attend" : 'Not Going'), guests?.ROSTER.filter((g) => g.status === 'NO').length ?? event.rsvpCounts.NO],
+                ['PENDING', zh ? '未回應' : 'Unresponded', guests?.ROSTER.filter((g) => g.status === 'PENDING').length ?? 0],
+              ];
+              if (separateGuestMode) tabs.push(['EXTRA_GUESTS', zh ? '賓客' : 'Guests', guests?.EXTRA_GUESTS?.length ?? 0]);
+              return tabs;
+            })().map(([tab, label, count]) => (
               <button
                 key={tab}
                 onClick={() => setActiveGuestTab(tab)}
@@ -1234,8 +1240,11 @@ export default function EventDetailPage() {
                   g.status === 'INVITED' &&
                   (!term || g.name.toLowerCase().includes(term) || (g.email ?? '').toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term))
                 );
+                const emptyInvited = event.groupId && event.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'
+                  ? (zh ? '目前沒有成員。' : 'No members yet.')
+                  : (zh ? '目前沒有受邀者。' : 'No invitees yet.');
                 return rows.length === 0
-                  ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有受邀者。' : 'No invitees yet.')}</p>
+                  ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : emptyInvited}</p>
                   : rows.map((g, i) => (
                     <div key={getRosterKey(g)}>
                       {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (

@@ -33,6 +33,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
 
   // Transportation + sub-events flags
   const [collectTransportation, setCollectTransportation] = useState(false);
+  const [organizeGuestBatches, setOrganizeGuestBatches] = useState(false);
+  const [guestListViewMode, setGuestListViewMode] = useState<'FUSION' | 'SEPARATE_OUTSIDE_GUESTS'>('FUSION');
   const [subEventsEnabled, setSubEventsEnabled] = useState(false);
   const [subEventItems, setSubEventItems] = useState<{ title: string; description: string }[]>([
     { title: '', description: '' },
@@ -82,6 +84,8 @@ export default function NewEventPage({ params }: { params: { locale: string } })
         feeAmount: form.feeAmount ? parseFloat(form.feeAmount) : null,
         coverImageUrl,
         collectTransportation,
+        organizeGuestBatches,
+        guestListViewMode,
         ...(validSubEvents?.length ? { subEvents: validSubEvents } : {}),
       };
       const ev = await apiFetch<Event>('/events', { method: 'POST', body: JSON.stringify(body) });
@@ -188,6 +192,36 @@ export default function NewEventPage({ params }: { params: { locale: string } })
             <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Collect transportation info</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               Guests who RSVP Going will be asked how they&apos;re getting to the event.
+            </p>
+          </div>
+        </label>
+
+        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+          <input
+            type="checkbox"
+            checked={organizeGuestBatches}
+            onChange={(e) => setOrganizeGuestBatches(e.target.checked)}
+            className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Enable guest grouping</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Organizers can assign guests to custom typed groups from the event page.
+            </p>
+          </div>
+        </label>
+
+        <label className="flex items-start gap-3 cursor-pointer rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+          <input
+            type="checkbox"
+            checked={guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS'}
+            onChange={(e) => setGuestListViewMode(e.target.checked ? 'SEPARATE_OUTSIDE_GUESTS' : 'FUSION')}
+            className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
+          />
+          <div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">Separate guest column</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Keep outside guests in their own Guests tab instead of mixing them into RSVP tabs.
             </p>
           </div>
         </label>
