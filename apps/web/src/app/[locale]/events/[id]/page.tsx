@@ -47,7 +47,7 @@ export default function EventDetailPage() {
   // guest list
   type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
   type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
-  type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
+  type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string; status?: 'GOING' | 'NO' | null; checkedIn?: boolean };
   type RosterEntry = {
     kind: 'user' | 'guest' | 'plusOne' | 'invited';
     inviteId?: string;
@@ -124,6 +124,7 @@ export default function EventDetailPage() {
         return {
           ...prev,
           ROSTER: prev.ROSTER.map((g) => getRosterKey(g) === getRosterKey(entry) ? { ...g, checkedIn } : g),
+          EXTRA_GUESTS: prev.EXTRA_GUESTS?.map((g) => g.id === key ? { ...g, checkedIn } : g),
         };
       });
     } catch (err: any) {
@@ -242,6 +243,8 @@ export default function EventDetailPage() {
       PENDING: rsvpData.PENDING,
       EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
       ROSTER: rsvpData.ROSTER ?? [],
+      guestListViewMode: (rsvpData as any).guestListViewMode,
+      organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
     });
   };
 
@@ -295,6 +298,19 @@ export default function EventDetailPage() {
 
   const getRosterKey = (entry: RosterEntry) => entry.userId ?? entry.guestRsvpId ?? entry.plusOneId ?? entry.inviteId ?? `${entry.kind}:${entry.name}:${entry.email ?? ''}`;
   const isOutsideRosterGuest = (entry: RosterEntry) => entry.kind === 'plusOne';
+  const extraGuestToRosterEntry = (guest: ExtraGuest): RosterEntry => ({
+    kind: 'plusOne',
+    plusOneId: guest.id,
+    addedByUserId: guest.addedByUserId,
+    name: guest.name,
+    email: guest.email,
+    phone: guest.phone,
+    relationship: guest.relationship,
+    connectedInviteeName: guest.connectedInviteeName,
+    addedByName: guest.addedByName,
+    status: guest.status ?? 'GOING',
+    checkedIn: guest.checkedIn,
+  });
   const rosterStatusOrder: Record<RosterEntry['status'], number> = { INVITED: 0, GOING: 1, NO: 2, PENDING: 3 };
   const sortRosterForAttendance = (entries: RosterEntry[], separateOutsideGuests: boolean) =>
     [...entries].sort((a, b) => {
@@ -345,6 +361,8 @@ export default function EventDetailPage() {
         PENDING: rsvpData.PENDING,
         EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
         ROSTER: rsvpData.ROSTER ?? [],
+        guestListViewMode: (rsvpData as any).guestListViewMode,
+        organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
       });
     } finally {
       setGuestsLoading(false);
@@ -394,6 +412,8 @@ export default function EventDetailPage() {
           PENDING: rsvpData.PENDING,
           EXTRA_GUESTS: rsvpData.EXTRA_GUESTS ?? [],
           ROSTER: rsvpData.ROSTER ?? [],
+          guestListViewMode: (rsvpData as any).guestListViewMode,
+          organizeGuestBatches: (rsvpData as any).organizeGuestBatches,
         };
         setGuests(data);
       } finally {
@@ -401,9 +421,21 @@ export default function EventDetailPage() {
       }
     }
     const isGroupEvent = Boolean(event?.groupId);
+    const separateGuestMode = data.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS' || event?.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
     const sortedRoster = sortRosterForAttendance(data.ROSTER ?? [], isGroupEvent);
-    const rows = isGroupEvent
+    const extraGuestRows = (data.EXTRA_GUESTS ?? []).map(extraGuestToRosterEntry);
+    const rows = separateGuestMode
       ? [
+          isGroupEvent ? 'Members' : 'Guest list',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...sortedRoster.map((g) => csvRosterRow(g, esc)),
+          '',
+          'Guests',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...extraGuestRows.map((g) => csvRosterRow(g, esc)),
+        ]
+      : isGroupEvent
+        ? [
           'Group members / invited list',
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.filter((g) => !isOutsideRosterGuest(g)).map((g) => csvRosterRow(g, esc)),
@@ -412,7 +444,7 @@ export default function EventDetailPage() {
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.filter(isOutsideRosterGuest).map((g) => csvRosterRow(g, esc)),
         ]
-      : [
+        : [
           'Guest list',
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.map((g) => csvRosterRow(g, esc)),
@@ -1235,6 +1267,7 @@ export default function EventDetailPage() {
               <p className="text-xs text-gray-400 px-4 py-4 text-center">{zh ? '載入中…' : 'Loading…'}</p>
             ) : (() => {
               const term = guestSearch.trim().toLowerCase();
+              const separateGuestMode = (guests?.guestListViewMode ?? event.guestListViewMode) === 'SEPARATE_OUTSIDE_GUESTS';
               if (activeGuestTab === 'INVITED') {
                 const rows = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).filter((g) =>
                   g.status === 'INVITED' &&
@@ -1247,7 +1280,7 @@ export default function EventDetailPage() {
                   ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : emptyInvited}</p>
                   : rows.map((g, i) => (
                     <div key={getRosterKey(g)}>
-                      {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
+                      {Boolean(event.groupId) && !separateGuestMode && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                         <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                           {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                         </div>
@@ -1278,11 +1311,27 @@ export default function EventDetailPage() {
                 const rows = (guests?.EXTRA_GUESTS ?? []).filter((g) =>
                   !term || g.name.toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term) || (g.addedByName ?? '').toLowerCase().includes(term)
                 );
+                const checkedInCount = rows.filter((g) => g.checkedIn).length;
                 return rows.length === 0
                   ? <p className="text-xs text-gray-400 px-4 py-4 text-center">{term ? (zh ? '找不到符合結果。' : 'No matches.') : (zh ? '目前沒有外部賓客。' : 'No outside guests yet.')}</p>
-                  : rows.map((g, i) => {
+                  : (
+                    <>
+                    {isEventAdmin && rows.length > 0 && (
+                      <div className="px-4 py-2 border-b border-gray-50 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30 flex items-center gap-3">
+                        <div className="flex-1 h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                          <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${(checkedInCount / rows.length) * 100}%` }} />
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+                          {checkedInCount} / {rows.length} {zh ? '已報到' : 'checked in'}
+                        </span>
+                      </div>
+                    )}
+                    {rows.map((g, i) => {
                     const canDeleteExtra = isEventAdmin || (g.addedByUserId != null && g.addedByUserId === user?.id);
                     const isDeletingExtra = g.id ? deletingGuest === g.id : false;
+                    const checkInEntry = extraGuestToRosterEntry(g);
+                    const checkInKey = getRosterKey(checkInEntry);
+                    const busy = checkingIn.has(checkInKey);
                     return (
                       <div key={i} className="flex items-center gap-3 px-4 py-2.5">
                         <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-xs font-bold text-purple-500 shrink-0">
@@ -1303,6 +1352,19 @@ export default function EventDetailPage() {
                           {isEventAdmin && g.email && <p className="text-xs text-gray-400 truncate">{g.email}</p>}
                           {isEventAdmin && g.phone && <p className="text-xs text-gray-400 truncate">{g.phone}</p>}
                         </div>
+                        {isEventAdmin && g.id && (
+                          <button
+                            onClick={() => handleCheckIn(checkInEntry, !g.checkedIn)}
+                            disabled={busy}
+                            className={`shrink-0 text-xs px-2.5 py-1 rounded-lg border font-medium transition disabled:opacity-50 ${
+                              g.checkedIn
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
+                                : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-emerald-400 hover:text-emerald-600'
+                            }`}
+                          >
+                            {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ Checked in') : (zh ? '報到' : 'Check in')}
+                          </button>
+                        )}
                         {canDeleteExtra && g.id && (
                           <button
                             onClick={() => handleDeleteExtraGuest(g.id!)}
@@ -1315,7 +1377,9 @@ export default function EventDetailPage() {
                         )}
                       </div>
                     );
-                  });
+                  })}
+                    </>
+                  );
               }
               const tabData = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event.groupId)).filter((g) => g.status === activeGuestTab);
               const rows = tabData.filter((g) =>
@@ -1347,7 +1411,7 @@ export default function EventDetailPage() {
                       const isDeleting = deletingGuest === key;
                       return (
                         <div key={key}>
-                          {Boolean(event.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
+                          {Boolean(event.groupId) && !separateGuestMode && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) && (
                             <div className="px-4 py-1.5 bg-gray-50 dark:bg-gray-800/60 text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                               {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </div>

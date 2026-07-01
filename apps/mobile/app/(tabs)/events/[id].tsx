@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
-type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string };
+type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string; status?: 'GOING' | 'NO' | null; checkedIn?: boolean };
 type RosterEntry = {
   kind: 'user' | 'guest' | 'plusOne' | 'invited';
   inviteId?: string;
@@ -54,6 +54,19 @@ const INDIGO = '#4F46E5';
 const rosterStatusOrder: Record<RosterEntry['status'], number> = { INVITED: 0, GOING: 1, NO: 2, PENDING: 3 };
 
 const isOutsideRosterGuest = (entry: RosterEntry) => entry.kind === 'plusOne';
+const extraGuestToRosterEntry = (guest: ExtraGuest): RosterEntry => ({
+  kind: 'plusOne',
+  plusOneId: guest.id,
+  addedByUserId: guest.addedByUserId,
+  name: guest.name,
+  email: guest.email,
+  phone: guest.phone,
+  relationship: guest.relationship,
+  connectedInviteeName: guest.connectedInviteeName,
+  addedByName: guest.addedByName,
+  status: guest.status ?? 'GOING',
+  checkedIn: guest.checkedIn,
+});
 const sortRosterForAttendance = (entries: RosterEntry[], separateOutsideGuests: boolean) =>
   [...entries].sort((a, b) => {
     if (!separateOutsideGuests) {
@@ -511,9 +524,21 @@ export default function EventDetailScreen() {
       }
     }
     const isGroupEvent = Boolean(event?.groupId);
+    const separateGuestMode = data.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS' || event?.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
     const sortedRoster = sortRosterForAttendance(data.ROSTER ?? [], isGroupEvent);
-    const rows = isGroupEvent
+    const extraGuestRows = (data.EXTRA_GUESTS ?? []).map(extraGuestToRosterEntry);
+    const rows = separateGuestMode
       ? [
+          isGroupEvent ? 'Members' : 'Guest list',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...sortedRoster.map((g) => csvRosterRow(g, esc)),
+          '',
+          'Guests',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          ...extraGuestRows.map((g) => csvRosterRow(g, esc)),
+        ]
+      : isGroupEvent
+        ? [
           'Group members / invited list',
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.filter((g) => !isOutsideRosterGuest(g)).map((g) => csvRosterRow(g, esc)),
@@ -522,7 +547,7 @@ export default function EventDetailScreen() {
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.filter(isOutsideRosterGuest).map((g) => csvRosterRow(g, esc)),
         ]
-      : [
+        : [
           'Guest list',
           'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
           ...sortedRoster.map((g) => csvRosterRow(g, esc)),
@@ -632,6 +657,7 @@ export default function EventDetailScreen() {
         return {
           ...prev,
           ROSTER: prev.ROSTER.map((g) => getRosterKey(g) === getRosterKey(entry) ? { ...g, checkedIn } : g),
+          EXTRA_GUESTS: prev.EXTRA_GUESTS?.map((g) => g.id === key ? { ...g, checkedIn } : g),
         };
       });
     } catch (err: any) {
@@ -1369,6 +1395,7 @@ export default function EventDetailScreen() {
               <ScrollView style={{ marginTop: 8 }} keyboardShouldPersistTaps="handled">
                 {(() => {
                   const term = guestSearch.trim().toLowerCase();
+                  const separateGuestMode = (guests?.guestListViewMode ?? event?.guestListViewMode) === 'SEPARATE_OUTSIDE_GUESTS';
                   if (activeGuestTab === 'INVITED') {
                     const rows = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event?.groupId)).filter((g) =>
                       g.status === 'INVITED' &&
@@ -1382,7 +1409,7 @@ export default function EventDetailScreen() {
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : emptyInvited}</Text>
                       : rows.map((g, i) => (
                         <View key={getRosterKey(g)}>
-                          {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
+                          {Boolean(event?.groupId) && !separateGuestMode && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                             <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
                               {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                             </Text>
@@ -1411,11 +1438,25 @@ export default function EventDetailScreen() {
                       !term || g.name.toLowerCase().includes(term) || (g.connectedInviteeName ?? '').toLowerCase().includes(term) || g.addedByName.toLowerCase().includes(term)
                     );
                     const isEventAdminExtra = isAdmin || event?.createdById === user?.id || Boolean(event?.groupId && isGroupAdmin);
+                    const checkedInCount = rows.filter((g) => g.checkedIn).length;
                     return rows.length === 0
                       ? <Text style={styles.empty}>{term ? (zh ? '找不到符合結果' : 'No matches') : (zh ? '暫無外部賓客' : 'No outside guests yet')}</Text>
-                      : rows.map((g, i) => {
+                      : (
+                        <>
+                        {isEventAdminExtra && rows.length > 0 ? (
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4, paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#10B981' }}>
+                            <View style={{ flex: 1, height: 4, borderRadius: 4, backgroundColor: '#E5E7EB', overflow: 'hidden' }}>
+                              <View style={{ height: 4, borderRadius: 4, backgroundColor: '#10B981', width: `${(checkedInCount / rows.length) * 100}%` }} />
+                            </View>
+                            <Text style={{ fontSize: 11, color: '#6B7280' }}>{checkedInCount} / {rows.length} {zh ? '已報到' : 'checked in'}</Text>
+                          </View>
+                        ) : null}
+                        {rows.map((g, i) => {
                         const canDeleteExtra = isEventAdminExtra || (g.addedByUserId != null && g.addedByUserId === user?.id);
                         const isDeletingExtra = g.id ? deletingGuest === g.id : false;
+                        const checkInEntry = extraGuestToRosterEntry(g);
+                        const checkInKey = getRosterKey(checkInEntry);
+                        const busy = checkingIn.has(checkInKey);
                         return (
                           <View key={i} style={[styles.guestRow, { flexDirection: 'row', alignItems: 'flex-start' }]}>
                             <View style={{ flex: 1 }}>
@@ -1427,6 +1468,23 @@ export default function EventDetailScreen() {
                               {isEventAdminExtra && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                               {isEventAdminExtra && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                             </View>
+                            {isEventAdminExtra && g.id ? (
+                              <TouchableOpacity
+                                onPress={() => handleCheckIn(checkInEntry, !g.checkedIn)}
+                                disabled={busy}
+                                style={{
+                                  paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+                                  borderColor: g.checkedIn ? '#10B981' : '#D1D5DB',
+                                  backgroundColor: g.checkedIn ? '#ECFDF5' : 'transparent',
+                                  opacity: busy ? 0.5 : 1,
+                                  marginLeft: 8,
+                                }}
+                              >
+                                <Text style={{ fontSize: 12, fontWeight: '600', color: g.checkedIn ? '#059669' : '#6B7280' }}>
+                                  {busy ? '…' : g.checkedIn ? (zh ? '✓ 已報到' : '✓ In') : (zh ? '報到' : 'Check in')}
+                                </Text>
+                              </TouchableOpacity>
+                            ) : null}
                             {canDeleteExtra && g.id && (
                               <TouchableOpacity onPress={() => handleDeleteExtraGuest(g.id!)} disabled={isDeletingExtra} style={{ marginLeft: 8, paddingTop: 2, opacity: isDeletingExtra ? 0.5 : 1 }}>
                                 <Text style={{ fontSize: 13, color: '#EF4444' }}>{isDeletingExtra ? '…' : '✕'}</Text>
@@ -1434,7 +1492,9 @@ export default function EventDetailScreen() {
                             )}
                           </View>
                         );
-                      });
+                        })}
+                        </>
+                      );
                   }
                   const tabData = sortRosterForAttendance(guests?.ROSTER ?? [], Boolean(event?.groupId)).filter((g) => g.status === activeGuestTab);
                   const rows = tabData.filter((g) =>
@@ -1462,7 +1522,7 @@ export default function EventDetailScreen() {
                           const isDeleting = deletingGuest === key;
                           return (
                             <View key={key}>
-                              {Boolean(event?.groupId) && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
+                              {Boolean(event?.groupId) && !separateGuestMode && (i === 0 || isOutsideRosterGuest(rows[i - 1]) !== isOutsideRosterGuest(g)) ? (
                                 <Text style={{ paddingHorizontal: 4, paddingVertical: 6, fontSize: 11, fontWeight: '700', color: colors.subtext, textTransform: 'uppercase' }}>
                                   {isOutsideRosterGuest(g) ? (zh ? '賓客' : 'Guests') : (zh ? '成員' : 'Members')} ({rows.filter((row) => isOutsideRosterGuest(row) === isOutsideRosterGuest(g)).length})
                                 </Text>
