@@ -854,9 +854,15 @@ export class RsvpService {
 
   async checkInPlusOne(eventId: string, callerUserId: string, plusOneId: string, checkedIn: boolean) {
     await this.assertEventAdmin(eventId, callerUserId);
-    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({ where: { id: plusOneId } });
+    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({
+      where: { id: plusOneId },
+      include: { event: { select: { guestListViewMode: true } } },
+    });
     if (!plusOne || plusOne.eventId !== eventId) throw new NotFoundException('Guest not found.');
-    if (plusOne.status !== 'GOING') throw new ForbiddenException('Only guests marked as Going can be checked in.');
+    const separateOutsideGuests = plusOne.event?.guestListViewMode === 'SEPARATE_OUTSIDE_GUESTS';
+    if (!separateOutsideGuests && plusOne.status !== 'GOING') {
+      throw new ForbiddenException('Only guests marked as Going can be checked in.');
+    }
     return (this.prisma as any).rSVPPlusOne.update({
       where: { id: plusOneId },
       data: { checkedIn, checkedInAt: checkedIn ? new Date() : null },
