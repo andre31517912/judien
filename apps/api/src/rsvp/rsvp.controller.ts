@@ -161,6 +161,17 @@ export class RsvpController {
 
   // DELETE /api/events/:eventId/rsvp/plus-ones/:id — remove a plus-one guest
   @UseGuards(AuthGuard('jwt'))
+  @Patch('events/:eventId/rsvp/plus-ones/:id')
+  updatePlusOne(
+    @Param('eventId') eventId: string,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(PlusOneSchema)) dto: PlusOneDto,
+    @CurrentUser() user: User,
+  ) {
+    return this.rsvpService.updatePlusOne(eventId, user.id, id, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Delete('events/:eventId/rsvp/plus-ones/:id')
   @HttpCode(HttpStatus.OK)
   removePlusOne(

@@ -127,6 +127,7 @@ export class RsvpService {
       phone?: string;
       relationship?: string;
       connectedInviteeName?: string;
+      notes?: string;
       addedByName: string;
       status?: 'GOING' | 'NO' | null;
       checkedIn?: boolean;
@@ -158,10 +159,11 @@ export class RsvpService {
               addedByUserId: r.userId,
               name: po.name,
               addedByName: displayName ?? entry.handle,
-              ...(po.relationship ? { relationship: po.relationship } : {}),
-              ...(po.connectedInviteeName ? { connectedInviteeName: po.connectedInviteeName } : {}),
-              status: po.status ?? null,
-              checkedIn: po.checkedIn ?? false,
+            ...(po.relationship ? { relationship: po.relationship } : {}),
+            ...(po.connectedInviteeName ? { connectedInviteeName: po.connectedInviteeName } : {}),
+            ...(po.notes ? { notes: po.notes } : {}),
+            status: po.status ?? null,
+            checkedIn: po.checkedIn ?? false,
             };
             if (isCallerAdmin) {
               if (po.email) extra.email = po.email;
@@ -188,6 +190,7 @@ export class RsvpService {
         addedByName: adderName,
         ...(po.relationship ? { relationship: po.relationship } : {}),
         ...(po.connectedInviteeName ? { connectedInviteeName: po.connectedInviteeName } : {}),
+        ...(po.notes ? { notes: po.notes } : {}),
         status: po.status ?? null,
         checkedIn: po.checkedIn ?? false,
       };
@@ -229,6 +232,8 @@ export class RsvpService {
         email: isCallerAdmin ? (g.email ?? null) : null,
         ...(isCallerAdmin && g.phone ? { phone: g.phone } : {}),
         ...(g.relationship ? { relationship: g.relationship } : {}),
+        ...(g.connectedInviteeName ? { connectedInviteeName: g.connectedInviteeName } : {}),
+        ...(g.notes ? { notes: g.notes } : {}),
       }));
 
     // INVITED bucket: for group events, all group members are considered invited
@@ -640,6 +645,37 @@ export class RsvpService {
 
     await (this.prisma as any).rSVPPlusOne.delete({ where: { id: plusOneId } });
     return { removed: true };
+  }
+
+  async updatePlusOne(eventId: string, userId: string, plusOneId: string, dto: PlusOneDto) {
+    const plusOne = await (this.prisma as any).rSVPPlusOne.findUnique({
+      where: { id: plusOneId },
+      select: { id: true, rsvpId: true, addedByUserId: true, eventId: true },
+    });
+    if (!plusOne || plusOne.eventId !== eventId) {
+      throw new NotFoundException('Guest not found.');
+    }
+
+    const rsvp = await this.prisma.rSVP.findUnique({
+      where: { eventId_userId: { eventId, userId } },
+      select: { id: true },
+    });
+    const isOwner = (rsvp && plusOne.rsvpId === rsvp.id) || plusOne.addedByUserId === userId;
+    if (!isOwner) {
+      await this.canManageEvent(eventId, userId);
+    }
+
+    return (this.prisma as any).rSVPPlusOne.update({
+      where: { id: plusOneId },
+      data: {
+        name: dto.name.trim(),
+        email: dto.email?.trim() || null,
+        phone: dto.phone?.trim() || null,
+        relationship: dto.relationship?.trim() || null,
+        connectedInviteeName: dto.connectedInviteeName?.trim() || null,
+        notes: dto.notes?.trim() || null,
+      },
+    });
   }
 
   async getGuestBatches(eventId: string, userId: string) {

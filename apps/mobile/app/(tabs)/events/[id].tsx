@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 type GuestEntry = { handle: string; displayName: string | null; email?: string; phone?: string; checkedIn?: boolean; userId?: string; guestRsvpId?: string; source?: 'user' | 'guest' };
 type InvitedEntry = { name: string; email?: string | null; phone?: string | null; relationship?: string | null };
-type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string; status?: 'GOING' | 'NO' | null; checkedIn?: boolean };
+type ExtraGuest = { id?: string; addedByUserId?: string | null; name: string; email?: string; phone?: string; relationship?: string; connectedInviteeName?: string; addedByName: string; notes?: string; status?: 'GOING' | 'NO' | null; checkedIn?: boolean };
 type RosterEntry = {
   kind: 'user' | 'guest' | 'plusOne' | 'invited';
   inviteId?: string;
@@ -42,6 +42,7 @@ type RosterEntry = {
   relationship?: string;
   connectedInviteeName?: string;
   addedByName?: string;
+  notes?: string;
   status: 'INVITED' | 'PENDING' | 'GOING' | 'NO';
   checkedIn?: boolean;
 };
@@ -64,6 +65,7 @@ const extraGuestToRosterEntry = (guest: ExtraGuest): RosterEntry => ({
   relationship: guest.relationship,
   connectedInviteeName: guest.connectedInviteeName,
   addedByName: guest.addedByName,
+  notes: guest.notes,
   status: guest.status ?? 'GOING',
   checkedIn: guest.checkedIn,
 });
@@ -87,6 +89,7 @@ const csvRosterRow = (entry: RosterEntry, esc: (s: string) => string) =>
     esc(entry.status),
     esc(entry.connectedInviteeName ?? ''),
     esc(entry.relationship ?? ''),
+    esc(entry.notes ?? ''),
     esc(entry.checkedIn ? 'Checked in' : ''),
   ].join(',');
 
@@ -194,6 +197,13 @@ export default function EventDetailScreen() {
   const [poMsg, setPoMsg] = useState('');
   // delete state
   const [deletingGuest, setDeletingGuest] = useState<string | null>(null);
+  const [editingExtraGuest, setEditingExtraGuest] = useState<ExtraGuest | null>(null);
+  const [editExtraName, setEditExtraName] = useState('');
+  const [editExtraContact, setEditExtraContact] = useState('');
+  const [editExtraRelationship, setEditExtraRelationship] = useState('');
+  const [editExtraConnectedTo, setEditExtraConnectedTo] = useState('');
+  const [editExtraNotes, setEditExtraNotes] = useState('');
+  const [editExtraSaving, setEditExtraSaving] = useState(false);
 
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentError, setCommentError] = useState('');
@@ -334,6 +344,45 @@ export default function EventDetailScreen() {
       Alert.alert(zh ? '移除失敗' : 'Remove failed', err.message ?? (zh ? '請再試。' : 'Please try again.'));
     } finally {
       setDeletingGuest(null);
+    }
+  };
+
+  const openEditExtraGuest = (guest: ExtraGuest) => {
+    setEditingExtraGuest(guest);
+    setEditExtraName(guest.name ?? '');
+    setEditExtraContact(guest.email ?? guest.phone ?? '');
+    setEditExtraRelationship(guest.relationship ?? '');
+    setEditExtraConnectedTo(guest.connectedInviteeName ?? '');
+    setEditExtraNotes(guest.notes ?? '');
+  };
+
+  const handleSaveExtraGuest = async () => {
+    if (!editingExtraGuest?.id || !editExtraName.trim() || editExtraSaving) return;
+    setEditExtraSaving(true);
+    try {
+      const contact = editExtraContact.trim();
+      const isEmail = contact.includes('@');
+      const updated = await apiFetch<ExtraGuest>(`/events/${id}/rsvp/plus-ones/${editingExtraGuest.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: editExtraName.trim(),
+          email: isEmail ? contact : undefined,
+          phone: !isEmail && contact ? contact : undefined,
+          relationship: editExtraRelationship.trim() || undefined,
+          connectedInviteeName: editExtraConnectedTo.trim() || undefined,
+          notes: editExtraNotes.trim() || undefined,
+        }),
+      });
+      setGuests((prev) => prev ? {
+        ...prev,
+        EXTRA_GUESTS: prev.EXTRA_GUESTS?.map((g) => g.id === editingExtraGuest.id ? { ...g, ...updated } : g),
+        ROSTER: prev.ROSTER.map((g) => g.plusOneId === editingExtraGuest.id ? { ...g, ...extraGuestToRosterEntry({ ...editingExtraGuest, ...updated }) } : g),
+      } : prev);
+      setEditingExtraGuest(null);
+    } catch (err: any) {
+      Alert.alert(zh ? '更新失敗' : 'Update failed', err.message ?? (zh ? '請再試一次。' : 'Please try again.'));
+    } finally {
+      setEditExtraSaving(false);
     }
   };
 
@@ -530,26 +579,26 @@ export default function EventDetailScreen() {
     const rows = separateGuestMode
       ? [
           isGroupEvent ? 'Members' : 'Guest list',
-          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Notes,Check-in',
           ...sortedRoster.map((g) => csvRosterRow(g, esc)),
           '',
           'Guests',
-          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Notes,Check-in',
           ...extraGuestRows.map((g) => csvRosterRow(g, esc)),
         ]
       : isGroupEvent
         ? [
           'Group members / invited list',
-          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Notes,Check-in',
           ...sortedRoster.filter((g) => !isOutsideRosterGuest(g)).map((g) => csvRosterRow(g, esc)),
           '',
           'Outside guests',
-          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Notes,Check-in',
           ...sortedRoster.filter(isOutsideRosterGuest).map((g) => csvRosterRow(g, esc)),
         ]
         : [
           'Guest list',
-          'Name,Email,Phone,Status,Connected Invitee,Relationship,Check-in',
+          'Name,Email,Phone,Status,Connected Invitee,Relationship,Notes,Check-in',
           ...sortedRoster.map((g) => csvRosterRow(g, esc)),
         ];
     await Share.share({ message: rows.join('\n'), title: zh ? '賓客名單' : 'Guest List' });
@@ -1322,6 +1371,31 @@ export default function EventDetailScreen() {
           </TouchableOpacity>
         </Modal>
 
+        <Modal visible={!!editingExtraGuest} transparent animationType="slide" onRequestClose={() => setEditingExtraGuest(null)}>
+          <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setEditingExtraGuest(null)}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <TouchableOpacity activeOpacity={1} style={[styles.modalContent, { maxHeight: '82%' }]}>
+                <Text style={styles.modalTitle}>{zh ? '編輯賓客' : 'Edit Guest'}</Text>
+                <View style={{ gap: 8 }}>
+                  <TextInput style={styles.editInput} placeholder={zh ? '賓客姓名 *' : 'Guest name *'} placeholderTextColor={colors.placeholder} value={editExtraName} onChangeText={setEditExtraName} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '電話 / Email（選填）' : 'Phone / Email (optional)'} placeholderTextColor={colors.placeholder} value={editExtraContact} onChangeText={setEditExtraContact} maxLength={100} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '邀請人姓名' : "Inviter's name"} placeholderTextColor={colors.placeholder} value={editExtraConnectedTo} onChangeText={setEditExtraConnectedTo} maxLength={200} />
+                  <TextInput style={styles.editInput} placeholder={zh ? '與邀請人的關係' : "Guest's relationship to inviter"} placeholderTextColor={colors.placeholder} value={editExtraRelationship} onChangeText={setEditExtraRelationship} maxLength={100} />
+                  <TextInput style={[styles.editInput, { minHeight: 70, textAlignVertical: 'top' }]} placeholder={zh ? '備註' : 'Notes'} placeholderTextColor={colors.placeholder} value={editExtraNotes} onChangeText={setEditExtraNotes} multiline numberOfLines={3} maxLength={500} />
+                </View>
+                <View style={[styles.modalActions, { marginTop: 14 }]}>
+                  <TouchableOpacity style={styles.modalSecondaryBtn} onPress={() => setEditingExtraGuest(null)}>
+                    <Text style={styles.modalSecondaryBtnText}>{zh ? '取消' : 'Cancel'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.modalPrimaryBtn, (editExtraSaving || !editExtraName.trim()) && { opacity: 0.5 }]} onPress={handleSaveExtraGuest} disabled={editExtraSaving || !editExtraName.trim()}>
+                    <Text style={styles.modalPrimaryBtnText}>{editExtraSaving ? (zh ? '儲存中…' : 'Saving…') : (zh ? '儲存' : 'Save')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </KeyboardAvoidingView>
+          </TouchableOpacity>
+        </Modal>
+
         <Modal visible={showGuestBatches} transparent animationType="slide" onRequestClose={() => setShowGuestBatches(false)}>
           <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={() => setShowGuestBatches(false)}>
             <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
@@ -1465,9 +1539,22 @@ export default function EventDetailScreen() {
                               {g.connectedInviteeName && !g.relationship ? <Text style={{ fontSize: 11, color: '#7C3AED', marginTop: 1 }}>{g.connectedInviteeName}{zh ? '的賓客' : "'s guest"}</Text> : null}
                               {!g.connectedInviteeName && g.relationship ? <Text style={{ fontSize: 11, color: colors.subtext, marginTop: 1 }}>{g.relationship}</Text> : null}
                               <Text style={styles.guestHandle}>{zh ? '邀請者：' : 'inviter: '}{g.addedByName}</Text>
+                              {g.notes ? <Text style={styles.guestHandle}>{g.notes}</Text> : null}
                               {isEventAdminExtra && g.email && <Text style={styles.guestHandle}>{g.email}</Text>}
                               {isEventAdminExtra && g.phone && <Text style={styles.guestHandle}>{g.phone}</Text>}
                             </View>
+                            {isEventAdminExtra && g.id ? (
+                              <TouchableOpacity
+                                onPress={() => openEditExtraGuest(g)}
+                                style={{
+                                  paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1,
+                                  borderColor: colors.border,
+                                  marginLeft: 8,
+                                }}
+                              >
+                                <Text style={{ fontSize: 12, fontWeight: '600', color: colors.text }}>{zh ? '編輯' : 'Edit'}</Text>
+                              </TouchableOpacity>
+                            ) : null}
                             {isEventAdminExtra && g.id ? (
                               <TouchableOpacity
                                 onPress={() => handleCheckIn(checkInEntry, !g.checkedIn)}
